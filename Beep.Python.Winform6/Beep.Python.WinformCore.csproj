@@ -121,9 +121,6 @@
     <ProjectReference Include="..\Beep.Python.Model\Beep.Python.Model.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="Cpython\uc_cpythonscriptrunner.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Update="Frm_SetRunTimePath.cs">
       <SubType>Form</SubType>
     </Compile>
