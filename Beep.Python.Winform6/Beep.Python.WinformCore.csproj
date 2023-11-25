@@ -1,0 +1,148 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFrameworks>net6.0-windows;net7.0-windows;net8.0-windows</TargetFrameworks>
+	  <LangVersion>Latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Beep.Python.Winform</RootNamespace>
+    <Platforms>AnyCPU;x64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Beep\__init__.py" />
+    <None Remove="gfx\cancel.png" />
+    <None Remove="gfx\cancel64.png" />
+    <None Remove="gfx\clear.ico" />
+    <None Remove="gfx\clear.png" />
+    <None Remove="gfx\compute.ico" />
+    <None Remove="gfx\gfx.ico" />
+    <None Remove="gfx\gfx.png" />
+    <None Remove="gfx\gfx64.png" />
+    <None Remove="gfx\gui.ico" />
+    <None Remove="gfx\gui.png" />
+    <None Remove="gfx\gui64.png" />
+    <None Remove="gfx\info.png" />
+    <None Remove="gfx\info64.png" />
+    <None Remove="gfx\install.ico" />
+    <None Remove="gfx\jupyter.jpg" />
+    <None Remove="gfx\jupyter64.png" />
+    <None Remove="gfx\linked.ico" />
+    <None Remove="gfx\list.ico" />
+    <None Remove="gfx\load.ico" />
+    <None Remove="gfx\load.png" />
+    <None Remove="gfx\load64.png" />
+    <None Remove="gfx\ml.ico" />
+    <None Remove="gfx\ml.png" />
+    <None Remove="gfx\ml64.png" />
+    <None Remove="gfx\nolink.ico" />
+    <None Remove="gfx\please_wait.gif" />
+    <None Remove="gfx\qt.png" />
+    <None Remove="gfx\qt64.png" />
+    <None Remove="gfx\run.ico" />
+    <None Remove="gfx\run.png" />
+    <None Remove="gfx\run64.png" />
+    <None Remove="gfx\save.png" />
+    <None Remove="gfx\save64.png" />
+    <None Remove="gfx\saveas.ico" />
+    <None Remove="gfx\saveas.png" />
+    <None Remove="gfx\saveas64.png" />
+    <None Remove="gfx\SimpleInfoApps.png" />
+    <None Remove="gfx\SimpleInfoApps64.png" />
+    <None Remove="gfx\tools.ico" />
+    <None Remove="gfx\tools.png" />
+    <None Remove="gfx\tools64.png" />
+    <None Remove="tmp.csv" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Beep\__init__.py">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="tmp.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="gfx\cancel.png" />
+    <EmbeddedResource Include="gfx\cancel64.png" />
+    <EmbeddedResource Include="gfx\clear.ico" />
+    <EmbeddedResource Include="gfx\clear.png" />
+    <EmbeddedResource Include="gfx\compute.ico" />
+    <EmbeddedResource Include="gfx\gfx.ico" />
+    <EmbeddedResource Include="gfx\gfx.png" />
+    <EmbeddedResource Include="gfx\gfx64.png" />
+    <EmbeddedResource Include="gfx\gui.ico" />
+    <EmbeddedResource Include="gfx\gui.png" />
+    <EmbeddedResource Include="gfx\gui64.png" />
+    <EmbeddedResource Include="gfx\info.png" />
+    <EmbeddedResource Include="gfx\info64.png" />
+    <EmbeddedResource Include="gfx\install.ico" />
+    <EmbeddedResource Include="gfx\jupyter.jpg" />
+    <EmbeddedResource Include="gfx\jupyter64.png" />
+    <EmbeddedResource Include="gfx\linked.ico" />
+    <EmbeddedResource Include="gfx\list.ico" />
+    <EmbeddedResource Include="gfx\load.ico" />
+    <EmbeddedResource Include="gfx\load.png" />
+    <EmbeddedResource Include="gfx\load64.png" />
+    <EmbeddedResource Include="gfx\ml.ico" />
+    <EmbeddedResource Include="gfx\ml.png" />
+    <EmbeddedResource Include="gfx\ml64.png" />
+    <EmbeddedResource Include="gfx\nolink.ico" />
+    <EmbeddedResource Include="gfx\please_wait.gif" />
+    <EmbeddedResource Include="gfx\qt.png" />
+    <EmbeddedResource Include="gfx\qt64.png" />
+    <EmbeddedResource Include="gfx\run.ico" />
+    <EmbeddedResource Include="gfx\run.png" />
+    <EmbeddedResource Include="gfx\run64.png" />
+    <EmbeddedResource Include="gfx\save.png" />
+    <EmbeddedResource Include="gfx\save64.png" />
+    <EmbeddedResource Include="gfx\saveas.ico" />
+    <EmbeddedResource Include="gfx\saveas.png" />
+    <EmbeddedResource Include="gfx\saveas64.png" />
+    <EmbeddedResource Include="gfx\SimpleInfoApps.png" />
+    <EmbeddedResource Include="gfx\SimpleInfoApps64.png" />
+    <EmbeddedResource Include="gfx\tools.ico" />
+    <EmbeddedResource Include="gfx\tools.png" />
+    <EmbeddedResource Include="gfx\tools64.png" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="Scintilla.NET" Version="5.3.2.7" />
+    <PackageReference Include="TheTechIdea.Beep.Vis.Modules" Version="1.0.8" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\Beep.Python.Logic\Beep.Python.Logic.csproj" />
+    <ProjectReference Include="..\Beep.Python.Model\Beep.Python.Model.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Cpython\uc_cpythonscriptrunner.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Frm_SetRunTimePath.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Update="uc_htmlDataTable.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+		<Copy SourceFiles="$(TargetDir)$(PackageId).dll" DestinationFolder="$(ProjectDir)..\..\outputDLL\$(PackageId)" SkipUnchangedFiles="false" />
+	</Target>
+</Project>
