@@ -30,7 +30,7 @@
     <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
     <PackageReference Include="System.Linq.Expressions" Version="4.3.0" />
     <PackageReference Include="System.Threading.Channels" Version="8.0.0" />
-    <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="1.0.106" />
+    <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="1.0.115" />
   </ItemGroup>
 
   <ItemGroup>

@@ -20,8 +20,8 @@
 		<Copy SourceFiles="$(OutputPath)$(PackageId).$(PackageVersion).nupkg" DestinationFolder="..\..\..\LocalNugetFiles" />
 	</Target>
 	<ItemGroup>
-	  <PackageReference Include="TheTechIdea.Beep.DataManagementEngine" Version="1.0.305" />
-	  <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="1.0.106" />
+	  <PackageReference Include="TheTechIdea.Beep.DataManagementEngine" Version="1.0.332" />
+	  <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="1.0.115" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="..\..\InstallationScripts\LogoGFx\128\SimpleODM.png">
