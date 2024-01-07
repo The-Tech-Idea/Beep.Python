@@ -1,21 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-
-using TheTechIdea;
-using TheTechIdea.Beep;
-
-using TheTechIdea.Beep.ConfigUtil;
-using TheTechIdea.Beep.Report;
-using TheTechIdea.Beep.Vis;
-
+﻿using System.Reflection;
 using TheTechIdea.Tools;
 using TheTechIdea.Util;
-using IOrder = TheTechIdea.Beep.Vis.IOrder;
+
 
 namespace AssemblyLoaderExtension
 {

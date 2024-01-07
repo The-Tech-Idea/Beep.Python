@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;net6.0;net7.0</TargetFrameworks>
+		<TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<LangVersion>Latest</LangVersion>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -11,6 +11,7 @@
 		<PackageIcon>SimpleODM.png</PackageIcon>
 		<RepositoryUrl>https://github.com/The-Tech-Idea/</RepositoryUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<Version>0.0.9</Version>
 		
 	</PropertyGroup>
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
@@ -31,7 +32,6 @@
 	  <PackageReference Include="TheTechIdea.Beep.DataManagementEngine" Version="1.0.332" />
 	  <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="1.0.115" />
 	</ItemGroup>
-	
 	<ItemGroup>
 	  <ProjectReference Include="..\Beep.Python.Model\Beep.Python.Model.csproj" />
 	</ItemGroup>
