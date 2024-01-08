@@ -16,6 +16,6 @@ namespace Beep.Python.Model
         void SplitData(string dataFilePath, float testSize, string trainFilePath, string testFilePath);
         void TrainModel(string modelId, MachineLearningAlgorithm algorithm, Dictionary<string, object> parameters, string[] featureColumns, string labelColumn);
         void TrainModelWithUpdatedData(string modelId, string updatedTrainDataPath, string[] featureColumns, string labelColumn, MachineLearningAlgorithm algorithm, Dictionary<string, object> parameters);
-        void OutputResultData(string filePath, string iDColumn, string labelColumn);
+        void ExportTestResult(string filePath, string iDColumn, string labelColumn);
     }
 }

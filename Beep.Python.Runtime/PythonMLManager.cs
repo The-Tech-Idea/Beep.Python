@@ -370,7 +370,7 @@ score = f1_score(test_labels, predictions)
                 // If needed, return results or handle outputs
             }
         }
-        public void OutputResultData(string filePath, string iDColumn, string labelColumn)
+        public void ExportTestResult(string filePath, string iDColumn, string labelColumn)
         {
             if (!IsInitialized)
             {

@@ -11,7 +11,7 @@
 		<PackageIcon>SimpleODM.png</PackageIcon>
 		<RepositoryUrl>https://github.com/The-Tech-Idea/</RepositoryUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<Version>0.0.9</Version>
+		<Version>1.0.1</Version>
 		
 	</PropertyGroup>
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
