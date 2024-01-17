@@ -16,13 +16,20 @@ namespace Beep.Python.RuntimeEngine
 {
     public class PythonNetRunTimeManager : IDisposable, IPythonRunTimeManager
     {
-        public PythonNetRunTimeManager(IDMEEditor dMEditor, IJsonLoader jsonLoader, IProgress<PassedArgs> progress,
-        CancellationToken token) // @"W:\Cpython\p395x32"
+        //public PythonNetRunTimeManager(IDMEEditor dMEditor, IJsonLoader jsonLoader, IProgress<PassedArgs> progress,
+        //CancellationToken token) // @"W:\Cpython\p395x32"
+        //{
+        //    DMEditor = dMEditor;
+        //    JsonLoader = jsonLoader;
+        //    Progress = progress;
+        //    Token = token;
+        //    PythonRunTimeDiagnostics.SetFolderNames("x32", "x64");
+
+        //}
+        public PythonNetRunTimeManager(IDMEEditor dMEditor) // @"W:\Cpython\p395x32"
         {
             DMEditor = dMEditor;
-            JsonLoader = jsonLoader;
-            Progress = progress;
-            Token = token;
+            JsonLoader = dMEditor.ConfigEditor.JsonLoader;
             PythonRunTimeDiagnostics.SetFolderNames("x32", "x64");
 
         }
@@ -148,8 +155,15 @@ namespace Beep.Python.RuntimeEngine
             IsBusy = true;
             if (PythonRunTimeDiagnostics.IsPythonInstalled(pythonhome))
             {
+                PythonRunTime cfg;
                 int idx= PythonConfig.Runtimes.FindIndex(p => p.BinPath.Equals(pythonhome,StringComparison.InvariantCultureIgnoreCase));
-                PythonRunTime cfg= PythonConfig.Runtimes[idx];
+                if(idx==-1)
+                {
+                     cfg = PythonRunTimeDiagnostics.GetPythonConfig(pythonhome);
+                    PythonConfig.Runtimes.Add(cfg);
+                    idx = PythonConfig.Runtimes.IndexOf(cfg);
+                }
+                 cfg= PythonConfig.Runtimes[idx];
                 PythonConfig.RunTimeIndex = idx;
                
                return Initialize();
@@ -622,7 +636,6 @@ namespace Beep.Python.RuntimeEngine
 
         }
         #endregion
-      
         public void SetRuntimePath(string runtimepath, BinType32or64 binType, string libpath = @"lib\site-packages")
         {
            
@@ -631,8 +644,6 @@ namespace Beep.Python.RuntimeEngine
          
 
         }
-
-        
         public static PyObject ToPython(IDictionary<string, object> dictionary)
         {
             using (Py.GIL())
@@ -656,7 +667,6 @@ namespace Beep.Python.RuntimeEngine
                 return PyObject.FromManagedObject(obj);
             }
         }
-      
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)

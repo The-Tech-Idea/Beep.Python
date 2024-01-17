@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 
-namespace Beep.Python.Logic
+namespace Beep.Python.RuntimeEngine
 {
     public class PythonMLManager : IPythonMLManager,IDisposable
     {
