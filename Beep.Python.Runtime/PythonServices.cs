@@ -1,10 +1,5 @@
 ﻿using Beep.Python.Model;
-using Beep.Python.RuntimeEngine;
 using Microsoft.Extensions.DependencyInjection;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TheTechIdea.Beep;
 
 namespace Beep.Python.RuntimeEngine
@@ -15,28 +10,17 @@ namespace Beep.Python.RuntimeEngine
         private static bool IsReady  = false;
         private static IDMEEditor DMEditor;
         private static string Pythonruntimepath;
-        public static IServiceCollection RegisterPythonService(this IServiceCollection services)
+        public static IServiceCollection RegisterPythonService(this IServiceCollection services,string pythonruntimepath)
         {
-            services.AddSingleton<IPythonRunTimeManager, PythonNetRunTimeManager>();
+            Pythonruntimepath = pythonruntimepath;
 
+            PythonRunTimeManager=new PythonNetRunTimeManager();
+            services.AddSingleton<IPythonRunTimeManager>(PythonRunTimeManager);
+            IsReady = PythonRunTimeManager.Initialize(pythonruntimepath, BinType32or64.p395x64, @"lib\site-packages");
             return services;
         }
-        public static IPythonRunTimeManager InitPythonServices(this IDMEEditor dmeEditor, string pythonruntimepath)
-        {
-            DMEditor = dmeEditor;
-            Pythonruntimepath = pythonruntimepath;
-            IsReady= PythonRunTimeManager.Initialize(pythonruntimepath, BinType32or64.p395x64, @"lib\site-packages");
-            if(IsReady)
-            {
-                return PythonRunTimeManager;
-            }
-            else
-            {
-                return null;
-            }
-           
-        }
-        public static IPythonRunTimeManager GetPythonRunTimeManager(this IPythonRunTimeManager pythonruntimemanager)
+       
+        public static IPythonRunTimeManager GetPythonRunTimeManager(this IDMEEditor dmeEditor)
         {
            return  PythonRunTimeManager;
         }

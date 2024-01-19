@@ -1,5 +1,4 @@
 ﻿using Beep.Python.Model;
-using Beep.Python.RuntimeEngine;
 using Python.Runtime;
 using System;
 using System.Collections.Generic;
@@ -15,24 +14,27 @@ namespace Beep.Python.RuntimeEngine
         public PythonMLManager(PythonNetRunTimeManager pythonRuntimeManager)
         {
             _pythonRuntimeManager = pythonRuntimeManager;
-            InitializePythonEnvironment();
+             InitializePythonEnvironment();
         }
         public bool IsInitialized => _pythonRuntimeManager.IsInitialized;
-        private void InitializePythonEnvironment()
+        private bool InitializePythonEnvironment()
         {
+            bool retval = false;
             if (!_pythonRuntimeManager.IsInitialized)
             {
                 _pythonRuntimeManager.Initialize();
             }
             if (!_pythonRuntimeManager.IsInitialized)
             {
-                return;
+                return retval;
             }
             using (Py.GIL())
             {
                 _persistentScope = Py.CreateScope("__main__");
                 _persistentScope.Exec("models = {}");  // Initialize the models dictionary
+                retval=true; 
             }
+            return retval;
         }
         public void TrainModelWithUpdatedData(string modelId, string updatedTrainDataPath, string[] featureColumns, string labelColumn, MachineLearningAlgorithm algorithm, Dictionary<string, object> parameters)
         {

@@ -16,20 +16,26 @@ namespace Beep.Python.RuntimeEngine
 {
     public class PythonNetRunTimeManager : IDisposable, IPythonRunTimeManager
     {
-        //public PythonNetRunTimeManager(IDMEEditor dMEditor, IJsonLoader jsonLoader, IProgress<PassedArgs> progress,
-        //CancellationToken token) // @"W:\Cpython\p395x32"
-        //{
-        //    DMEditor = dMEditor;
-        //    JsonLoader = jsonLoader;
-        //    Progress = progress;
-        //    Token = token;
-        //    PythonRunTimeDiagnostics.SetFolderNames("x32", "x64");
+        public PythonNetRunTimeManager(IDMEEditor dMEditor, IJsonLoader jsonLoader, IProgress<PassedArgs> progress,
+        CancellationToken token) // @"W:\Cpython\p395x32"
+        {
+            DMEditor = dMEditor;
+            JsonLoader = jsonLoader;
+            Progress = progress;
+            Token = token;
+            PythonRunTimeDiagnostics.SetFolderNames("x32", "x64");
 
-        //}
+        }
         public PythonNetRunTimeManager(IDMEEditor dMEditor) // @"W:\Cpython\p395x32"
         {
             DMEditor = dMEditor;
             JsonLoader = dMEditor.ConfigEditor.JsonLoader;
+            PythonRunTimeDiagnostics.SetFolderNames("x32", "x64");
+
+        }
+        public PythonNetRunTimeManager() // @"W:\Cpython\p395x32"
+        {
+            
             PythonRunTimeDiagnostics.SetFolderNames("x32", "x64");
 
         }
@@ -152,29 +158,64 @@ namespace Beep.Python.RuntimeEngine
         public bool Initialize(string pythonhome, BinType32or64 binType, string libpath = @"lib\site-packages")
         {
             if(IsBusy) return false;
-            IsBusy = true;
-            if (PythonRunTimeDiagnostics.IsPythonInstalled(pythonhome))
+           // IsBusy = true;
+            try
             {
-                PythonRunTime cfg;
-                int idx= PythonConfig.Runtimes.FindIndex(p => p.BinPath.Equals(pythonhome,StringComparison.InvariantCultureIgnoreCase));
-                if(idx==-1)
+                if (PythonRunTimeDiagnostics.IsPythonInstalled(pythonhome))
                 {
-                     cfg = PythonRunTimeDiagnostics.GetPythonConfig(pythonhome);
-                    PythonConfig.Runtimes.Add(cfg);
-                    idx = PythonConfig.Runtimes.IndexOf(cfg);
+                    PythonRunTime cfg;
+                    int idx = PythonConfig.Runtimes.FindIndex(p => p.BinPath.Equals(pythonhome, StringComparison.InvariantCultureIgnoreCase));
+                    if (idx == -1)
+                    {
+                        cfg = new PythonRunTime();
+                        cfg = PythonRunTimeDiagnostics.GetPythonConfig(pythonhome);
+                        PythonConfig.Runtimes.Add(cfg);
+                        idx = PythonConfig.Runtimes.IndexOf(cfg);
+                    }
+                    cfg = PythonConfig.Runtimes[idx];
+                    PythonConfig.RunTimeIndex = idx;
+
+                    return Initialize();
                 }
-                 cfg= PythonConfig.Runtimes[idx];
-                PythonConfig.RunTimeIndex = idx;
-               
-               return Initialize();
+                else
+                {
+                    DMEditor.AddLogMessage("Beep AI Python", "No Python Available", DateTime.Now, 0, null, Errors.Failed);
+                  //  IsBusy = false;
+                    return false;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                DMEditor.AddLogMessage("Beep AI Python", "No Python Available", DateTime.Now, 0, null, Errors.Failed);
-                IsBusy = false;
-                return false;
+                DMEditor.AddLogMessage("Beep AI Python", $"{ex.Message} ", DateTime.Now, 0, null, Errors.Failed);
+              //  IsBusy = false;
             }
+           return false;
             
+        }
+        private void ReportProgress(PassedArgs args)
+        {
+            if (Progress != null)
+            {
+                Progress.Report(args);
+            }
+        }
+        private void ReportProgress(string messege,Errors flag= Errors.Ok)
+        {
+            if (Progress != null)
+            {
+                PassedArgs args = new PassedArgs();
+                args.Messege = messege;
+                Progress.Report(args);
+            }else if (DMEditor != null)
+            {
+                if (DMEditor.progress != null)
+                {
+                    PassedArgs args = new PassedArgs();
+                    args.Messege = messege;
+                    Progress.Report(args);
+                }
+                DMEditor.AddLogMessage("Beep AI Python", messege, DateTime.Now, 0, null, flag);
+            }
         }
         public bool Initialize()
         {
@@ -195,32 +236,36 @@ namespace Beep.Python.RuntimeEngine
                     try
                     {
                         PassedArgs args = new PassedArgs();
-                        args.Messege = "Init. of Python engine";
-                        DMEditor.progress.Report(args);
+                        ReportProgress("Init. of Python engine");
+                       
+                      
+                      //  Runtime.PythonRuntimePath= CurrentRuntimeConfig.BinPath;
                         Runtime.PythonDLL = CurrentRuntimeConfig.PythonDll;
-                        PythonEngine.Initialize();
                         PythonEngine.PythonHome = CurrentRuntimeConfig.BinPath;
-                        PythonEngine.PythonPath = CurrentRuntimeConfig.Packageinstallpath;
-                    
-                        args.Messege = "Finished Init. of Python engine";
-                        DMEditor.progress.Report(args);
+                 //       PythonEngine.PythonPath = CurrentRuntimeConfig.Packageinstallpath;
+                        PythonEngine.Initialize();
+                        
+                        
+
+                        ReportProgress("Finished Init. of Python engine");
+                       
                         IsBusy = false;
                         _IsInitialized = true;
-                       
-                        DMEditor.AddLogMessage("Beep AI Python", "Python Initialized Successfully", DateTime.Now, 0, null, Errors.Ok);
+
+                        ReportProgress("Python Initialized Successfully", Errors.Ok);
                         return true;
                     }
                     catch (Exception ex)
                     {
                         IsBusy = false;
-                        DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
+                        ReportProgress(ex.Message, Errors.Failed);
                         return false;
                     }
                 }
                 else
                 {
                     IsBusy = false;
-                    DMEditor.AddLogMessage("Beep AI Python", "Python Already Initialized", DateTime.Now, 0, null, Errors.Ok);
+                    ReportProgress("Python Already Initialized", Errors.Ok);
                     return true;
                 }
                     
@@ -228,7 +273,7 @@ namespace Beep.Python.RuntimeEngine
             }
             else
             {
-                DMEditor.AddLogMessage("Beep AI Python", "No Python Available", DateTime.Now, 0, null, Errors.Failed);
+                ReportProgress("No Python Available", Errors.Failed);
                 IsBusy = false;
                 return false;
             }
@@ -277,20 +322,25 @@ namespace Beep.Python.RuntimeEngine
         }
         public IErrorsInfo ShutDown()
         {
-            if (IsBusy) return DMEditor.ErrorObject; 
+            ErrorsInfo er=new ErrorsInfo();
+            er.Flag = Errors.Ok;
+            if (IsBusy) return er; 
             IsBusy = true;
-            DMEditor.ErrorObject.Flag = Errors.Ok;
+           
             try
             {
                 PythonEngine.Shutdown();
-                //IsInitialized = false;
+                _IsInitialized = false;
             }
             catch (Exception ex)
             {
-                DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
+                er.Ex = ex;
+                er.Flag = Errors.Failed;
+                er.Message = ex.Message;
+                
             }
             IsBusy = false;
-            return DMEditor.ErrorObject;
+            return er;
 
         }
         public async Task<IErrorsInfo> RunFile(string file, IProgress<PassedArgs> progress, CancellationToken token)
