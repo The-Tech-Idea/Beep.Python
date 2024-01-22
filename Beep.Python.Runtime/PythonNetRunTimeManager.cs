@@ -179,7 +179,7 @@ namespace Beep.Python.RuntimeEngine
                 }
                 else
                 {
-                    DMEditor.AddLogMessage("Beep AI Python", "No Python Available", DateTime.Now, 0, null, Errors.Failed);
+           //         DMEditor.AddLogMessage("Beep AI Python", "No Python Available", DateTime.Now, 0, null, Errors.Failed);
                   //  IsBusy = false;
                     return false;
                 }
