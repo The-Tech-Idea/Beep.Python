@@ -13,6 +13,11 @@ namespace Beep.Python.RuntimeEngine
             List<string> algorithmName = Enum.GetNames(typeof(MachineLearningAlgorithm)).ToList();
             return algorithmName;
         }
+        public static MachineLearningAlgorithm GetAlgorithm(string algorithm)
+        {
+            return Enum.Parse<MachineLearningAlgorithm>(algorithm);
+        }
+       
         public static List<ParameterDictionaryForAlgorithm> GetParameterDictionaryForAlgorithms()
         {
             
