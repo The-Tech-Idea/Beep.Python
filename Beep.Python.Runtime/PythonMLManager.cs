@@ -16,6 +16,15 @@ namespace Beep.Python.RuntimeEngine
             _pythonRuntimeManager = pythonRuntimeManager;
              InitializePythonEnvironment();
         }
+        public void ImportPythonModule(string moduleName)
+        {
+            if (!IsInitialized)
+            {
+                return;
+            }
+            string script = $"import {moduleName}";
+            RunPythonScript(script, null);
+        }
         public bool IsInitialized => _pythonRuntimeManager.IsInitialized;
         private bool InitializePythonEnvironment()
         {
@@ -97,18 +106,40 @@ score = f1_score(test_labels, predictions)
             double score = 0.0; // Implement logic to retrieve the score
             return score;
         }
-        public void LoadData(string filePath)
+        public string[] LoadData(string filePath)
         {
             if (!IsInitialized)
             {
-                return;
+                return null;
             }
+            // Replace backslashes with double backslashes or use a raw string
+            string modifiedFilePath = filePath.Replace("\\", "\\\\");
             string script = $@"
 import pandas as pd
-data = pd.read_csv('{filePath}')
+data = pd.read_csv('{modifiedFilePath}')
+features = data.columns.tolist()
 ";
 
             RunPythonScript(script, null);
+            // Retrieve the features (column names) from the Python script
+            return FetchFeaturesFromPython();
+        }
+        // Method to retrieve the features from Python
+        private string[] FetchFeaturesFromPython()
+        {
+            using (Py.GIL()) // Acquire the Python Global Interpreter Lock
+            {
+                dynamic pyFeatures = _persistentScope.Get("features");
+                if (pyFeatures == null) return new string[0];
+
+                // Convert the Python list to a C# string array
+                var featuresList = new List<string>();
+                foreach (var feature in pyFeatures)
+                {
+                    featuresList.Add(feature.ToString());
+                }
+                return featuresList.ToArray();
+            }
         }
         public void LoadTestData(string filePath)
         {
@@ -118,11 +149,13 @@ data = pd.read_csv('{filePath}')
             }
             string script = $@"
 import pandas as pd
-test = pd.read_csv('{filePath}')
+test_data = pd.read_csv('{filePath}')
+x_test = pd.get_dummies(test_data[features])
 ";
 
             RunPythonScript(script, null);
         }
+       
         public void LoadData(string filePath, string[] featureColumns, string labelColumn)
         {
             if (!IsInitialized)
@@ -169,11 +202,11 @@ from sklearn.model_selection import train_test_split
 data = pd.read_csv('{dataFilePath}')
 
 # Split the dataset into training and testing sets
-train, test = train_test_split(data, test_size={testSize})
+train_data, test_data = train_test_split(data, test_size={testSize})
 
 # Save the split datasets to files
-train.to_csv('{trainFilePath}', index=False)
-test.to_csv('{testFilePath}', index=False)
+train_data.to_csv('{trainFilePath}', index=False)
+test_data.to_csv('{testFilePath}', index=False)
 ";
 
             RunPythonScript(script, null);
@@ -185,19 +218,21 @@ test.to_csv('{testFilePath}', index=False)
                 return;
             }
             string algorithmName = Enum.GetName(typeof(MachineLearningAlgorithm), algorithm);
-            string features = string.Join(", ", featureColumns.Select(fc => $"data['{fc}']"));
+            string features = string.Join(", ", featureColumns.Select(fc => @$"'{fc}'"));
             string paramsDict = String.Join(", ", parameters.Select(kv => $"'{kv.Key}': {kv.Value}"));
             string script = $@"
-from sklearn import {algorithmName.ToLower()}
-
+from sklearn.ensemble import {algorithmName}
+features = [{features}]
 # Check if the model already exists
 if '{modelId}' in models:
     model = models['{modelId}']
 else:
-    model = {algorithmName.ToLower()}({paramsDict})
+    model = {algorithmName}({paramsDict})
 
 # Train or re-train the model
-model.fit(data[{features}], data['{labelColumn}'])
+X= pd.get_dummies(data[features])
+Y=data['{labelColumn}']
+model.fit(X, Y)
 
 # Store or update the model
 models['{modelId}'] = model
@@ -205,6 +240,7 @@ models['{modelId}'] = model
 
             RunPythonScript(script, null);
         }
+      
         public dynamic Predict()
         {
             if (!IsInitialized)
@@ -213,7 +249,8 @@ models['{modelId}'] = model
             }
          //   string inputAsString = inputData.ToString(); // Convert inputData to a string representation
             string script = $@"
-predictions = model.predict(test)
+X_test = pd.get_dummies(test_data[features])
+predictions = model.predict(X_test)
 ";
 
             RunPythonScript(script, null);

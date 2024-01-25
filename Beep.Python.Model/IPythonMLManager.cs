@@ -7,7 +7,7 @@ namespace Beep.Python.Model
         bool IsInitialized { get; }
         double GetModelScore(string modelId, ModelMetric metric);
         double GetScoreUsingExistingTestData(string modelId, string metric);
-        void LoadData(string filePath);
+        string[] LoadData(string filePath);
         void LoadData(string filePath, string[] featureColumns, string labelColumn);
         string LoadModel(string filePath);
         dynamic Predict();
@@ -17,5 +17,7 @@ namespace Beep.Python.Model
         void TrainModelWithUpdatedData(string modelId, string updatedTrainDataPath, string[] featureColumns, string labelColumn, MachineLearningAlgorithm algorithm, Dictionary<string, object> parameters);
         void ExportTestResult(string filePath, string iDColumn, string labelColumn);
         void Dispose();
+        void ImportPythonModule(string moduleName);
+        void LoadTestData(string filePath);
     }
 }
