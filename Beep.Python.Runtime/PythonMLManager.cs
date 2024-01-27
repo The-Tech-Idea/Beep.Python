@@ -46,68 +46,6 @@ namespace Beep.Python.RuntimeEngine
             }
             return retval;
         }
-        public void TrainModelWithUpdatedData(string modelId, string updatedTrainDataPath, string[] featureColumns, string labelColumn, MachineLearningAlgorithm algorithm, Dictionary<string, object> parameters)
-        {
-            if (!IsInitialized)
-            {
-                return;
-            }
-            string algorithmName = Enum.GetName(typeof(MachineLearningAlgorithm), algorithm);
-            string features = string.Join(", ", featureColumns.Select(fc => $"updated_data['{fc}']"));
-            string paramsDict = String.Join(", ", parameters.Select(kv => $"'{kv.Key}': {kv.Value}"));
-            string script = $@"
-import pandas as pd
-from sklearn import {algorithmName.ToLower()}
-
-# Load updated training data
-updated_data = pd.read_csv('{updatedTrainDataPath}')
-
-# Check if the model already exists
-if '{modelId}' in models:
-    model = models['{modelId}']
-else:
-    model = {algorithmName.ToLower()}({paramsDict})
-
-# Train or re-train the model
-model.fit(updated_data[{features}], updated_data['{labelColumn}'])
-
-# Store or update the model
-models['{modelId}'] = model
-";
-
-            RunPythonScript(script, null);
-        }
-        public double EvaluateModel(string modelId, string testFilePath, string[] featureColumns, string labelColumn)
-        {
-            if (!IsInitialized)
-            {
-                return -1;
-            }
-
-            string formattedTestFilePath = testFilePath.Replace("\\", "\\\\");
-            string features = string.Join(", ", featureColumns.Select(fc => $"\"{fc}\""));
-
-            string script = $@"
-import pandas as pd
-from sklearn.metrics import accuracy_score
-
-# Load the test data
-test_data = pd.read_csv('{formattedTestFilePath}')
-X_test = pd.get_dummies(test_data[{features}])
-y_test = test_data['{labelColumn}']
-
-# Retrieve the model and make predictions
-model = models['{modelId}']
-predictions = model.predict(X_test)
-
-# Calculate accuracy
-score = accuracy_score(y_test, predictions)
-";
-
-            RunPythonScript(script, null);
-
-            return FetchScoreFromPython();
-        }
         public Tuple<double, double> GetModelScore(string modelId)
         {
             if (!IsInitialized)
@@ -141,36 +79,6 @@ score = f1_score(y_test, predictions)
             // Retrieve the score from the Python script
             return new Tuple<double,double>(FetchScoreFromPython(),FetchAccuracyFromPython());
         }
-        public double GetScoreUsingExistingTestData(string modelId, string metric)
-        {
-            if (!IsInitialized)
-            {
-                return -1;
-            }
-            string script = metric switch
-            {
-                "accuracy" => $@"
-from sklearn.metrics import accuracy_score
-model = models['{modelId}']
-predictions = model.predict(test_features)
-score = accuracy_score(test_labels, predictions)
-",
-                "f1" => $@"
-from sklearn.metrics import f1_score
-model = models['{modelId}']
-predictions = model.predict(test_features)
-score = f1_score(test_labels, predictions)
-",
-                // Add more cases for different metrics as needed
-                _ => throw new ArgumentException("Invalid metric specified")
-            };
-
-            RunPythonScript(script, null);
-
-            // Retrieve the score from the Python script
-            double score = 0.0; // Implement logic to retrieve the score
-            return score;
-        }
         public string[] LoadData(string filePath)
         {
             if (!IsInitialized)
@@ -190,38 +98,6 @@ features = data.columns.tolist()
             return FetchFeaturesFromPython();
         }
         // Method to retrieve the features from Python
-        private string[] FetchFeaturesFromPython()
-        {
-            using (Py.GIL()) // Acquire the Python Global Interpreter Lock
-            {
-                dynamic pyFeatures = _persistentScope.Get("features");
-                if (pyFeatures == null) return new string[0];
-
-                // Convert the Python list to a C# string array
-                var featuresList = new List<string>();
-                foreach (var feature in pyFeatures)
-                {
-                    featuresList.Add(feature.ToString());
-                }
-                return featuresList.ToArray();
-            }
-        }
-        private string[] FetchTestFeaturesFromPython()
-        {
-            using (Py.GIL()) // Acquire the Python Global Interpreter Lock
-            {
-                dynamic pyFeatures = _persistentScope.Get("test_features");
-                if (pyFeatures == null) return new string[0];
-
-                // Convert the Python list to a C# string array
-                var featuresList = new List<string>();
-                foreach (var feature in pyFeatures)
-                {
-                    featuresList.Add(feature.ToString());
-                }
-                return featuresList.ToArray();
-            }
-        }
         public string[] LoadTestData(string filePath)
         {
             if (!IsInitialized)
@@ -236,6 +112,25 @@ test_data = pd.read_csv('{formattedFilePath}')
 
 # Split into features and label
 test_features = test_data.columns.tolist()
+";
+
+            RunPythonScript(script, null);
+            return FetchTestFeaturesFromPython();
+        }
+        public string[] LoadPredictionData(string filePath)
+        {
+            if (!IsInitialized)
+            {
+                return null;
+            }
+            // Convert the file path to a raw string format for Python
+            string formattedFilePath = filePath.Replace("\\", "\\\\");
+            string script = $@"
+import pandas as pd
+predict_data = pd.read_csv('{formattedFilePath}')
+
+# Split into features and label
+predict_features = predict_data.columns.tolist()
 ";
 
             RunPythonScript(script, null);
@@ -286,33 +181,6 @@ if '{labelColumn}' not in test_data.columns:
 
             RunPythonScript(script, null);
         }
-        public void LoadData(string filePath, string[] featureColumns, string labelColumn)
-        {
-            if (!IsInitialized)
-            {
-                return;
-            }
-            string formattedFilePath = filePath.Replace("\\", "\\\\");
-            string featureColumnsString = string.Join(", ", featureColumns.Select(fc => $"'{fc}'"));
-            string script = $@"
-import pandas as pd
-
-# Load the dataset
-data = pd.read_csv('{formattedFilePath}')
-
-# Split into features and label
-feature_columns = [{featureColumnsString}]
-features = data[feature_columns]
-label = data['{labelColumn}']
-label_column ='{labelColumn}'
-# Store features and label in the Python environment
-# Assuming 'train_features', 'train_labels', 'test_features', 'test_labels' are already defined
-train_features, test_features = features, features  # Placeholder, modify as needed
-train_labels, test_labels = label, label  # Placeholder, modify as needed
-";
-
-            RunPythonScript(script, null);
-        }
         public string[] SplitData(string dataFilePath, float testSize,string trainFilePath,string testFilePath)
         {
             if (!IsInitialized)
@@ -348,6 +216,95 @@ features = data.columns.tolist()
             RunPythonScript(script, null);
             return FetchFeaturesFromPython();
         }
+        public string[] SplitData(string dataFilePath, float testSize,float validationSize, string trainFilePath, string testFilePath,string validationFilePath)
+        {
+            if (!IsInitialized)
+            {
+                return null;
+            }
+            // Ensure testSize is more than 0.5 to make test set larger
+            if (testSize <= 0.5)
+            {
+                throw new ArgumentException("Test size must be more than 50% of the data.");
+            }
+            if (testSize + validationSize >= 1.0)
+            {
+                throw new ArgumentException("Combined test and validation size must be less than 100% of the data.");
+            }
+            string formattedFilePath = dataFilePath.Replace("\\", "\\\\");
+            string formattedtrainFilePath = trainFilePath.Replace("\\", "\\\\");
+            string formattedtestFilePath = testFilePath.Replace("\\", "\\\\");
+            string formattedvalidationFilePath = validationFilePath.Replace("\\", "\\\\");
+            string script = $@"
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
+# Load the dataset
+data = pd.read_csv('{formattedFilePath}')
+# Split the dataset into training and remaining data
+train_data, remaining_data = train_test_split(data, test_size={testSize + validationSize})
+
+# Split the remaining data into testing and validation sets
+test_data, validation_data = train_test_split(remaining_data, test_size={validationSize / (testSize + validationSize)})
+
+
+# Save the datasets to files
+train_data.to_csv('{formattedtrainFilePath}', index=False)
+test_data.to_csv('{formattedtestFilePath}', index=False)
+validation_data.to_csv('{formattedvalidationFilePath}', index=False)
+test_features = test_data.columns.tolist()
+features = data.columns.tolist()
+";
+            //            train_data.to_csv('{trainFilePath}', index = False)
+            //test_data.to_csv('{testFilePath}', index = False)
+            RunPythonScript(script, null);
+            return FetchFeaturesFromPython();
+        }
+        public string[] SplitData(string dataFilePath, float testSize, string trainFilePath, string testFilePath, string validationFilePath, string primaryFeatureKeyID, string labelColumn)
+        {
+            if (!IsInitialized)
+            {
+                return null;
+            }
+
+            if (testSize >= 1.0)
+            {
+                throw new ArgumentException("Test size must be less than 100% of the data.");
+            }
+
+            string formattedFilePath = dataFilePath.Replace("\\", "\\\\");
+            string formattedTrainFilePath = trainFilePath.Replace("\\", "\\\\");
+            string formattedTestFilePath = testFilePath.Replace("\\", "\\\\");
+            string formattedValidationFilePath = validationFilePath.Replace("\\", "\\\\");
+
+            string script = $@"
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
+# Load the dataset
+data = pd.read_csv('{formattedFilePath}')
+
+# Split the dataset into training and test sets
+train_data, test_data = train_test_split(data, test_size={testSize})
+
+# Prepare test data (without label column)
+test_data_without_label = test_data.drop(columns=['{labelColumn}'])
+
+# Prepare validation data (only primary key and label)
+validation_data = test_data[['{primaryFeatureKeyID}', '{labelColumn}']]
+
+# Save the datasets to files
+train_data.to_csv('{formattedTrainFilePath}', index=False)
+test_data_without_label.to_csv('{formattedTestFilePath}', index=False)
+validation_data.to_csv('{formattedValidationFilePath}', index=False)
+test_features = test_data.columns.tolist()
+features = data.columns.tolist()
+";
+
+            RunPythonScript(script, null);
+            return FetchFeaturesFromPython();
+        }
+
         public void TrainModel(string modelId, MachineLearningAlgorithm algorithm, Dictionary<string, object> parameters, string[] featureColumns, string labelColumn)
         {
             if (!IsInitialized)
@@ -389,8 +346,10 @@ models['{modelId}'] = model
             }
          //   string inputAsString = inputData.ToString(); // Convert inputData to a string representation
             string script = $@"
-X_test = pd.get_dummies(test_data[test_features])
-predictions = model.predict(X_test)
+X_predict = pd.get_dummies(predict_data[features])
+X_predict.fillna(X_predict.mean(), inplace=True)  # Simple mean imputation for missing values
+
+predictions = model.predict(X_predict)
 ";
 
             RunPythonScript(script, null);
@@ -400,38 +359,6 @@ predictions = model.predict(X_test)
             return predictions;
         }
         // Helper method to retrieve predictions from Python
-        private dynamic FetchPredictionsFromPython()
-        {
-            if (!IsInitialized)
-            {
-                return null;
-            }
-            using (Py.GIL()) // Acquire the Python Global Interpreter Lock
-            {
-                // Retrieve the 'predictions' variable from the persistent Python scope
-                dynamic predictions = _persistentScope.Get("predictions");
-
-                // Convert the Python 'predictions' object to a C# object, if necessary
-                // Conversion depends on the expected format of 'predictions'
-                return ConvertPythonPredictionsToCSharp(predictions); // Implement this conversion based on your needs
-            }
-        }
-        // Example method to convert Python predictions to a C# data structure
-        private dynamic ConvertPythonPredictionsToCSharp(dynamic predictions)
-        {
-            if (!IsInitialized)
-            {
-                return null;
-            }
-            // Implement conversion logic based on the format of your Python predictions
-            // For example, converting a NumPy array or Python list to a C# List
-            var predictionsList = new List<double>();
-            foreach (var item in predictions)
-            {
-                predictionsList.Add((double)item);
-            }
-            return predictionsList; // Or return as is, if no conversion is needed
-        }
         public void SaveModel(string modelId, string filePath)
         {
             if (!IsInitialized)
@@ -490,38 +417,24 @@ except Exception as e:
             // Return the model ID to the caller
             return modelId;
         }
-        
-
-     
-
         // Example helper method to fetch the score from Python
-        private double FetchScoreFromPython()
+        public void ExportTestResult(string filePath, string iDColumn, string labelColumn)
         {
             if (!IsInitialized)
             {
-                return -1;
+                return;
             }
-            // Implement logic to retrieve the 'score' variable from Python
-            // This might involve fetching the variable's value from the Python scope
-            using (Py.GIL())
-            {
-                dynamic pyScore = _persistentScope.Get("score");
-                return pyScore.As<double>(); // Convert the Python score to a C# double
-            }
-        }
-        private double FetchAccuracyFromPython()
-        {
-            if (!IsInitialized)
-            {
-                return -1;
-            }
-            // Implement logic to retrieve the 'score' variable from Python
-            // This might involve fetching the variable's value from the Python scope
-            using (Py.GIL())
-            {
-                dynamic pyScore = _persistentScope.Get("accuracy");
-                return pyScore.As<double>(); // Convert the Python score to a C# double
-            }
+
+            string script = $@"
+# Assuming predictions and X_predict are available
+output = pd.DataFrame({{
+    '{iDColumn}': predict_data['{iDColumn}'],
+    '{labelColumn}': predictions
+}})
+output.to_csv(r'{filePath}', index=False)
+";
+
+            RunPythonScript(script, null);
         }
         private void RunPythonScript(string script, dynamic parameters)
         {
@@ -536,16 +449,6 @@ except Exception as e:
 
                 // If needed, return results or handle outputs
             }
-        }
-        public void ExportTestResult(string filePath, string iDColumn, string labelColumn)
-        {
-            if (!IsInitialized)
-            {
-                return;
-            }
-            string script = $@"output = pd.DataFrame({{'{iDColumn.ToLower()}': test_data.{iDColumn.ToLower()}, '{labelColumn.ToLower()}': predictions}})
-output.to_csv('{filePath}', index=False)";
-            RunPythonScript(script, null);
         }
         public void Dispose()
         {
@@ -647,6 +550,98 @@ output.to_csv('{filePath}', index=False)";
                 }
 
                 lines[i] = string.Join(",", columns);
+            }
+        }
+        private dynamic FetchPredictionsFromPython()
+        {
+            if (!IsInitialized)
+            {
+                return null;
+            }
+            using (Py.GIL()) // Acquire the Python Global Interpreter Lock
+            {
+                // Retrieve the 'predictions' variable from the persistent Python scope
+                dynamic predictions = _persistentScope.Get("predictions");
+
+                // Convert the Python 'predictions' object to a C# object, if necessary
+                // Conversion depends on the expected format of 'predictions'
+                return ConvertPythonPredictionsToCSharp(predictions); // Implement this conversion based on your needs
+            }
+        }
+        private double FetchScoreFromPython()
+        {
+            if (!IsInitialized)
+            {
+                return -1;
+            }
+            // Implement logic to retrieve the 'score' variable from Python
+            // This might involve fetching the variable's value from the Python scope
+            using (Py.GIL())
+            {
+                dynamic pyScore = _persistentScope.Get("score");
+                return pyScore.As<double>(); // Convert the Python score to a C# double
+            }
+        }
+        private double FetchAccuracyFromPython()
+        {
+            if (!IsInitialized)
+            {
+                return -1;
+            }
+            // Implement logic to retrieve the 'score' variable from Python
+            // This might involve fetching the variable's value from the Python scope
+            using (Py.GIL())
+            {
+                dynamic pyScore = _persistentScope.Get("accuracy");
+                return pyScore.As<double>(); // Convert the Python score to a C# double
+            }
+        }
+        // Example method to convert Python predictions to a C# data structure
+        private dynamic ConvertPythonPredictionsToCSharp(dynamic predictions)
+        {
+            if (!IsInitialized)
+            {
+                return null;
+            }
+            // Implement conversion logic based on the format of your Python predictions
+            // For example, converting a NumPy array or Python list to a C# List
+            var predictionsList = new List<double>();
+            foreach (var item in predictions)
+            {
+                predictionsList.Add((double)item);
+            }
+            return predictionsList; // Or return as is, if no conversion is needed
+        }
+        private string[] FetchFeaturesFromPython()
+        {
+            using (Py.GIL()) // Acquire the Python Global Interpreter Lock
+            {
+                dynamic pyFeatures = _persistentScope.Get("features");
+                if (pyFeatures == null) return new string[0];
+
+                // Convert the Python list to a C# string array
+                var featuresList = new List<string>();
+                foreach (var feature in pyFeatures)
+                {
+                    featuresList.Add(feature.ToString());
+                }
+                return featuresList.ToArray();
+            }
+        }
+        private string[] FetchTestFeaturesFromPython()
+        {
+            using (Py.GIL()) // Acquire the Python Global Interpreter Lock
+            {
+                dynamic pyFeatures = _persistentScope.Get("predict_features");
+                if (pyFeatures == null) return new string[0];
+
+                // Convert the Python list to a C# string array
+                var featuresList = new List<string>();
+                foreach (var feature in pyFeatures)
+                {
+                    featuresList.Add(feature.ToString());
+                }
+                return featuresList.ToArray();
             }
         }
     }
