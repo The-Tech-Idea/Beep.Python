@@ -314,8 +314,49 @@ features = data.columns.tolist()
             string algorithmName = Enum.GetName(typeof(MachineLearningAlgorithm), algorithm);
             string features = string.Join(", ", featureColumns.Select(fc => @$"'{fc}'"));
             string paramsDict = String.Join(", ", parameters.Select(kv => $"{kv.Key}={kv.Value}"));
+            string importStatement;
+            switch (algorithmName)
+            {
+                case "LogisticRegression":
+                    importStatement = "from sklearn.linear_model import LogisticRegression";
+                    break;
+                case "RandomForestClassifier":
+                    importStatement = "from sklearn.ensemble import RandomForestClassifier";
+                    break;
+                case "RandomForestRegressor":
+                    importStatement = "from sklearn.ensemble import RandomForestRegressor";
+                    break;
+                case "SVC":  // Support Vector Classification
+                    importStatement = "from sklearn.svm import SVC";
+                    break;
+                case "SVR":  // Support Vector Regression
+                    importStatement = "from sklearn.svm import SVR";
+                    break;
+                case "KNeighborsClassifier":
+                    importStatement = "from sklearn.neighbors import KNeighborsClassifier";
+                    break;
+                case "KNeighborsRegressor":
+                    importStatement = "from sklearn.neighbors import KNeighborsRegressor";
+                    break;
+                case "GradientBoostingClassifier":
+                    importStatement = "from sklearn.ensemble import GradientBoostingClassifier";
+                    break;
+                case "GradientBoostingRegressor":
+                    importStatement = "from sklearn.ensemble import GradientBoostingRegressor";
+                    break;
+                case "DecisionTreeClassifier":
+                    importStatement = "from sklearn.tree import DecisionTreeClassifier";
+                    break;
+                case "DecisionTreeRegressor":
+                    importStatement = "from sklearn.tree import DecisionTreeRegressor";
+                    break;
+                // Add more cases as needed for different algorithms
+                default:
+                    throw new ArgumentException($"Unsupported algorithm: {algorithmName}");
+            }
+
             string script = $@"
-from sklearn.ensemble import {algorithmName}
+{importStatement}
 features = [{features}]
 # Check if the model already exists
 if '{modelId}' in models:
@@ -329,6 +370,12 @@ X.fillna(X.mean(), inplace=True)  # Simple mean imputation for missing values
 
 Y=train_data['{labelColumn}']
 Y = train_data['{labelColumn}'].fillna(train_data['{labelColumn}'].mean())  # Assuming you also want to handle NaN in labels
+if Y.dtype.kind in 'if':  # 'i' is for integer and 'f' is for float
+    Y = Y.astype('category')
+# Convert float labels to int if they are essentially binary
+if Y.dtype.kind == 'f' and Y.nunique() == 2:
+    Y = Y.astype(int)
+
 model.fit(X, Y)
 label = train_data['{labelColumn}']
 label_column ='{labelColumn}'
