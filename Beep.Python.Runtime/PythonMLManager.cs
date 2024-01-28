@@ -89,8 +89,8 @@ score = f1_score(y_test, predictions)
             string modifiedFilePath = filePath.Replace("\\", "\\\\");
             string script = $@"
 import pandas as pd
-data = pd.read_csv('{modifiedFilePath}')
-features = data.columns.tolist()
+train_data = pd.read_csv('{modifiedFilePath}')
+features = train_data.columns.tolist()
 ";
 
             RunPythonScript(script, null);
