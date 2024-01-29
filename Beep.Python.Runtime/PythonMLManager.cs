@@ -132,8 +132,9 @@ predict_data = pd.read_csv('{formattedFilePath}')
 # Split into features and label
 predict_features = predict_data.columns.tolist()
 ";
-
+      
             RunPythonScript(script, null);
+            RemoveSpecialCharacters("predict_data");
             return FetchTestFeaturesFromPython();
         }
         public void AddLabelColumnIfMissing(string testDataFilePath, string labelColumn)
@@ -277,33 +278,102 @@ features = data.columns.tolist()
             string formattedTestFilePath = testFilePath.Replace("\\", "\\\\");
             string formattedValidationFilePath = validationFilePath.Replace("\\", "\\\\");
 
-            string script = $@"
+//            string script = $@"
+//import pandas as pd
+//from sklearn.model_selection import train_test_split
+
+//# Load the dataset
+//data = pd.read_csv('{formattedFilePath}')
+
+//# Split the dataset into training and test sets
+//train_data, test_data = train_test_split(data, test_size={testSize})
+
+//# Prepare test data (without label column)
+//test_data_without_label = test_data.drop(columns=['{labelColumn}'])
+
+//# Prepare validation data (only primary key and label)
+//validation_data = test_data[['{primaryFeatureKeyID}', '{labelColumn}']]
+
+//# Save the datasets to files
+//train_data.to_csv('{formattedTrainFilePath}', index=False)
+//test_data_without_label.to_csv('{formattedTestFilePath}', index=False)
+//validation_data.to_csv('{formattedValidationFilePath}', index=False)
+//test_features = test_data.columns.tolist()
+//features = data.columns.tolist()
+//";
+    string script = $@"
 import pandas as pd
+import re
 from sklearn.model_selection import train_test_split
+
+def remove_special_characters_from_data(df):
+    for col in df.columns:
+        if df[col].dtype == 'object':  # Checking if the column is of string type
+            # Apply the regex to each element in the column to remove special characters
+          df[col] = df[col].apply(lambda x: re.sub(r""[^a-zA-Z0-9_]+"", '', str(x)))
+    return df
+
+# Function to fix column names (remove spaces and special characters)
+def fix_column_names(df):
+    return df.rename(columns=lambda x: x.strip().replace(' ', '').replace('/', '').replace('-', ''))
 
 # Load the dataset
 data = pd.read_csv('{formattedFilePath}')
+data = fix_column_names(data)
 
 # Split the dataset into training and test sets
 train_data, test_data = train_test_split(data, test_size={testSize})
 
 # Prepare test data (without label column)
-test_data_without_label = test_data.drop(columns=['{labelColumn}'])
+label_column_fixed = '{labelColumn}'.strip().replace(' ', '').replace('/', '').replace('-', '')
+primary_feature_key_id_fixed = '{primaryFeatureKeyID}'.strip().replace(' ', '').replace('/', '').replace('-', '')
+test_data_without_label = test_data.drop(columns=[label_column_fixed])
 
 # Prepare validation data (only primary key and label)
-validation_data = test_data[['{primaryFeatureKeyID}', '{labelColumn}']]
+validation_data = test_data[[primary_feature_key_id_fixed, label_column_fixed]]
+
+train_data = remove_special_characters_from_data(train_data)
+test_data_without_label = remove_special_characters_from_data(test_data_without_label)
 
 # Save the datasets to files
 train_data.to_csv('{formattedTrainFilePath}', index=False)
 test_data_without_label.to_csv('{formattedTestFilePath}', index=False)
 validation_data.to_csv('{formattedValidationFilePath}', index=False)
-test_features = test_data.columns.tolist()
-features = data.columns.tolist()
+test_features = test_data_without_label.columns.tolist()
+features = train_data.columns.tolist()
 ";
 
             RunPythonScript(script, null);
             return FetchFeaturesFromPython();
         }
+
+        public bool RemoveSpecialCharacters(string dataFrameName)
+        {
+            if (!IsInitialized)
+            {
+                return false;
+            }
+
+            string script = $@"
+import pandas as pd
+import re
+
+def remove_special_characters_from_data(df):
+    for col in df.columns:
+        if df[col].dtype == 'object':  # Checking if the column is of string type
+            # Apply the regex to each element in the column to remove special characters
+          df[col] = df[col].apply(lambda x: re.sub(r""[^a-zA-Z0-9_]+"", '', str(x)))
+    return df
+
+# Apply the function to the DataFrame
+{dataFrameName} = remove_special_characters_from_data({dataFrameName})
+";
+
+            RunPythonScript(script, null);
+            return true;
+        }
+
+
 
         public void TrainModel(string modelId, MachineLearningAlgorithm algorithm, Dictionary<string, object> parameters, string[] featureColumns, string labelColumn)
         {
@@ -313,7 +383,8 @@ features = data.columns.tolist()
             }
             string algorithmName = Enum.GetName(typeof(MachineLearningAlgorithm), algorithm);
             string features = string.Join(", ", featureColumns.Select(fc => @$"'{fc}'"));
-            string paramsDict = String.Join(", ", parameters.Select(kv => $"{kv.Key}={kv.Value}"));
+            string paramsDict = String.Join(", ", parameters.Select(kv => $"{kv.Key}={kv.Value.ToString()}"));
+
             string importStatement;
             switch (algorithmName)
             {
@@ -358,6 +429,7 @@ features = data.columns.tolist()
             string script = $@"
 {importStatement}
 features = [{features}]
+label_column ='{labelColumn}'
 # Check if the model already exists
 if '{modelId}' in models:
     model = models['{modelId}']
@@ -368,33 +440,32 @@ else:
 X= pd.get_dummies(train_data[features])
 X.fillna(X.mean(), inplace=True)  # Simple mean imputation for missing values
 
-Y=train_data['{labelColumn}']
-Y = train_data['{labelColumn}'].fillna(train_data['{labelColumn}'].mean())  # Assuming you also want to handle NaN in labels
-if Y.dtype.kind in 'if':  # 'i' is for integer and 'f' is for float
-    Y = Y.astype('category')
-# Convert float labels to int if they are essentially binary
-if Y.dtype.kind == 'f' and Y.nunique() == 2:
-    Y = Y.astype(int)
+Y=train_data[label_column]
+Y = train_data[label_column].fillna(train_data[label_column].mean())  # Assuming you also want to handle NaN in labels
+
 
 model.fit(X, Y)
-label = train_data['{labelColumn}']
-label_column ='{labelColumn}'
+label = train_data[label_column]
+
 # Store or update the model
 models['{modelId}'] = model
 ";
 
             RunPythonScript(script, null);
         }
-        public dynamic Predict()
+        public dynamic Predict(string[] training_columns)
         {
             if (!IsInitialized)
             {
                 return null;
             }
-         //   string inputAsString = inputData.ToString(); // Convert inputData to a string representation
+            string trainingCols = String.Join(", ", training_columns.Select(col => $"'{col}'"));
+            //   string inputAsString = inputData.ToString(); // Convert inputData to a string representation
             string script = $@"
 X_predict = pd.get_dummies(predict_data[features])
+
 X_predict.fillna(X_predict.mean(), inplace=True)  # Simple mean imputation for missing values
+# Align the columns of X_predict to match the training data
 
 predictions = model.predict(X_predict)
 ";

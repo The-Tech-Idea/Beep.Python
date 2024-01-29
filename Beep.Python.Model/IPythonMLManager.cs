@@ -5,11 +5,13 @@ namespace Beep.Python.Model
     public interface IPythonMLManager
     {
         bool IsInitialized { get; }
+        bool RemoveSpecialCharacters(string dataFrameName);
+
         Tuple<double,double> GetModelScore(string modelId);
         string[] LoadData(string filePath);
         string LoadModel(string filePath);
         string[] LoadPredictionData(string filePath);
-        dynamic Predict();
+        dynamic Predict(string[] training_columns);
         void SaveModel(string modelId, string filePath);
         string[] SplitData(string dataFilePath, float testSize, string trainFilePath, string testFilePath, string validationFilePath, string primaryFeatureKeyID, string labelColumn);
         string[] SplitData(string dataFilePath, float testSize, string trainFilePath, string testFilePath);
