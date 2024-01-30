@@ -12,6 +12,13 @@ namespace Beep.Python.RuntimeEngine
     {
         private readonly PythonNetRunTimeManager _pythonRuntimeManager;
         private PyModule _persistentScope;
+        public PythonMLManager(PythonNetRunTimeManager pythonRuntimeManager, PyModule persistentScope)
+        {
+            _pythonRuntimeManager = pythonRuntimeManager;
+            _persistentScope = persistentScope;
+            PythonHelpers._persistentScope = persistentScope;
+            PythonHelpers._pythonRuntimeManager = pythonRuntimeManager;
+        }
         public PythonMLManager(PythonNetRunTimeManager pythonRuntimeManager)
         {
             _pythonRuntimeManager = pythonRuntimeManager;
@@ -570,8 +577,8 @@ output.to_csv(r'{filePath}', index=False)
         }
         public void Dispose()
         {
-            _persistentScope.Dispose();
-            _pythonRuntimeManager.ShutDown();
+          //  _persistentScope.Dispose();
+          //  _pythonRuntimeManager.ShutDown();
         }
         public Tuple<string,string> SplitDataClassFile(string urlpath,string filename, double splitRatio)
         {

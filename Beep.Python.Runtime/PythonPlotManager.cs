@@ -41,6 +41,12 @@ namespace Beep.Python.RuntimeEngine
     {
         private readonly PythonNetRunTimeManager _pythonRuntimeManager;
         private PyModule _persistentScope;
+        
+        public PythonPlotManager(PythonNetRunTimeManager pythonRuntimeManager, PyModule persistentScope)
+        {
+            _pythonRuntimeManager = pythonRuntimeManager;
+            _persistentScope = persistentScope;
+        }
         public PythonPlotManager(PythonNetRunTimeManager pythonRuntimeManager)
         {
             _pythonRuntimeManager = pythonRuntimeManager;
@@ -273,8 +279,8 @@ namespace Beep.Python.RuntimeEngine
         }
         public void Dispose()
         {
-            _persistentScope.Dispose();
-            _pythonRuntimeManager.ShutDown();
+        //    _persistentScope.Dispose();
+        //    _pythonRuntimeManager.ShutDown();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using TheTechIdea;
@@ -15,7 +16,8 @@ namespace Beep.Python.Model
         IDMEEditor DMEditor { get; }
         ObservableCollection<string> OutputLines { get; set; }
         bool IsBusy { get; set; }
-
+        object PersistentScope { get; set; }
+        bool CreateScope();
         PythonConfiguration PythonConfig { get; set; }
 
         PythonRunTime CurrentRuntimeConfig { get;  }

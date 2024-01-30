@@ -56,7 +56,19 @@ namespace Beep.Python.RuntimeEngine
 
             }
         }
-          
+        public object PersistentScope { get; set; }
+        public bool CreateScope()
+        {
+            if (PersistentScope == null)
+            {
+                PersistentScope = Py.CreateScope();
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
         public bool IsInitialized => GetIsPythonReady();
         public bool IsCompilerAvailable => GetIsPythonAvailable();
         public ObservableCollection<string> OutputLines { get; set; } = new ObservableCollection<string>();
@@ -329,6 +341,12 @@ namespace Beep.Python.RuntimeEngine
            
             try
             {
+                if (PersistentScope != null)
+                {
+                    PyModule a = (PyModule)PersistentScope;
+                    a.Dispose();
+                }
+               
                 PythonEngine.Shutdown();
                 _IsInitialized = false;
             }
