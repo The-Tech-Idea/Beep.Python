@@ -53,7 +53,47 @@ namespace Beep.Python.RuntimeEngine
             }
             return retval;
         }
-        public Tuple<double, double> GetModelScore(string modelId)
+        public Tuple<double, double, double> GetModelRegressionScores(string modelId)
+        {
+            if (!IsInitialized)
+            {
+                return new Tuple<double, double, double>(-1, -1, -1);
+            }
+
+            // Script to prepare test data (X_test and y_test) similarly to how training data was prepared
+            string prepareTestDataScript = @"
+# Assuming test data is loaded and preprocessed similarly to training data
+X_test = pd.get_dummies(test_data[test_features])
+X_test.fillna(X_test.mean(), inplace=True)
+y_test = test_data[label_column].astype(float)  # Ensure y_test is float for regression
+# Align the test set columns with the training set
+# This adds missing columns in the test set and sets them to zero
+test_encoded = X_test.reindex(columns = X.columns, fill_value=0)
+";
+
+            RunPythonScript(prepareTestDataScript, null);
+            string script = $@"
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+import numpy as np
+model = models['{modelId}']
+predictions = model.predict(test_encoded)
+mse = mean_squared_error(y_test, predictions)
+rmse = np.sqrt(mse)
+mae = mean_absolute_error(y_test, predictions)
+";
+
+            RunPythonScript(script, null);
+
+            // Retrieve the scores from the Python script
+            double mse = FetchMSEFromPython();
+            double rmse = FetchRMSEFromPython();
+            double mae = FetchMAEFromPython();
+
+            return new Tuple<double, double, double>(mse, rmse, mae);
+        }
+
+
+        public Tuple<double, double> GetModelClassificationScore(string modelId)
         {
             if (!IsInitialized)
             {
@@ -144,6 +184,7 @@ predict_features = predict_data.columns.tolist()
             RemoveSpecialCharacters("predict_data");
             return FetchTestFeaturesFromPython();
         }
+      
         public void AddLabelColumnIfMissing(string testDataFilePath, string labelColumn)
         {
             if (!IsInitialized)
@@ -325,7 +366,7 @@ def fix_column_names(df):
     return df.rename(columns=lambda x: x.strip().replace(' ', '').replace('/', '').replace('-', ''))
 
 # Load the dataset
-data = pd.read_csv('{formattedFilePath}')
+data = pd.read_csv('{formattedFilePath}', encoding='cp1252')
 data = fix_column_names(data)
 
 # Split the dataset into training and test sets
@@ -353,7 +394,6 @@ features = train_data.columns.tolist()
             RunPythonScript(script, null);
             return FetchFeaturesFromPython();
         }
-
         public bool RemoveSpecialCharacters(string dataFrameName)
         {
             if (!IsInitialized)
@@ -379,9 +419,6 @@ def remove_special_characters_from_data(df):
             RunPythonScript(script, null);
             return true;
         }
-
-
-
         public void TrainModel(string modelId, MachineLearningAlgorithm algorithm, Dictionary<string, object> parameters, string[] featureColumns, string labelColumn)
         {
             if (!IsInitialized)
@@ -429,6 +466,40 @@ def remove_special_characters_from_data(df):
                     importStatement = "from sklearn.tree import DecisionTreeRegressor";
                     break;
                 // Add more cases as needed for different algorithms
+                case "LinearRegression":
+                    importStatement = "from sklearn.linear_model import LinearRegression";
+                    break;
+                case "LassoRegression":
+                    importStatement = "from sklearn.linear_model import Lasso";
+                    break;
+                case "RidgeRegression":
+                    importStatement = "from sklearn.linear_model import Ridge";
+                    break;
+                case "ElasticNet":
+                    importStatement = "from sklearn.linear_model import ElasticNet";
+                    break;
+                case "KMeans":
+                    importStatement = "from sklearn.cluster import KMeans";
+                    break;
+                case "DBSCAN":
+                    importStatement = "from sklearn.cluster import DBSCAN";
+                    break;
+                case "AgglomerativeClustering":
+                    importStatement = "from sklearn.cluster import AgglomerativeClustering";
+                    break;
+                // Classification Algorithms
+                case "GaussianNB":
+                    importStatement = "from sklearn.naive_bayes import GaussianNB";
+                    break;
+                case "MultinomialNB":
+                    importStatement = "from sklearn.naive_bayes import MultinomialNB";
+                    break;
+                case "BernoulliNB":
+                    importStatement = "from sklearn.naive_bayes import BernoulliNB";
+                    break;
+                case "AdaBoostClassifier":
+                    importStatement = "from sklearn.ensemble import AdaBoostClassifier";
+                    break;
                 default:
                     throw new ArgumentException($"Unsupported algorithm: {algorithmName}");
             }
@@ -460,7 +531,7 @@ models['{modelId}'] = model
 
             RunPythonScript(script, null);
         }
-        public dynamic Predict(string[] training_columns)
+        public dynamic PredictClassification(string[] training_columns)
         {
             if (!IsInitialized)
             {
@@ -483,6 +554,36 @@ predictions = model.predict(X_predict)
             dynamic predictions = FetchPredictionsFromPython(); // Use the method to fetch predictions
             return predictions;
         }
+        public dynamic PredictRegression(string[] training_columns)
+        {
+            if (!IsInitialized)
+            {
+                return null;
+            }
+            string trainingCols = String.Join(", ", training_columns.Select(col => $"'{col}'"));
+            // Prepare the script to predict and round off the predictions
+            string script = $@"
+import numpy as np
+X_predict = pd.get_dummies(predict_data[features])
+
+X_predict.fillna(X_predict.mean(), inplace=True)  # Simple mean imputation for missing values
+# Align the columns of X_predict to match the training data
+
+predictions = model.predict(X_predict)
+
+# Round predictions to the nearest integer
+rounded_predictions = np.rint(predictions)
+predictions=rounded_predictions
+";
+
+            // Execute the Python script
+            RunPythonScript(script, null);
+
+            // Retrieve rounded predictions from Python script
+            dynamic rounded_predictions = FetchPredictionsFromPython(); // Make sure this method can handle the rounded predictions
+            return rounded_predictions;
+        }
+
         // Helper method to retrieve predictions from Python
         public void SaveModel(string modelId, string filePath)
         {
@@ -721,6 +822,49 @@ output.to_csv(r'{filePath}', index=False)
                 return pyScore.As<double>(); // Convert the Python score to a C# double
             }
         }
+        private double FetchMSEFromPython()
+        {
+            if (!IsInitialized)
+            {
+                return -1;
+            }
+            // Implement logic to retrieve the 'mse' variable from Python
+            // This might involve fetching the variable's value from the Python scope
+            using (Py.GIL())
+            {
+                dynamic pyMSE = _persistentScope.Get("mse");
+                return pyMSE.As<double>(); // Convert the Python MSE to a C# double
+            }
+        }
+        private double FetchRMSEFromPython()
+        {
+            if (!IsInitialized)
+            {
+                return -1;
+            }
+            // Implement logic to retrieve the 'rmse' variable from Python
+            // This might involve fetching the variable's value from the Python scope
+            using (Py.GIL())
+            {
+                dynamic pyRMSE = _persistentScope.Get("rmse");
+                return pyRMSE.As<double>(); // Convert the Python RMSE to a C# double
+            }
+        }
+        private double FetchMAEFromPython()
+        {
+            if (!IsInitialized)
+            {
+                return -1;
+            }
+            // Implement logic to retrieve the 'mae' variable from Python
+            // This might involve fetching the variable's value from the Python scope
+            using (Py.GIL())
+            {
+                dynamic pyMAE = _persistentScope.Get("mae");
+                return pyMAE.As<double>(); // Convert the Python MAE to a C# double
+            }
+        }
+
         // Example method to convert Python predictions to a C# data structure
         private dynamic ConvertPythonPredictionsToCSharp(dynamic predictions)
         {
@@ -769,6 +913,55 @@ output.to_csv(r'{filePath}', index=False)
                 return featuresList.ToArray();
             }
         }
+        #region "Graphs"
+        public void CreateROC()
+        {
+            if (!IsInitialized)
+            {
+                return;
+            }
+
+            string script = $@"from sklearn.metrics import roc_curve, auc
+import matplotlib.pyplot as plt
+
+# Assuming y_true is your true binary labels and y_score is the score estimated by the model
+fpr, tpr, _ = roc_curve(y_true, y_score)
+roc_auc = auc(fpr, tpr)
+
+plt.figure()
+plt.plot(fpr, tpr, color='darkorange', lw=2, label='ROC curve (area = %0.2f)' % roc_auc)
+plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver operating characteristic')
+plt.legend(loc=""lower right"")
+plt.show()";
+            RunPythonScript(script, null);
+        }
+        public void CreateConfusionMatrix()
+        {
+            if (!IsInitialized)
+            {
+                return;
+            }
+
+            string script = $@"import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
+
+# Assuming y_true and y_pred are your true and predicted labels
+cm = confusion_matrix(y_true, y_pred)
+
+sns.heatmap(cm, annot=True, fmt='d')
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.show()";
+            RunPythonScript(script, null);
+        }
+       
+        #endregion
     }
 
 }
