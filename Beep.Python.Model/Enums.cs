@@ -30,7 +30,8 @@ namespace Beep.Python.Model
             DecisionTreeRegressor,
             RandomForestRegressor,
             GradientBoostingRegressor,
-            SVR, // Support Vector Regression
+        HistGradientBoostingRegressor, // Add this line for historical gradient boosting regressor
+        SVR, // Support Vector Regression
 
             // Clustering Algorithms
             KMeans,

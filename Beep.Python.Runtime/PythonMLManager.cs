@@ -432,6 +432,15 @@ def remove_special_characters_from_data(df):
             string importStatement;
             switch (algorithmName)
             {
+                case "HistGradientBoostingRegressor":
+                    importStatement = "from sklearn.experimental import enable_hist_gradient_boosting"; // Ensure experimental module is imported
+                    importStatement += "\nfrom sklearn.ensemble import HistGradientBoostingRegressor";
+                    break;
+
+                case "HistGradientBoostingClassifier":
+                    importStatement = "from sklearn.experimental import enable_hist_gradient_boosting"; // Ensure experimental module is imported
+                    importStatement += "\nfrom sklearn.ensemble import HistGradientBoostingClassifier";
+                    break;
                 case "LogisticRegression":
                     importStatement = "from sklearn.linear_model import LogisticRegression";
                     break;
