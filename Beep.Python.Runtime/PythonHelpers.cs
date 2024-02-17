@@ -11,24 +11,23 @@ namespace Beep.Python.RuntimeEngine
     {
         public static  PythonNetRunTimeManager _pythonRuntimeManager { get; set; }
         public static PyModule _persistentScope { get; set; }
-        public static dynamic RunPythonScriptWithResult(string script, dynamic parameters)
+       
+
+        // Helper method to flatten your z array if it's 2D
+        public static double[] FlattenZArray(double[,] z)
         {
-            dynamic result = null;
-            if(_pythonRuntimeManager == null)
-            {
-                return null;
-            }
-            if (!_pythonRuntimeManager.IsInitialized)
-            {
-                return result;
-            }
+            int numRows = z.GetLength(0);
+            int numCols = z.GetLength(1);
+            double[] z1D = new double[numRows * numCols];
 
-            using (Py.GIL()) // Acquire the Python Global Interpreter Lock
+            for (int i = 0; i < numRows; i++)
             {
-                result = _persistentScope.Exec(script); // Execute the script in the persistent scope
+                for (int j = 0; j < numCols; j++)
+                {
+                    z1D[i * numCols + j] = z[i, j];
+                }
             }
-
-            return result;
+            return z1D;
         }
     }
 }

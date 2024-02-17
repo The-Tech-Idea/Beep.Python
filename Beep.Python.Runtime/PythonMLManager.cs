@@ -8,51 +8,28 @@ using System.Linq;
 
 namespace Beep.Python.RuntimeEngine
 {
-    public class PythonMLManager : IPythonMLManager,IDisposable
+    public class PythonMLManager : PythonBaseViewModel,IPythonMLManager,IDisposable
     {
-        private readonly PythonNetRunTimeManager _pythonRuntimeManager;
-        private PyModule _persistentScope;
-        public PythonMLManager(PythonNetRunTimeManager pythonRuntimeManager, PyModule persistentScope)
+      
+        public PythonMLManager() : base()
+        {
+            
+        }
+        public  PythonMLManager(PythonNetRunTimeManager pythonRuntimeManager, PyModule persistentScope):base(pythonRuntimeManager,persistentScope)
         {
             _pythonRuntimeManager = pythonRuntimeManager;
             _persistentScope = persistentScope;
-            PythonHelpers._persistentScope = persistentScope;
-            PythonHelpers._pythonRuntimeManager = pythonRuntimeManager;
+          
         }
-        public PythonMLManager(PythonNetRunTimeManager pythonRuntimeManager)
+       
+        public PythonMLManager(PythonNetRunTimeManager pythonRuntimeManager):base(pythonRuntimeManager)
         {
             _pythonRuntimeManager = pythonRuntimeManager;
              InitializePythonEnvironment();
         }
-        public void ImportPythonModule(string moduleName)
-        {
-            if (!IsInitialized)
-            {
-                return;
-            }
-            string script = $"import {moduleName}";
-            RunPythonScript(script, null);
-        }
-        public bool IsInitialized => _pythonRuntimeManager.IsInitialized;
-        private bool InitializePythonEnvironment()
-        {
-            bool retval = false;
-            if (!_pythonRuntimeManager.IsInitialized)
-            {
-                _pythonRuntimeManager.Initialize();
-            }
-            if (!_pythonRuntimeManager.IsInitialized)
-            {
-                return retval;
-            }
-            using (Py.GIL())
-            {
-                _persistentScope = Py.CreateScope("__main__");
-                _persistentScope.Exec("models = {}");  // Initialize the models dictionary
-                retval=true; 
-            }
-            return retval;
-        }
+      
+       
+       
         public Tuple<double, double, double> GetModelRegressionScores(string modelId)
         {
             if (!IsInitialized)
@@ -91,8 +68,6 @@ mae = mean_absolute_error(y_test, predictions)
 
             return new Tuple<double, double, double>(mse, rmse, mae);
         }
-
-
         public Tuple<double, double> GetModelClassificationScore(string modelId)
         {
             if (!IsInitialized)
@@ -184,7 +159,6 @@ predict_features = predict_data.columns.tolist()
             RemoveSpecialCharacters("predict_data");
             return FetchTestFeaturesFromPython();
         }
-      
         public void AddLabelColumnIfMissing(string testDataFilePath, string labelColumn)
         {
             if (!IsInitialized)
@@ -671,25 +645,7 @@ output.to_csv(r'{filePath}', index=False)
 
             RunPythonScript(script, null);
         }
-        private void RunPythonScript(string script, dynamic parameters)
-        {
-            if (!IsInitialized)
-            {
-                return;
-            }
-            using (Py.GIL()) // Acquire the Python Global Interpreter Lock
-            {
-                _persistentScope.Exec(script); // Execute the script in the persistent scope
-                                               // Handle outputs if needed
-
-                // If needed, return results or handle outputs
-            }
-        }
-        public void Dispose()
-        {
-          //  _persistentScope.Dispose();
-          //  _pythonRuntimeManager.ShutDown();
-        }
+     
         public Tuple<string,string> SplitDataClassFile(string urlpath,string filename, double splitRatio)
         {
             try

@@ -13,6 +13,8 @@ namespace Beep.Python.RuntimeEngine
             {
                 switch (algorithm)
                 {
+                    case MachineLearningAlgorithm.HistGradientBoostingRegressor:
+                    return "Histogram-Based Gradient Boosting Regressor - A fast and efficient gradient boosting algorithm that uses histograms to speed up training and reduce memory usage.";
                     case MachineLearningAlgorithm.RandomForestClassifier:
                         return "Random Forest Classifier - An ensemble learning method for classification. It's like asking a group of friends to vote on whether a picture is of a cat or a dog.";
                     case MachineLearningAlgorithm.LogisticRegression:
@@ -68,11 +70,83 @@ namespace Beep.Python.RuntimeEngine
             {
                 return Enum.Parse<MachineLearningAlgorithm>(algorithm);
             }
+            public static List<ParameterDictionaryForAlgorithm> GenerateParametersForHistGradientBoostingRegressor()
+        {
+            var parameters = new List<ParameterDictionaryForAlgorithm>
+    {
+        new ParameterDictionaryForAlgorithm
+        {
+            ParameterName = "loss",
+            Algorithm = MachineLearningAlgorithm.HistGradientBoostingRegressor,
+            Description = "The loss function to use in the regression.",
+            Example = "loss='least_squares'"
+        },
+        new ParameterDictionaryForAlgorithm
+        {
+            ParameterName = "learning_rate",
+            Algorithm = MachineLearningAlgorithm.HistGradientBoostingRegressor,
+            Description = "Rate at which the model learns.",
+            Example = "learning_rate=0.1"
+        },
+        new ParameterDictionaryForAlgorithm
+        {
+            ParameterName = "max_iter",
+            Algorithm = MachineLearningAlgorithm.HistGradientBoostingRegressor,
+            Description = "The maximum number of iterations of the boosting process.",
+            Example = "max_iter=100"
+        },
+        new ParameterDictionaryForAlgorithm
+        {
+            ParameterName = "max_depth",
+            Algorithm = MachineLearningAlgorithm.HistGradientBoostingRegressor,
+            Description = "The maximum depth of each tree.",
+            Example = "max_depth=None" // None means no limit
+        },
+        new ParameterDictionaryForAlgorithm
+        {
+            ParameterName = "min_samples_leaf",
+            Algorithm = MachineLearningAlgorithm.HistGradientBoostingRegressor,
+            Description = "The minimum number of samples required to be at a leaf node.",
+            Example = "min_samples_leaf=20"
+        },
+        new ParameterDictionaryForAlgorithm
+        {
+            ParameterName = "l2_regularization",
+            Algorithm = MachineLearningAlgorithm.HistGradientBoostingRegressor,
+            Description = "The L2 regularization term on weights. Increases the stability of the model.",
+            Example = "l2_regularization=0.0"
+        },
+        new ParameterDictionaryForAlgorithm
+        {
+            ParameterName = "max_bins",
+            Algorithm = MachineLearningAlgorithm.HistGradientBoostingRegressor,
+            Description = "The maximum number of bins to use for histogram construction.",
+            Example = "max_bins=255"
+        },
+        new ParameterDictionaryForAlgorithm
+        {
+            ParameterName = "random_state",
+            Algorithm = MachineLearningAlgorithm.HistGradientBoostingRegressor,
+            Description = "Controls the randomness of the estimator.",
+            Example = "random_state=None"
+        },
+        new ParameterDictionaryForAlgorithm
+        {
+            ParameterName = "early_stopping",
+            Algorithm = MachineLearningAlgorithm.HistGradientBoostingRegressor,
+            Description = "Whether to use early stopping to terminate training when validation score is not improving.",
+            Example = "early_stopping=False"
+        },
+        // Add more parameters specific to HistGradientBoostingRegressor as needed
+    };
 
+            return parameters;
+        }
             public static List<ParameterDictionaryForAlgorithm> GetParameterDictionaryForAlgorithms()
             {
 
                 var parameters = new List<ParameterDictionaryForAlgorithm>();
+                parameters.AddRange(GenerateParametersForHistGradientBoostingRegressor());
                 parameters.AddRange(GenerateParametersForAdaBoostClassifier());
                 parameters.AddRange(GenerateParametersForDecisionTreeClassifier());
                 parameters.AddRange(GenerateParametersForGradientBoostingClassifier());

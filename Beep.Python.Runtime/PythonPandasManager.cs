@@ -8,17 +8,16 @@ using System.Threading.Tasks;
 
 namespace Beep.Python.RuntimeEngine
 {
-    public class PythonPandasManager:IDisposable
+    public class PythonPandasManager: PythonBaseViewModel
     {
-
-        private readonly PythonNetRunTimeManager _pythonRuntimeManager;
-        private PyModule _persistentScope;
-        public PythonPandasManager(PythonNetRunTimeManager pythonRuntimeManager, PyModule persistentScope)
+        public PythonPandasManager(PythonNetRunTimeManager pythonRuntimeManager, PyModule persistentScope):base(pythonRuntimeManager, persistentScope)
         {
             _pythonRuntimeManager = pythonRuntimeManager;
             _persistentScope = persistentScope;
+            PythonHelpers._persistentScope = persistentScope;
+            PythonHelpers._pythonRuntimeManager = pythonRuntimeManager;
         }
-        public PythonPandasManager(PythonNetRunTimeManager pythonRuntimeManager)
+        public PythonPandasManager(PythonNetRunTimeManager pythonRuntimeManager):base(pythonRuntimeManager)
         {
             _pythonRuntimeManager = pythonRuntimeManager;
             InitializePythonEnvironment();
@@ -1450,55 +1449,5 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
         }
 
         #endregion "Pandas DataFrame"
-        public void ImportPythonModule(string moduleName)
-        {
-            if (!IsInitialized)
-            {
-                return;
-            }
-            string script = $"import {moduleName}";
-            RunPythonScript(script, null);
-        }
-        public bool IsInitialized => _pythonRuntimeManager.IsInitialized;
-        private bool InitializePythonEnvironment()
-        {
-            bool retval = false;
-            if (!_pythonRuntimeManager.IsInitialized)
-            {
-                _pythonRuntimeManager.Initialize();
-            }
-            if (!_pythonRuntimeManager.IsInitialized)
-            {
-                return retval;
-            }
-            using (Py.GIL())
-            {
-                _persistentScope = Py.CreateScope("__main__");
-                _persistentScope.Exec("models = {}");  // Initialize the models dictionary
-                _persistentScope.Exec("import pandas as pd");
-
-                retval = true;
-            }
-            return retval;
-        }
-        private void RunPythonScript(string script, dynamic parameters)
-        {
-            if (!IsInitialized)
-            {
-                return;
-            }
-            using (Py.GIL()) // Acquire the Python Global Interpreter Lock
-            {
-                _persistentScope.Exec(script); // Execute the script in the persistent scope
-                                               // Handle outputs if needed
-
-                // If needed, return results or handle outputs
-            }
-        }
-        public void Dispose()
-        {
-           // _persistentScope.Dispose();
-           // _pythonRuntimeManager.ShutDown();
-        }
     }
 }

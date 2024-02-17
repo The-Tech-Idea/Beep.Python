@@ -14,7 +14,7 @@ using TheTechIdea.Util;
 
 namespace Beep.Python.RuntimeEngine
 {
-    public static class PythonNetManager
+    public static class PythonNetManager 
     {
         public static PythonNetRunTimeManager _pythonRuntimeManager { get; set; }
         public static PyModule _persistentScope { get; set; }

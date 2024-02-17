@@ -9,21 +9,20 @@ using System.Threading.Tasks;
 
 namespace Beep.Python.RuntimeEngine
 {
-    public class PythonPIPManager:IDisposable
+    public class PythonPIPManager: PythonBaseViewModel
     {
-        private readonly PythonNetRunTimeManager _pythonRuntimeManager;
-        private PyModule _persistentScope;
-        public PythonPIPManager(PythonNetRunTimeManager pythonRuntimeManager)
+     
+        public PythonPIPManager(PythonNetRunTimeManager pythonRuntimeManager):base(pythonRuntimeManager)
         {
             _pythonRuntimeManager = pythonRuntimeManager;
             InitializePythonEnvironment();
         }
-        public PythonPIPManager(PythonNetRunTimeManager pythonRuntimeManager, PyModule persistentScope)
+      
+        public PythonPIPManager(PythonNetRunTimeManager pythonRuntimeManager, PyModule persistentScope):base(pythonRuntimeManager, persistentScope)
         {
             _pythonRuntimeManager = pythonRuntimeManager;
             _persistentScope = persistentScope;
-            PythonHelpers._persistentScope = persistentScope;
-            PythonHelpers._pythonRuntimeManager = pythonRuntimeManager;
+          
         }
         #region "PIP Methods"
         public void InstallPackage(string packageName)
@@ -85,7 +84,7 @@ if '{packageName}' in installed_packages:
 pkg_version
 ";
 
-            dynamic result = PythonHelpers.RunPythonScriptWithResult(script, null);
+            dynamic result = RunPythonScriptWithResult(script, null);
 
             // Parse and return the package version
             string packageVersion = result?.ToString();
@@ -117,7 +116,7 @@ result_list = [package['name'] for package in result]
 json.dumps(result_list)
 ";
 
-            dynamic result = PythonHelpers.RunPythonScriptWithResult(script, null);
+            dynamic result = RunPythonScriptWithResult(script, null);
 
             // Parse and return the search results as a list of package names
             List<string> packageNames = new List<string>();
@@ -154,7 +153,7 @@ result = pip.list()
 json.dumps(result)
 ";
 
-            dynamic result = PythonHelpers.RunPythonScriptWithResult(script, null);
+            dynamic result = RunPythonScriptWithResult(script, null);
 
             // Parse and return the package list as a List<PackageDefinition>
             List<PackageDefinition> packageList = new List<PackageDefinition>();
@@ -176,56 +175,7 @@ json.dumps(result)
             return packageList;
         }
         #endregion "PIP Methods"
-        public void ImportPythonModule(string moduleName)
-        {
-            if (!IsInitialized)
-            {
-                return;
-            }
-            string script = $"import {moduleName}";
-            RunPythonScript(script, null);
-        }
-        public bool IsInitialized => _pythonRuntimeManager.IsInitialized;
-        private bool InitializePythonEnvironment()
-        {
-            bool retval = false;
-            if (!_pythonRuntimeManager.IsInitialized)
-            {
-                _pythonRuntimeManager.Initialize();
-            }
-            if (!_pythonRuntimeManager.IsInitialized)
-            {
-                return retval;
-            }
-            using (Py.GIL())
-            {
-                _persistentScope = Py.CreateScope("__main__");
-                _persistentScope.Exec("models = {}");  // Initialize the models dictionary
-                _persistentScope.Exec("import pandas as pd");
-
-                retval = true;
-            }
-            return retval;
-        }
-        private void RunPythonScript(string script, dynamic parameters)
-        {
-            if (!IsInitialized)
-            {
-                return;
-            }
-            using (Py.GIL()) // Acquire the Python Global Interpreter Lock
-            {
-                _persistentScope.Exec(script); // Execute the script in the persistent scope
-                                               // Handle outputs if needed
-
-                // If needed, return results or handle outputs
-            }
-        }
-        public void Dispose()
-        {
-            _persistentScope.Dispose();
-            _pythonRuntimeManager.ShutDown();
-        }
+     
 
 
     }
