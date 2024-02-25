@@ -11,6 +11,9 @@ using System.Collections.ObjectModel;
 using Beep.Python.Model;
 using TheTechIdea.Beep.ConfigUtil;
 using System.Linq;
+using System.Threading.Channels;
+using System.Net;
+
 
 namespace Beep.Python.RuntimeEngine
 {
@@ -43,6 +46,7 @@ namespace Beep.Python.RuntimeEngine
         CancellationToken Token;
         bool _IsInitialized = false;
         private bool disposedValue;
+   
         public PythonRunTime CurrentRuntimeConfig
         {
             get
@@ -80,9 +84,105 @@ namespace Beep.Python.RuntimeEngine
         public string CurrentFileLoaded { get; set; }
         public bool IsPathChanged { get; set; } = false;
         public string NewPath { get; set; } = null;
-        public IDMEEditor DMEditor { get; }
-        public IJsonLoader JsonLoader { get; }
+        public IDMEEditor DMEditor { get; set; }
+        public IJsonLoader JsonLoader { get; set; }
         public BinType32or64 BinType { get; set; } = BinType32or64.p395x32;
+      
+     
+        #region "Initialization and Shutdown"
+        public bool Initialize()
+        {
+
+            if (IsBusy) return false;
+            IsBusy = true;
+            if (CurrentRuntimeConfig.IsPythonInstalled)
+            {
+                if (!PythonEngine.IsInitialized)
+                {
+
+                    PythonRunTimeDiagnostics.SetAiFolderPath(DMEditor);
+                    Environment.SetEnvironmentVariable("PATH", $"{CurrentRuntimeConfig.BinPath};{CurrentRuntimeConfig.ScriptPath};" + Environment.GetEnvironmentVariable("PATH"), EnvironmentVariableTarget.Process);
+                    Environment.SetEnvironmentVariable("PYTHONNET_RUNTIME", $"{CurrentRuntimeConfig.BinPath}", EnvironmentVariableTarget.Process);
+                    Environment.SetEnvironmentVariable("PYTHONNET_PYTHON_RUNTIME", $"{CurrentRuntimeConfig.BinPath}", EnvironmentVariableTarget.Process);
+                    Environment.SetEnvironmentVariable("PYTHONHOME", CurrentRuntimeConfig.BinPath, EnvironmentVariableTarget.Process);
+                    Environment.SetEnvironmentVariable("PYTHONPATH", $"{CurrentRuntimeConfig.Packageinstallpath};", EnvironmentVariableTarget.Process);
+                    try
+                    {
+                        PassedArgs args = new PassedArgs();
+                        ReportProgress("Init. of Python engine");
+
+
+                        //  Runtime.PythonRuntimePath= CurrentRuntimeConfig.BinPath;
+                        Runtime.PythonDLL = CurrentRuntimeConfig.PythonDll;
+                        PythonEngine.PythonHome = CurrentRuntimeConfig.BinPath;
+                        //       PythonEngine.PythonPath = CurrentRuntimeConfig.Packageinstallpath;
+                        PythonEngine.Initialize();
+
+
+
+                        ReportProgress("Finished Init. of Python engine");
+
+                        IsBusy = false;
+                        _IsInitialized = true;
+
+                        ReportProgress("Python Initialized Successfully", Errors.Ok);
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        IsBusy = false;
+                        ReportProgress(ex.Message, Errors.Failed);
+                        return false;
+                    }
+                }
+                else
+                {
+                    IsBusy = false;
+                    ReportProgress("Python Already Initialized", Errors.Ok);
+                    return true;
+                }
+
+
+            }
+            else
+            {
+                ReportProgress("No Python Available", Errors.Failed);
+                IsBusy = false;
+                return false;
+            }
+            IsBusy = false;
+        }
+        public IErrorsInfo ShutDown()
+        {
+            ErrorsInfo er = new ErrorsInfo();
+            er.Flag = Errors.Ok;
+            if (IsBusy) return er;
+            IsBusy = true;
+
+            try
+            {
+                if (PersistentScope != null)
+                {
+                    PyModule a = (PyModule)PersistentScope;
+                    a.Dispose();
+                }
+
+                PythonEngine.Shutdown();
+                _IsInitialized = false;
+            }
+            catch (Exception ex)
+            {
+                er.Ex = ex;
+                er.Flag = Errors.Failed;
+                er.Message = ex.Message;
+
+            }
+            IsBusy = false;
+            return er;
+
+        }
+        #endregion "Initialization and Shutdown"
+        #region "Configuration Methods"
         private bool GetIsPythonReady()
         {
             if (IsCompilerAvailable)
@@ -91,20 +191,21 @@ namespace Beep.Python.RuntimeEngine
                 {
                     _IsInitialized = true;
                     return true;
-                }else
+                }
+                else
                     return false;
             }
             else
             {
                 return false;
             }
-            
+
         }
         private bool GetIsPythonAvailable()
         {
             if (PythonConfig != null)
             {
-                if (PythonConfig.RunTimeIndex >-1)
+                if (PythonConfig.RunTimeIndex > -1)
                 {
                     if (!string.IsNullOrEmpty(CurrentRuntimeConfig.BinPath))
                     {
@@ -119,13 +220,14 @@ namespace Beep.Python.RuntimeEngine
                     }
                     else
                         return false;
-                   
+
                 }
                 else
                 {
                     return false;
                 }
-            }else
+            }
+            else
             {
                 return false;
             }
@@ -138,8 +240,8 @@ namespace Beep.Python.RuntimeEngine
                 {
                     if (PythonConfig.RunTimeIndex > -1)
                     {
-                       
-                            return true;
+
+                        return true;
                     }
                     else
                     {
@@ -150,7 +252,8 @@ namespace Beep.Python.RuntimeEngine
                 {
                     return false;
                 }
-            }else
+            }
+            else
             {
                 return false;
             }
@@ -169,8 +272,8 @@ namespace Beep.Python.RuntimeEngine
         }
         public bool Initialize(string pythonhome, BinType32or64 binType, string libpath = @"lib\site-packages")
         {
-            if(IsBusy) return false;
-           // IsBusy = true;
+            if (IsBusy) return false;
+            // IsBusy = true;
             try
             {
                 if (PythonRunTimeDiagnostics.IsPythonInstalled(pythonhome))
@@ -191,105 +294,18 @@ namespace Beep.Python.RuntimeEngine
                 }
                 else
                 {
-           //         DMEditor.AddLogMessage("Beep AI Python", "No Python Available", DateTime.Now, 0, null, Errors.Failed);
-                  //  IsBusy = false;
+                    //         DMEditor.AddLogMessage("Beep AI Python", "No Python Available", DateTime.Now, 0, null, Errors.Failed);
+                    //  IsBusy = false;
                     return false;
                 }
             }
             catch (Exception ex)
             {
                 DMEditor.AddLogMessage("Beep AI Python", $"{ex.Message} ", DateTime.Now, 0, null, Errors.Failed);
-              //  IsBusy = false;
+                //  IsBusy = false;
             }
-           return false;
-            
-        }
-        private void ReportProgress(PassedArgs args)
-        {
-            if (Progress != null)
-            {
-                Progress.Report(args);
-            }
-        }
-        private void ReportProgress(string messege,Errors flag= Errors.Ok)
-        {
-            if (Progress != null)
-            {
-                PassedArgs args = new PassedArgs();
-                args.Messege = messege;
-                Progress.Report(args);
-            }else if (DMEditor != null)
-            {
-                if (DMEditor.progress != null)
-                {
-                    PassedArgs args = new PassedArgs();
-                    args.Messege = messege;
-                    Progress.Report(args);
-                }
-                DMEditor.AddLogMessage("Beep AI Python", messege, DateTime.Now, 0, null, flag);
-            }
-        }
-        public bool Initialize()
-        {
-           
-            if (IsBusy) return false;
-            IsBusy = true;
-            if (CurrentRuntimeConfig.IsPythonInstalled)
-            {
-                if (!PythonEngine.IsInitialized)
-                {
-                  
-                    PythonRunTimeDiagnostics.SetAiFolderPath(DMEditor);
-                    Environment.SetEnvironmentVariable("PATH", $"{CurrentRuntimeConfig.BinPath};{CurrentRuntimeConfig.ScriptPath};" + Environment.GetEnvironmentVariable("PATH"), EnvironmentVariableTarget.Process);
-                    Environment.SetEnvironmentVariable("PYTHONNET_RUNTIME", $"{CurrentRuntimeConfig.BinPath}", EnvironmentVariableTarget.Process);
-                    Environment.SetEnvironmentVariable("PYTHONNET_PYTHON_RUNTIME", $"{CurrentRuntimeConfig.BinPath}", EnvironmentVariableTarget.Process);
-                    Environment.SetEnvironmentVariable("PYTHONHOME", CurrentRuntimeConfig.BinPath, EnvironmentVariableTarget.Process);
-                    Environment.SetEnvironmentVariable("PYTHONPATH", $"{ CurrentRuntimeConfig.Packageinstallpath};", EnvironmentVariableTarget.Process);
-                    try
-                    {
-                        PassedArgs args = new PassedArgs();
-                        ReportProgress("Init. of Python engine");
-                       
-                      
-                      //  Runtime.PythonRuntimePath= CurrentRuntimeConfig.BinPath;
-                        Runtime.PythonDLL = CurrentRuntimeConfig.PythonDll;
-                        PythonEngine.PythonHome = CurrentRuntimeConfig.BinPath;
-                 //       PythonEngine.PythonPath = CurrentRuntimeConfig.Packageinstallpath;
-                        PythonEngine.Initialize();
-                        
-                        
+            return false;
 
-                        ReportProgress("Finished Init. of Python engine");
-                       
-                        IsBusy = false;
-                        _IsInitialized = true;
-
-                        ReportProgress("Python Initialized Successfully", Errors.Ok);
-                        return true;
-                    }
-                    catch (Exception ex)
-                    {
-                        IsBusy = false;
-                        ReportProgress(ex.Message, Errors.Failed);
-                        return false;
-                    }
-                }
-                else
-                {
-                    IsBusy = false;
-                    ReportProgress("Python Already Initialized", Errors.Ok);
-                    return true;
-                }
-                    
-
-            }
-            else
-            {
-                ReportProgress("No Python Available", Errors.Failed);
-                IsBusy = false;
-                return false;
-            }
-            IsBusy = false;
         }
         public bool PickConfig(string path)
         {
@@ -312,8 +328,10 @@ namespace Beep.Python.RuntimeEngine
                         Initialize();
                         return true;
                     }
-                }else return false;
-            }else return false;
+                }
+                else return false;
+            }
+            else return false;
         }
         public bool PickConfig(PythonRunTime cfg)
         {
@@ -332,330 +350,14 @@ namespace Beep.Python.RuntimeEngine
             }
 
         }
-        public IErrorsInfo ShutDown()
+        public void SetRuntimePath(string runtimepath, BinType32or64 binType, string libpath = @"lib\site-packages")
         {
-            ErrorsInfo er=new ErrorsInfo();
-            er.Flag = Errors.Ok;
-            if (IsBusy) return er; 
-            IsBusy = true;
-           
-            try
-            {
-                if (PersistentScope != null)
-                {
-                    PyModule a = (PyModule)PersistentScope;
-                    a.Dispose();
-                }
-               
-                PythonEngine.Shutdown();
-                _IsInitialized = false;
-            }
-            catch (Exception ex)
-            {
-                er.Ex = ex;
-                er.Flag = Errors.Failed;
-                er.Message = ex.Message;
-                
-            }
-            IsBusy = false;
-            return er;
+
+            Initialize(CurrentRuntimeConfig.RuntimePath, binType);
+            SaveConfig();
+
 
         }
-        public async Task<IErrorsInfo> RunFile(string file, IProgress<PassedArgs> progress, CancellationToken token)
-        {
-            DMEditor.ErrorObject.Flag = Errors.Ok;
-            if (IsBusy) return DMEditor.ErrorObject;
-            IsBusy = true;
-            try
-            {
-
-
-                string code = $"{PythonRunTimeDiagnostics.GetPythonExe(CurrentRuntimeConfig.BinPath)} {file}";// File.ReadAllText(file); // Get the python file as raw text
-
-                PythonNetManager.RunPythonCodeAndGetOutput(this,progress,code);
-                IsBusy = false;
-            }
-            catch (Exception ex)
-            {
-                IsBusy = false;
-                DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
-            }
-            IsBusy = false;
-            return DMEditor.ErrorObject;
-
-        }
-        public async Task<IErrorsInfo> RunCode(string code, IProgress<PassedArgs> progress, CancellationToken token)
-        {
-            DMEditor.ErrorObject.Flag = Errors.Ok;
-
-            try
-            {
-               // PythonNetManager.RunPythonCodeAndGetOutput(this,progress,code);
-                PythonNetManager.RunPythonCodeAndGetOutput(this, progress, code);
-                // RunPythonCodeAndGetOutput(code);
-                IsBusy = false;
-            }
-            catch (Exception ex)
-            {
-                IsBusy = false;
-               // Py.GIL().Dispose();
-                DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
-            }
-            IsBusy = false;
-            return DMEditor.ErrorObject;
-
-        }
-        public dynamic RunCommand(string command, IProgress<PassedArgs> progress, CancellationToken token)
-        {
-            PyObject pyObject = null;
-            DMEditor.ErrorObject.Flag = Errors.Ok;
-            try
-            {
-                 if (IsBusy) { return false; }
-                    IsBusy = true;
-                PythonNetManager.RunPythonCodeAndGetOutput(this,progress,command);
-                IsBusy = false;
-            }
-            catch (Exception ex)
-            {
-                IsBusy = false;
-                DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
-            }
-            IsBusy = false;
-            return pyObject;
-
-        }
-        public async Task<PackageDefinition> FindPackageUpdate(string packageName, IProgress<PassedArgs> progress, CancellationToken token)
-        {
-            bool IsInternetAvailabe = PythonRunTimeDiagnostics.CheckNet();
-            PackageDefinition retval = null;
-            DMEditor.ErrorObject.Flag = Errors.Ok;
-            if (IsInternetAvailabe)
-            {
-                retval = await PythonRunTimeDiagnostics.CheckIfPackageExistsAsync(packageName);
-            }
-           
-            PackageDefinition installedpackage = null;
-            bool isInstalled = false;
-            int idx = -1;
-            if (IsBusy) return null;
-            IsBusy = true;
-
-            try
-            {
-                // Create a new Python scope
-                using (Py.GIL())
-                {
-                    // dynamic pip = Py.Import("pip");
-
-                    //string packageName = "requests"; // Replace with the name of the package you are interested in
-
-
-                    // Check if an update is available
-                    bool isUpdateAvailable = false;
-                    if (retval != null)
-                    {
-
-                         await PythonNetManager.listpackagesAsync(this, progress, token).ConfigureAwait(true);
-
-
-
-                        installedpackage = CurrentRuntimeConfig.Packagelist.Where(p => p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
-                        idx = CurrentRuntimeConfig.Packagelist.IndexOf(installedpackage);
-                        isUpdateAvailable = (new Version(retval.updateversion) > new Version(installedpackage.version));
-                    }
-
-                    // Print the result
-                    if (isUpdateAvailable)
-                    {
-                        isInstalled = true;
-                        installedpackage.updateversion = retval.updateversion;
-                        installedpackage.buttondisplay = "Update";
-                        CurrentRuntimeConfig.Packagelist[idx] = installedpackage;
-                        //OutputLines.Add($"An update to {packageName} is available ({retval.updateversion}).");
-                        progress.Report(new PassedArgs() { Messege = $"An update to {packageName} is available ({retval.updateversion})" });
-                        Console.WriteLine($"An update to {packageName} is available ({retval.updateversion}).");
-                    }
-                    else
-                    {
-                        isInstalled = false;
-                        installedpackage.buttondisplay = "Installed";
-                        installedpackage.updateversion = installedpackage.version;
-                        progress.Report(new PassedArgs() { Messege = $"No update to {packageName} is available." });
-                        Console.WriteLine($"No update to {packageName} is available.");
-                    }
-                }
-
-            }
-            catch (Exception ex)
-            {
-                isInstalled = false;
-                DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
-            }
-            IsBusy = false;
-            return installedpackage;
-        }
-        public  bool IsPackageInstalled(string packageName, IProgress<PassedArgs> progress, CancellationToken token)
-        {
-            DMEditor.ErrorObject.Flag = Errors.Ok;
-            bool isInstalled = false;
-           
-            try
-            {
-                // Create a new Python scope
-                // Check if a package is installed and capture output
-                using (Py.GIL())
-                {
-                    dynamic scope = Py.CreateScope();
-                    // string packageName = "numpy"; // Replace with the name of the package you want to check
-                    string code = @"
-        import subprocess
-        output = subprocess.check_output(['pip', 'list'])
-        print(output.decode('utf-8'))
-    ";
-                     PythonEngine.Exec(code, scope);
-                    string output = scope.get("__builtins__").get("print")?.ToString();
-                    // Console.WriteLine(output);
-
-                    isInstalled = output.Contains(packageName);
-                    string outputmessage = $"Package '{packageName}' is {(isInstalled ? "installed" : "not installed")}";
-                    Console.WriteLine(outputmessage);
-                   // OutputLines.Add(outputmessage);
-                    isInstalled = true;
-                }
-
-            }
-            catch (Exception ex)
-            {
-                IsBusy = false;
-                isInstalled = false;
-                DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
-            }
-            IsBusy = false;
-            return isInstalled;
-        }
-        public async Task<bool> InstallPackage(string packageName, IProgress<PassedArgs> progress, CancellationToken token)
-        {
-            DMEditor.ErrorObject.Flag = Errors.Ok;
-         
-          
-
-            try
-                {if(IsBusy) { return false; }
-                IsBusy = true;
-
-                await PythonNetManager.RunPackageManagerAsync(this, progress, packageName, PackageAction.Install, PythonRunTimeDiagnostics.GetPackageType(CurrentRuntimeConfig.BinPath) == PackageType.conda ).ConfigureAwait(false);
-                IsBusy = false;
-            }
-            catch (Exception ex)
-            {
-                IsBusy = false;
-                DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
-            }
-            IsBusy = false;
-            return true;
-        }
-        public async Task<bool> RemovePackage(string packageName, IProgress<PassedArgs> progress, CancellationToken token)
-        {
-            DMEditor.ErrorObject.Flag = Errors.Ok;
-
-            bool isInstalled = false;
-            
-            try
-            {
-                if(IsBusy) { return false; }    
-                
-                await PythonNetManager.RunPackageManagerAsync(this, progress, packageName, PackageAction.Remove, false).ConfigureAwait(false);
-                IsBusy = false;
-            }
-            catch (Exception ex)
-            {
-                IsBusy = false;
-                isInstalled = false;
-                DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
-            }
-            IsBusy = false;
-            return isInstalled;
-        }
-        public async Task<bool> UpdatePackage(string packageName, IProgress<PassedArgs> progress, CancellationToken token)
-        {
-            DMEditor.ErrorObject.Flag = Errors.Ok;
-          
-            bool isInstalled = false;
-            try
-            {
-               
-                    if (packageName.Equals("pip", StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        await PythonNetManager.RunPackageManagerAsync(this, progress, packageName, PackageAction.UpgradePackager, PythonRunTimeDiagnostics.GetPackageType(CurrentRuntimeConfig.BinPath) == PackageType.conda).ConfigureAwait(false);
-                }
-                    else await PythonNetManager.RunPackageManagerAsync(this, progress, packageName, PackageAction.Update, PythonRunTimeDiagnostics.GetPackageType(CurrentRuntimeConfig.BinPath) == PackageType.conda).ConfigureAwait(false);
-
-
-                IsBusy = false;
-
-            }
-            catch (Exception ex)
-            {
-                IsBusy = false;
-                isInstalled = false;
-                DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
-            }
-            IsBusy = false;
-            return isInstalled;
-        }
-        public async Task<bool> RefreshInstalledPackagesList(IProgress<PassedArgs> progress, CancellationToken token)
-        {
-           
-            try
-            {
-                var retval=await PythonNetManager.listpackagesAsync(this,progress, token).ConfigureAwait(true);
-                
-                IsBusy = false;
-                return true;
-            }
-            catch (Exception ex)
-            {
-                IsBusy = false;
-                DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
-                return false;
-            }
-           
-        }
-        public async Task<bool> RefreshInstalledPackage(string packagename,IProgress<PassedArgs> progress, CancellationToken token)
-        {
-           
-            try
-            {
-                var retval = await PythonNetManager.listpackagesAsync(this, progress, token).ConfigureAwait(true);
-                IsBusy = false;
-                return true;
-            }
-            catch (Exception ex)
-            {
-                IsBusy = false;
-                DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
-                return false;
-            }
-          
-        }
-        public async Task<bool> InstallPIP(IProgress<PassedArgs> progress, CancellationToken token)
-        {
-            try
-            {
-                var retval = await PythonNetManager.InstallPIP(this, progress, token).ConfigureAwait(true);
-                IsBusy = false;
-                return true;
-            }
-            catch (Exception ex)
-            {
-                IsBusy = false;
-                DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
-                return false;
-            }
-
-        }
-        #region "Configuration File"
         public void CreateLoadConfig()
         {
             string configfile = Path.Combine(DMEditor.ConfigEditor.ConfigPath, "cpython.config");
@@ -697,20 +399,749 @@ namespace Beep.Python.RuntimeEngine
             {
                 PythonConfig = new PythonConfiguration();
             }
-
+            if(JsonLoader== null)
+            {
+                JsonLoader = DMEditor.ConfigEditor.JsonLoader;
+            }
             JsonLoader.Serialize(configfile, PythonConfig);
             IsConfigLoaded = true;
 
 
         }
-        #endregion
-        public void SetRuntimePath(string runtimepath, BinType32or64 binType, string libpath = @"lib\site-packages")
+        #endregion "Configuration Methods"
+        #region "Python Run Code"
+        public async Task<IErrorsInfo> RunFile(string file, IProgress<PassedArgs> progress, CancellationToken token)
         {
-           
-            Initialize(CurrentRuntimeConfig.RuntimePath, binType);
-            SaveConfig();
-         
+            DMEditor.ErrorObject.Flag = Errors.Ok;
+            if (IsBusy) return DMEditor.ErrorObject;
+            IsBusy = true;
+            try
+            {
 
+
+                string code = $"{PythonRunTimeDiagnostics.GetPythonExe(CurrentRuntimeConfig.BinPath)} {file}";// File.ReadAllText(file); // Get the python file as raw text
+
+                RunPythonCodeAndGetOutput(progress, code);
+                IsBusy = false;
+            }
+            catch (Exception ex)
+            {
+                IsBusy = false;
+                DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
+            }
+            IsBusy = false;
+            return DMEditor.ErrorObject;
+
+        }
+        public async Task<IErrorsInfo> RunCode(string code, IProgress<PassedArgs> progress, CancellationToken token)
+        {
+            DMEditor.ErrorObject.Flag = Errors.Ok;
+
+            try
+            {
+
+                RunPythonCodeAndGetOutput(progress, code);
+
+
+                IsBusy = false;
+            }
+            catch (Exception ex)
+            {
+                IsBusy = false;
+                // Py.GIL().Dispose();
+                DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
+            }
+            IsBusy = false;
+            return DMEditor.ErrorObject;
+
+        }
+        public dynamic RunCommand(string command, IProgress<PassedArgs> progress, CancellationToken token)
+        {
+            PyObject pyObject = null;
+            DMEditor.ErrorObject.Flag = Errors.Ok;
+            try
+            {
+                if (IsBusy) { return false; }
+                IsBusy = true;
+
+                RunPythonCodeAndGetOutput(progress, command);
+
+
+                IsBusy = false;
+            }
+            catch (Exception ex)
+            {
+                IsBusy = false;
+                DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
+            }
+            IsBusy = false;
+            return pyObject;
+
+        }
+        public string RunPythonCodeAndGetOutput(IProgress<PassedArgs> progress, string code)
+        {
+            string wrappedPythonCode = $@"
+import sys
+import io
+import clr
+
+class CustomStringIO(io.StringIO):
+    def write(self, s):
+        super().write(s)
+        output = self.getvalue()
+        if output.strip():
+            OutputHandler(output.strip())
+            self.truncate(0)  # Clear the internal buffer
+            self.seek(0)  # Reset the buffer pointer
+
+def capture_output(code, globals_dict):
+    original_stdout = sys.stdout
+    sys.stdout = CustomStringIO()
+
+    try:
+        exec(code, dict(globals_dict))
+    finally:
+        sys.stdout = original_stdout
+";
+            bool isImage = false;
+            string output = "";
+
+            using (Py.GIL())
+            {
+                using (PyModule scope = Py.CreateScope())
+                {
+
+
+                    Action<string> OutputHandler = line =>
+                    {
+                        // runTimeManager.OutputLines.Add(line);
+                        progress.Report(new PassedArgs() { Messege = line });
+                        Console.WriteLine(line);
+                    };
+                    scope.Set(nameof(OutputHandler), OutputHandler);
+
+                    scope.Exec(wrappedPythonCode);
+                    PyObject captureOutputFunc = scope.GetAttr("capture_output");
+                    Dictionary<string, object> globalsDict = new Dictionary<string, object>();
+
+                    PyObject pyCode = code.ToPython();
+                    PyObject pyGlobalsDict = globalsDict.ToPython();
+                    PyObject result = captureOutputFunc.Invoke(pyCode, pyGlobalsDict);
+                    if (result is PyObject pyObj)
+                    {
+                        var pyObjType = pyObj.GetPythonType();
+                        var pyObjTypeName = pyObjType.ToString();
+
+
+                    }
+                }
+            }
+
+            IsBusy = false;
+            return output;
+        }
+
+        #endregion "Python Run Code"
+        #region "Package Manager"
+        public async Task<string> RunPackageManagerAsync(IProgress<PassedArgs> progress, string packageName, PackageAction packageAction, bool useConda = false)
+        {
+            string customPath = $"{CurrentRuntimeConfig.BinPath.Trim()};{CurrentRuntimeConfig.ScriptPath.Trim()}".Trim();
+            string modifiedFilePath = customPath.Replace("\\", "\\\\");
+            string output = "";
+            string command = "";
+            string wrappedPythonCode = $@"
+import os
+import subprocess
+import threading
+import queue
+
+def set_custom_path(custom_path):
+    # Modify the PATH environment variable
+    os.environ[""PATH""] = '{modifiedFilePath}' + os.pathsep + os.environ[""PATH""]
+
+def run_pip_and_capture_output(args, output_callback):
+    def enqueue_output(stream, queue):
+        for line in iter(stream.readline, b''):
+            queue.put(line.decode('utf-8').strip())
+        stream.close()
+
+    process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    stdout_queue = queue.Queue()
+    stderr_queue = queue.Queue()
+
+    stdout_thread = threading.Thread(target=enqueue_output, args=(process.stdout, stdout_queue))
+    stderr_thread = threading.Thread(target=enqueue_output, args=(process.stderr, stderr_queue))
+
+    stdout_thread.start()
+    stderr_thread.start()
+
+    while process.poll() is None or not stdout_queue.empty() or not stderr_queue.empty():
+        while not stdout_queue.empty():
+            line = stdout_queue.get_nowait()
+            output_callback(line)
+
+        while not stderr_queue.empty():
+            line = stderr_queue.get_nowait()
+            output_callback(line)
+
+    stdout_thread.join()
+    stderr_thread.join()
+    process.communicate()
+
+def run_with_timeout(func, args, output_callback, timeout):
+    try:
+        func(args, output_callback)
+    except Exception as e:
+        output_callback(str(e))
+";
+
+            using (Py.GIL())
+            {
+                using (PyModule scope = Py.CreateScope())
+                {
+                    PyObject globalsDict = scope.GetAttr("__dict__");
+
+
+                    scope.Exec(wrappedPythonCode);
+                    // Set the custom_path from C# and call set_custom_path function in Python
+
+                    PyObject setCustomPathFunc = scope.GetAttr("set_custom_path");
+                    setCustomPathFunc.Invoke(modifiedFilePath.ToPython());
+
+                    PyObject captureOutputFunc = scope.GetAttr("run_pip_and_capture_output");
+
+
+
+                    if (useConda)
+                    {
+                        switch (packageAction)
+                        {
+                            case PackageAction.Install:
+                                command = $"conda install -c conda-forge {packageName}";
+                                break;
+                            case PackageAction.Remove:
+                                command = $"conda remove {packageName}";
+                                break;
+                            case PackageAction.Update:
+                                command = $"conda update {packageName}";
+                                break;
+                            case PackageAction.UpgradePackager:
+                                command = $"conda update conda";
+                                break;
+
+                            case PackageAction.InstallPackager:
+                                command = $"conda {packageName}";
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        switch (packageAction)
+                        {
+                            case PackageAction.Install:
+                                command = $"pip install -U {packageName}";
+                                break;
+                            case PackageAction.Remove:
+                                command = $"pip uninstall  {packageName}";
+                                break;
+                            case PackageAction.Update:
+                                command = $"pip install --upgrade {packageName}";
+                                break;
+                            case PackageAction.UpgradePackager:
+                                command = $"python.exe -m pip install --upgrade pip";
+                                break;
+                            case PackageAction.InstallPackager:
+                                command = $"python.exe {packageName}";
+                                break;
+                            default:
+                                break;
+                        }
+
+                    }
+                    progress.Report(new PassedArgs() { Messege = $"Running {command}" });
+                    //runTimeManager.OutputLines.Add($"Running {command}");
+                    PyObject pyArgs = new PyList();
+
+                    pyArgs.InvokeMethod("extend", command.Split(' ').ToPython());
+
+
+                    // Set the output_callback function in Python
+                    Channel<string> outputChannel = Channel.CreateUnbounded<string>();
+                    PyObject outputCallback = PyObject.FromManagedObject((Action<string>)(s => {
+                        outputChannel.Writer.TryWrite(s);
+                    }));
+                    globalsDict.SetItem("output_callback", outputCallback);
+
+                    // Run the Python code with a timeout
+                    int timeoutInSeconds = 120; // Adjust this value as needed
+                    PyObject runWithTimeoutFunc = scope.GetAttr("run_with_timeout");
+                    Task pythonTask = Task.Run(() => runWithTimeoutFunc.Invoke(captureOutputFunc, pyArgs, outputCallback, timeoutInSeconds.ToPython()));
+
+                    var outputList = new List<string>();
+                    // Create an async method to read from the channel
+                    async Task ReadFromChannelAsync()
+                    {
+                        while (await outputChannel.Reader.WaitToReadAsync())
+                        {
+                            if (outputChannel.Reader.TryRead(out var line))
+                            {
+                                outputList.Add(line);
+                                progress.Report(new PassedArgs() { Messege = line });
+                                Console.WriteLine(line);
+                            }
+                        }
+
+                    }
+
+                    // Process the output lines asynchronously
+                    Task readOutputTask = ReadFromChannelAsync();
+
+                    // Wait for the Python task to complete and close the channel writer
+                    await pythonTask;
+                    outputChannel.Writer.Complete();
+
+                    // Wait for the readOutputTask to complete
+                    await readOutputTask;
+
+
+                    output = string.Join("\n", outputList);
+                }
+            }
+            if (output.Length > 0)
+            {
+                progress.Report(new PassedArgs() { Messege = $"Finished {command}" });
+            }
+            else
+                progress.Report(new PassedArgs() { Messege = $"Finished {command} eith error" });
+            return output;
+        }
+        public async Task<bool> listpackagesAsync(IProgress<PassedArgs> progress, CancellationToken token, bool useConda = false, string packagename = null)
+        {
+            if (IsBusy) return false;
+            IsBusy = true;
+            int i = 0;
+            try
+            {
+                bool checkall = true;
+                if (!string.IsNullOrEmpty(packagename))
+                {
+                    checkall = false;
+                }
+                //           runTimeManager.CurrentRuntimeConfig.Packagelist = new List<PackageDefinition>();
+                using (Py.GIL())
+                {
+                    dynamic pkgResources = Py.Import("importlib.metadata");
+                    dynamic workingSet = pkgResources.distributions();
+
+                    foreach (dynamic pkg in workingSet)
+                    {
+                        i++;
+                        string packageName = pkg.metadata["Name"];
+                        string packageVersion = pkg.version.ToString();
+                        string line = $"Checking Package {packageName}: {packageVersion}";
+                        Console.WriteLine(line);
+                        // runTimeManager.OutputLines.Add(line);
+                        progress.Report(new PassedArgs() { Messege = line });
+                        bool IsInternetAvailabe = PythonRunTimeDiagnostics.CheckNet();
+                        PackageDefinition onlinepk = new PackageDefinition();
+                        if (!string.IsNullOrEmpty(packageVersion))
+                        {
+                            if (checkall)
+                            {
+                                if (IsInternetAvailabe)
+                                {
+                                    onlinepk = PythonRunTimeDiagnostics.CheckIfPackageExistsAsync(packageName).Result;
+                                }
+
+
+                                PackageDefinition package = CurrentRuntimeConfig.Packagelist.Where(p => p.packagename != null && p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                                if (package != null)
+                                {
+                                    int idx = CurrentRuntimeConfig.Packagelist.IndexOf(package);
+                                    package.version = packageVersion;
+                                    if (onlinepk != null)
+                                    {
+                                        package.updateversion = onlinepk.version;
+                                    }
+                                    else package.updateversion = packageVersion;
+                                    package.installed = true;
+                                    package.buttondisplay = "Installed";
+
+                                    if (onlinepk != null)
+                                    {
+                                        CurrentRuntimeConfig.Packagelist[idx].updateversion = onlinepk.updateversion;
+                                        line = $"Package {packageName}: {packageVersion} found with version {onlinepk.updateversion}";
+                                    }
+                                    else
+                                    {
+                                        CurrentRuntimeConfig.Packagelist[idx].updateversion = "Not Found";
+                                        line = $"Package {packageName}: {"Not Found"}";
+                                    }
+
+                                    Console.WriteLine(line);
+                                    // runTimeManager.OutputLines.Add(line);
+                                    progress.Report(new PassedArgs() { Messege = line });
+                                }
+                                else
+                                {
+                                    PackageDefinition packagelist = new PackageDefinition();
+                                    packagelist.packagename = packageName;
+                                    packagelist.version = packageVersion;
+                                    if (onlinepk != null)
+                                    {
+                                        packagelist.updateversion = onlinepk.version;
+                                    }
+                                    else packagelist.updateversion = packageVersion;
+
+                                    packagelist.installed = true;
+                                    packagelist.buttondisplay = "Installed";
+                                    CurrentRuntimeConfig.Packagelist.Add(packagelist);
+                                    line = $"Added new Package {packagelist}: {packagelist.version}";
+                                    Console.WriteLine(line);
+                                    //  runTimeManager.OutputLines.Add(line);
+                                    progress.Report(new PassedArgs() { Messege = line });
+                                }
+
+                            }
+                            else
+                            {
+                                if (CurrentRuntimeConfig.Packagelist.Any(p => p.packagename != null && p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)))
+                                {
+                                    PackageDefinition package = CurrentRuntimeConfig.Packagelist.Where(p => p.packagename != null && p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                                    int idx = CurrentRuntimeConfig.Packagelist.IndexOf(package);
+                                    package.version = packageVersion;
+                                    package.updateversion = packageVersion;
+                                    package.installed = true;
+                                    package.buttondisplay = "Installed";
+                                    if (IsInternetAvailabe)
+                                    {
+                                        onlinepk = PythonRunTimeDiagnostics.CheckIfPackageExistsAsync(packageName).Result;
+                                    }
+                                    if (onlinepk != null)
+                                    {
+                                        CurrentRuntimeConfig.Packagelist[idx].updateversion = onlinepk.updateversion;
+                                        package.updateversion = onlinepk.version;
+                                        line = $"Package {packageName}: {packageVersion} found with version {onlinepk.updateversion}";
+                                    }
+                                    else
+                                    {
+                                        CurrentRuntimeConfig.Packagelist[idx].updateversion = "Not Found";
+                                        line = $"Package {packageName}: {"Not Found"}";
+                                    }
+
+                                    Console.WriteLine(line);
+                                    // runTimeManager.OutputLines.Add(line);
+                                    progress.Report(new PassedArgs() { Messege = line });
+                                }
+                            }
+
+
+                        }
+                        else Console.WriteLine($" empty {packageName}: {packageVersion}");
+
+
+                    }
+                }
+                if (i == 0)
+                {
+                    progress.Report(new PassedArgs() { Messege = "No Packages Found" });
+                    CurrentRuntimeConfig.Packagelist = new List<PackageDefinition>();
+                }
+                IsBusy = false;
+            }
+            catch (Exception ex)
+            {
+                IsBusy = false;
+                Console.WriteLine("Error: in Listing Packages");
+            }
+            IsBusy = false;
+            return await Task.FromResult<bool>(IsBusy);
+        }
+        public async Task<bool> InstallPIP(IProgress<PassedArgs> progress, CancellationToken token)
+        {
+
+            bool pipInstall = true;
+            if (IsBusy) return false;
+            IsBusy = true;
+            try
+            {// Execute Python code and capture its output
+             // Download the pip installer script
+                string url = "https://bootstrap.pypa.io/get-pip.py";
+                string scriptPath = Path.Combine(Path.GetTempPath(), "get-pip.py");
+                WebClient client = new WebClient();
+                client.DownloadFile(url, scriptPath);
+
+                // Install pip
+                //using (Py.GIL())
+                //{
+                //    using (PyModule scope = Py.CreateScope())
+                //    {
+                //        string code = File.ReadAllText(scriptPath);
+                //       //unPythonCodeAndGetOutput(runTimeManager,progress,code);
+                //    }
+
+
+                //}
+                await RunPackageManagerAsync(progress, scriptPath, PackageAction.InstallPackager, PythonRunTimeDiagnostics.GetPackageType(CurrentRuntimeConfig.BinPath) == PackageType.conda);
+                IsBusy = false;
+                // Delete the installer script
+                File.Delete(scriptPath);
+
+            }
+            catch (Exception ex)
+            {
+                IsBusy = false;
+                pipInstall = false;
+                DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
+            }
+            IsBusy = false;
+            return pipInstall;
+        }
+        public async Task<PackageDefinition> FindPackageUpdate(string packageName, IProgress<PassedArgs> progress, CancellationToken token)
+        {
+            bool IsInternetAvailabe = PythonRunTimeDiagnostics.CheckNet();
+            PackageDefinition retval = null;
+            DMEditor.ErrorObject.Flag = Errors.Ok;
+            if (IsInternetAvailabe)
+            {
+                retval = await PythonRunTimeDiagnostics.CheckIfPackageExistsAsync(packageName);
+            }
+
+            PackageDefinition installedpackage = null;
+            bool isInstalled = false;
+            int idx = -1;
+            if (IsBusy) return null;
+            IsBusy = true;
+
+            try
+            {
+                // Create a new Python scope
+                using (Py.GIL())
+                {
+                    // dynamic pip = Py.Import("pip");
+
+                    //string packageName = "requests"; // Replace with the name of the package you are interested in
+
+
+                    // Check if an update is available
+                    bool isUpdateAvailable = false;
+                    if (retval != null)
+                    {
+
+                        await listpackagesAsync(progress, token).ConfigureAwait(true);
+
+
+
+                        installedpackage = CurrentRuntimeConfig.Packagelist.Where(p => p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                        idx = CurrentRuntimeConfig.Packagelist.IndexOf(installedpackage);
+                        isUpdateAvailable = (new Version(retval.updateversion) > new Version(installedpackage.version));
+                    }
+
+                    // Print the result
+                    if (isUpdateAvailable)
+                    {
+                        isInstalled = true;
+                        installedpackage.updateversion = retval.updateversion;
+                        installedpackage.buttondisplay = "Update";
+                        CurrentRuntimeConfig.Packagelist[idx] = installedpackage;
+                        //OutputLines.Add($"An update to {packageName} is available ({retval.updateversion}).");
+                        progress.Report(new PassedArgs() { Messege = $"An update to {packageName} is available ({retval.updateversion})" });
+                        Console.WriteLine($"An update to {packageName} is available ({retval.updateversion}).");
+                    }
+                    else
+                    {
+                        isInstalled = false;
+                        installedpackage.buttondisplay = "Installed";
+                        installedpackage.updateversion = installedpackage.version;
+                        progress.Report(new PassedArgs() { Messege = $"No update to {packageName} is available." });
+                        Console.WriteLine($"No update to {packageName} is available.");
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                isInstalled = false;
+                DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
+            }
+            IsBusy = false;
+            return installedpackage;
+        }
+        public bool IsPackageInstalled(string packageName, IProgress<PassedArgs> progress, CancellationToken token)
+        {
+            DMEditor.ErrorObject.Flag = Errors.Ok;
+            bool isInstalled = false;
+
+            try
+            {
+                // Create a new Python scope
+                // Check if a package is installed and capture output
+                using (Py.GIL())
+                {
+                    dynamic scope = Py.CreateScope();
+                    // string packageName = "numpy"; // Replace with the name of the package you want to check
+                    string code = @"
+        import subprocess
+        output = subprocess.check_output(['pip', 'list'])
+        print(output.decode('utf-8'))
+    ";
+                    PythonEngine.Exec(code, scope);
+                    string output = scope.get("__builtins__").get("print")?.ToString();
+                    // Console.WriteLine(output);
+
+                    isInstalled = output.Contains(packageName);
+                    string outputmessage = $"Package '{packageName}' is {(isInstalled ? "installed" : "not installed")}";
+                    Console.WriteLine(outputmessage);
+                    // OutputLines.Add(outputmessage);
+                    isInstalled = true;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                IsBusy = false;
+                isInstalled = false;
+                DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
+            }
+            IsBusy = false;
+            return isInstalled;
+        }
+        public async Task<bool> InstallPackage(string packageName, IProgress<PassedArgs> progress, CancellationToken token)
+        {
+            DMEditor.ErrorObject.Flag = Errors.Ok;
+
+
+
+            try
+            {
+                if (IsBusy) { return false; }
+                IsBusy = true;
+                await RunPackageManagerAsync(progress, packageName, PackageAction.Install, PythonRunTimeDiagnostics.GetPackageType(CurrentRuntimeConfig.BinPath) == PackageType.conda).ConfigureAwait(false);
+
+
+                IsBusy = false;
+            }
+            catch (Exception ex)
+            {
+                IsBusy = false;
+                DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
+            }
+            IsBusy = false;
+            return true;
+        }
+        public async Task<bool> RemovePackage(string packageName, IProgress<PassedArgs> progress, CancellationToken token)
+        {
+            DMEditor.ErrorObject.Flag = Errors.Ok;
+
+            bool isInstalled = false;
+
+            try
+            {
+                if (IsBusy) { return false; }
+                await RunPackageManagerAsync(progress, packageName, PackageAction.Remove, false).ConfigureAwait(false);
+                IsBusy = false;
+            }
+            catch (Exception ex)
+            {
+                IsBusy = false;
+                isInstalled = false;
+                DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
+            }
+            IsBusy = false;
+            return isInstalled;
+        }
+        public async Task<bool> UpdatePackage(string packageName, IProgress<PassedArgs> progress, CancellationToken token)
+        {
+            DMEditor.ErrorObject.Flag = Errors.Ok;
+
+            bool isInstalled = false;
+            try
+            {
+                if (packageName.Equals("pip", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    await RunPackageManagerAsync(progress, packageName, PackageAction.UpgradePackager, PythonRunTimeDiagnostics.GetPackageType(CurrentRuntimeConfig.BinPath) == PackageType.conda).ConfigureAwait(false);
+                }
+                else await RunPackageManagerAsync(progress, packageName, PackageAction.Update, PythonRunTimeDiagnostics.GetPackageType(CurrentRuntimeConfig.BinPath) == PackageType.conda).ConfigureAwait(false);
+
+
+                IsBusy = false;
+
+            }
+            catch (Exception ex)
+            {
+                IsBusy = false;
+                isInstalled = false;
+                DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
+            }
+            IsBusy = false;
+            return isInstalled;
+        }
+        public async Task<bool> RefreshInstalledPackagesList(IProgress<PassedArgs> progress, CancellationToken token)
+        {
+
+            try
+            {
+                var retval = await listpackagesAsync(progress, token).ConfigureAwait(true);
+                IsBusy = false;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                IsBusy = false;
+                DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
+                return false;
+            }
+
+        }
+        public async Task<bool> RefreshInstalledPackage(string packagename, IProgress<PassedArgs> progress, CancellationToken token)
+        {
+
+            try
+            {
+                var retval = await listpackagesAsync(progress, token).ConfigureAwait(true);
+                IsBusy = false;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                IsBusy = false;
+                DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
+                return false;
+            }
+
+        }
+
+        #endregion "Package Manager"
+        #region "Utility Methods"
+        private void ReportProgress(PassedArgs args)
+        {
+            if (Progress != null)
+            {
+                Progress.Report(args);
+            }
+        }
+        private void ReportProgress(string messege, Errors flag = Errors.Ok)
+        {
+            if (Progress != null)
+            {
+                PassedArgs args = new PassedArgs();
+                args.Messege = messege;
+                Progress.Report(args);
+            }
+            else if (DMEditor != null)
+            {
+                if (DMEditor.progress != null)
+                {
+                    Progress = DMEditor.progress;
+                    PassedArgs args = new PassedArgs();
+                    args.Messege = messege;
+                    Progress.Report(args);
+                }
+                DMEditor.AddLogMessage("Beep AI Python", messege, DateTime.Now, 0, null, flag);
+            }
         }
         public static PyObject ToPython(IDictionary<string, object> dictionary)
         {
@@ -735,6 +1166,7 @@ namespace Beep.Python.RuntimeEngine
                 return PyObject.FromManagedObject(obj);
             }
         }
+        #endregion "Utility Methods"
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -757,12 +1189,12 @@ namespace Beep.Python.RuntimeEngine
         //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
         //     Dispose(disposing: false);
         // }
-
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
+      
     }
 }

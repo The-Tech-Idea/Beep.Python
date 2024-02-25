@@ -15,6 +15,7 @@ namespace Beep.Python.RuntimeEngine
             Pythonruntimepath = pythonruntimepath;
 
             PythonRunTimeManager=new PythonNetRunTimeManager();
+           
             services.AddSingleton<IPythonRunTimeManager>(PythonRunTimeManager);
             IsReady = PythonRunTimeManager.Initialize(pythonruntimepath, BinType32or64.p395x64, @"lib\site-packages");
             return services;
@@ -22,6 +23,7 @@ namespace Beep.Python.RuntimeEngine
        
         public static IPythonRunTimeManager GetPythonRunTimeManager(this IDMEEditor dmeEditor)
         {
+          
            return  PythonRunTimeManager;
         }
         

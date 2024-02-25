@@ -14,8 +14,7 @@ namespace Beep.Python.RuntimeEngine
         {
             _pythonRuntimeManager = pythonRuntimeManager;
             _persistentScope = persistentScope;
-            PythonHelpers._persistentScope = persistentScope;
-            PythonHelpers._pythonRuntimeManager = pythonRuntimeManager;
+       
         }
         public PythonPandasManager(PythonNetRunTimeManager pythonRuntimeManager):base(pythonRuntimeManager)
         {

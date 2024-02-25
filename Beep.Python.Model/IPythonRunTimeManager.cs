@@ -13,7 +13,7 @@ namespace Beep.Python.Model
     {
        
         BinType32or64 BinType { get; set; }
-        IDMEEditor DMEditor { get; }
+        IDMEEditor DMEditor { get; set; }
         ObservableCollection<string> OutputLines { get; set; }
         bool IsBusy { get; set; }
         object PersistentScope { get; set; }

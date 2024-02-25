@@ -14,11 +14,22 @@ using TheTechIdea.Util;
 
 namespace Beep.Python.RuntimeEngine
 {
-    public static class PythonNetManager 
+    public class PythonNetManager :PythonBaseViewModel
     {
-        public static PythonNetRunTimeManager _pythonRuntimeManager { get; set; }
-        public static PyModule _persistentScope { get; set; }
-        public static async Task<bool> InstallPIP(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress, CancellationToken token)
+        public PythonNetManager(PythonNetRunTimeManager pythonRuntimeManager, PyModule persistentScope) : base(pythonRuntimeManager, persistentScope)
+        {
+            _pythonRuntimeManager = pythonRuntimeManager;
+            _persistentScope = persistentScope;
+
+        }
+
+        public PythonNetManager(PythonNetRunTimeManager pythonRuntimeManager) : base(pythonRuntimeManager)
+        {
+            _pythonRuntimeManager = pythonRuntimeManager;
+            InitializePythonEnvironment();
+        }
+
+        public async Task<bool> InstallPIP(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress, CancellationToken token)
         {
 
             bool pipInstall = true;
@@ -58,7 +69,7 @@ namespace Beep.Python.RuntimeEngine
             runTimeManager.IsBusy = false;
             return pipInstall;
         }
-        public static string RunPythonCodeAndGetOutput(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress, string code)
+        public  string RunPythonCodeAndGetOutput(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress, string code)
         {
             string wrappedPythonCode = $@"
 import sys
@@ -120,7 +131,7 @@ def capture_output(code, globals_dict):
             runTimeManager.IsBusy = false;
             return output;
         }
-        public static string RunPythonCodeAndGetOutput2(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress, string code)
+        public  string RunPythonCodeAndGetOutput2(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress, string code)
         {
             string wrappedPythonCode = $@"
 import sys
@@ -216,7 +227,7 @@ def capture_output(code, globals_dict):
             runTimeManager.IsBusy = false;
             return output;
         }
-        public static void RunInteractivePython(PythonNetRunTimeManager runTimeManager)
+        public  void RunInteractivePython(PythonNetRunTimeManager runTimeManager)
         {
 
             string wrappedPythonCode = $@"
@@ -270,7 +281,7 @@ def capture_output_line(code, globals_dict):
             }
             runTimeManager.IsBusy = false;
         }
-        public static void RunInteractivePython(PythonNetRunTimeManager runTimeManager, IProgress<PassedArgs> progress, string code)
+        public  void RunInteractivePython(PythonNetRunTimeManager runTimeManager, IProgress<PassedArgs> progress, string code)
         {
 
             string wrappedPythonCode = $@"
@@ -347,12 +358,29 @@ def capture_output_line(code, globals_dict):
             }
             runTimeManager.IsBusy = false;
         }
-        public static async Task<string> RunPackageManagerAsync(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress,string packageName, PackageAction packageAction, bool useConda = false)
+        private  void UpgradePackage(string packageName)
+    {
+        using (Py.GIL()) // Ensure the Global Interpreter Lock is acquired
         {
-
+            dynamic sys = Py.Import("sys");
+            dynamic pip = Py.Import("pip");
+            try
+            {
+                pip.main(new[] { "install", "--upgrade", packageName });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error upgrading package: {ex.Message}");
+            }
+        }
+    }
+        public  async Task<string> RunPackageManagerAsync(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress,string packageName, PackageAction packageAction, bool useConda = false)
+        {
+            string customPath = $"{runTimeManager.CurrentRuntimeConfig.BinPath.Trim()};{runTimeManager.CurrentRuntimeConfig.ScriptPath.Trim()}".Trim();
+            string modifiedFilePath = customPath.Replace("\\", "\\\\");
             string output = "";
             string command = "";
-            string wrappedPythonCode = @"
+            string wrappedPythonCode = $@"
 import os
 import subprocess
 import threading
@@ -360,7 +388,7 @@ import queue
 
 def set_custom_path(custom_path):
     # Modify the PATH environment variable
-    os.environ[""PATH""] = custom_path + os.pathsep + os.environ[""PATH""]
+    os.environ[""PATH""] = '{modifiedFilePath}' + os.pathsep + os.environ[""PATH""]
 
 def run_pip_and_capture_output(args, output_callback):
     def enqueue_output(stream, queue):
@@ -407,10 +435,10 @@ def run_with_timeout(func, args, output_callback, timeout):
 
                  
                     scope.Exec(wrappedPythonCode);
-                    // Set the custom_path from C# and call set_custom_path function in Python
-                    string customPath = $"{runTimeManager.CurrentRuntimeConfig.BinPath};{runTimeManager.CurrentRuntimeConfig.ScriptPath}";
+                   // Set the custom_path from C# and call set_custom_path function in Python
+                 
                     PyObject setCustomPathFunc = scope.GetAttr("set_custom_path");
-                    setCustomPathFunc.Invoke(customPath.ToPython());
+                    setCustomPathFunc.Invoke(modifiedFilePath.ToPython());
 
                     PyObject captureOutputFunc = scope.GetAttr("run_pip_and_capture_output");
 
@@ -448,10 +476,10 @@ def run_with_timeout(func, args, output_callback, timeout):
                                 command = $"pip install -U {packageName}";
                                 break;
                             case PackageAction.Remove:
-                                command = $" pip uninstall  {packageName}";
+                                command = $"pip uninstall  {packageName}";
                                 break;
                             case PackageAction.Update:
-                                command = $" pip install --upgrade {packageName}";
+                                command = $"pip install --upgrade {packageName}";
                                 break;
                             case PackageAction.UpgradePackager:
                                 command = $"python.exe -m pip install --upgrade pip";
@@ -519,7 +547,7 @@ def run_with_timeout(func, args, output_callback, timeout):
                 progress.Report(new PassedArgs() { Messege = $"Finished {command} eith error" });
             return output;
         }
-        public static async Task<bool> listpackagesAsync(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress,  CancellationToken token, bool useConda = false, string packagename = null)
+        public  async Task<bool> listpackagesAsync(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress,  CancellationToken token, bool useConda = false, string packagename = null)
         {
             if (runTimeManager.IsBusy) return false;
             runTimeManager.IsBusy = true;
@@ -531,7 +559,7 @@ def run_with_timeout(func, args, output_callback, timeout):
                 {
                     checkall = false;
                 }
-                 runTimeManager.CurrentRuntimeConfig.Packagelist = new List<PackageDefinition>();
+      //           runTimeManager.CurrentRuntimeConfig.Packagelist = new List<PackageDefinition>();
                 using (Py.GIL())
                 {
                     dynamic pkgResources = Py.Import("importlib.metadata");
@@ -661,7 +689,7 @@ def run_with_timeout(func, args, output_callback, timeout):
             runTimeManager.IsBusy = false;
             return await Task.FromResult<bool>(runTimeManager.IsBusy);
         }
-        public static string Execute(string code)
+        public  string Execute(string code)
         {
             StringBuilder output = new StringBuilder();
             using (Py.GIL()) // Acquire Python GIL (Global Interpreter Lock)

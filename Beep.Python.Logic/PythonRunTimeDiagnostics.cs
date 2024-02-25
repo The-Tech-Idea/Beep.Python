@@ -604,7 +604,7 @@ namespace Beep.Python.RuntimeEngine
                     PackageDefinition packageInfo = new PackageDefinition
                     {
                         packagename = packageName,
-                        updateversion = latestVersion,
+                        version = latestVersion,
                         description = description
                     };
 
