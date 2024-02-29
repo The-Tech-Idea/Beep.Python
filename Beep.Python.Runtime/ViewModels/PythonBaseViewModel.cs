@@ -1,21 +1,30 @@
-﻿using Python.Runtime;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Python.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using TheTechIdea;
+using TheTechIdea.Beep;
 
-namespace Beep.Python.RuntimeEngine
+
+namespace Beep.Python.RuntimeEngine.ViewModels
 {
-    public class PythonBaseViewModel: IDisposable
+    public class PythonBaseViewModel : ObservableObject, IDisposable
     {
         public PythonNetRunTimeManager _pythonRuntimeManager;
         public PyModule _persistentScope;
         public bool disposedValue;
-
+        public CancellationTokenSource TokenSource { get; set; }
+        public CancellationToken Token { get; set; }
+        public IProgress<PassedArgs> Progress { get; set; }
+        IDMEEditor Editor;
         public PythonBaseViewModel(PythonNetRunTimeManager pythonRuntimeManager, PyModule persistentScope)
         {
             _pythonRuntimeManager = pythonRuntimeManager;
+            Editor = _pythonRuntimeManager.DMEditor;
             _persistentScope = persistentScope;
             PythonHelpers._persistentScope = persistentScope;
             PythonHelpers._pythonRuntimeManager = pythonRuntimeManager;
@@ -23,9 +32,21 @@ namespace Beep.Python.RuntimeEngine
         public PythonBaseViewModel(PythonNetRunTimeManager pythonRuntimeManager)
         {
             _pythonRuntimeManager = pythonRuntimeManager;
+            Editor = _pythonRuntimeManager.DMEditor;
             InitializePythonEnvironment();
+            PythonHelpers._persistentScope = _persistentScope;
+            PythonHelpers._pythonRuntimeManager = pythonRuntimeManager;
         }
+        public void SendMessege(string messege = null)
+        {
 
+            if (Progress != null)
+            {
+                PassedArgs ps = new PassedArgs { EventType = "Update", Messege = messege, ParameterString1 = Editor.ErrorObject.Message };
+                Progress.Report(ps);
+            }
+
+        }
         public PythonBaseViewModel()
         {
         }
@@ -73,7 +94,7 @@ namespace Beep.Python.RuntimeEngine
                 // If needed, return results or handle outputs
             }
         }
-        public  dynamic RunPythonScriptWithResult(string script, dynamic parameters)
+        public dynamic RunPythonScriptWithResult(string script, dynamic parameters)
         {
             dynamic result = null;
             if (_pythonRuntimeManager == null)
@@ -92,7 +113,7 @@ namespace Beep.Python.RuntimeEngine
 
             return result;
         }
-        protected  virtual void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
             {
