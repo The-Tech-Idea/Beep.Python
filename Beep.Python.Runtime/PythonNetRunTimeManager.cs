@@ -421,7 +421,7 @@ namespace Beep.Python.RuntimeEngine
 
                 string code = $"{PythonRunTimeDiagnostics.GetPythonExe(CurrentRuntimeConfig.BinPath)} {file}";// File.ReadAllText(file); // Get the python file as raw text
 
-                RunPythonCodeAndGetOutput(progress, code);
+               await RunPythonCodeAndGetOutput(progress, code);
                 IsBusy = false;
             }
             catch (Exception ex)
@@ -440,7 +440,7 @@ namespace Beep.Python.RuntimeEngine
             try
             {
 
-                RunPythonCodeAndGetOutput(progress, code);
+               await RunPythonCodeAndGetOutput(progress, code);
 
 
                 IsBusy = false;
@@ -455,7 +455,7 @@ namespace Beep.Python.RuntimeEngine
             return DMEditor.ErrorObject;
 
         }
-        public dynamic RunCommand(string command, IProgress<PassedArgs> progress, CancellationToken token)
+        public async Task<dynamic> RunCommand(string command, IProgress<PassedArgs> progress, CancellationToken token)
         {
             PyObject pyObject = null;
             DMEditor.ErrorObject.Flag = Errors.Ok;
@@ -464,7 +464,7 @@ namespace Beep.Python.RuntimeEngine
                 if (IsBusy) { return false; }
                 IsBusy = true;
 
-                RunPythonCodeAndGetOutput(progress, command);
+               await RunPythonCodeAndGetOutput(progress, command);
 
 
                 IsBusy = false;
@@ -478,7 +478,7 @@ namespace Beep.Python.RuntimeEngine
             return pyObject;
 
         }
-        public string RunPythonCodeAndGetOutput(IProgress<PassedArgs> progress, string code)
+        public async Task<string> RunPythonCodeAndGetOutput(IProgress<PassedArgs> progress, string code)
         {
             string wrappedPythonCode = $@"
 import sys
@@ -543,6 +543,20 @@ def capture_output(code, globals_dict):
 
         #endregion "Python Run Code"
         #region "Package Manager"
+        public async Task<bool> UnInstallPackage(string packagename, IProgress<PassedArgs> progress, CancellationToken token)
+        {
+           return await RemovePackage(packagename, progress, token);
+        }
+
+        public async Task<bool> UpgradeAllPackages(IProgress<PassedArgs> progress, CancellationToken token)
+        {
+            return await RefreshInstalledPackagesList(progress, token);
+        }
+
+        public async Task<bool> RefreshPackage(string packagename, IProgress<PassedArgs> progress, CancellationToken token)
+        {
+            return  await UpdatePackage(packagename, progress, token);
+        }
         public async Task<string> RunPackageManagerAsync(IProgress<PassedArgs> progress, string packageName, PackageAction packageAction, bool useConda = false)
         {
             string customPath = $"{CurrentRuntimeConfig.BinPath.Trim()};{CurrentRuntimeConfig.ScriptPath.Trim()}".Trim();
@@ -1195,6 +1209,7 @@ def run_with_timeout(func, args, output_callback, timeout):
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
-      
+
+    
     }
 }

@@ -42,7 +42,7 @@ namespace Beep.Python.Model
         Task<bool> InstallPIP(IProgress<PassedArgs> progress, CancellationToken token);
       //  void RunPIP(string Command, string Commandpath);
         Task<IErrorsInfo> RunCode(string code, IProgress<PassedArgs> progress, CancellationToken token);
-        dynamic RunCommand(string command, IProgress<PassedArgs> progress, CancellationToken token);
+        Task<dynamic> RunCommand(string command, IProgress<PassedArgs> progress, CancellationToken token);
         Task<IErrorsInfo> RunFile(string file, IProgress<PassedArgs> progress, CancellationToken token);
         void CreateLoadConfig();
         void SaveConfig( );

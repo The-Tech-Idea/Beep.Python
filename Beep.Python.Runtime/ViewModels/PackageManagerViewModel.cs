@@ -1,8 +1,10 @@
 ﻿using Beep.Python.Model;
 using DataManagementModels.Editor;
+using Newtonsoft.Json.Linq;
 using Python.Runtime;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,7 +30,6 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             Init();
 
         }
-
         public PackageManagerViewModel(PythonNetRunTimeManager pythonRuntimeManager) : base(pythonRuntimeManager)
         {
             _pythonRuntimeManager = pythonRuntimeManager;
@@ -40,52 +41,127 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             Editor = _pythonRuntimeManager.DMEditor;
             unitofWork = new UnitofWork<PackageDefinition>(Editor, true, new ObservableBindingList<PackageDefinition>(_pythonRuntimeManager.CurrentRuntimeConfig.Packagelist), "ID");
         }
-
-        public void InstallPipTool()
+        public async Task<bool> InstallPipToolAsync()
         {
+            bool retval = false;
             if (!_pythonRuntimeManager.IsInitialized)
 
-                return;
+                return retval;
             if (_pythonRuntimeManager.IsBusy)
             {
-               // MessageBox.Show("Please wait until the current operation is finished");
-                return;
+                //  MessageBox.Show("Please wait until the current operation is finished");
+                return retval;
             }
 
-            _pythonRuntimeManager.InstallPIP(Progress, Token).ConfigureAwait(true);
+            await _pythonRuntimeManager.InstallPIP(Progress, Token).ConfigureAwait(true);
 
 
             _pythonRuntimeManager.IsBusy = false;
+            return retval;
         }
-
-        public void RefreshPackages()
+        public async Task<bool> InstallNewPackageAsync(string packagename)
         {
+            bool retval=false;
             if (!_pythonRuntimeManager.IsInitialized)
 
-                return;
-            if (_pythonRuntimeManager.IsBusy)
-            {
-               // MessageBox.Show("Please wait until the current operation is finished");
-                return;
-            }
-          //  refersh();
-        }
-
-        public void InstallNewPackage(string packagename)
-        {
-            if (!_pythonRuntimeManager.IsInitialized)
-
-                return;
+                return retval;
             if (_pythonRuntimeManager.IsBusy)
             {
               //  MessageBox.Show("Please wait until the current operation is finished");
-                return;
+                return retval;
             }
             if (!string.IsNullOrEmpty(packagename))
             {
-                var retval = _pythonRuntimeManager.InstallPackage(packagename, Progress, Token).ConfigureAwait(true);
+               retval = await _pythonRuntimeManager.InstallPackage(packagename, Progress, Token).ConfigureAwait(true);
+            }
+           
+            return retval;
+        }
+        public async Task<bool> UnInstallPackageAsync(string packagename)
+        {
+            bool retval = false;
+            if (!_pythonRuntimeManager.IsInitialized)
+
+                return retval;
+            if (_pythonRuntimeManager.IsBusy)
+            {
+                //  MessageBox.Show("Please wait until the current operation is finished");
+                return retval;
+            }
+            if (!string.IsNullOrEmpty(packagename))
+            {
+                retval = await _pythonRuntimeManager.UnInstallPackage(packagename, Progress, Token).ConfigureAwait(true);
             }
 
+            return retval;
+        }
+        public async Task<bool> UpgradePackageAsync(string packagename)
+        {
+            bool retval = false;
+            if (!_pythonRuntimeManager.IsInitialized)
+
+                return retval;
+            if (_pythonRuntimeManager.IsBusy)
+            {
+                //  MessageBox.Show("Please wait until the current operation is finished");
+                return retval;
+            }
+            if (!string.IsNullOrEmpty(packagename))
+            {
+                retval = await _pythonRuntimeManager.UpdatePackage(packagename, Progress, Token).ConfigureAwait(true);
+            }
+
+            return retval;
+        }
+        public async Task<bool> UpgradeAllPackagesAsync()
+        {
+            bool retval = false;
+            if (!_pythonRuntimeManager.IsInitialized)
+
+                return retval;
+            if (_pythonRuntimeManager.IsBusy)
+            {
+                //  MessageBox.Show("Please wait until the current operation is finished");
+                return retval;
+            }
+            retval = await _pythonRuntimeManager.UpgradeAllPackages(Progress, Token).ConfigureAwait(true);
+            return retval;
+        }
+        public async Task<bool> RefreshPackageAsync(string packagename)
+        {
+            bool retval = false;
+            if (!_pythonRuntimeManager.IsInitialized)
+
+                return retval;
+            if (_pythonRuntimeManager.IsBusy)
+            {
+                //  MessageBox.Show("Please wait until the current operation is finished");
+                return retval;
+            }
+            if (!string.IsNullOrEmpty(packagename))
+            {
+                retval = await _pythonRuntimeManager.RefreshPackage(packagename, Progress, Token).ConfigureAwait(true);
+            }
+
+            return retval;
+        }
+        public async Task<bool> RefreshAllPackagesAsync()
+        {
+            bool retval = false;
+            if (!_pythonRuntimeManager.IsInitialized)
+
+                return retval;
+            if (_pythonRuntimeManager.IsBusy)
+            {
+                //  MessageBox.Show("Please wait until the current operation is finished");
+                return retval;
+            }
+            if (_pythonRuntimeManager != null)
+            {
+               await _pythonRuntimeManager.RefreshInstalledPackagesList(Progress, Token).ConfigureAwait(true);
+               _pythonRuntimeManager.SaveConfig();
+            }
+            return retval;
         }
     }
 }
