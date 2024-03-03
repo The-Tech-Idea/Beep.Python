@@ -28,307 +28,323 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(uc_PackageList));
-            this.packagelistBindingNavigator = new System.Windows.Forms.BindingNavigator(this.components);
-            this.bindingNavigatorAddNewItem = new System.Windows.Forms.ToolStripButton();
-            this.packagelistBindingSource = new System.Windows.Forms.BindingSource(this.components);
-            this.bindingNavigatorCountItem = new System.Windows.Forms.ToolStripLabel();
-            this.bindingNavigatorDeleteItem = new System.Windows.Forms.ToolStripButton();
-            this.bindingNavigatorMoveFirstItem = new System.Windows.Forms.ToolStripButton();
-            this.bindingNavigatorMovePreviousItem = new System.Windows.Forms.ToolStripButton();
-            this.bindingNavigatorSeparator = new System.Windows.Forms.ToolStripSeparator();
-            this.bindingNavigatorPositionItem = new System.Windows.Forms.ToolStripTextBox();
-            this.bindingNavigatorSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.bindingNavigatorMoveNextItem = new System.Windows.Forms.ToolStripButton();
-            this.bindingNavigatorMoveLastItem = new System.Windows.Forms.ToolStripButton();
-            this.bindingNavigatorSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.packagelistBindingNavigatorSaveItem = new System.Windows.Forms.ToolStripButton();
-            this.RefreshtoolStripButton = new System.Windows.Forms.ToolStripButton();
-            this.NewPackagetoolStripTextBox = new System.Windows.Forms.ToolStripTextBox();
-            this.InstallNewPackagetoolStripButton = new System.Windows.Forms.ToolStripButton();
-            this.InstallPIPtoolStripButton = new System.Windows.Forms.ToolStripButton();
-            this.packagelistDataGridView = new System.Windows.Forms.DataGridView();
-            this.ImageColumn = new System.Windows.Forms.DataGridViewImageColumn();
-            this.NamedataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.InstalleddataGridViewCheckBoxColumn1 = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.VersiondataGridViewTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.updateversion = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.UpDateInstallGridButton = new System.Windows.Forms.DataGridViewButtonColumn();
-            this.dataGridViewImageColumn1 = new System.Windows.Forms.DataGridViewImageColumn();
-            ((System.ComponentModel.ISupportInitialize)(this.packagelistBindingNavigator)).BeginInit();
-            this.packagelistBindingNavigator.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.packagelistBindingSource)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.packagelistDataGridView)).BeginInit();
-            this.SuspendLayout();
+            packagelistBindingNavigator = new BindingNavigator(components);
+            bindingNavigatorAddNewItem = new ToolStripButton();
+            packagelistBindingSource = new BindingSource(components);
+            bindingNavigatorCountItem = new ToolStripLabel();
+            bindingNavigatorDeleteItem = new ToolStripButton();
+            bindingNavigatorMoveFirstItem = new ToolStripButton();
+            bindingNavigatorMovePreviousItem = new ToolStripButton();
+            bindingNavigatorSeparator = new ToolStripSeparator();
+            bindingNavigatorPositionItem = new ToolStripTextBox();
+            bindingNavigatorSeparator1 = new ToolStripSeparator();
+            bindingNavigatorMoveNextItem = new ToolStripButton();
+            bindingNavigatorMoveLastItem = new ToolStripButton();
+            bindingNavigatorSeparator2 = new ToolStripSeparator();
+            packagelistBindingNavigatorSaveItem = new ToolStripButton();
+            RefreshtoolStripButton = new ToolStripButton();
+            NewPackagetoolStripTextBox = new ToolStripTextBox();
+            InstallNewPackagetoolStripButton = new ToolStripButton();
+            InstallPIPtoolStripButton = new ToolStripButton();
+            packagelistDataGridView = new DataGridView();
+            ImageColumn = new DataGridViewImageColumn();
+            NamedataGridViewTextBoxColumn2 = new DataGridViewTextBoxColumn();
+            InstalleddataGridViewCheckBoxColumn1 = new DataGridViewCheckBoxColumn();
+            VersiondataGridViewTextBoxColumn6 = new DataGridViewTextBoxColumn();
+            updateversion = new DataGridViewTextBoxColumn();
+            UpDateInstallGridButton = new DataGridViewButtonColumn();
+            dataGridViewImageColumn1 = new DataGridViewImageColumn();
+            statusStrip1 = new StatusStrip();
+            toolStripStatusLabel1 = new ToolStripStatusLabel();
+            toolStripProgressBar1 = new ToolStripProgressBar();
+            MessageLabel = new ToolStripStatusLabel();
+            ((System.ComponentModel.ISupportInitialize)packagelistBindingNavigator).BeginInit();
+            packagelistBindingNavigator.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)packagelistBindingSource).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)packagelistDataGridView).BeginInit();
+            statusStrip1.SuspendLayout();
+            SuspendLayout();
             // 
             // packagelistBindingNavigator
             // 
-            this.packagelistBindingNavigator.AddNewItem = this.bindingNavigatorAddNewItem;
-            this.packagelistBindingNavigator.BindingSource = this.packagelistBindingSource;
-            this.packagelistBindingNavigator.CountItem = this.bindingNavigatorCountItem;
-            this.packagelistBindingNavigator.DeleteItem = this.bindingNavigatorDeleteItem;
-            this.packagelistBindingNavigator.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.bindingNavigatorMoveFirstItem,
-            this.bindingNavigatorMovePreviousItem,
-            this.bindingNavigatorSeparator,
-            this.bindingNavigatorPositionItem,
-            this.bindingNavigatorCountItem,
-            this.bindingNavigatorSeparator1,
-            this.bindingNavigatorMoveNextItem,
-            this.bindingNavigatorMoveLastItem,
-            this.bindingNavigatorSeparator2,
-            this.bindingNavigatorAddNewItem,
-            this.bindingNavigatorDeleteItem,
-            this.packagelistBindingNavigatorSaveItem,
-            this.RefreshtoolStripButton,
-            this.NewPackagetoolStripTextBox,
-            this.InstallNewPackagetoolStripButton,
-            this.InstallPIPtoolStripButton});
-            this.packagelistBindingNavigator.Location = new System.Drawing.Point(0, 0);
-            this.packagelistBindingNavigator.MoveFirstItem = this.bindingNavigatorMoveFirstItem;
-            this.packagelistBindingNavigator.MoveLastItem = this.bindingNavigatorMoveLastItem;
-            this.packagelistBindingNavigator.MoveNextItem = this.bindingNavigatorMoveNextItem;
-            this.packagelistBindingNavigator.MovePreviousItem = this.bindingNavigatorMovePreviousItem;
-            this.packagelistBindingNavigator.Name = "packagelistBindingNavigator";
-            this.packagelistBindingNavigator.PositionItem = this.bindingNavigatorPositionItem;
-            this.packagelistBindingNavigator.Size = new System.Drawing.Size(612, 25);
-            this.packagelistBindingNavigator.TabIndex = 0;
-            this.packagelistBindingNavigator.Text = "bindingNavigator1";
+            packagelistBindingNavigator.AddNewItem = bindingNavigatorAddNewItem;
+            packagelistBindingNavigator.BindingSource = packagelistBindingSource;
+            packagelistBindingNavigator.CountItem = bindingNavigatorCountItem;
+            packagelistBindingNavigator.DeleteItem = bindingNavigatorDeleteItem;
+            packagelistBindingNavigator.Items.AddRange(new ToolStripItem[] { bindingNavigatorMoveFirstItem, bindingNavigatorMovePreviousItem, bindingNavigatorSeparator, bindingNavigatorPositionItem, bindingNavigatorCountItem, bindingNavigatorSeparator1, bindingNavigatorMoveNextItem, bindingNavigatorMoveLastItem, bindingNavigatorSeparator2, bindingNavigatorAddNewItem, bindingNavigatorDeleteItem, packagelistBindingNavigatorSaveItem, RefreshtoolStripButton, NewPackagetoolStripTextBox, InstallNewPackagetoolStripButton, InstallPIPtoolStripButton });
+            packagelistBindingNavigator.Location = new Point(0, 0);
+            packagelistBindingNavigator.MoveFirstItem = bindingNavigatorMoveFirstItem;
+            packagelistBindingNavigator.MoveLastItem = bindingNavigatorMoveLastItem;
+            packagelistBindingNavigator.MoveNextItem = bindingNavigatorMoveNextItem;
+            packagelistBindingNavigator.MovePreviousItem = bindingNavigatorMovePreviousItem;
+            packagelistBindingNavigator.Name = "packagelistBindingNavigator";
+            packagelistBindingNavigator.PositionItem = bindingNavigatorPositionItem;
+            packagelistBindingNavigator.Size = new Size(714, 25);
+            packagelistBindingNavigator.TabIndex = 0;
+            packagelistBindingNavigator.Text = "bindingNavigator1";
             // 
             // bindingNavigatorAddNewItem
             // 
-            this.bindingNavigatorAddNewItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.bindingNavigatorAddNewItem.Image = ((System.Drawing.Image)(resources.GetObject("bindingNavigatorAddNewItem.Image")));
-            this.bindingNavigatorAddNewItem.Name = "bindingNavigatorAddNewItem";
-            this.bindingNavigatorAddNewItem.RightToLeftAutoMirrorImage = true;
-            this.bindingNavigatorAddNewItem.Size = new System.Drawing.Size(23, 22);
-            this.bindingNavigatorAddNewItem.Text = "Add new";
+            bindingNavigatorAddNewItem.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            bindingNavigatorAddNewItem.Image = (Image)resources.GetObject("bindingNavigatorAddNewItem.Image");
+            bindingNavigatorAddNewItem.Name = "bindingNavigatorAddNewItem";
+            bindingNavigatorAddNewItem.RightToLeftAutoMirrorImage = true;
+            bindingNavigatorAddNewItem.Size = new Size(23, 22);
+            bindingNavigatorAddNewItem.Text = "Add new";
             // 
             // packagelistBindingSource
             // 
-            this.packagelistBindingSource.DataSource = typeof(Beep.Python.Model.PackageDefinition);
+            packagelistBindingSource.DataSource = typeof(Model.PackageDefinition);
             // 
             // bindingNavigatorCountItem
             // 
-            this.bindingNavigatorCountItem.Name = "bindingNavigatorCountItem";
-            this.bindingNavigatorCountItem.Size = new System.Drawing.Size(35, 22);
-            this.bindingNavigatorCountItem.Text = "of {0}";
-            this.bindingNavigatorCountItem.ToolTipText = "Total number of items";
+            bindingNavigatorCountItem.Name = "bindingNavigatorCountItem";
+            bindingNavigatorCountItem.Size = new Size(35, 22);
+            bindingNavigatorCountItem.Text = "of {0}";
+            bindingNavigatorCountItem.ToolTipText = "Total number of items";
             // 
             // bindingNavigatorDeleteItem
             // 
-            this.bindingNavigatorDeleteItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.bindingNavigatorDeleteItem.Image = ((System.Drawing.Image)(resources.GetObject("bindingNavigatorDeleteItem.Image")));
-            this.bindingNavigatorDeleteItem.Name = "bindingNavigatorDeleteItem";
-            this.bindingNavigatorDeleteItem.RightToLeftAutoMirrorImage = true;
-            this.bindingNavigatorDeleteItem.Size = new System.Drawing.Size(23, 22);
-            this.bindingNavigatorDeleteItem.Text = "Delete";
+            bindingNavigatorDeleteItem.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            bindingNavigatorDeleteItem.Image = (Image)resources.GetObject("bindingNavigatorDeleteItem.Image");
+            bindingNavigatorDeleteItem.Name = "bindingNavigatorDeleteItem";
+            bindingNavigatorDeleteItem.RightToLeftAutoMirrorImage = true;
+            bindingNavigatorDeleteItem.Size = new Size(23, 22);
+            bindingNavigatorDeleteItem.Text = "Delete";
             // 
             // bindingNavigatorMoveFirstItem
             // 
-            this.bindingNavigatorMoveFirstItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.bindingNavigatorMoveFirstItem.Image = ((System.Drawing.Image)(resources.GetObject("bindingNavigatorMoveFirstItem.Image")));
-            this.bindingNavigatorMoveFirstItem.Name = "bindingNavigatorMoveFirstItem";
-            this.bindingNavigatorMoveFirstItem.RightToLeftAutoMirrorImage = true;
-            this.bindingNavigatorMoveFirstItem.Size = new System.Drawing.Size(23, 22);
-            this.bindingNavigatorMoveFirstItem.Text = "Move first";
+            bindingNavigatorMoveFirstItem.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            bindingNavigatorMoveFirstItem.Image = (Image)resources.GetObject("bindingNavigatorMoveFirstItem.Image");
+            bindingNavigatorMoveFirstItem.Name = "bindingNavigatorMoveFirstItem";
+            bindingNavigatorMoveFirstItem.RightToLeftAutoMirrorImage = true;
+            bindingNavigatorMoveFirstItem.Size = new Size(23, 22);
+            bindingNavigatorMoveFirstItem.Text = "Move first";
             // 
             // bindingNavigatorMovePreviousItem
             // 
-            this.bindingNavigatorMovePreviousItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.bindingNavigatorMovePreviousItem.Image = ((System.Drawing.Image)(resources.GetObject("bindingNavigatorMovePreviousItem.Image")));
-            this.bindingNavigatorMovePreviousItem.Name = "bindingNavigatorMovePreviousItem";
-            this.bindingNavigatorMovePreviousItem.RightToLeftAutoMirrorImage = true;
-            this.bindingNavigatorMovePreviousItem.Size = new System.Drawing.Size(23, 22);
-            this.bindingNavigatorMovePreviousItem.Text = "Move previous";
+            bindingNavigatorMovePreviousItem.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            bindingNavigatorMovePreviousItem.Image = (Image)resources.GetObject("bindingNavigatorMovePreviousItem.Image");
+            bindingNavigatorMovePreviousItem.Name = "bindingNavigatorMovePreviousItem";
+            bindingNavigatorMovePreviousItem.RightToLeftAutoMirrorImage = true;
+            bindingNavigatorMovePreviousItem.Size = new Size(23, 22);
+            bindingNavigatorMovePreviousItem.Text = "Move previous";
             // 
             // bindingNavigatorSeparator
             // 
-            this.bindingNavigatorSeparator.Name = "bindingNavigatorSeparator";
-            this.bindingNavigatorSeparator.Size = new System.Drawing.Size(6, 25);
+            bindingNavigatorSeparator.Name = "bindingNavigatorSeparator";
+            bindingNavigatorSeparator.Size = new Size(6, 25);
             // 
             // bindingNavigatorPositionItem
             // 
-            this.bindingNavigatorPositionItem.AccessibleName = "Position";
-            this.bindingNavigatorPositionItem.AutoSize = false;
-            this.bindingNavigatorPositionItem.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.bindingNavigatorPositionItem.Name = "bindingNavigatorPositionItem";
-            this.bindingNavigatorPositionItem.Size = new System.Drawing.Size(50, 23);
-            this.bindingNavigatorPositionItem.Text = "0";
-            this.bindingNavigatorPositionItem.ToolTipText = "Current position";
+            bindingNavigatorPositionItem.AccessibleName = "Position";
+            bindingNavigatorPositionItem.AutoSize = false;
+            bindingNavigatorPositionItem.Name = "bindingNavigatorPositionItem";
+            bindingNavigatorPositionItem.Size = new Size(58, 23);
+            bindingNavigatorPositionItem.Text = "0";
+            bindingNavigatorPositionItem.ToolTipText = "Current position";
             // 
             // bindingNavigatorSeparator1
             // 
-            this.bindingNavigatorSeparator1.Name = "bindingNavigatorSeparator1";
-            this.bindingNavigatorSeparator1.Size = new System.Drawing.Size(6, 25);
+            bindingNavigatorSeparator1.Name = "bindingNavigatorSeparator1";
+            bindingNavigatorSeparator1.Size = new Size(6, 25);
             // 
             // bindingNavigatorMoveNextItem
             // 
-            this.bindingNavigatorMoveNextItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.bindingNavigatorMoveNextItem.Image = ((System.Drawing.Image)(resources.GetObject("bindingNavigatorMoveNextItem.Image")));
-            this.bindingNavigatorMoveNextItem.Name = "bindingNavigatorMoveNextItem";
-            this.bindingNavigatorMoveNextItem.RightToLeftAutoMirrorImage = true;
-            this.bindingNavigatorMoveNextItem.Size = new System.Drawing.Size(23, 22);
-            this.bindingNavigatorMoveNextItem.Text = "Move next";
+            bindingNavigatorMoveNextItem.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            bindingNavigatorMoveNextItem.Image = (Image)resources.GetObject("bindingNavigatorMoveNextItem.Image");
+            bindingNavigatorMoveNextItem.Name = "bindingNavigatorMoveNextItem";
+            bindingNavigatorMoveNextItem.RightToLeftAutoMirrorImage = true;
+            bindingNavigatorMoveNextItem.Size = new Size(23, 22);
+            bindingNavigatorMoveNextItem.Text = "Move next";
             // 
             // bindingNavigatorMoveLastItem
             // 
-            this.bindingNavigatorMoveLastItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.bindingNavigatorMoveLastItem.Image = ((System.Drawing.Image)(resources.GetObject("bindingNavigatorMoveLastItem.Image")));
-            this.bindingNavigatorMoveLastItem.Name = "bindingNavigatorMoveLastItem";
-            this.bindingNavigatorMoveLastItem.RightToLeftAutoMirrorImage = true;
-            this.bindingNavigatorMoveLastItem.Size = new System.Drawing.Size(23, 22);
-            this.bindingNavigatorMoveLastItem.Text = "Move last";
+            bindingNavigatorMoveLastItem.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            bindingNavigatorMoveLastItem.Image = (Image)resources.GetObject("bindingNavigatorMoveLastItem.Image");
+            bindingNavigatorMoveLastItem.Name = "bindingNavigatorMoveLastItem";
+            bindingNavigatorMoveLastItem.RightToLeftAutoMirrorImage = true;
+            bindingNavigatorMoveLastItem.Size = new Size(23, 22);
+            bindingNavigatorMoveLastItem.Text = "Move last";
             // 
             // bindingNavigatorSeparator2
             // 
-            this.bindingNavigatorSeparator2.Name = "bindingNavigatorSeparator2";
-            this.bindingNavigatorSeparator2.Size = new System.Drawing.Size(6, 25);
+            bindingNavigatorSeparator2.Name = "bindingNavigatorSeparator2";
+            bindingNavigatorSeparator2.Size = new Size(6, 25);
             // 
             // packagelistBindingNavigatorSaveItem
             // 
-            this.packagelistBindingNavigatorSaveItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.packagelistBindingNavigatorSaveItem.Image = ((System.Drawing.Image)(resources.GetObject("packagelistBindingNavigatorSaveItem.Image")));
-            this.packagelistBindingNavigatorSaveItem.Name = "packagelistBindingNavigatorSaveItem";
-            this.packagelistBindingNavigatorSaveItem.Size = new System.Drawing.Size(23, 22);
-            this.packagelistBindingNavigatorSaveItem.Text = "Save Data";
+            packagelistBindingNavigatorSaveItem.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            packagelistBindingNavigatorSaveItem.Image = (Image)resources.GetObject("packagelistBindingNavigatorSaveItem.Image");
+            packagelistBindingNavigatorSaveItem.Name = "packagelistBindingNavigatorSaveItem";
+            packagelistBindingNavigatorSaveItem.Size = new Size(23, 22);
+            packagelistBindingNavigatorSaveItem.Text = "Save Data";
             // 
             // RefreshtoolStripButton
             // 
-            this.RefreshtoolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.RefreshtoolStripButton.Image = ((System.Drawing.Image)(resources.GetObject("RefreshtoolStripButton.Image")));
-            this.RefreshtoolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.RefreshtoolStripButton.Name = "RefreshtoolStripButton";
-            this.RefreshtoolStripButton.Size = new System.Drawing.Size(23, 22);
+            RefreshtoolStripButton.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            RefreshtoolStripButton.Image = (Image)resources.GetObject("RefreshtoolStripButton.Image");
+            RefreshtoolStripButton.ImageTransparentColor = Color.Magenta;
+            RefreshtoolStripButton.Name = "RefreshtoolStripButton";
+            RefreshtoolStripButton.Size = new Size(23, 22);
             // 
             // NewPackagetoolStripTextBox
             // 
-            this.NewPackagetoolStripTextBox.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.NewPackagetoolStripTextBox.Name = "NewPackagetoolStripTextBox";
-            this.NewPackagetoolStripTextBox.Size = new System.Drawing.Size(100, 25);
+            NewPackagetoolStripTextBox.Name = "NewPackagetoolStripTextBox";
+            NewPackagetoolStripTextBox.Size = new Size(116, 25);
             // 
             // InstallNewPackagetoolStripButton
             // 
-            this.InstallNewPackagetoolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.InstallNewPackagetoolStripButton.Image = global::Beep.Python.Winform.Properties.Resources.PackageLayout;
-            this.InstallNewPackagetoolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.InstallNewPackagetoolStripButton.Name = "InstallNewPackagetoolStripButton";
-            this.InstallNewPackagetoolStripButton.Size = new System.Drawing.Size(23, 22);
-            this.InstallNewPackagetoolStripButton.Text = "toolStripButton1";
-            this.InstallNewPackagetoolStripButton.ToolTipText = "Install if Package Exist";
+            InstallNewPackagetoolStripButton.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            InstallNewPackagetoolStripButton.Image = Properties.Resources.PackageLayout;
+            InstallNewPackagetoolStripButton.ImageTransparentColor = Color.Magenta;
+            InstallNewPackagetoolStripButton.Name = "InstallNewPackagetoolStripButton";
+            InstallNewPackagetoolStripButton.Size = new Size(23, 22);
+            InstallNewPackagetoolStripButton.Text = "toolStripButton1";
+            InstallNewPackagetoolStripButton.ToolTipText = "Install if Package Exist";
             // 
             // InstallPIPtoolStripButton
             // 
-            this.InstallPIPtoolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.InstallPIPtoolStripButton.Image = global::Beep.Python.Winform.Properties.Resources.ConfigurationEditor;
-            this.InstallPIPtoolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.InstallPIPtoolStripButton.Name = "InstallPIPtoolStripButton";
-            this.InstallPIPtoolStripButton.Size = new System.Drawing.Size(23, 22);
-            this.InstallPIPtoolStripButton.Text = "Install PIP";
+            InstallPIPtoolStripButton.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            InstallPIPtoolStripButton.Image = Properties.Resources.ConfigurationEditor;
+            InstallPIPtoolStripButton.ImageTransparentColor = Color.Magenta;
+            InstallPIPtoolStripButton.Name = "InstallPIPtoolStripButton";
+            InstallPIPtoolStripButton.Size = new Size(23, 22);
+            InstallPIPtoolStripButton.Text = "Install PIP";
             // 
             // packagelistDataGridView
             // 
-            this.packagelistDataGridView.AutoGenerateColumns = false;
-            this.packagelistDataGridView.BackgroundColor = System.Drawing.Color.White;
-            this.packagelistDataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.packagelistDataGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.ImageColumn,
-            this.NamedataGridViewTextBoxColumn2,
-            this.InstalleddataGridViewCheckBoxColumn1,
-            this.VersiondataGridViewTextBoxColumn6,
-            this.updateversion,
-            this.UpDateInstallGridButton});
-            this.packagelistDataGridView.DataSource = this.packagelistBindingSource;
-            this.packagelistDataGridView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.packagelistDataGridView.Location = new System.Drawing.Point(0, 25);
-            this.packagelistDataGridView.Name = "packagelistDataGridView";
-            this.packagelistDataGridView.RowTemplate.DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
-            this.packagelistDataGridView.RowTemplate.DefaultCellStyle.ForeColor = System.Drawing.Color.Black;
-            this.packagelistDataGridView.RowTemplate.DefaultCellStyle.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
-            this.packagelistDataGridView.RowTemplate.DefaultCellStyle.SelectionForeColor = System.Drawing.Color.Red;
-            this.packagelistDataGridView.RowTemplate.DefaultCellStyle.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.packagelistDataGridView.Size = new System.Drawing.Size(612, 705);
-            this.packagelistDataGridView.TabIndex = 1;
+            packagelistDataGridView.AutoGenerateColumns = false;
+            packagelistDataGridView.BackgroundColor = Color.White;
+            packagelistDataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            packagelistDataGridView.Columns.AddRange(new DataGridViewColumn[] { ImageColumn, NamedataGridViewTextBoxColumn2, InstalleddataGridViewCheckBoxColumn1, VersiondataGridViewTextBoxColumn6, updateversion, UpDateInstallGridButton });
+            packagelistDataGridView.DataSource = packagelistBindingSource;
+            packagelistDataGridView.Dock = DockStyle.Fill;
+            packagelistDataGridView.Location = new Point(0, 25);
+            packagelistDataGridView.Margin = new Padding(4, 3, 4, 3);
+            packagelistDataGridView.Name = "packagelistDataGridView";
+            packagelistDataGridView.RowTemplate.DefaultCellStyle.Alignment = DataGridViewContentAlignment.TopCenter;
+            packagelistDataGridView.RowTemplate.DefaultCellStyle.ForeColor = Color.Black;
+            packagelistDataGridView.RowTemplate.DefaultCellStyle.SelectionBackColor = Color.FromArgb(255, 255, 192);
+            packagelistDataGridView.RowTemplate.DefaultCellStyle.SelectionForeColor = Color.Red;
+            packagelistDataGridView.RowTemplate.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            packagelistDataGridView.Size = new Size(714, 795);
+            packagelistDataGridView.TabIndex = 1;
             // 
             // ImageColumn
             // 
-            this.ImageColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
-            this.ImageColumn.HeaderText = "";
-            this.ImageColumn.Image = global::Beep.Python.Winform.Properties.Resources.FlagDarkGreen;
-            this.ImageColumn.Name = "ImageColumn";
-            this.ImageColumn.Width = 21;
+            ImageColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+            ImageColumn.HeaderText = "";
+            ImageColumn.Image = Properties.Resources.FlagDarkGreen;
+            ImageColumn.Name = "ImageColumn";
+            ImageColumn.Width = 21;
             // 
             // NamedataGridViewTextBoxColumn2
             // 
-            this.NamedataGridViewTextBoxColumn2.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.NamedataGridViewTextBoxColumn2.DataPropertyName = "packagename";
-            this.NamedataGridViewTextBoxColumn2.HeaderText = "Name";
-            this.NamedataGridViewTextBoxColumn2.Name = "NamedataGridViewTextBoxColumn2";
+            NamedataGridViewTextBoxColumn2.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            NamedataGridViewTextBoxColumn2.DataPropertyName = "packagename";
+            NamedataGridViewTextBoxColumn2.HeaderText = "Name";
+            NamedataGridViewTextBoxColumn2.Name = "NamedataGridViewTextBoxColumn2";
             // 
             // InstalleddataGridViewCheckBoxColumn1
             // 
-            this.InstalleddataGridViewCheckBoxColumn1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.ColumnHeader;
-            this.InstalleddataGridViewCheckBoxColumn1.DataPropertyName = "installed";
-            this.InstalleddataGridViewCheckBoxColumn1.FalseValue = "";
-            this.InstalleddataGridViewCheckBoxColumn1.HeaderText = "Installed";
-            this.InstalleddataGridViewCheckBoxColumn1.IndeterminateValue = "";
-            this.InstalleddataGridViewCheckBoxColumn1.Name = "InstalleddataGridViewCheckBoxColumn1";
-            this.InstalleddataGridViewCheckBoxColumn1.ReadOnly = true;
-            this.InstalleddataGridViewCheckBoxColumn1.TrueValue = "";
-            this.InstalleddataGridViewCheckBoxColumn1.Width = 52;
+            InstalleddataGridViewCheckBoxColumn1.AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader;
+            InstalleddataGridViewCheckBoxColumn1.DataPropertyName = "installed";
+            InstalleddataGridViewCheckBoxColumn1.FalseValue = "";
+            InstalleddataGridViewCheckBoxColumn1.HeaderText = "Installed";
+            InstalleddataGridViewCheckBoxColumn1.IndeterminateValue = "";
+            InstalleddataGridViewCheckBoxColumn1.Name = "InstalleddataGridViewCheckBoxColumn1";
+            InstalleddataGridViewCheckBoxColumn1.ReadOnly = true;
+            InstalleddataGridViewCheckBoxColumn1.TrueValue = "";
+            InstalleddataGridViewCheckBoxColumn1.Width = 57;
             // 
             // VersiondataGridViewTextBoxColumn6
             // 
-            this.VersiondataGridViewTextBoxColumn6.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
-            this.VersiondataGridViewTextBoxColumn6.DataPropertyName = "version";
-            this.VersiondataGridViewTextBoxColumn6.HeaderText = "Version";
-            this.VersiondataGridViewTextBoxColumn6.Name = "VersiondataGridViewTextBoxColumn6";
-            this.VersiondataGridViewTextBoxColumn6.ReadOnly = true;
-            this.VersiondataGridViewTextBoxColumn6.Width = 67;
+            VersiondataGridViewTextBoxColumn6.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+            VersiondataGridViewTextBoxColumn6.DataPropertyName = "version";
+            VersiondataGridViewTextBoxColumn6.HeaderText = "Version";
+            VersiondataGridViewTextBoxColumn6.Name = "VersiondataGridViewTextBoxColumn6";
+            VersiondataGridViewTextBoxColumn6.ReadOnly = true;
+            VersiondataGridViewTextBoxColumn6.Width = 70;
             // 
             // updateversion
             // 
-            this.updateversion.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
-            this.updateversion.DataPropertyName = "updateversion";
-            this.updateversion.HeaderText = "Update";
-            this.updateversion.Name = "updateversion";
-            this.updateversion.ReadOnly = true;
-            this.updateversion.Width = 67;
+            updateversion.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+            updateversion.DataPropertyName = "updateversion";
+            updateversion.HeaderText = "Update";
+            updateversion.Name = "updateversion";
+            updateversion.ReadOnly = true;
+            updateversion.Width = 70;
             // 
             // UpDateInstallGridButton
             // 
-            this.UpDateInstallGridButton.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.ColumnHeader;
-            this.UpDateInstallGridButton.DataPropertyName = "buttondisplay";
-            this.UpDateInstallGridButton.HeaderText = "UpDate/Install";
-            this.UpDateInstallGridButton.Name = "UpDateInstallGridButton";
-            this.UpDateInstallGridButton.Text = "Installed";
-            this.UpDateInstallGridButton.UseColumnTextForButtonValue = true;
-            this.UpDateInstallGridButton.Width = 82;
+            UpDateInstallGridButton.AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader;
+            UpDateInstallGridButton.DataPropertyName = "buttondisplay";
+            UpDateInstallGridButton.HeaderText = "UpDate/Install";
+            UpDateInstallGridButton.Name = "UpDateInstallGridButton";
+            UpDateInstallGridButton.Text = "Installed";
+            UpDateInstallGridButton.UseColumnTextForButtonValue = true;
+            UpDateInstallGridButton.Width = 88;
             // 
             // dataGridViewImageColumn1
             // 
-            this.dataGridViewImageColumn1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
-            this.dataGridViewImageColumn1.HeaderText = "";
-            this.dataGridViewImageColumn1.Image = global::Beep.Python.Winform.Properties.Resources.FlagDarkGreen;
-            this.dataGridViewImageColumn1.Name = "dataGridViewImageColumn1";
+            dataGridViewImageColumn1.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+            dataGridViewImageColumn1.HeaderText = "";
+            dataGridViewImageColumn1.Image = Properties.Resources.FlagDarkGreen;
+            dataGridViewImageColumn1.Name = "dataGridViewImageColumn1";
+            // 
+            // statusStrip1
+            // 
+            statusStrip1.BackColor = Color.White;
+            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1, toolStripProgressBar1, MessageLabel });
+            statusStrip1.Location = new Point(0, 820);
+            statusStrip1.Name = "statusStrip1";
+            statusStrip1.Size = new Size(714, 22);
+            statusStrip1.TabIndex = 2;
+            statusStrip1.Text = "statusStrip1";
+            // 
+            // toolStripStatusLabel1
+            // 
+            toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            toolStripStatusLabel1.Size = new Size(39, 17);
+            toolStripStatusLabel1.Text = "Status";
+            // 
+            // toolStripProgressBar1
+            // 
+            toolStripProgressBar1.BackColor = Color.White;
+            toolStripProgressBar1.Name = "toolStripProgressBar1";
+            toolStripProgressBar1.Size = new Size(100, 16);
+            // 
+            // MessageLabel
+            // 
+            MessageLabel.AutoSize = false;
+            MessageLabel.BorderSides = ToolStripStatusLabelBorderSides.Left | ToolStripStatusLabelBorderSides.Top | ToolStripStatusLabelBorderSides.Right | ToolStripStatusLabelBorderSides.Bottom;
+            MessageLabel.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            MessageLabel.Name = "MessageLabel";
+            MessageLabel.Size = new Size(527, 17);
+            MessageLabel.Spring = true;
             // 
             // uc_PackageList
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.packagelistDataGridView);
-            this.Controls.Add(this.packagelistBindingNavigator);
-            this.Name = "uc_PackageList";
-            this.Size = new System.Drawing.Size(612, 730);
-            ((System.ComponentModel.ISupportInitialize)(this.packagelistBindingNavigator)).EndInit();
-            this.packagelistBindingNavigator.ResumeLayout(false);
-            this.packagelistBindingNavigator.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.packagelistBindingSource)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.packagelistDataGridView)).EndInit();
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            Controls.Add(packagelistDataGridView);
+            Controls.Add(statusStrip1);
+            Controls.Add(packagelistBindingNavigator);
+            Margin = new Padding(4, 3, 4, 3);
+            Name = "uc_PackageList";
+            Size = new Size(714, 842);
+            ((System.ComponentModel.ISupportInitialize)packagelistBindingNavigator).EndInit();
+            packagelistBindingNavigator.ResumeLayout(false);
+            packagelistBindingNavigator.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)packagelistBindingSource).EndInit();
+            ((System.ComponentModel.ISupportInitialize)packagelistDataGridView).EndInit();
+            statusStrip1.ResumeLayout(false);
+            statusStrip1.PerformLayout();
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -359,5 +375,9 @@
         private System.Windows.Forms.ToolStripTextBox NewPackagetoolStripTextBox;
         private System.Windows.Forms.ToolStripButton InstallNewPackagetoolStripButton;
         private System.Windows.Forms.ToolStripButton InstallPIPtoolStripButton;
+        private StatusStrip statusStrip1;
+        private ToolStripStatusLabel toolStripStatusLabel1;
+        private ToolStripProgressBar toolStripProgressBar1;
+        private ToolStripStatusLabel MessageLabel;
     }
 }

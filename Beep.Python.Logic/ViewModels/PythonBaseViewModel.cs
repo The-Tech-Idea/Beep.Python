@@ -1,5 +1,4 @@
-﻿using Beep.Python.Model;
-using Beep.Python.RuntimeEngine;
+﻿using Beep.Python.RuntimeEngine;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Python.Runtime;
 using System;
@@ -12,18 +11,18 @@ using TheTechIdea;
 using TheTechIdea.Beep;
 
 
-namespace Beep.Python.RuntimeEngine.ViewModels
+namespace Beep.Python.Logic.ViewModels
 {
     public class PythonBaseViewModel : ObservableObject, IDisposable
     {
-        public IPythonRunTimeManager _pythonRuntimeManager;
+        public PythonNetRunTimeManager _pythonRuntimeManager;
         public PyModule _persistentScope;
         public bool disposedValue;
         public CancellationTokenSource TokenSource { get; set; }
         public CancellationToken Token { get; set; }
         public IProgress<PassedArgs> Progress { get; set; }
         IDMEEditor Editor;
-        public PythonBaseViewModel(IPythonRunTimeManager pythonRuntimeManager, PyModule persistentScope)
+        public PythonBaseViewModel(PythonNetRunTimeManager pythonRuntimeManager, PyModule persistentScope)
         {
             _pythonRuntimeManager = pythonRuntimeManager;
             Editor = _pythonRuntimeManager.DMEditor;
@@ -31,7 +30,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             PythonHelpers._persistentScope = persistentScope;
             PythonHelpers._pythonRuntimeManager = pythonRuntimeManager;
         }
-        public PythonBaseViewModel(IPythonRunTimeManager pythonRuntimeManager)
+        public PythonBaseViewModel(PythonNetRunTimeManager pythonRuntimeManager)
         {
             _pythonRuntimeManager = pythonRuntimeManager;
             Editor = _pythonRuntimeManager.DMEditor;
@@ -74,16 +73,12 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             {
                 return retval;
             }
-            if (_persistentScope == null && _pythonRuntimeManager.IsInitialized)
+            using (Py.GIL())
             {
-                using (Py.GIL())
-                {
-                    _persistentScope = Py.CreateScope("__main__");
-                    _persistentScope.Exec("models = {}");  // Initialize the models dictionary
-                    retval = true;
-                }
+                _persistentScope = Py.CreateScope("__main__");
+                _persistentScope.Exec("models = {}");  // Initialize the models dictionary
+                retval = true;
             }
-           
             return retval;
         }
         public virtual void RunPythonScript(string script, dynamic parameters)

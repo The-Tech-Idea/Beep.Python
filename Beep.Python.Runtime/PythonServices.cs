@@ -1,4 +1,5 @@
 ﻿using Beep.Python.Model;
+using Beep.Python.RuntimeEngine.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using TheTechIdea.Beep;
 
@@ -10,6 +11,7 @@ namespace Beep.Python.RuntimeEngine
         private static bool IsReady  = false;
         private static IDMEEditor DMEditor;
         private static string Pythonruntimepath;
+        private static IPackageManagerViewModel PackageManager;
         public static IServiceCollection RegisterPythonService(this IServiceCollection services,string pythonruntimepath)
         {
             Pythonruntimepath = pythonruntimepath;
@@ -18,183 +20,22 @@ namespace Beep.Python.RuntimeEngine
            
             services.AddSingleton<IPythonRunTimeManager>(PythonRunTimeManager);
             IsReady = PythonRunTimeManager.Initialize(pythonruntimepath, BinType32or64.p395x64, @"lib\site-packages");
+            if (IsReady)
+            {
+                PackageManager = new PackageManagerViewModel(PythonRunTimeManager);
+                services.AddSingleton<IPackageManagerViewModel>(PackageManager);
+            }
             return services;
         }
        
         public static IPythonRunTimeManager GetPythonRunTimeManager(this IDMEEditor dmeEditor)
         {
-          
            return  PythonRunTimeManager;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         }
-        
+        public static IPackageManagerViewModel GetPythonPackageManager(this IDMEEditor dmeEditor)
+        {
+            return PackageManager;
+        }
+
     }
 }

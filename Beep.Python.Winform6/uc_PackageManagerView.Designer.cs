@@ -36,10 +36,12 @@
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             toolStripProgressBar1 = new ToolStripProgressBar();
             toolStripStatusLabel2 = new ToolStripStatusLabel();
-            toolStripStatusLabel3 = new ToolStripStatusLabel();
+            MessageLabel = new ToolStripStatusLabel();
             beepGrid1 = new TheTechIdea.Beep.Winform.Controls.Grid.BeepGrid();
             bindingSource1 = new BindingSource(components);
+            toolStripButton1 = new ToolStripButton();
             tableLayoutPanel1.SuspendLayout();
+            toolStrip1.SuspendLayout();
             statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)bindingSource1).BeginInit();
             SuspendLayout();
@@ -67,6 +69,7 @@
             // toolStrip1
             // 
             toolStrip1.Dock = DockStyle.Fill;
+            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripButton1 });
             toolStrip1.Location = new Point(0, 31);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new Size(830, 34);
@@ -88,7 +91,7 @@
             // statusStrip1
             // 
             statusStrip1.Dock = DockStyle.Fill;
-            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1, toolStripProgressBar1, toolStripStatusLabel2, toolStripStatusLabel3 });
+            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1, toolStripProgressBar1, toolStripStatusLabel2, MessageLabel });
             statusStrip1.Location = new Point(0, 781);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Size = new Size(830, 24);
@@ -105,19 +108,20 @@
             // toolStripProgressBar1
             // 
             toolStripProgressBar1.Name = "toolStripProgressBar1";
-            toolStripProgressBar1.Size = new Size(100, 18);
+            toolStripProgressBar1.Size = new Size(300, 18);
+            toolStripProgressBar1.Style = ProgressBarStyle.Marquee;
             // 
             // toolStripStatusLabel2
             // 
             toolStripStatusLabel2.Name = "toolStripStatusLabel2";
             toolStripStatusLabel2.Size = new Size(0, 19);
             // 
-            // toolStripStatusLabel3
+            // MessageLabel
             // 
-            toolStripStatusLabel3.BackColor = Color.White;
-            toolStripStatusLabel3.Name = "toolStripStatusLabel3";
-            toolStripStatusLabel3.Size = new Size(665, 19);
-            toolStripStatusLabel3.Spring = true;
+            MessageLabel.BackColor = Color.White;
+            MessageLabel.Name = "MessageLabel";
+            MessageLabel.Size = new Size(634, 19);
+            MessageLabel.Spring = true;
             // 
             // beepGrid1
             // 
@@ -169,6 +173,14 @@
             bindingSource1.DataMember = "Packages";
             bindingSource1.DataSource = typeof(RuntimeEngine.ViewModels.PackageManagerViewModel);
             // 
+            // toolStripButton1
+            // 
+            toolStripButton1.Image = Properties.Resources.RunUpdate;
+            toolStripButton1.ImageTransparentColor = Color.Magenta;
+            toolStripButton1.Name = "toolStripButton1";
+            toolStripButton1.Size = new Size(83, 31);
+            toolStripButton1.Text = "Refresh All";
+            // 
             // uc_PackageManagerView
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -178,6 +190,8 @@
             Size = new Size(830, 813);
             tableLayoutPanel1.ResumeLayout(false);
             tableLayoutPanel1.PerformLayout();
+            toolStrip1.ResumeLayout(false);
+            toolStrip1.PerformLayout();
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)bindingSource1).EndInit();
@@ -191,10 +205,11 @@
         private ToolStripStatusLabel toolStripStatusLabel1;
         private ToolStripProgressBar toolStripProgressBar1;
         private ToolStripStatusLabel toolStripStatusLabel2;
-        private ToolStripStatusLabel toolStripStatusLabel3;
+        private ToolStripStatusLabel MessageLabel;
         private ToolStrip toolStrip1;
         private Label label1;
         private TheTechIdea.Beep.Winform.Controls.Grid.BeepGrid beepGrid1;
         private BindingSource bindingSource1;
+        private ToolStripButton toolStripButton1;
     }
 }

@@ -25,7 +25,9 @@
 		</None>
 	</ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="pythonnet" Version="3.0.3" />
     <PackageReference Include="System.Linq.Expressions" Version="4.3.0" />
@@ -33,7 +35,6 @@
     <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="1.0.119" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Beep.Python.Logic\Beep.Python.Logic.csproj" />
     <ProjectReference Include="..\Beep.Python.Model\Beep.Python.Model.csproj" />
   </ItemGroup>
 

@@ -1,4 +1,5 @@
-﻿using Python.Runtime;
+﻿using Beep.Python.Model;
+using Python.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace Beep.Python.RuntimeEngine
 {
     public static class PythonHelpers
     {
-        public static  PythonNetRunTimeManager _pythonRuntimeManager { get; set; }
+        public static IPythonRunTimeManager _pythonRuntimeManager { get; set; }
         public static PyModule _persistentScope { get; set; }
        
 

@@ -1,37 +1,41 @@
 ﻿using Beep.Python.Model;
+using Beep.Python.RuntimeEngine;
 using DataManagementModels.Editor;
+using Newtonsoft.Json.Linq;
 using Python.Runtime;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using TheTechIdea.Beep;
 using TheTechIdea.Beep.Editor;
 
-namespace Beep.Python.RuntimeEngine.ViewModels
+namespace Beep.Python.Logic.ViewModels
 {
-    public class PackageManagerViewModel : PythonBaseViewModel, IPackageManagerViewModel
+    public class PackageManagerViewModel: PythonBaseViewModel
     {
         public ObservableBindingList<PackageDefinition> Packages => unitofWork.Units;
-        public UnitofWork<PackageDefinition> unitofWork { get; set; }
-        public IDMEEditor Editor { get; set; }
+        public UnitofWork<PackageDefinition> unitofWork {  get; set; }
+        IDMEEditor Editor;
 
         public PackageManagerViewModel() : base()
         {
 
         }
-        public PackageManagerViewModel(IPythonRunTimeManager pythonRuntimeManager, PyModule persistentScope) : base(pythonRuntimeManager, persistentScope)
+        public PackageManagerViewModel(PythonNetRunTimeManager pythonRuntimeManager, PyModule persistentScope) : base(pythonRuntimeManager, persistentScope)
         {
             _pythonRuntimeManager = pythonRuntimeManager;
             _persistentScope = persistentScope;
             Init();
 
         }
-        public PackageManagerViewModel(IPythonRunTimeManager pythonRuntimeManager) : base(pythonRuntimeManager)
+        public PackageManagerViewModel(PythonNetRunTimeManager pythonRuntimeManager) : base(pythonRuntimeManager)
         {
             _pythonRuntimeManager = pythonRuntimeManager;
-
+            Init();
             InitializePythonEnvironment();
-           
-
         }
         public void Init()
         {
@@ -58,20 +62,20 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         }
         public async Task<bool> InstallNewPackageAsync(string packagename)
         {
-            bool retval = false;
+            bool retval=false;
             if (!_pythonRuntimeManager.IsInitialized)
 
                 return retval;
             if (_pythonRuntimeManager.IsBusy)
             {
-                //  MessageBox.Show("Please wait until the current operation is finished");
+              //  MessageBox.Show("Please wait until the current operation is finished");
                 return retval;
             }
             if (!string.IsNullOrEmpty(packagename))
             {
-                retval = await _pythonRuntimeManager.InstallPackage(packagename, Progress, Token).ConfigureAwait(true);
+               retval = await _pythonRuntimeManager.InstallPackage(packagename, Progress, Token).ConfigureAwait(true);
             }
-
+           
             return retval;
         }
         public async Task<bool> UnInstallPackageAsync(string packagename)
@@ -87,7 +91,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             }
             if (!string.IsNullOrEmpty(packagename))
             {
-                retval = await _pythonRuntimeManager.RemovePackage(packagename, Progress, Token).ConfigureAwait(true);
+                retval = await _pythonRuntimeManager.UnInstallPackage(packagename, Progress, Token).ConfigureAwait(true);
             }
 
             return retval;
@@ -121,7 +125,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
                 //  MessageBox.Show("Please wait until the current operation is finished");
                 return retval;
             }
-            retval = await _pythonRuntimeManager.RefreshInstalledPackagesList(Progress, Token).ConfigureAwait(true);
+            retval = await _pythonRuntimeManager.UpgradeAllPackages(Progress, Token).ConfigureAwait(true);
             return retval;
         }
         public async Task<bool> RefreshPackageAsync(string packagename)
@@ -137,7 +141,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             }
             if (!string.IsNullOrEmpty(packagename))
             {
-                retval = await _pythonRuntimeManager.RefreshInstalledPackage(packagename, Progress, Token).ConfigureAwait(true);
+                retval = await _pythonRuntimeManager.RefreshPackage(packagename, Progress, Token).ConfigureAwait(true);
             }
 
             return retval;
@@ -155,16 +159,10 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             }
             if (_pythonRuntimeManager != null)
             {
-                await _pythonRuntimeManager.RefreshInstalledPackagesList(Progress, Token).ConfigureAwait(true);
-                _pythonRuntimeManager.SaveConfig();
+               await _pythonRuntimeManager.RefreshInstalledPackagesList(Progress, Token).ConfigureAwait(true);
+               _pythonRuntimeManager.SaveConfig();
             }
             return retval;
-        }
-        public void Dispose()
-        {
-           
-            unitofWork = null;
-           
         }
     }
 }

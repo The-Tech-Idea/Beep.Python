@@ -543,20 +543,6 @@ def capture_output(code, globals_dict):
 
         #endregion "Python Run Code"
         #region "Package Manager"
-        public async Task<bool> UnInstallPackage(string packagename, IProgress<PassedArgs> progress, CancellationToken token)
-        {
-           return await RemovePackage(packagename, progress, token);
-        }
-
-        public async Task<bool> UpgradeAllPackages(IProgress<PassedArgs> progress, CancellationToken token)
-        {
-            return await RefreshInstalledPackagesList(progress, token);
-        }
-
-        public async Task<bool> RefreshPackage(string packagename, IProgress<PassedArgs> progress, CancellationToken token)
-        {
-            return  await UpdatePackage(packagename, progress, token);
-        }
         public async Task<string> RunPackageManagerAsync(IProgress<PassedArgs> progress, string packageName, PackageAction packageAction, bool useConda = false)
         {
             string customPath = $"{CurrentRuntimeConfig.BinPath.Trim()};{CurrentRuntimeConfig.ScriptPath.Trim()}".Trim();
@@ -732,11 +718,15 @@ def run_with_timeout(func, args, output_callback, timeout):
                 progress.Report(new PassedArgs() { Messege = $"Finished {command} eith error" });
             return output;
         }
-        public async Task<bool> listpackagesAsync(IProgress<PassedArgs> progress, CancellationToken token, bool useConda = false, string packagename = null)
+        public async Task<bool> listpackagesAsync(IProgress<PassedArgs> _progress, CancellationToken token, bool useConda = false, string packagename = null)
         {
             if (IsBusy) return false;
             IsBusy = true;
             int i = 0;
+            if(_progress != null)
+            {
+                Progress = _progress;
+            }
             try
             {
                 bool checkall = true;
@@ -749,7 +739,8 @@ def run_with_timeout(func, args, output_callback, timeout):
                 {
                     dynamic pkgResources = Py.Import("importlib.metadata");
                     dynamic workingSet = pkgResources.distributions();
-
+                    int count = CurrentRuntimeConfig.Packagelist.Count;
+                    int j = 1;
                     foreach (dynamic pkg in workingSet)
                     {
                         i++;
@@ -758,7 +749,7 @@ def run_with_timeout(func, args, output_callback, timeout):
                         string line = $"Checking Package {packageName}: {packageVersion}";
                         Console.WriteLine(line);
                         // runTimeManager.OutputLines.Add(line);
-                        progress.Report(new PassedArgs() { Messege = line });
+                        Progress.Report(new PassedArgs() { Messege = line ,ParameterInt1=j,ParameterInt2=count});
                         bool IsInternetAvailabe = PythonRunTimeDiagnostics.CheckNet();
                         PackageDefinition onlinepk = new PackageDefinition();
                         if (!string.IsNullOrEmpty(packageVersion))
@@ -775,12 +766,10 @@ def run_with_timeout(func, args, output_callback, timeout):
                                 if (package != null)
                                 {
                                     int idx = CurrentRuntimeConfig.Packagelist.IndexOf(package);
-                                    package.version = packageVersion;
                                     if (onlinepk != null)
                                     {
                                         package.updateversion = onlinepk.version;
                                     }
-                                    else package.updateversion = packageVersion;
                                     package.installed = true;
                                     package.buttondisplay = "Installed";
 
@@ -797,26 +786,21 @@ def run_with_timeout(func, args, output_callback, timeout):
 
                                     Console.WriteLine(line);
                                     // runTimeManager.OutputLines.Add(line);
-                                    progress.Report(new PassedArgs() { Messege = line });
+                                    Progress.Report(new PassedArgs() { Messege = line});
                                 }
                                 else
                                 {
                                     PackageDefinition packagelist = new PackageDefinition();
                                     packagelist.packagename = packageName;
                                     packagelist.version = packageVersion;
-                                    if (onlinepk != null)
-                                    {
-                                        packagelist.updateversion = onlinepk.version;
-                                    }
-                                    else packagelist.updateversion = packageVersion;
-
+                                    packagelist.updateversion = packageVersion;
                                     packagelist.installed = true;
-                                    packagelist.buttondisplay = "Installed";
+                                    packagelist.buttondisplay = "Added";
                                     CurrentRuntimeConfig.Packagelist.Add(packagelist);
                                     line = $"Added new Package {packagelist}: {packagelist.version}";
                                     Console.WriteLine(line);
                                     //  runTimeManager.OutputLines.Add(line);
-                                    progress.Report(new PassedArgs() { Messege = line });
+                                    Progress.Report(new PassedArgs() { Messege = line });
                                 }
 
                             }
@@ -848,7 +832,7 @@ def run_with_timeout(func, args, output_callback, timeout):
 
                                     Console.WriteLine(line);
                                     // runTimeManager.OutputLines.Add(line);
-                                    progress.Report(new PassedArgs() { Messege = line });
+                                    Progress.Report(new PassedArgs() { Messege = line });
                                 }
                             }
 
@@ -856,12 +840,12 @@ def run_with_timeout(func, args, output_callback, timeout):
                         }
                         else Console.WriteLine($" empty {packageName}: {packageVersion}");
 
-
+                        j++;
                     }
                 }
                 if (i == 0)
                 {
-                    progress.Report(new PassedArgs() { Messege = "No Packages Found" });
+                    Progress.Report(new PassedArgs() { Messege = "No Packages Found" });
                     CurrentRuntimeConfig.Packagelist = new List<PackageDefinition>();
                 }
                 IsBusy = false;
@@ -1098,7 +1082,7 @@ def run_with_timeout(func, args, output_callback, timeout):
 
             try
             {
-                var retval = await listpackagesAsync(progress, token).ConfigureAwait(true);
+                var retval = await listpackagesAsync(progress, token);
                 IsBusy = false;
                 return true;
             }

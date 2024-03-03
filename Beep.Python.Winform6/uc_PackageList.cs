@@ -1,4 +1,5 @@
 ﻿using Beep.Python.Model;
+using Beep.Python.RuntimeEngine;
 using BeepEnterprize.Vis.Module;
 using System.Data;
 using TheTechIdea;
@@ -40,12 +41,18 @@ namespace Beep.Python.Winform
         IBranch RootAppBranch;
         IBranch branch;
 
-       
-
-       // PythonNetRunTimeManager pythonRunTimeManager;
 
 
-     
+        // PythonNetRunTimeManager pythonRunTimeManager;
+
+        private IPythonRunTimeManager PythonRunTimeManager;
+
+        public IPackageManagerViewModel Pythonpackagemanager { get; private set; }
+
+        private BindingSource bs = new BindingSource();
+
+
+
         IProgress<PassedArgs> progress;
         CancellationToken token;
       //  frm_PythonFolderManagement pythonFolderManagement;
@@ -59,9 +66,10 @@ namespace Beep.Python.Winform
             Passedarg = e;
             Logger = plogger;
             ErrorObject = per;
-   
-           
-            Visutil = (IVisManager)e.Objects.Where(c => c.Name == "VISUTIL").FirstOrDefault().obj;
+
+            PythonRunTimeManager = DMEEditor.GetPythonRunTimeManager();
+            Pythonpackagemanager=DMEEditor.GetPythonPackageManager();
+             Visutil = (IVisManager)e.Objects.Where(c => c.Name == "VISUTIL").FirstOrDefault().obj;
 
             if (e.Objects.Where(c => c.Name == "Branch").Any())
             {
@@ -71,26 +79,60 @@ namespace Beep.Python.Winform
             {
                 RootAppBranch = (IBranch)e.Objects.Where(c => c.Name == "RootAppBranch").FirstOrDefault().obj;
             }
-            if (e.Objects.Where(c => c.Name == "IPythonRunTimeManager").Any())
-            {
-                PythonRunTimeManager = (IPythonRunTimeManager)e.Objects.Where(c => c.Name == "IPythonRunTimeManager").FirstOrDefault().obj;
-            }
             if (e.Objects.Where(c => c.Name == "CancellationToken").Any())
             {
                 token = (CancellationToken)e.Objects.Where(c => c.Name == "CancellationToken").FirstOrDefault().obj;
             }
-            if (e.Objects.Where(c => c.Name == "IProgress").Any())
-            {
-                progress = (IProgress<PassedArgs>)e.Objects.Where(c => c.Name == "IProgress").FirstOrDefault().obj;
-            }
-            if (PythonRunTimeManager.IsInitialized)
-            {
-                Setup(DMEEditor, PythonRunTimeManager, progress, token);
-            }
-            else
-                return;
-            
 
+            //if (PythonRunTimeManager.IsInitialized)
+            //{
+            //    Setup(DMEEditor, PythonRunTimeManager, progress, token);
+            //}
+            //else
+            //{
+            //    return;
+            //}
+            setupmaxmin();
+            setupprogressbar();
+
+            if (PythonRunTimeManager.CurrentRuntimeConfig.Packagelist.Count == 0)
+            {
+                refersh();
+            }
+            else RefreshUI();
+
+        }
+        private void setupmaxmin()
+        {
+            toolStripProgressBar1.Minimum = 0;
+            toolStripProgressBar1.Maximum = Pythonpackagemanager.Packages.Count;
+        }
+        private void setupprogressbar()
+        {
+           
+             progress = new Progress<PassedArgs>(percent =>
+            {
+                //progressBar1.CustomText = percent.ParameterInt1 + " out of " + percent.ParameterInt2;
+                toolStripProgressBar1.Maximum= Pythonpackagemanager.Packages.Count;
+                toolStripProgressBar1.Value = percent.ParameterInt1;
+                if (Visutil.IsShowingWaitForm)
+                {
+                    Visutil.ShowWaitForm(new PassedArgs() { Messege = percent.Messege });
+                }
+            
+                MessageLabel.Text= percent.Messege;
+                //if (percent.EventType == "Update" && DMEEditor.ErrorObject.Flag == Errors.Failed)
+                //{
+                //    update(percent.Messege);
+                //}
+                if (!string.IsNullOrEmpty(percent.EventType))
+                {
+                    if (percent.EventType == "Stop")
+                    {
+                        token.ThrowIfCancellationRequested();
+                    }
+                }
+            });
         }
         private bool cellFormattingInProgress = false;
         public uc_PackageList()
@@ -215,7 +257,7 @@ namespace Beep.Python.Winform
                 {
                     if (!latestversion.Value.ToString().Equals(version.Value.ToString()))
                     {
-                        latestversion.Style.BackColor = Color.Red;
+                        latestversion.Style.BackColor = System.Drawing.Color.Red;
                     }
                     else
                         latestversion.Style.BackColor = Color.Green;
@@ -229,9 +271,6 @@ namespace Beep.Python.Winform
         }
 
       
-        private IPythonRunTimeManager PythonRunTimeManager;
-        private BindingSource bs = new BindingSource();
-
      
         public void Setup(IDMEEditor dMEEditor, IPythonRunTimeManager pythonRunTimeManager, IProgress<PassedArgs> progress,
         CancellationToken token)
@@ -250,7 +289,7 @@ namespace Beep.Python.Winform
             else RefreshUI();
             // refersh();
         }
-        private void refersh()
+        private async void refersh()
         {
             if (!PythonRunTimeManager.IsInitialized)
 
@@ -262,10 +301,12 @@ namespace Beep.Python.Winform
             }
             if (PythonRunTimeManager != null)
             {
-                PythonRunTimeManager.RefreshInstalledPackagesList(progress, token).ConfigureAwait(true);
+                setupprogressbar();
+                Visutil.ShowWaitForm(new PassedArgs() { Messege = "Refreshing Installed Packages" });
+                await PythonRunTimeManager.RefreshInstalledPackagesList(progress, token);
                 RefreshUI();
                 PythonRunTimeManager.SaveConfig();
-
+                Visutil.CloseWaitForm   ();
 
             }
 
