@@ -91,7 +91,7 @@ namespace Beep.Python.Logic.ViewModels
             }
             if (!string.IsNullOrEmpty(packagename))
             {
-                retval = await _pythonRuntimeManager.UnInstallPackage(packagename, Progress, Token).ConfigureAwait(true);
+                retval = await _pythonRuntimeManager.RemovePackage(packagename, Progress, Token).ConfigureAwait(true);
             }
 
             return retval;
@@ -125,7 +125,7 @@ namespace Beep.Python.Logic.ViewModels
                 //  MessageBox.Show("Please wait until the current operation is finished");
                 return retval;
             }
-            retval = await _pythonRuntimeManager.UpgradeAllPackages(Progress, Token).ConfigureAwait(true);
+            retval = await _pythonRuntimeManager.RefreshInstalledPackagesList(Progress, Token).ConfigureAwait(true);
             return retval;
         }
         public async Task<bool> RefreshPackageAsync(string packagename)
@@ -141,7 +141,7 @@ namespace Beep.Python.Logic.ViewModels
             }
             if (!string.IsNullOrEmpty(packagename))
             {
-                retval = await _pythonRuntimeManager.RefreshPackage(packagename, Progress, Token).ConfigureAwait(true);
+                retval = await _pythonRuntimeManager.RefreshInstalledPackage(packagename, Progress, Token).ConfigureAwait(true);
             }
 
             return retval;
