@@ -16,20 +16,20 @@ namespace Beep.Python.Logic.ViewModels
         [ObservableProperty]
         List<GenericLOVData> listofAlgorithims=new List<GenericLOVData> ();
         [ObservableProperty]
-        AI_ALGORITHIMS currentAlgorithim;
+        Python_Algorithim currentAlgorithim;
         [ObservableProperty]
-        AI_DATACLASSES currentDataClass;
+        PythonDataClasses currentDataClass;
         [ObservableProperty]
         string myAIlibraryfolder;
-        public ObservableBindingList<AI_ALGORITHIMS> Algorithms => Unitofwork.Units;
-        public UnitofWork<AI_ALGORITHIMS> Unitofwork { get; set; }
-        public UnitofWork<AI_DATACLASSES> DataClassUnits;
+        public ObservableBindingList<Python_Algorithim> Algorithms => Unitofwork.Units;
+        public UnitofWork<Python_Algorithim> Unitofwork { get; set; }
+        public UnitofWork<PythonDataClasses> DataClassUnits;
         public AIAlgorithimsViewModel(PythonNetRunTimeManager pythonRuntimeManager, PyModule persistentScope) : base(pythonRuntimeManager, persistentScope)
         {
             _pythonRuntimeManager = pythonRuntimeManager;
             _persistentScope = persistentScope;
-            Unitofwork = new UnitofWork<AI_ALGORITHIMS>(Editor, "dhubdb", "AI_ALGORITHIMS", "ID");
-            DataClassUnits=new UnitofWork<AI_DATACLASSES>(Editor, "dhubdb", "AI_DATACLASSES", "ID");
+            Unitofwork = new UnitofWork<Python_Algorithim>(Editor, "dhubdb", "AI_ALGORITHIMS", "ID");
+            DataClassUnits=new UnitofWork<PythonDataClasses>(Editor, "dhubdb", "AI_DATACLASSES", "ID");
             Unitofwork.Sequencer = "AI_ALGORITHIMS_SEQ";
             Unitofwork.PostCreate += AlgorithmsunitofWork_PostCreate;
             ListofAlgorithims = new List<GenericLOVData>();
@@ -44,7 +44,7 @@ namespace Beep.Python.Logic.ViewModels
       
         private void AlgorithmsunitofWork_PostCreate(object? sender, UnitofWorkParams e)
         {
-            AI_ALGORITHIMS doc= (AI_ALGORITHIMS)sender;
+            Python_Algorithim doc= (Python_Algorithim)sender;
             if (CurrentDataClass != null)
             {
                     doc.DATACLASS_ID = CurrentDataClass.ID;
@@ -73,7 +73,7 @@ namespace Beep.Python.Logic.ViewModels
             return retval;
         }
         
-        public AI_ALGORITHIMS Get(double DataClassid)
+        public Python_Algorithim Get(double DataClassid)
         {
              Unitofwork.Get(new List<TheTechIdea.Beep.Report.AppFilter>() { new TheTechIdea.Beep.Report.AppFilter() { FieldName="DATACLASS_ID", Operator ="=", FilterValue=DataClassid.ToString()} ,
                                                                                                           new TheTechIdea.Beep.Report.AppFilter() { FieldName="ROW_CREATE_BY", Operator ="=", FilterValue=DhubConfig.userManager.User.KOCNO}});
@@ -88,7 +88,7 @@ namespace Beep.Python.Logic.ViewModels
         }
         public void CreateAlgorathims(string algorithim,double DataClassid)
         {
-            CurrentAlgorithim = new AI_ALGORITHIMS() { ALGORITHIM = algorithim, DATACLASS_ID = DataClassid };
+            CurrentAlgorithim = new Python_Algorithim() { ALGORITHIM = algorithim, DATACLASS_ID = DataClassid };
             Unitofwork.Create(CurrentAlgorithim);
            
         }

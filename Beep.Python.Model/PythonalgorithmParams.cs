@@ -5,9 +5,9 @@ using System.Runtime.CompilerServices;
 
 namespace  Beep.Python.Model 
 { 
-public class AI_ALGORITHIMSPARAMS :  Entity 
+public class PythonalgorithmParams :  Entity 
 { 
-public  AI_ALGORITHIMSPARAMS (){}
+public  PythonalgorithmParams (){}
 
  private  double   _IDValue ;
 

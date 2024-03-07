@@ -95,13 +95,13 @@ namespace Beep.Python.Logic.ViewModels
         string testdatafilename;
 
         [ObservableProperty]
-        AI_DATACLASSES currentDataClass;
+        PythonDataClasses currentDataClass;
         [ObservableProperty]
         string aiCompFileDirName;
         [ObservableProperty]
-        AI_ALGORITHIMS currentAlgorithim;
+        PythonAlgorithm currentAlgorithim;
         [ObservableProperty]
-        List<AI_ALGORITHIMSPARAMS> currentAlgorithimParams =new List<AI_ALGORITHIMSPARAMS>();
+        List<PythonalgorithmParams> currentAlgorithimParams =new List<PythonalgorithmParams>();
         [ObservableProperty]
         string[] features;
         [ObservableProperty]
@@ -169,7 +169,7 @@ namespace Beep.Python.Logic.ViewModels
                 Algorithimid = algid;
                 GetDataClass(DataClassid);
                 GetAlgorithim(Algorithimid);
-                Algorithim = CurrentAlgorithim.ALGORITHIM;
+                Algorithim = CurrentAlgorithim.ALGORITHM;
                 Traindatafilename = Path.Combine(CurrentAlgorithim.TRAINFILEPATH,CurrentAlgorithim.TRAINFILENAME);
                 Features=PythonMLManager.SplitData(Traindatafilename, Splitratio,GetTrainingFileString(), GetTestFileString());
                 CleanData();
@@ -215,15 +215,15 @@ namespace Beep.Python.Logic.ViewModels
             }
          
         }
-        public AI_ALGORITHIMS GetAlgorithim(double id)
+        public PythonAlgorithm GetAlgorithim(double id)
         {
-            CurrentAlgorithim = Repo.LoadDataFirst<AI_ALGORITHIMS>($"select * from AI_ALGORITHIMS where id={id}", null).Result;
-            CurrentAlgorithimParams= (List<AI_ALGORITHIMSPARAMS>)Repo.LoadData<AI_ALGORITHIMSPARAMS>($"select * from AI_ALGORITHIMSPARAMS where ALGORITHIM_ID={id}", null).Result;
+            CurrentAlgorithim = Repo.LoadDataFirst<PythonAlgorithm>($"select * from AI_ALGORITHIMS where id={id}", null).Result;
+            CurrentAlgorithimParams= (List<PythonalgorithmParams>)Repo.LoadData<PythonalgorithmParams>($"select * from AI_ALGORITHIMSPARAMS where ALGORITHIM_ID={id}", null).Result;
             return CurrentAlgorithim;
         }   
-        public AI_DATACLASSES GetDataClass(double id)
+        public PythonDataClasses GetDataClass(double id)
         {
-            CurrentDataClass = Repo.LoadDataFirst<AI_DATACLASSES>($"select * from AI_DATACLASSES where id={id}", null).Result;
+            CurrentDataClass = Repo.LoadDataFirst<PythonDataClasses>($"select * from AI_DATACLASSES where id={id}", null).Result;
             return CurrentDataClass;
         }
         public bool Train()
@@ -233,7 +233,7 @@ namespace Beep.Python.Logic.ViewModels
                 if(IsTrainDataLoaded)
                 {
                     string[] featurs = ["Pclass", "Sex", "SibSp", "Parch"];
-                    PythonMLManager.TrainModel(CurrentAlgorithim.ALGORITHIM, MLAlgorithmsHelpers.GetAlgorithm(CurrentAlgorithim.ALGORITHIM), GetParameters(), Selectedfeatures, CurrentDataClass.LABELFIELD);
+                    PythonMLManager.TrainModel(CurrentAlgorithim.ALGORITHM, MLAlgorithmsHelpers.GetAlgorithm(CurrentAlgorithim.ALGORITHM), GetParameters(), Selectedfeatures, CurrentDataClass.LABELFIELD);
                     IsModelTrained = true;
                     IsModelEvaluated = false;
                     IsModelPredicted = false;
@@ -259,16 +259,16 @@ namespace Beep.Python.Logic.ViewModels
             {
                 if(IsModelTrained)
                 {
-                    if(CurrentAlgorithim.ALGORITHIM.Contains("Regress"))
+                    if(CurrentAlgorithim.ALGORITHM.Contains("Regress"))
                     {
-                        Tuple<double, double, double> PredictScore = PythonMLManager.GetModelRegressionScores(CurrentAlgorithim.ALGORITHIM);
+                        Tuple<double, double, double> PredictScore = PythonMLManager.GetModelRegressionScores(CurrentAlgorithim.ALGORITHM);
                         MseScore = Math.Round(PredictScore.Item1, 3);
                         RmseScore = Math.Round(PredictScore.Item2, 3);
                         MaeScore = Math.Round(PredictScore.Item3, 3);
                     }
                     else
                     {
-                        Tuple<double, double> PredictScore = PythonMLManager.GetModelClassificationScore(CurrentAlgorithim.ALGORITHIM);
+                        Tuple<double, double> PredictScore = PythonMLManager.GetModelClassificationScore(CurrentAlgorithim.ALGORITHM);
                         F1Accuracy = Math.Round(PredictScore.Item2, 3);
                         EvalScore = Math.Round(PredictScore.Item1, 3);
                     }
@@ -299,7 +299,7 @@ namespace Beep.Python.Logic.ViewModels
                 if (!IsModelPredicted)
                 {
                     PythonMLManager.LoadPredictionData(GetTestValidationFileString());
-                    if (CurrentAlgorithim.ALGORITHIM.Contains("Regress"))
+                    if (CurrentAlgorithim.ALGORITHM.Contains("Regress"))
                     {
                         PythonMLManager.PredictRegression(Features);
                     }
@@ -349,7 +349,7 @@ namespace Beep.Python.Logic.ViewModels
                 {
                     //RankingviewModel.Get(DhubConfig.userManager.User.KOCNO);
                     double margin = 0;
-                    if (CurrentAlgorithim.ALGORITHIM.Contains("Regress"))
+                    if (CurrentAlgorithim.ALGORITHM.Contains("Regress"))
                     {
                         margin = 20;
                     }
@@ -457,10 +457,10 @@ namespace Beep.Python.Logic.ViewModels
             string retval = string.Empty;
             Directory.CreateDirectory(MyAIlibraryfolder);
             retval = MyAIlibraryfolder;
-            if (CurrentAlgorithim.ALGORITHIM != null)
+            if (CurrentAlgorithim.ALGORITHM != null)
             {
-                Directory.CreateDirectory(System.IO.Path.Combine(MyAIlibraryfolder, CurrentAlgorithim.ALGORITHIM));
-                retval = System.IO.Path.Combine(MyAIlibraryfolder, CurrentAlgorithim.ALGORITHIM);
+                Directory.CreateDirectory(System.IO.Path.Combine(MyAIlibraryfolder, CurrentAlgorithim.ALGORITHM));
+                retval = System.IO.Path.Combine(MyAIlibraryfolder, CurrentAlgorithim.ALGORITHM);
             }
             return retval;
         }

@@ -5,9 +5,9 @@ using System.Runtime.CompilerServices;
 
 namespace  Beep.Python.Model 
 { 
-public class AI_ALGORITHIMS :  Entity 
+public class PythonAlgorithm :  Entity 
 { 
-public  AI_ALGORITHIMS (){}
+public  PythonAlgorithm (){}
 
  private  double   _IDValue ;
 
@@ -57,7 +57,7 @@ public  AI_ALGORITHIMS (){}
 
         private System.String  _ALGORITHIMValue ;
 
- public System.String ALGORITHIM
+ public System.String ALGORITHM
     {
         get
         {

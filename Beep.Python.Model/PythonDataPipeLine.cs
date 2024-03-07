@@ -5,9 +5,9 @@ using System.Runtime.CompilerServices;
 
 namespace  Beep.Python.Model 
 { 
-public class AI_PIPELINE :  Entity 
+public class PythonDataPipeLine :  Entity 
 { 
-public  AI_PIPELINE (){}
+public  PythonDataPipeLine (){}
 
  private  double   _IDValue ;
 

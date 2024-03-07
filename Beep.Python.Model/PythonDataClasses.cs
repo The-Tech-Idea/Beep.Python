@@ -5,9 +5,9 @@ using System.Runtime.CompilerServices;
 
 namespace  Beep.Python.Model 
 { 
-public class AI_DATACLASSES :  Entity 
+public class PythonDataClasses :  Entity 
 { 
-public  AI_DATACLASSES (){}
+public  PythonDataClasses (){}
 
  private  double   _IDValue ;
 

@@ -25,7 +25,7 @@ namespace Beep.Python.Logic.ViewModels
         bool isChanged=false;
       
         [ObservableProperty]
-        AI_DATACLASSES currentDataClass;
+        PythonDataClasses currentDataClass;
         [ObservableProperty]
         string filenamepath;
         [ObservableProperty]
@@ -44,19 +44,19 @@ namespace Beep.Python.Logic.ViewModels
         List<GenericLOVData> primaryKeyFeatures = new List<GenericLOVData>();
         [ObservableProperty]
         string keyfield;
-        public UnitofWork<AI_DATACLASSES> UnitofWork;
+        public UnitofWork<PythonDataClasses> UnitofWork;
         private bool disposedValue;
 
         public IPythonMLManager PythonMLManager { get; set; }
         //public IAICompManager AICompManager { get; set; }
-        public ObservableBindingList<AI_DATACLASSES> DataClasses => UnitofWork.Units;
+        public ObservableBindingList<PythonDataClasses> DataClasses => UnitofWork.Units;
 
         public bool IsInit { get; private set; }
 
         public AICompViewModel(PythonNetRunTimeManager pythonRuntimeManager, PyModule persistentScope) : base(pythonRuntimeManager, persistentScope)
         {
          
-            UnitofWork = new UnitofWork<AI_DATACLASSES>(Editor,"dhubdb","AI_DATACLASSES", "ID");
+            UnitofWork = new UnitofWork<PythonDataClasses>(Editor,"dhubdb","AI_DATACLASSES", "ID");
             UnitofWork.Sequencer = "AI_DATACLASSES_SEQ";
          
             UnitofWork.PostCreate += DataClassesunitofWork_PostCreate;
@@ -129,13 +129,13 @@ namespace Beep.Python.Logic.ViewModels
         }
         private void DataClassesunitofWork_PostCreate(object? sender, UnitofWorkParams e)
         {
-            AI_DATACLASSES doc = (AI_DATACLASSES)sender;
+            PythonDataClasses doc = (PythonDataClasses)sender;
             
            
         }
-        public AI_DATACLASSES CreateDataClass()
+        public PythonDataClasses CreateDataClass()
         {
-            AI_DATACLASSES aI_DATACLASSES = new AI_DATACLASSES();
+            PythonDataClasses aI_DATACLASSES = new PythonDataClasses();
             UnitofWork.Create(aI_DATACLASSES);
             CurrentDataClass = aI_DATACLASSES;
             IsChanged = true;
@@ -173,7 +173,7 @@ namespace Beep.Python.Logic.ViewModels
             }
             //  return Editor.ErrorObject;
         }
-        public void UpdateDataClass(AI_DATACLASSES dlc,string name, string datafilename, string filepath)
+        public void UpdateDataClass(PythonDataClasses dlc,string name, string datafilename, string filepath)
         {
             try
             {
@@ -206,7 +206,7 @@ namespace Beep.Python.Logic.ViewModels
                 string classpath = Path.Combine(aiCompFileDirName, name);
                 Editor.ErrorObject.Ex = null;
                 Editor.ErrorObject.Flag = Errors.Ok;
-                AI_DATACLASSES  dlc =new AI_DATACLASSES();
+                PythonDataClasses  dlc =new PythonDataClasses();
                 if(File.Exists(datafilename))
                 {
                     libraryManagerViewModel.MoveFileToGlobleLibrary(datafilename, filepath, classpath, true);
@@ -331,7 +331,7 @@ namespace Beep.Python.Logic.ViewModels
                 lines[i] = string.Join(",", columns);
             }
         }
-        public void SplitDataClassFilev1(AI_DATACLASSES dataClasses, double splitRatio)
+        public void SplitDataClassFilev1(PythonDataClasses dataClasses, double splitRatio)
         {
             try
             {
@@ -399,7 +399,7 @@ namespace Beep.Python.Logic.ViewModels
                 Editor.AddLogMessage("Beep", $"Split ratio must be between {minRatio * 100}% and {maxRatio * 100}%", DateTime.Now, -1, null, Errors.Failed);
             }
         }
-        public void GetFeatures(AI_DATACLASSES dATACLASSES)
+        public void GetFeatures(PythonDataClasses dATACLASSES)
         {
             string datafilename = Path.Combine(dATACLASSES.URLPATH, dATACLASSES.TRAININGFILENAME);
             GetFeatures(datafilename);
@@ -424,7 +424,7 @@ namespace Beep.Python.Logic.ViewModels
             Keyfield = cols[cols.Length - 1];
             LabelField = cols[cols.Length - 1];
         }
-        public void SplitDataClassFile(AI_DATACLASSES dATACLASSES, double splitRatio)
+        public void SplitDataClassFile(PythonDataClasses dATACLASSES, double splitRatio)
         {
             try
             {
@@ -519,7 +519,7 @@ namespace Beep.Python.Logic.ViewModels
             }
             //  return Editor.ErrorObject;
         }
-        public void SubmitResultFile(AI_DATACLASSES dATACLASSES,string filename_w_path)
+        public void SubmitResultFile(PythonDataClasses dATACLASSES,string filename_w_path)
         {
             try
             {

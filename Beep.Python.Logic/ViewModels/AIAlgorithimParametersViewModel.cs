@@ -21,9 +21,9 @@ namespace Beep.Python.Logic.ViewModels
         [ObservableProperty]
         List<string> algorithims;
         [ObservableProperty]
-        AI_DATACLASSES currentDataClass;
+        PythonDataClasses currentDataClass;
         [ObservableProperty]
-        AI_ALGORITHIMS currentAlgorithim;
+        Python_Algorithim currentAlgorithim;
         string aiCompFileDirName;
         [ObservableProperty]
         string[] features;
@@ -31,9 +31,9 @@ namespace Beep.Python.Logic.ViewModels
         string[] selectedfeatures;
         [ObservableProperty]
         string myAIlibraryfolder;
-        public ObservableBindingList<AI_ALGORITHIMSPARAMS> AlgorithmsParameters => Unitofwork.Units;
-        public UnitofWork<AI_ALGORITHIMSPARAMS> Unitofwork;
-        UnitofWork<AI_DATACLASSES> DataClassUnits;
+        public ObservableBindingList<PythonalgorithmParams> AlgorithmsParameters => Unitofwork.Units;
+        public UnitofWork<PythonalgorithmParams> Unitofwork;
+        UnitofWork<PythonDataClasses> DataClassUnits;
         AIAlgorithimsViewModel aIAlgorithimsViewModel;
         private bool disposedValue;
 
@@ -42,12 +42,12 @@ namespace Beep.Python.Logic.ViewModels
         {
             _pythonRuntimeManager = pythonRuntimeManager;
             _persistentScope = persistentScope;
-            Unitofwork = new UnitofWork<AI_ALGORITHIMSPARAMS>(Editor, "dhubdb", "AI_ALGORITHIMSPARAMS", "ID");
+            Unitofwork = new UnitofWork<PythonalgorithmParams>(Editor, "dhubdb", "AI_ALGORITHIMSPARAMS", "ID");
             Unitofwork.Sequencer = "AI_ALGORTHIMSPARAMS_SEQ";
           
             Unitofwork.PostCreate += AlgorithmsParametersunitofWork_PostCreate;
             aIAlgorithimsViewModel=new AIAlgorithimsViewModel(Editor, dhubConfig, repo);
-            DataClassUnits = new UnitofWork<AI_DATACLASSES>(Editor, "dhubdb", "AI_DATACLASSES", "ID");
+            DataClassUnits = new UnitofWork<PythonDataClasses>(Editor, "dhubdb", "AI_DATACLASSES", "ID");
             Algorithims = MLAlgorithmsHelpers.GetAlgorithms();
             ParameterDictionaryForAlgorithms = MLAlgorithmsHelpers.GetParameterDictionaryForAlgorithms();
             aiCompFileDirName = "/AIComp";
@@ -57,7 +57,7 @@ namespace Beep.Python.Logic.ViewModels
        
         private void AlgorithmsParametersunitofWork_PostCreate(object? sender, UnitofWorkParams e)
         {
-            AI_ALGORITHIMSPARAMS doc = (AI_ALGORITHIMSPARAMS)sender;
+            PythonalgorithmParams doc = (PythonalgorithmParams)sender;
             if (CurrentDataClass != null)
             {
                 if (doc.DATACLASS_ID == 0)
@@ -105,7 +105,7 @@ namespace Beep.Python.Logic.ViewModels
             {
                 if (!Unitofwork.Units.Any(p => p.PARAMETERNAME == item.ParameterName))
                 {
-                    AI_ALGORITHIMSPARAMS doc = new AI_ALGORITHIMSPARAMS();
+                    PythonalgorithmParams doc = new PythonalgorithmParams();
                     doc.ALGORITHIM_ID = CurrentAlgorithim.ID;
                     doc.DATACLASS_ID = CurrentDataClass.ID;
                     doc.PARAMETERNAME = item.ParameterName;
