@@ -119,7 +119,7 @@ namespace Beep.Python.Winform
                 {
                     Visutil.ShowWaitForm(new PassedArgs() { Messege = percent.Messege });
                 }
-            
+                Visutil.PasstoWaitForm(new PassedArgs() { Messege = percent.Messege });
                 MessageLabel.Text= percent.Messege;
                 //if (percent.EventType == "Update" && DMEEditor.ErrorObject.Flag == Errors.Failed)
                 //{

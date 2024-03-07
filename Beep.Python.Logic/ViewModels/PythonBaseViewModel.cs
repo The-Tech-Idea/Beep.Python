@@ -21,7 +21,7 @@ namespace Beep.Python.Logic.ViewModels
         public CancellationTokenSource TokenSource { get; set; }
         public CancellationToken Token { get; set; }
         public IProgress<PassedArgs> Progress { get; set; }
-        IDMEEditor Editor;
+        public IDMEEditor Editor;
         public PythonBaseViewModel(PythonNetRunTimeManager pythonRuntimeManager, PyModule persistentScope)
         {
             _pythonRuntimeManager = pythonRuntimeManager;
