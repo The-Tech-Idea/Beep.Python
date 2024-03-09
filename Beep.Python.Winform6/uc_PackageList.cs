@@ -1,5 +1,6 @@
 ﻿using Beep.Python.Model;
 using Beep.Python.RuntimeEngine;
+using Beep.Python.RuntimeEngine.ViewModels;
 using BeepEnterprize.Vis.Module;
 using System.Data;
 using TheTechIdea;
@@ -46,16 +47,16 @@ namespace Beep.Python.Winform
         // PythonNetRunTimeManager pythonRunTimeManager;
 
         private IPythonRunTimeManager PythonRunTimeManager;
-
+     
         public IPackageManagerViewModel Pythonpackagemanager { get; private set; }
 
         private BindingSource bs = new BindingSource();
 
-
+        CancellationTokenSource tokenSource;
 
         IProgress<PassedArgs> progress;
         CancellationToken token;
-      //  frm_PythonFolderManagement pythonFolderManagement;
+        PythonBaseViewModel pythonBaseViewModel;
         public void Run(IPassedArgs Passedarg)
         {
 
@@ -68,7 +69,11 @@ namespace Beep.Python.Winform
             ErrorObject = per;
 
             PythonRunTimeManager = DMEEditor.GetPythonRunTimeManager();
-            Pythonpackagemanager=DMEEditor.GetPythonPackageManager();
+            Pythonpackagemanager = new PackageManagerViewModel(PythonRunTimeManager);
+            Pythonpackagemanager.Editor= DMEEditor;
+            pythonBaseViewModel = (PythonBaseViewModel) Pythonpackagemanager;
+
+            
              Visutil = (IVisManager)e.Objects.Where(c => c.Name == "VISUTIL").FirstOrDefault().obj;
 
             if (e.Objects.Where(c => c.Name == "Branch").Any())
@@ -83,21 +88,16 @@ namespace Beep.Python.Winform
             {
                 token = (CancellationToken)e.Objects.Where(c => c.Name == "CancellationToken").FirstOrDefault().obj;
             }
-
-            //if (PythonRunTimeManager.IsInitialized)
-            //{
-            //    Setup(DMEEditor, PythonRunTimeManager, progress, token);
-            //}
-            //else
-            //{
-            //    return;
-            //}
+           
+            tokenSource = new CancellationTokenSource();
+            token = tokenSource.Token;
             setupmaxmin();
-            setupprogressbar();
+            PythonRunTimeManager.IsBusy = false;
+            packagelistBindingSource.DataSource = Pythonpackagemanager.Packages;
 
             if (PythonRunTimeManager.CurrentRuntimeConfig.Packagelist.Count == 0)
             {
-                refersh();
+                RunRefresh();
             }
             else RefreshUI();
 
@@ -107,34 +107,66 @@ namespace Beep.Python.Winform
             toolStripProgressBar1.Minimum = 0;
             toolStripProgressBar1.Maximum = Pythonpackagemanager.Packages.Count;
         }
-        private void setupprogressbar()
+        void StopTask()
         {
+            // Attempt to cancel the task politely
+            isstopped = true;
+            isloading = false;
+            isfinish = false;
+            tokenSource.Cancel();
+            // MessageBox.Show("Job Stopped");
+
+        }
+        private void RunRefresh()
+        {
+
            
-             progress = new Progress<PassedArgs>(percent =>
+              progress = new Progress<PassedArgs>(percent =>
             {
                 //progressBar1.CustomText = percent.ParameterInt1 + " out of " + percent.ParameterInt2;
                 toolStripProgressBar1.Maximum= Pythonpackagemanager.Packages.Count;
                 toolStripProgressBar1.Value = percent.ParameterInt1;
-                if (Visutil.IsShowingWaitForm)
-                {
-                    Visutil.ShowWaitForm(new PassedArgs() { Messege = percent.Messege });
-                }
-                Visutil.PasstoWaitForm(new PassedArgs() { Messege = percent.Messege });
+                //if (Visutil.IsShowingWaitForm)
+                //{
+                //    Visutil.ShowWaitForm(new PassedArgs() { Messege = percent.Messege });
+                //}
+                //Visutil.PasstoWaitForm(new PassedArgs() { Messege = percent.Messege });
                 MessageLabel.Text= percent.Messege;
                 //if (percent.EventType == "Update" && DMEEditor.ErrorObject.Flag == Errors.Failed)
                 //{
                 //    update(percent.Messege);
                 //}
+
+                
+           
                 if (!string.IsNullOrEmpty(percent.EventType))
                 {
                     if (percent.EventType == "Stop")
                     {
-                        token.ThrowIfCancellationRequested();
+                        tokenSource.Cancel();
                     }
                 }
             });
+            pythonBaseViewModel.Progress = progress;
+            pythonBaseViewModel.Token = token;
+            Action action =
+        () =>
+            MessageBox.Show("Start");
+            var ScriptRun = Task.Run(() => {
+                CancellationTokenRegistration ctr = token.Register(() => StopTask());
+                refersh();
+                if (!isstopped)
+                {
+                    MessageBox.Show("Finish");
+                }
+                PythonRunTimeManager.SaveConfig();
+            });
         }
         private bool cellFormattingInProgress = false;
+        private bool isstopped;
+        private bool isloading;
+        private bool isfinish;
+
         public uc_PackageList()
         {
             InitializeComponent();
@@ -159,8 +191,8 @@ namespace Beep.Python.Winform
                 MessageBox.Show("Please wait until the current operation is finished");
                 return;
             }
-       
-                PythonRunTimeManager.InstallPIP(progress, token).ConfigureAwait(true);
+
+            Pythonpackagemanager.InstallPipToolAsync().ConfigureAwait(true);
 
             
             PythonRunTimeManager.IsBusy = false;
@@ -176,7 +208,7 @@ namespace Beep.Python.Winform
                 MessageBox.Show("Please wait until the current operation is finished");
                 return;
             }
-            refersh();
+            RunRefresh();
         }
 
         private void InstallNewPackagetoolStripButton_Click(object sender, EventArgs e)
@@ -191,7 +223,7 @@ namespace Beep.Python.Winform
             }
             if (!string.IsNullOrEmpty(this.NewPackagetoolStripTextBox.Text))
             {
-                var retval=PythonRunTimeManager.InstallPackage(this.NewPackagetoolStripTextBox.Text, progress, token).ConfigureAwait(true);
+                var retval=Pythonpackagemanager.InstallNewPackageAsync(this.NewPackagetoolStripTextBox.Text).ConfigureAwait(true);
                 
 
                 
@@ -284,7 +316,7 @@ namespace Beep.Python.Winform
             PythonRunTimeManager = pythonRunTimeManager;
             if (PythonRunTimeManager.CurrentRuntimeConfig.Packagelist.Count == 0)
             {
-                refersh();
+                RunRefresh();
             }
             else RefreshUI();
             // refersh();
@@ -301,12 +333,11 @@ namespace Beep.Python.Winform
             }
             if (PythonRunTimeManager != null)
             {
-                setupprogressbar();
-                Visutil.ShowWaitForm(new PassedArgs() { Messege = "Refreshing Installed Packages" });
-                await PythonRunTimeManager.RefreshInstalledPackagesList(progress, token);
-                RefreshUI();
-                PythonRunTimeManager.SaveConfig();
-                Visutil.CloseWaitForm   ();
+              
+             //   Visutil.ShowWaitForm(new PassedArgs() { Messege = "Refreshing Installed Packages" });
+                await Pythonpackagemanager.RefreshAllPackagesAsync();
+              
+              //  Visutil.CloseWaitForm   ();
 
             }
 
@@ -322,17 +353,14 @@ namespace Beep.Python.Winform
                 MessageBox.Show("Please wait until the current operation is finished");
                 return;
             }
-            bs.DataSource = null;
-            bs.DataSource = PythonRunTimeManager.CurrentRuntimeConfig.Packagelist;
-            packagelistDataGridView.DataSource = null;
-            packagelistDataGridView.DataSource = bs;
+            //bs.DataSource = null;
+            //bs.DataSource = PythonRunTimeManager.CurrentRuntimeConfig.Packagelist;
+            //packagelistDataGridView.DataSource = null;
+            //packagelistDataGridView.DataSource = bs;
             packagelistDataGridView.Refresh();
         }
-        public void SetDataSource(BindingSource bs)
-        {
-            packagelistDataGridView.DataSource = bs;
-        }
-        private void PackagelistDataGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
+      
+        private async void PackagelistDataGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.ColumnIndex == packagelistDataGridView.Columns["UpDateInstallGridButton"].Index && e.RowIndex >= 0)
             {
@@ -342,7 +370,7 @@ namespace Beep.Python.Winform
                 {
                     if (MessageBox.Show("Would like to upgrade the package " + package.packagename + "?", "Upgrade", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
                     {
-                        PythonRunTimeManager.UpdatePackage(package.packagename, progress, token).ConfigureAwait(true);
+                       await Pythonpackagemanager.UpgradePackageAsync(package.packagename).ConfigureAwait(true);
                         RefreshUI();
                     }
 

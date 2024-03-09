@@ -13,13 +13,13 @@ namespace Beep.Python.RuntimeEngine
     {
         public PythonPandasManager(PythonNetRunTimeManager pythonRuntimeManager, PyModule persistentScope):base(pythonRuntimeManager, persistentScope)
         {
-            _pythonRuntimeManager = pythonRuntimeManager;
-            _persistentScope = persistentScope;
+            pythonRuntimeManager = pythonRuntimeManager;
+            persistentScope = persistentScope;
        
         }
         public PythonPandasManager(PythonNetRunTimeManager pythonRuntimeManager):base(pythonRuntimeManager)
         {
-            _pythonRuntimeManager = pythonRuntimeManager;
+            pythonRuntimeManager = pythonRuntimeManager;
             InitializePythonEnvironment();
         }
         #region "Pandas DataFrame"
@@ -28,7 +28,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName} = pd.DataFrame({data})";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void AddColumn(string dataFrameName, string columnName, dynamic columnData)
@@ -36,14 +36,14 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}['{columnName}'] = {columnData}";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public string GetDataFrameAsJson(string dataFrameName)
         {
             using (Py.GIL())
             {
-                dynamic pandasDataFrame = _persistentScope.Get(dataFrameName);
+                dynamic pandasDataFrame = PersistentScope.Get(dataFrameName);
                 return pandasDataFrame.to_json();
             }
         }
@@ -52,7 +52,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName} = pd.read_csv('{filePath}')";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void ReadExcel(string dataFrameName, string filePath)
@@ -60,7 +60,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName} = pd.read_excel('{filePath}')";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void SelectColumns(string dataFrameName, string newFrameName, string[] columns)
@@ -69,7 +69,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = {dataFrameName}[[{columnsStr}]]";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void FilterRows(string dataFrameName, string newFrameName, string condition)
@@ -77,7 +77,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = {dataFrameName}[{dataFrameName}[{condition}]]";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void GroupBy(string dataFrameName, string newFrameName, string groupByColumn, string aggFunc)
@@ -85,7 +85,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = {dataFrameName}.groupby('{groupByColumn}').{aggFunc}()";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void MergeDataFrames(string leftFrameName, string rightFrameName, string newFrameName, string onColumn)
@@ -93,7 +93,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = pd.merge({leftFrameName}, {rightFrameName}, on='{onColumn}')";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void ToCsv(string dataFrameName, string filePath)
@@ -101,7 +101,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}.to_csv('{filePath}')";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void ToExcel(string dataFrameName, string filePath)
@@ -109,7 +109,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}.to_excel('{filePath}')";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void DropNA(string dataFrameName, string newFrameName)
@@ -117,7 +117,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = {dataFrameName}.dropna()";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void FillNA(string dataFrameName, string newFrameName, dynamic value)
@@ -125,14 +125,14 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = {dataFrameName}.fillna({value})";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public string Describe(string dataFrameName)
         {
             using (Py.GIL())
             {
-                dynamic result = _persistentScope.Eval($"{dataFrameName}.describe()");
+                dynamic result = PersistentScope.Eval($"{dataFrameName}.describe()");
                 return result.ToString();
             }
         }
@@ -140,7 +140,7 @@ namespace Beep.Python.RuntimeEngine
         {
             using (Py.GIL())
             {
-                dynamic result = _persistentScope.Eval($"{dataFrameName}.corr()");
+                dynamic result = PersistentScope.Eval($"{dataFrameName}.corr()");
                 return result.ToString();
             }
         }
@@ -149,7 +149,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = {dataFrameName}.pivot_table(index='{index}', columns='{columns}', values='{values}')";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void Resample(string dataFrameName, string newFrameName, string rule, string aggFunc)
@@ -157,7 +157,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = {dataFrameName}.resample('{rule}').{aggFunc}()";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void ApplyFunction(string dataFrameName, string columnName, string func)
@@ -165,7 +165,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}['{columnName}'] = {dataFrameName}['{columnName}'].apply({func})";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void SortByColumn(string dataFrameName, string columnName, bool ascending = true)
@@ -173,7 +173,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $@"{dataFrameName}.sort_values(by=''{columnName}'', ascending={ascending.ToString().ToLower()})";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
 
@@ -182,14 +182,14 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = {dataFrameName}.rank(method='{method}')";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public string UniqueValues(string dataFrameName, string columnName)
         {
             using (Py.GIL())
             {
-                dynamic result = _persistentScope.Eval($"{dataFrameName}['{columnName}'].unique()");
+                dynamic result = PersistentScope.Eval($"{dataFrameName}['{columnName}'].unique()");
                 return result.ToString();
             }
         }
@@ -197,7 +197,7 @@ namespace Beep.Python.RuntimeEngine
         {
             using (Py.GIL())
             {
-                dynamic result = _persistentScope.Eval($"{dataFrameName}['{columnName}'].value_counts()");
+                dynamic result = PersistentScope.Eval($"{dataFrameName}['{columnName}'].value_counts()");
                 return result.ToString();
             }
         }
@@ -207,7 +207,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = pd.concat([{frames}])";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void AppendToDataFrame(string dataFrameName, string otherDataFrameName)
@@ -215,7 +215,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName} = {dataFrameName}.append({otherDataFrameName})";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void DropDuplicates(string dataFrameName, string newFrameName)
@@ -223,7 +223,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = {dataFrameName}.drop_duplicates()";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void RenameColumns(string dataFrameName, Dictionary<string, string> newColumnNames)
@@ -232,7 +232,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}.rename(columns={{ {renameMapping} }})";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void DropColumn(string dataFrameName, string columnName)
@@ -240,7 +240,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}.drop(columns=['{columnName}'])";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void ReorderColumns(string dataFrameName, string[] newOrder)
@@ -249,7 +249,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName} = {dataFrameName}[[{columns}]]";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void NormalizeColumn(string dataFrameName, string columnName)
@@ -257,7 +257,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}['{columnName}'] = (({dataFrameName}['{columnName}'] - {dataFrameName}['{columnName}'].min()) / ({dataFrameName}['{columnName}'].max() - {dataFrameName}['{columnName}'].min()))";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void ConvertDataType(string dataFrameName, string columnName, string newType)
@@ -265,7 +265,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}['{columnName}'] = {dataFrameName}['{columnName}'].astype('{newType}')";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void ToJson(string dataFrameName, string filePath)
@@ -273,7 +273,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}.to_json('{filePath}')";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void ReadJson(string dataFrameName, string filePath)
@@ -281,7 +281,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName} = pd.read_json('{filePath}')";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void RollingWindow(string dataFrameName, string newFrameName, int windowSize, string operation)
@@ -289,7 +289,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = {dataFrameName}.rolling(window={windowSize}).{operation}()";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void CrossTab(string dataFrameName, string newFrameName, string index, string columns)
@@ -297,7 +297,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = pd.crosstab({dataFrameName}['{index}'], {dataFrameName}['{columns}'])";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void StringOperation(string dataFrameName, string columnName, string operation)
@@ -305,7 +305,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}['{columnName}'] = {dataFrameName}['{columnName}'].str.{operation}";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void ConvertToDateTime(string dataFrameName, string columnName)
@@ -313,7 +313,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}['{columnName}'] = pd.to_datetime({dataFrameName}['{columnName}'])";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void SetPandasOption(string optionName, string value)
@@ -321,7 +321,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.set_option('{optionName}', {value})";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void CreateMultiIndexDataFrame(string dataFrameName, string[] indexColumns)
@@ -330,7 +330,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}.set_index([{columns}])";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void SampleDataFrame(string dataFrameName, string newFrameName, double fraction)
@@ -338,7 +338,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = {dataFrameName}.sample(frac={fraction})";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void QueryDataFrame(string dataFrameName, string newFrameName, string query)
@@ -346,7 +346,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = {dataFrameName}.query(\"{query}\")";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void ReadSql(string dataFrameName, string sql, string connectionString)
@@ -354,7 +354,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName} = pd.read_sql('{sql}', '{connectionString}')";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void JsonNormalize(string dataFrameName, string jsonData)
@@ -362,7 +362,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"import json\n{dataFrameName} = pd.json_normalize(json.loads('{jsonData}'))";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void TextAnalysis(string dataFrameName, string columnName)
@@ -370,7 +370,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"import nltk\nnltk.download('punkt')\n{dataFrameName}['{columnName}_word_count'] = {dataFrameName}['{columnName}'].apply(lambda x: len(nltk.word_tokenize(x)))";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void AdvancedFilter(string dataFrameName, string newFrameName, string condition)
@@ -378,7 +378,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = {dataFrameName}.loc[{dataFrameName}.eval({condition})]";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void OptimizeMemory(string dataFrameName)
@@ -386,7 +386,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName} = {dataFrameName}.convert_dtypes()";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void ConvertToCategorical(string dataFrameName, string columnName)
@@ -394,7 +394,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}['{columnName}'] = {dataFrameName}['{columnName}'].astype('category')";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public string PlotDataFrame(string dataFrameName, string plotType, string columnName)
@@ -402,7 +402,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"import matplotlib.pyplot as plt\n{dataFrameName}.plot(kind='{plotType}', y='{columnName}')\nplt.savefig('plot.png')";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
                 return "plot.png";
             }
         }
@@ -411,7 +411,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}['{columnName}'] = {dataFrameName}['{columnName}'].str.{method}(r'{regexPattern}')";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void ApplyCustomFunction(string dataFrameName, string customFunction)
@@ -419,7 +419,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName} = {dataFrameName}.apply({customFunction})";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void ReadFromWeb(string dataFrameName, string url)
@@ -427,7 +427,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName} = pd.read_json('{url}')";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void ResetIndex(string dataFrameName)
@@ -435,14 +435,14 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName} = {dataFrameName}.reset_index(drop=True)";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public string StyleDataFrame(string dataFrameName)
         {
             using (Py.GIL())
             {
-                dynamic styled = _persistentScope.Eval($"{dataFrameName}.style");
+                dynamic styled = PersistentScope.Eval($"{dataFrameName}.style");
                 return styled.render();
             }
         }
@@ -450,7 +450,7 @@ namespace Beep.Python.RuntimeEngine
         {
             using (Py.GIL())
             {
-                dynamic result = _persistentScope.Eval($"{dataFrameName}.isnull()");
+                dynamic result = PersistentScope.Eval($"{dataFrameName}.isnull()");
                 return result.ToString();
             }
         }
@@ -459,7 +459,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}['{columnName}'] = {dataFrameName}['{columnName}'].apply(lambda x: x.{operation})";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void FlattenDataFrame(string dataFrameName)
@@ -467,7 +467,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName} = {dataFrameName}.reset_index()";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void AdvancedMerge(string[] dataFrameNames, string newFrameName, string joinType, string onColumn)
@@ -476,7 +476,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = pd.concat([{frames}], join='{joinType}', on='{onColumn}')";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void ProcessInChunks(string dataFrameName, int chunkSize, string processFunction)
@@ -484,7 +484,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"for chunk in np.array_split({dataFrameName}, {chunkSize}):\n    {processFunction}(chunk)";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void EncodeCategorical(string dataFrameName, string columnName)
@@ -492,7 +492,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"from sklearn.preprocessing import LabelEncoder\nencoder = LabelEncoder()\n{dataFrameName}['{columnName}'] = encoder.fit_transform({dataFrameName}['{columnName}'])";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void DataQualityCheck(string dataFrameName, string checkExpression)
@@ -500,7 +500,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"assert {dataFrameName}.eval({checkExpression})";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public string CreateInteractivePlot(string dataFrameName, string plotType, string[] columns)
@@ -509,7 +509,7 @@ namespace Beep.Python.RuntimeEngine
             {
                 string cols = string.Join(", ", columns.Select(c => $"\"{c}\""));
                 string script = $"import plotly.express as px\nfig = px.{plotType}({dataFrameName}, {cols})\nfig.write_html('plot.html')";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
                 return "plot.html";
             }
         }
@@ -518,7 +518,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"from scipy import stats\n{dataFrameName} = {dataFrameName}[(np.abs(stats.zscore({dataFrameName}['{columnName}'])) < 3)]";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void FillNA(string dataFrameName, string value)
@@ -526,7 +526,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName} = {dataFrameName}.fillna({value})";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void ReindexDataFrame(string dataFrameName, string newFrameName, string[] newIndices)
@@ -535,7 +535,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = {dataFrameName}.reindex([{indices}])";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void AddPrefixSuffix(string dataFrameName, string newFrameName, string prefix = "", string suffix = "")
@@ -543,7 +543,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = {dataFrameName}.add_prefix('{prefix}').add_suffix('{suffix}')";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
 
@@ -552,7 +552,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}['{newColumnName}'] = {dataFrameName}['{columnName}'].cumsum()";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
 
@@ -560,7 +560,7 @@ namespace Beep.Python.RuntimeEngine
         {
             using (Py.GIL())
             {
-                dynamic result = _persistentScope.Eval($"{dataFrameName}['{columnName}'].mean()");
+                dynamic result = PersistentScope.Eval($"{dataFrameName}['{columnName}'].mean()");
                 return result.ToString();
             }
         }
@@ -570,7 +570,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}['{newColumnName}'] = {dataFrameName}['{columnName}'].rolling(window={windowSize}).mean()";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
 
@@ -578,7 +578,7 @@ namespace Beep.Python.RuntimeEngine
         {
             using (Py.GIL())
             {
-                dynamic result = _persistentScope.Eval($"{dataFrameName}['{columnName}'].max()");
+                dynamic result = PersistentScope.Eval($"{dataFrameName}['{columnName}'].max()");
                 return result.ToString();
             }
         }
@@ -586,7 +586,7 @@ namespace Beep.Python.RuntimeEngine
         {
             using (Py.GIL())
             {
-                dynamic result = _persistentScope.Eval($"{dataFrameName}['{columnName}'].min()");
+                dynamic result = PersistentScope.Eval($"{dataFrameName}['{columnName}'].min()");
                 return result.ToString();
             }
         }
@@ -594,7 +594,7 @@ namespace Beep.Python.RuntimeEngine
         {
             using (Py.GIL())
             {
-                dynamic result = _persistentScope.Eval($"{dataFrameName}['{columnName}'].std()");
+                dynamic result = PersistentScope.Eval($"{dataFrameName}['{columnName}'].std()");
                 return result.ToString();
             }
         }
@@ -602,7 +602,7 @@ namespace Beep.Python.RuntimeEngine
         {
             using (Py.GIL())
             {
-                dynamic result = _persistentScope.Eval($"{dataFrameName}['{columnName}'].var()");
+                dynamic result = PersistentScope.Eval($"{dataFrameName}['{columnName}'].var()");
                 return result.ToString();
             }
         }
@@ -610,7 +610,7 @@ namespace Beep.Python.RuntimeEngine
         {
             using (Py.GIL())
             {
-                dynamic result = _persistentScope.Eval($"{dataFrameName}['{columnName}'].median()");
+                dynamic result = PersistentScope.Eval($"{dataFrameName}['{columnName}'].median()");
                 return result.ToString();
             }
         }
@@ -618,7 +618,7 @@ namespace Beep.Python.RuntimeEngine
         {
             using (Py.GIL())
             {
-                dynamic result = _persistentScope.Eval($"{dataFrameName}['{columnName}'].mode()");
+                dynamic result = PersistentScope.Eval($"{dataFrameName}['{columnName}'].mode()");
                 return result.ToString();
             }
         }
@@ -626,7 +626,7 @@ namespace Beep.Python.RuntimeEngine
         {
             using (Py.GIL())
             {
-                dynamic result = _persistentScope.Eval($"{dataFrameName}['{columnName}'].sum()");
+                dynamic result = PersistentScope.Eval($"{dataFrameName}['{columnName}'].sum()");
                 return result.ToString();
             }
         }
@@ -634,7 +634,7 @@ namespace Beep.Python.RuntimeEngine
         {
             using (Py.GIL())
             {
-                dynamic result = _persistentScope.Eval($"{dataFrameName}['{columnName}'].count()");
+                dynamic result = PersistentScope.Eval($"{dataFrameName}['{columnName}'].count()");
                 return result.ToString();
             }
         }
@@ -642,7 +642,7 @@ namespace Beep.Python.RuntimeEngine
         {
             using (Py.GIL())
             {
-                dynamic result = _persistentScope.Eval($"{dataFrameName}.describe()");
+                dynamic result = PersistentScope.Eval($"{dataFrameName}.describe()");
                 return result.ToString();
             }
         }
@@ -650,7 +650,7 @@ namespace Beep.Python.RuntimeEngine
         {
             using (Py.GIL())
             {
-                dynamic result = _persistentScope.Eval($"from scipy.stats import skew\nskewness = skew({dataFrameName}['{columnName}'])");
+                dynamic result = PersistentScope.Eval($"from scipy.stats import skew\nskewness = skew({dataFrameName}['{columnName}'])");
                 return result.ToString();
             }
         }
@@ -658,7 +658,7 @@ namespace Beep.Python.RuntimeEngine
         {
             using (Py.GIL())
             {
-                dynamic result = _persistentScope.Eval($"from scipy.stats import kurtosis\nkurt = kurtosis({dataFrameName}['{columnName}'])");
+                dynamic result = PersistentScope.Eval($"from scipy.stats import kurtosis\nkurt = kurtosis({dataFrameName}['{columnName}'])");
                 return result.ToString();
             }
         }
@@ -667,7 +667,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string quantileStr = string.Join(", ", quantiles.Select(q => q.ToString()));
-                dynamic result = _persistentScope.Eval($"{dataFrameName}['{columnName}'].quantile([{quantileStr}])");
+                dynamic result = PersistentScope.Eval($"{dataFrameName}['{columnName}'].quantile([{quantileStr}])");
                 return result.ToString();
             }
         }
@@ -675,7 +675,7 @@ namespace Beep.Python.RuntimeEngine
         {
             using (Py.GIL())
             {
-                dynamic result = _persistentScope.Eval($"{dataFrameName}['{column1}'].cov({dataFrameName}['{column2}'])");
+                dynamic result = PersistentScope.Eval($"{dataFrameName}['{column1}'].cov({dataFrameName}['{column2}'])");
                 return result.ToString();
             }
         }
@@ -683,7 +683,7 @@ namespace Beep.Python.RuntimeEngine
         {
             using (Py.GIL())
             {
-                dynamic result = _persistentScope.Eval($"{dataFrameName}['{column1}'].corr({dataFrameName}['{column2}'], method='{method}')");
+                dynamic result = PersistentScope.Eval($"{dataFrameName}['{column1}'].corr({dataFrameName}['{column2}'], method='{method}')");
                 return result.ToString();
             }
         }
@@ -691,7 +691,7 @@ namespace Beep.Python.RuntimeEngine
         {
             using (Py.GIL())
             {
-                dynamic result = _persistentScope.Eval($"{dataFrameName}['{columnName}'].value_counts()");
+                dynamic result = PersistentScope.Eval($"{dataFrameName}['{columnName}'].value_counts()");
                 return result.ToString();
             }
         }
@@ -700,7 +700,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = {dataFrameName}[{condition}]";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void SampleData(string dataFrameName, int sampleSize, string newFrameName)
@@ -708,7 +708,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = {dataFrameName}.sample(n={sampleSize})";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void ConcatenateDataFrames(string[] dataFrameNames, string newFrameName, string axis)
@@ -717,7 +717,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = pd.concat([{frames}], axis={axis})";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void TransformData(string dataFrameName, string columnName, string newColumnName, string transformationFunction)
@@ -725,7 +725,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}['{newColumnName}'] = {dataFrameName}['{columnName}'].apply({transformationFunction})";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void AggregateData(string dataFrameName, string groupByColumn, string aggregationFunction, string newFrameName)
@@ -733,7 +733,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = {dataFrameName}.groupby('{groupByColumn}').{aggregationFunction}()";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void PivotData(string dataFrameName, string indexColumn, string columnsColumn, string valuesColumn, string newFrameName)
@@ -741,7 +741,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = {dataFrameName}.pivot(index='{indexColumn}', columns='{columnsColumn}', values='{valuesColumn}')";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void MergeDataFrames(string dataFrame1Name, string dataFrame2Name, string onKey, string how, string newFrameName)
@@ -749,7 +749,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = pd.merge({dataFrame1Name}, {dataFrame2Name}, on='{onKey}', how='{how}')";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void MeltData(string dataFrameName, string idVars, string valueVars, string varName, string valueName, string newFrameName)
@@ -757,7 +757,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = pd.melt({dataFrameName}, id_vars=[{idVars}], value_vars=[{valueVars}], var_name='{varName}', value_name='{valueName}')";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void SortData(string dataFrameName, string[] columnsToSort, bool[] ascendingOrder, string newFrameName)
@@ -766,7 +766,7 @@ namespace Beep.Python.RuntimeEngine
             {
                 string sortParams = string.Join(", ", columnsToSort.Select((col, idx) => $"('{col}', {ascendingOrder[idx].ToString().ToLower()})"));
                 string script = $"{newFrameName} = {dataFrameName}.sort_values(by=[{sortParams}])";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void PivotTable(string dataFrameName, string indexColumn, string columnsColumn, string valuesColumn, string aggregationFunction, string newFrameName)
@@ -774,7 +774,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = {dataFrameName}.pivot_table(index='{indexColumn}', columns='{columnsColumn}', values='{valuesColumn}', aggfunc='{aggregationFunction}')";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void BinData(string dataFrameName, string columnName, int numBins, string newColumnName)
@@ -782,7 +782,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newColumnName} = pd.cut({dataFrameName}['{columnName}'], bins={numBins})";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void RankData(string dataFrameName, string[] columnsToRank, string newFrameName)
@@ -791,7 +791,7 @@ namespace Beep.Python.RuntimeEngine
             {
                 string rankColumns = string.Join(", ", columnsToRank.Select(col => $"'{col}'"));
                 string script = $"{newFrameName} = {dataFrameName}[{rankColumns}].rank()";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void ApplymapTransformation(string dataFrameName, string transformationFunction, string newFrameName)
@@ -799,7 +799,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = {dataFrameName}.applymap({transformationFunction})";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void StringOperation(string dataFrameName, string columnName, string operation, string newColumnName)
@@ -807,7 +807,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newColumnName} = {dataFrameName}['{columnName}'].str.{operation}";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void DatetimeOperation(string dataFrameName, string columnName, string operation, string newColumnName)
@@ -815,7 +815,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newColumnName} = {dataFrameName}['{columnName}'].dt.{operation}";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void GroupByAndAggregate(string dataFrameName, string groupByColumn, string[] aggregationFunctions, string newFrameName)
@@ -824,7 +824,7 @@ namespace Beep.Python.RuntimeEngine
             {
                 string funcs = string.Join(", ", aggregationFunctions.Select(func => $"'{func}'"));
                 string script = $"{newFrameName} = {dataFrameName}.groupby('{groupByColumn}').agg({{{funcs}}})";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void SampleWithReplacement(string dataFrameName, int sampleSize, string newFrameName)
@@ -832,7 +832,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = {dataFrameName}.sample(n={sampleSize}, replace=True)";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void JoinDataFrames(string dataFrame1Name, string dataFrame2Name, string onKey, string how, string newFrameName)
@@ -840,17 +840,17 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = {dataFrame1Name}.join({dataFrame2Name}, on='{onKey}', how='{how}')";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public string DataValidation(string dataFrameName)
         {
             using (Py.GIL())
             {
-                dynamic result = _persistentScope.Eval($"data_validation_result = {{");
-                result += _persistentScope.Eval($"{dataFrameName}.isnull().sum(): 'Missing Values',");
-                result += _persistentScope.Eval($"{dataFrameName}.duplicated().sum(): 'Duplicate Rows',");
-                result += _persistentScope.Eval($"}}");
+                dynamic result = PersistentScope.Eval($"data_validation_result = {{");
+                result += PersistentScope.Eval($"{dataFrameName}.isnull().sum(): 'Missing Values',");
+                result += PersistentScope.Eval($"{dataFrameName}.duplicated().sum(): 'Duplicate Rows',");
+                result += PersistentScope.Eval($"}}");
                 return result.ToString();
             }
         }
@@ -859,7 +859,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}.to_{format}('{filePath}')";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void FillMissingValues(string dataFrameName, string method)
@@ -867,7 +867,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}.fillna(method='{method}', inplace=True)";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void StandardizeData(string dataFrameName, string columnName)
@@ -875,7 +875,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}['{columnName}'] = (dataFrameName['{columnName}'] - dataFrameName['{columnName}'].mean()) / dataFrameName['{columnName}'].std()";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public void CrossTab(string index, string columns)
@@ -1155,7 +1155,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
             using (Py.GIL())
             {
                 string script = $"{newFrameName} = {dataFrameName}.sample(n={sampleSize}, replace=False)";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public string CompareDataFrames(string dataFrame1Name, string dataFrame2Name)
@@ -1165,10 +1165,10 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
                 string script = $"diff = pd.concat([";
                 script += $"{dataFrame1Name}, {dataFrame2Name}],";
                 script += $"ignore_index=True).drop_duplicates(keep=False)";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
 
                 // Return the DataFrame containing differences
-                dynamic result = _persistentScope.Eval("diff");
+                dynamic result = PersistentScope.Eval("diff");
                 return result.ToString();
             }
         }
@@ -1183,7 +1183,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
                 script += $"outliers = {dataFrameName}[clf.predict(X) == -1]\n";
 
                 // Return the DataFrame containing outliers/anomalies
-                dynamic result = _persistentScope.Eval("outliers");
+                dynamic result = PersistentScope.Eval("outliers");
                 return result.ToString();
             }
         }
@@ -1213,7 +1213,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
                 script += $"comparison_result = pd.DataFrame(diff)\n";
 
                 // Return the DataFrame containing schema differences
-                dynamic result = _persistentScope.Eval("comparison_result");
+                dynamic result = PersistentScope.Eval("comparison_result");
                 return result.ToString();
             }
         }
@@ -1230,12 +1230,12 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
                 trackScript += "deleted_rows = merged_df[merged_df['_df2'].isnull()]\n";
 
                 // Evaluate the scripts
-                _persistentScope.Exec($"{mergeScript}\n{trackScript}");
+                PersistentScope.Exec($"{mergeScript}\n{trackScript}");
 
                 // Convert the tracked rows to string representations
-                dynamic addedRows = _persistentScope.Eval("added_rows.to_string(index=False)");
-                dynamic updatedRows = _persistentScope.Eval("updated_rows.to_string(index=False)");
-                dynamic deletedRows = _persistentScope.Eval("deleted_rows.to_string(index=False)");
+                dynamic addedRows = PersistentScope.Eval("added_rows.to_string(index=False)");
+                dynamic updatedRows = PersistentScope.Eval("updated_rows.to_string(index=False)");
+                dynamic deletedRows = PersistentScope.Eval("deleted_rows.to_string(index=False)");
 
                 return $"Added Rows:\n{addedRows}\n\nUpdated Rows:\n{updatedRows}\n\nDeleted Rows:\n{deletedRows}";
             }
@@ -1250,7 +1250,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
                 script += $"similarity_score = cosine_similarity(row1, row2)[0][0]\n";
 
                 // Return the cosine similarity score
-                dynamic result = _persistentScope.Eval($"{script}");
+                dynamic result = PersistentScope.Eval($"{script}");
                 return result.ToString();
             }
         }
@@ -1261,7 +1261,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
                 string script = $"correlation_matrix = {dataFrameName}.corr()\n";
 
                 // Return the correlation matrix as a DataFrame
-                dynamic result = _persistentScope.Eval($"{script}");
+                dynamic result = PersistentScope.Eval($"{script}");
                 return result.ToString();
             }
         }
@@ -1272,7 +1272,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
                 string script = $"covariance_matrix = {dataFrameName}.cov()\n";
 
                 // Return the covariance matrix as a DataFrame
-                dynamic result = _persistentScope.Eval($"{script}");
+                dynamic result = PersistentScope.Eval($"{script}");
                 return result.ToString();
             }
         }
@@ -1283,7 +1283,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
                 string script = $"unique_values = {dataFrameName}['{columnName}'].unique()\n";
 
                 // Return the array of unique values
-                dynamic result = _persistentScope.Eval($"{script}");
+                dynamic result = PersistentScope.Eval($"{script}");
                 return result.ToString();
             }
         }
@@ -1294,7 +1294,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
                 string script = $"value_counts = {dataFrameName}['{columnName}'].value_counts()\n";
 
                 // Return the Series with value counts
-                dynamic result = _persistentScope.Eval($"{script}");
+                dynamic result = PersistentScope.Eval($"{script}");
                 return result.ToString();
             }
         }
@@ -1305,7 +1305,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
                 string script = $"frequency_distribution = {dataFrameName}['{columnName}'].value_counts()\n";
 
                 // Return the frequency distribution as a Series
-                dynamic result = _persistentScope.Eval($"{script}");
+                dynamic result = PersistentScope.Eval($"{script}");
                 return result.ToString();
             }
         }
@@ -1314,7 +1314,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}";
-                _persistentScope.Exec(script);
+                PersistentScope.Exec(script);
             }
         }
         public string GetSummaryStatistics(string dataFrameName)
@@ -1322,7 +1322,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}.describe()";
-                dynamic result = _persistentScope.Eval(script);
+                dynamic result = PersistentScope.Eval(script);
                 return result.ToString();
             }
         }
@@ -1332,7 +1332,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
             {
                 string columnList = string.Join(", ", columns.Select(c => $"'{c}'"));
                 string script = $"{dataFrameName}[{columnList}]";
-                dynamic result = _persistentScope.Eval(script);
+                dynamic result = PersistentScope.Eval(script);
                 return result.ToString();
             }
         }
@@ -1341,7 +1341,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}[{condition}]";
-                dynamic result = _persistentScope.Eval(script);
+                dynamic result = PersistentScope.Eval(script);
                 return result.ToString();
             }
         }

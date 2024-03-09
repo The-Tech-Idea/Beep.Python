@@ -11,7 +11,7 @@ namespace Beep.Python.RuntimeEngine
         private static bool IsReady  = false;
         private static IDMEEditor DMEditor;
         private static string Pythonruntimepath;
-        private static IPackageManagerViewModel PackageManager;
+        //private static IPackageManagerViewModel PackageManager;
         public static IServiceCollection RegisterPythonService(this IServiceCollection services,string pythonruntimepath)
         {
             Pythonruntimepath = pythonruntimepath;
@@ -20,11 +20,11 @@ namespace Beep.Python.RuntimeEngine
            
             services.AddSingleton<IPythonRunTimeManager>(PythonRunTimeManager);
             IsReady = PythonRunTimeManager.Initialize(pythonruntimepath, BinType32or64.p395x64, @"lib\site-packages");
-            if (IsReady)
-            {
-                PackageManager = new PackageManagerViewModel(PythonRunTimeManager);
-                services.AddSingleton<IPackageManagerViewModel>(PackageManager);
-            }
+            //if (IsReady)
+            //{
+            //    PackageManager = new PackageManagerViewModel(PythonRunTimeManager);
+            //    services.AddSingleton<IPackageManagerViewModel>(PackageManager);
+            //}
             return services;
         }
        
@@ -32,10 +32,10 @@ namespace Beep.Python.RuntimeEngine
         {
            return  PythonRunTimeManager;
         }
-        public static IPackageManagerViewModel GetPythonPackageManager(this IDMEEditor dmeEditor)
-        {
-            return PackageManager;
-        }
+        //public static IPackageManagerViewModel GetPythonPackageManager(this IDMEEditor dmeEditor)
+        //{
+        //    return PackageManager;
+        //}
 
     }
 }

@@ -1,11 +1,8 @@
 ﻿using Beep.Python.Model;
-using Beep.Python.RuntimeEngine;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Python.Runtime;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TheTechIdea;
@@ -14,29 +11,38 @@ using TheTechIdea.Beep;
 
 namespace Beep.Python.RuntimeEngine.ViewModels
 {
-    public class PythonBaseViewModel : ObservableObject, IDisposable
+    public partial class PythonBaseViewModel : ObservableObject, IDisposable
     {
-        public IPythonRunTimeManager _pythonRuntimeManager;
-        public PyModule _persistentScope;
-        public bool disposedValue;
-        public CancellationTokenSource TokenSource { get; set; }
-        public CancellationToken Token { get; set; }
-        public IProgress<PassedArgs> Progress { get; set; }
-        IDMEEditor Editor;
+        [ObservableProperty]
+        IPythonRunTimeManager pythonRuntime;
+        [ObservableProperty]
+        PyModule persistentScope;
+        [ObservableProperty]
+        bool disposedValue;
+        [ObservableProperty]
+        CancellationTokenSource tokenSource;
+        [ObservableProperty]
+        CancellationToken token;
+        [ObservableProperty]
+        IProgress<PassedArgs> progress;
+        [ObservableProperty]
+        IDMEEditor editor;
+        [ObservableProperty]
+        bool isBusy;
         public PythonBaseViewModel(IPythonRunTimeManager pythonRuntimeManager, PyModule persistentScope)
         {
-            _pythonRuntimeManager = pythonRuntimeManager;
-            Editor = _pythonRuntimeManager.DMEditor;
-            _persistentScope = persistentScope;
+            this.PythonRuntime = pythonRuntimeManager;
+            Editor = this.PythonRuntime.DMEditor;
+            this.PersistentScope = persistentScope;
             PythonHelpers._persistentScope = persistentScope;
             PythonHelpers._pythonRuntimeManager = pythonRuntimeManager;
         }
         public PythonBaseViewModel(IPythonRunTimeManager pythonRuntimeManager)
         {
-            _pythonRuntimeManager = pythonRuntimeManager;
-            Editor = _pythonRuntimeManager.DMEditor;
+            this.PythonRuntime = pythonRuntimeManager;
+            Editor = this.PythonRuntime.DMEditor;
             InitializePythonEnvironment();
-            PythonHelpers._persistentScope = _persistentScope;
+            PythonHelpers._persistentScope = PersistentScope;
             PythonHelpers._pythonRuntimeManager = pythonRuntimeManager;
         }
         public void SendMessege(string messege = null)
@@ -62,24 +68,27 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             string script = $"import {moduleName}";
             RunPythonScript(script, null);
         }
-        public bool IsInitialized => _pythonRuntimeManager.IsInitialized;
+        public bool IsInitialized => PythonRuntime.IsInitialized;
+
+      
+
         public virtual bool InitializePythonEnvironment()
         {
             bool retval = false;
-            if (!_pythonRuntimeManager.IsInitialized)
+            if (!PythonRuntime.IsInitialized)
             {
-                _pythonRuntimeManager.Initialize();
+                PythonRuntime.Initialize();
             }
-            if (!_pythonRuntimeManager.IsInitialized)
+            if (!PythonRuntime.IsInitialized)
             {
                 return retval;
             }
-            if (_persistentScope == null && _pythonRuntimeManager.IsInitialized)
+            if (PersistentScope == null && PythonRuntime.IsInitialized)
             {
                 using (Py.GIL())
                 {
-                    _persistentScope = Py.CreateScope("__main__");
-                    _persistentScope.Exec("models = {}");  // Initialize the models dictionary
+                    PersistentScope = Py.CreateScope("__main__");
+                    PersistentScope.Exec("models = {}");  // Initialize the models dictionary
                     retval = true;
                 }
             }
@@ -94,27 +103,86 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             }
             using (Py.GIL()) // Acquire the Python Global Interpreter Lock
             {
-                _persistentScope.Exec(script); // Execute the script in the persistent scope
+                PersistentScope.Exec(script); // Execute the script in the persistent scope
                                                // Handle outputs if needed
 
                 // If needed, return results or handle outputs
             }
         }
+        public virtual string RunPythonCodeAndGetOutput(IProgress<PassedArgs> progress, string code)
+        {
+            string wrappedPythonCode = $@"
+import sys
+import io
+import clr
+
+class CustomStringIO(io.StringIO):
+    def write(self, s):
+        super().write(s)
+        output = self.getvalue()
+        if output.strip():
+            OutputHandler(output.strip())
+            self.truncate(0)  # Clear the internal buffer
+            self.seek(0)  # Reset the buffer pointer
+
+def capture_output(code, globals_dict):
+    original_stdout = sys.stdout
+    sys.stdout = CustomStringIO()
+
+    try:
+        exec(code, dict(globals_dict))
+    finally:
+        sys.stdout = original_stdout
+";
+            bool isImage = false;
+            string output = "";
+
+            using (Py.GIL())
+            {
+                    Action<string> OutputHandler = line =>
+                    {
+                        // runTimeManager.OutputLines.Add(line);
+                        progress.Report(new PassedArgs() { Messege = line });
+                        Console.WriteLine(line);
+                    };
+                    PersistentScope.Set(nameof(OutputHandler), OutputHandler);
+
+                    PersistentScope.Exec(wrappedPythonCode);
+                    PyObject captureOutputFunc = PersistentScope.GetAttr("capture_output");
+                    Dictionary<string, object> globalsDict = new Dictionary<string, object>();
+
+                    PyObject pyCode = code.ToPython();
+                    PyObject pyGlobalsDict = globalsDict.ToPython();
+                    PyObject result = captureOutputFunc.Invoke(pyCode, pyGlobalsDict);
+                    if (result is PyObject pyObj)
+                    {
+                        var pyObjType = pyObj.GetPythonType();
+                        var pyObjTypeName = pyObjType.ToString();
+
+
+                    }
+               
+            }
+
+            IsBusy = false;
+            return output;
+        }
+
         public dynamic RunPythonScriptWithResult(string script, dynamic parameters)
         {
             dynamic result = null;
-            if (_pythonRuntimeManager == null)
+            if (PythonRuntime == null)
             {
                 return null;
             }
-            if (!_pythonRuntimeManager.IsInitialized)
+            if (!PythonRuntime.IsInitialized)
             {
                 return result;
             }
 
             using (Py.GIL()) // Acquire the Python Global Interpreter Lock
             {
-                result = _persistentScope.Exec(script); // Execute the script in the persistent scope
+                result = PersistentScope.Exec(script); // Execute the script in the persistent scope
             }
 
             return result;

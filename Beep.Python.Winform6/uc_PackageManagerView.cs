@@ -7,11 +7,13 @@ using TheTechIdea.Beep;
 using TheTechIdea.Beep.DataBase;
 using TheTechIdea.Logger;
 using TheTechIdea.Util;
+using Beep.Python.RuntimeEngine.ViewModels;
 
 namespace Beep.Python.Winform
 {
     public partial class uc_PackageManagerView : UserControl,IDM_Addin
     {
+        private PythonBaseViewModel pythonBaseViewModel;
         IDMEEditor editor;
         public uc_PackageManagerView()
         {
@@ -47,14 +49,19 @@ namespace Beep.Python.Winform
 
         public void SetConfig(IDMEEditor pbl, IDMLogger plogger, IUtil putil, string[] args, IPassedArgs e, IErrorsInfo per)
         {
-            packageManager= DMEEditor.GetPythonPackageManager();
-            PythonRunTimeManager= DMEEditor.GetPythonRunTimeManager();
             editor = pbl;
             ErrorObject = pbl.ErrorObject;
             Logger = pbl.Logger;
             Passedarg = e;
             DMEEditor = pbl;
             Visutil = (IVisManager)e.Objects.Where(c => c.Name == "VISUTIL").FirstOrDefault().obj;
+
+
+            PythonRunTimeManager = DMEEditor.GetPythonRunTimeManager();
+            packageManager = new PackageManagerViewModel(PythonRunTimeManager);
+            packageManager.Editor = DMEEditor;
+            pythonBaseViewModel = (PythonBaseViewModel)packageManager;
+          
             bindingSource1.DataSource= packageManager;
         }
         private void setupmaxmin()
@@ -106,7 +113,7 @@ namespace Beep.Python.Winform
             if (PythonRunTimeManager != null)
             {
                 Visutil.ShowWaitForm(new PassedArgs() { Messege = "Refreshing Installed Packages" });
-                await PythonRunTimeManager.RefreshInstalledPackagesList(progress, token);
+                await packageManager.RefreshAllPackagesAsync();
                 PythonRunTimeManager.SaveConfig();
                 Visutil.CloseWaitForm();
 

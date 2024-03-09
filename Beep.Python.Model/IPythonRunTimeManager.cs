@@ -32,15 +32,8 @@ namespace Beep.Python.Model
         bool Initialize();
         bool Initialize(string pythonhome,  BinType32or64 binType, string libpath);
 
-        Task<PackageDefinition> FindPackageUpdate(string packageName, IProgress<PassedArgs> progress, CancellationToken token);
-        Task<bool> InstallPackage(string packageName, IProgress<PassedArgs> progress, CancellationToken token);
-        Task<bool> RemovePackage(string packageName, IProgress<PassedArgs> progress, CancellationToken token);
-        Task<bool> UpdatePackage(string packageName, IProgress<PassedArgs> progress, CancellationToken token);
-        bool IsPackageInstalled(string packageName, IProgress<PassedArgs> progress, CancellationToken token);
-        Task<bool> RefreshInstalledPackagesList(IProgress<PassedArgs> progress, CancellationToken token);
-        Task<bool> RefreshInstalledPackage(string packagename, IProgress<PassedArgs> progress, CancellationToken token);
-        Task<bool> InstallPIP(IProgress<PassedArgs> progress, CancellationToken token);
-      //  void RunPIP(string Command, string Commandpath);
+     
+       // Task<bool> InstallPIP(IProgress<PassedArgs> progress, CancellationToken token);
         Task<IErrorsInfo> RunCode(string code, IProgress<PassedArgs> progress, CancellationToken token);
         Task<dynamic> RunCommand(string command, IProgress<PassedArgs> progress, CancellationToken token);
         Task<IErrorsInfo> RunFile(string file, IProgress<PassedArgs> progress, CancellationToken token);
