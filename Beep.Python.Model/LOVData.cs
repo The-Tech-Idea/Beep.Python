@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Beep.Python.Model
 {
-    public class GenericLOVData
+    public class LOVData
     {
-        public GenericLOVData()
+        public LOVData()
         {
             GuidID=Guid.NewGuid().ToString();
         }
