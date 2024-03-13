@@ -85,12 +85,13 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             }
             if (PersistentScope == null && PythonRuntime.IsInitialized)
             {
-                using (Py.GIL())
-                {
-                    PersistentScope = Py.CreateScope("__main__");
-                    PersistentScope.Exec("models = {}");  // Initialize the models dictionary
-                    retval = true;
-                }
+                //using (Py.GIL())
+                //{
+                //    PersistentScope = Py.CreateScope("__main__");
+                //    PersistentScope.Exec("models = {}");  // Initialize the models dictionary
+                //    retval = true;
+                //}
+                retval = true;
             }
            
             return retval;
@@ -101,7 +102,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             {
                 return;
             }
-            using (Py.GIL()) // Acquire the Python Global Interpreter Lock
+            using (var gil = PythonRuntime.GIL()) // Acquire the Python Global Interpreter Lock
             {
                 PersistentScope.Exec(script); // Execute the script in the persistent scope
                                                // Handle outputs if needed
@@ -137,7 +138,7 @@ def capture_output(code, globals_dict):
             bool isImage = false;
             string output = "";
 
-            using (Py.GIL())
+            using (var gil = PythonRuntime.GIL())
             {
                     Action<string> OutputHandler = line =>
                     {
@@ -180,7 +181,7 @@ def capture_output(code, globals_dict):
                 return result;
             }
 
-            using (Py.GIL()) // Acquire the Python Global Interpreter Lock
+            using (var gil = PythonRuntime.GIL()) // Acquire the Python Global Interpreter Lock
             {
                 result = PersistentScope.Exec(script); // Execute the script in the persistent scope
             }

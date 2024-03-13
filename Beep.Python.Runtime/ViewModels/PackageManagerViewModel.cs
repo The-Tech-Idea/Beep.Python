@@ -17,30 +17,21 @@ using System.Net.Http;
 
 namespace Beep.Python.RuntimeEngine.ViewModels
 {
-    public class PackageManagerViewModel : PythonBaseViewModel, IPackageManagerViewModel
+    public partial class PackageManagerViewModel : PythonBaseViewModel, IPackageManagerViewModel
     {
         public ObservableBindingList<PackageDefinition> Packages => unitofWork.Units;
         public UnitofWork<PackageDefinition> unitofWork { get; set; }
-      
-
         public PackageManagerViewModel() : base()
         {
-
         }
         public PackageManagerViewModel(IPythonRunTimeManager pythonRuntimeManager, PyModule persistentScope) : base(pythonRuntimeManager, persistentScope)
         {
-            PythonRuntime = pythonRuntimeManager;
-            PersistentScope = persistentScope;
             Init();
-
         }
         public PackageManagerViewModel(IPythonRunTimeManager pythonRuntimeManager) : base(pythonRuntimeManager)
         {
-            PythonRuntime = pythonRuntimeManager;
-
             InitializePythonEnvironment();
             Init();
-
         }
         public void Init()
         {
@@ -48,7 +39,6 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             unitofWork = new UnitofWork<PackageDefinition>(Editor, true, new ObservableBindingList<PackageDefinition>(PythonRuntime.CurrentRuntimeConfig.Packagelist), "ID");
             unitofWork.PostCreate += UnitofWork_PostCreate;
         }
-
         private void UnitofWork_PostCreate(object sender, UnitofWorkParams e)
         {
            PackageDefinition package= (PackageDefinition)sender;
@@ -396,8 +386,9 @@ def run_with_timeout(func, args, output_callback, timeout):
                 {
                     checkall = false;
                 }
+             
                 //           runTimeManager._pythonRuntimeManager.CurrentRuntimeConfig.Packagelist = new List<PackageDefinition>();
-                using (Py.GIL())
+                using (var gil = PythonRuntime.GIL())
                 {
                   
                         dynamic pkgResources = Py.Import("importlib.metadata");
@@ -507,6 +498,170 @@ def run_with_timeout(func, args, output_callback, timeout):
                         }
                    
                    
+                }
+                if (i == 0)
+                {
+                    Progress.Report(new PassedArgs() { Messege = "No Packages Found" });
+                    PythonRuntime.CurrentRuntimeConfig.Packagelist = new List<PackageDefinition>();
+                }
+                IsBusy = false;
+            }
+            catch (Exception ex)
+            {
+                IsBusy = false;
+                Console.WriteLine("Error: in Listing Packages");
+            }
+            IsBusy = false;
+            return IsBusy;
+        }
+        public bool listpackages(IProgress<PassedArgs> _progress, CancellationToken token, bool useConda = false, string packagename = null)
+        {
+            if (IsBusy) return false;
+            IsBusy = true;
+            int i = 0;
+            if (_progress != null)
+            {
+                Progress = _progress;
+            }
+            try
+            {
+                bool checkall = true;
+                if (!string.IsNullOrEmpty(packagename))
+                {
+                    checkall = false;
+                }
+                string script = @"
+import importlib.metadata
+result = [{'name': pkg.metadata['Name'], 'version': pkg.version} for pkg in importlib.metadata.distributions()]
+result";
+
+                // Execute the script and get the result
+                dynamic packages = RunPythonScriptWithResult(script, null);
+
+                if (packages != null)
+                {
+                    int j = 1;
+                    int count = packages.Count;
+                    foreach (var pkg in packages)
+                    {
+                        string packageName = pkg.name;
+                        string packageVersion = pkg.version;
+                        string line = $"Checking Package {packageName}: {packageVersion}";
+                        Console.WriteLine(line);
+                        _progress?.Report(new PassedArgs() { Messege = line });
+                       
+                        Console.WriteLine(line);
+                        // runTimeManager.OutputLines.Add(line);
+                        Progress.Report(new PassedArgs() { Messege = line, ParameterInt1 = j, ParameterInt2 = count });
+                        bool IsInternetAvailabe = PythonRunTimeDiagnostics.CheckNet();
+                        PackageDefinition onlinepk = new PackageDefinition();
+                        if (!string.IsNullOrEmpty(packageVersion))
+                        {
+                            if (checkall)
+                            {
+                                if (IsInternetAvailabe)
+                                {
+                                    onlinepk = PythonRunTimeDiagnostics.CheckIfPackageExistsAsync(packageName).Result;
+                                }
+
+
+                                PackageDefinition package = PythonRuntime.CurrentRuntimeConfig.Packagelist.Where(p => p.packagename != null && p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                                if (package != null)
+                                {
+                                    int idx = PythonRuntime.CurrentRuntimeConfig.Packagelist.IndexOf(package);
+                                    if (onlinepk != null)
+                                    {
+                                        package.updateversion = onlinepk.version;
+                                    }
+                                    package.installed = true;
+                                    package.buttondisplay = "Installed";
+
+                                    if (onlinepk != null)
+                                    {
+                                        PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].updateversion = onlinepk.updateversion;
+                                        line = $"Package {packageName}: {packageVersion} found with version {onlinepk.updateversion}";
+                                    }
+                                    else
+                                    {
+                                        PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].updateversion = "Not Found";
+                                        line = $"Package {packageName}: {"Not Found"}";
+                                    }
+
+                                    Console.WriteLine(line);
+                                    // runTimeManager.OutputLines.Add(line);
+                                    Progress.Report(new PassedArgs() { Messege = line });
+                                }
+                                else
+                                {
+                                    PackageDefinition packagelist = new PackageDefinition();
+                                    packagelist.packagename = packageName;
+                                    packagelist.version = packageVersion;
+                                    packagelist.updateversion = packageVersion;
+                                    packagelist.installed = true;
+                                    packagelist.buttondisplay = "Added";
+                                    PythonRuntime.CurrentRuntimeConfig.Packagelist.Add(packagelist);
+                                    line = $"Added new Package {packagelist}: {packagelist.version}";
+                                    Console.WriteLine(line);
+                                    //  runTimeManager.OutputLines.Add(line);
+                                    Progress.Report(new PassedArgs() { Messege = line });
+                                }
+
+                            }
+                            else
+                            {
+                                if (PythonRuntime.CurrentRuntimeConfig.Packagelist.Any(p => p.packagename != null && p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)))
+                                {
+                                    PackageDefinition package = PythonRuntime.CurrentRuntimeConfig.Packagelist.Where(p => p.packagename != null && p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                                    int idx = PythonRuntime.CurrentRuntimeConfig.Packagelist.IndexOf(package);
+                                    package.version = packageVersion;
+                                    package.updateversion = packageVersion;
+                                    package.installed = true;
+                                    package.buttondisplay = "Installed";
+                                    if (IsInternetAvailabe)
+                                    {
+                                        onlinepk = PythonRunTimeDiagnostics.CheckIfPackageExistsAsync(packageName).Result;
+                                    }
+                                    if (onlinepk != null)
+                                    {
+                                        PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].updateversion = onlinepk.updateversion;
+                                        package.updateversion = onlinepk.version;
+                                        line = $"Package {packageName}: {packageVersion} found with version {onlinepk.updateversion}";
+                                    }
+                                    else
+                                    {
+                                        PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].updateversion = "Not Found";
+                                        line = $"Package {packageName}: {"Not Found"}";
+                                    }
+
+                                    Console.WriteLine(line);
+                                    // runTimeManager.OutputLines.Add(line);
+                                    Progress.Report(new PassedArgs() { Messege = line });
+                                }
+                            }
+
+
+                        }
+                        else Console.WriteLine($" empty {packageName}: {packageVersion}");
+
+                        // Add logic to update PythonRuntime.CurrentRuntimeConfig.Packagelist or other necessary operations
+                    }
+                }
+                //           runTimeManager._pythonRuntimeManager.CurrentRuntimeConfig.Packagelist = new List<PackageDefinition>();
+                using (var gil = PythonRuntime.GIL())
+                {
+
+                    dynamic pkgResources = Py.Import("importlib.metadata");
+                    dynamic workingSet = pkgResources.distributions();
+                    int count = PythonRuntime.CurrentRuntimeConfig.Packagelist.Count;
+                    int j = 1;
+                    foreach (dynamic pkg in workingSet)
+                    {
+                        i++;
+     
+                        j++;
+                    }
+
+
                 }
                 if (i == 0)
                 {
@@ -747,7 +902,7 @@ def run_with_timeout(func, args, output_callback, timeout):
 
             try
             {
-                var retval =  listpackagesAsync(progress, token);
+                var retval = listpackages(progress, token);
                 IsBusy = false;
                 return true;
             }
@@ -764,7 +919,7 @@ def run_with_timeout(func, args, output_callback, timeout):
 
             try
             {
-                var retval =  listpackagesAsync(progress, token);
+                var retval = listpackages(progress, token);
                 IsBusy = false;
                 return true;
             }

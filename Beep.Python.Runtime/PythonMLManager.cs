@@ -18,14 +18,13 @@ namespace Beep.Python.RuntimeEngine
         }
         public  PythonMLManager(PythonNetRunTimeManager pythonRuntimeManager, PyModule persistentScope):base(pythonRuntimeManager,persistentScope)
         {
-            pythonRuntimeManager = pythonRuntimeManager;
-            persistentScope = persistentScope;
+           
           
         }
        
         public PythonMLManager(PythonNetRunTimeManager pythonRuntimeManager):base(pythonRuntimeManager)
         {
-            pythonRuntimeManager = pythonRuntimeManager;
+          //  pythonRuntimeManager = pythonRuntimeManager;
              InitializePythonEnvironment();
         }
       

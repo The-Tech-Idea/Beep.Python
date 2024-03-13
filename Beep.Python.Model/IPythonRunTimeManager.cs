@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Python.Runtime;
+using System;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Threading;
@@ -11,15 +12,16 @@ namespace Beep.Python.Model
 {
     public interface IPythonRunTimeManager
     {
-       
+        Py.GILState GIL();
         BinType32or64 BinType { get; set; }
         IDMEEditor DMEditor { get; set; }
+        bool listpackages( bool useConda = false, string packagename = null);
         ObservableCollection<string> OutputLines { get; set; }
         bool IsBusy { get; set; }
-        object PersistentScope { get; set; }
+        PyModule PersistentScope { get; set; }
         bool CreateScope();
         PythonConfiguration PythonConfig { get; set; }
-
+        IPackageManagerViewModel PackageManager { get; set; }
         PythonRunTime CurrentRuntimeConfig { get;  }
         string CurrentFileLoaded { get; set; }
         bool IsConfigLoaded { get;  }

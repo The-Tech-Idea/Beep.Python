@@ -69,9 +69,8 @@ namespace Beep.Python.Winform
             ErrorObject = per;
 
             PythonRunTimeManager = DMEEditor.GetPythonRunTimeManager();
-            Pythonpackagemanager = new PackageManagerViewModel(PythonRunTimeManager);
-            Pythonpackagemanager.Editor= DMEEditor;
-            pythonBaseViewModel = (PythonBaseViewModel) Pythonpackagemanager;
+            Pythonpackagemanager = PythonRunTimeManager.PackageManager;
+            
 
             
              Visutil = (IVisManager)e.Objects.Where(c => c.Name == "VISUTIL").FirstOrDefault().obj;
@@ -147,8 +146,8 @@ namespace Beep.Python.Winform
                     }
                 }
             });
-            pythonBaseViewModel.Progress = progress;
-            pythonBaseViewModel.Token = token;
+    //        Pythonpackagemanager.Progress = progress;
+     //       pythonBaseViewModel.Token = token;
             Action action =
         () =>
             MessageBox.Show("Start");
@@ -208,7 +207,10 @@ namespace Beep.Python.Winform
                 MessageBox.Show("Please wait until the current operation is finished");
                 return;
             }
-            RunRefresh();
+            Refresh();
+               // RunRefresh();
+           
+           
         }
 
         private void InstallNewPackagetoolStripButton_Click(object sender, EventArgs e)
@@ -333,9 +335,9 @@ namespace Beep.Python.Winform
             }
             if (PythonRunTimeManager != null)
             {
-              
-             //   Visutil.ShowWaitForm(new PassedArgs() { Messege = "Refreshing Installed Packages" });
-                await Pythonpackagemanager.RefreshAllPackagesAsync();
+
+                //   Visutil.ShowWaitForm(new PassedArgs() { Messege = "Refreshing Installed Packages" });
+                 PythonRunTimeManager.listpackages();
               
               //  Visutil.CloseWaitForm   ();
 
