@@ -56,7 +56,6 @@
             MessageLabel = new ToolStripStatusLabel();
             ImageColumn = new DataGridViewImageColumn();
             installedDataGridViewCheckBoxColumn = new DataGridViewCheckBoxColumn();
-            packagetitleDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             packagenameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             UpDateInstallGridButton = new DataGridViewButtonColumn();
             versionDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
@@ -221,7 +220,7 @@
             packagelistDataGridView.AutoGenerateColumns = false;
             packagelistDataGridView.BackgroundColor = Color.White;
             packagelistDataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            packagelistDataGridView.Columns.AddRange(new DataGridViewColumn[] { ImageColumn, installedDataGridViewCheckBoxColumn, packagetitleDataGridViewTextBoxColumn, packagenameDataGridViewTextBoxColumn, UpDateInstallGridButton, versionDataGridViewTextBoxColumn, updateversionDataGridViewTextBoxColumn });
+            packagelistDataGridView.Columns.AddRange(new DataGridViewColumn[] { ImageColumn, installedDataGridViewCheckBoxColumn, packagenameDataGridViewTextBoxColumn, UpDateInstallGridButton, versionDataGridViewTextBoxColumn, updateversionDataGridViewTextBoxColumn });
             packagelistDataGridView.DataSource = packagelistBindingSource;
             packagelistDataGridView.Dock = DockStyle.Fill;
             packagelistDataGridView.Location = new Point(0, 25);
@@ -287,13 +286,6 @@
             installedDataGridViewCheckBoxColumn.HeaderText = "installed";
             installedDataGridViewCheckBoxColumn.Name = "installedDataGridViewCheckBoxColumn";
             // 
-            // packagetitleDataGridViewTextBoxColumn
-            // 
-            packagetitleDataGridViewTextBoxColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            packagetitleDataGridViewTextBoxColumn.DataPropertyName = "packagetitle";
-            packagetitleDataGridViewTextBoxColumn.HeaderText = "Title";
-            packagetitleDataGridViewTextBoxColumn.Name = "packagetitleDataGridViewTextBoxColumn";
-            // 
             // packagenameDataGridViewTextBoxColumn
             // 
             packagenameDataGridViewTextBoxColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
@@ -330,7 +322,6 @@
             Controls.Add(packagelistDataGridView);
             Controls.Add(statusStrip1);
             Controls.Add(packagelistBindingNavigator);
-            Margin = new Padding(4, 3, 4, 3);
             Name = "uc_PackageList";
             Size = new Size(714, 842);
             ((System.ComponentModel.ISupportInitialize)packagelistBindingNavigator).EndInit();
@@ -372,7 +363,6 @@
         private ToolStripStatusLabel MessageLabel;
         private DataGridViewImageColumn ImageColumn;
         private DataGridViewCheckBoxColumn installedDataGridViewCheckBoxColumn;
-        private DataGridViewTextBoxColumn packagetitleDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn packagenameDataGridViewTextBoxColumn;
         private DataGridViewButtonColumn UpDateInstallGridButton;
         private DataGridViewTextBoxColumn versionDataGridViewTextBoxColumn;

@@ -15,6 +15,7 @@ using System.Threading.Channels;
 using System.Net;
 using Beep.Python.RuntimeEngine.ViewModels;
 using System.Net.Http;
+using System.Diagnostics;
 
 
 namespace Beep.Python.RuntimeEngine
@@ -421,7 +422,7 @@ namespace Beep.Python.RuntimeEngine
         }
         #endregion "Configuration Methods"
         #region "Python Run Code"
-        public dynamic RunPythonScriptWithResult(string script, dynamic parameters)
+        public async Task<dynamic> RunPythonScriptWithResult(string script, dynamic parameters)
         {
             dynamic result = null;
          
@@ -429,11 +430,11 @@ namespace Beep.Python.RuntimeEngine
             {
                 return result;
             }
-
-            using (Py.GIL()) // Acquire the Python Global Interpreter Lock
-            {
-                result =PersistentScope.Exec(script); // Execute the script in the persistent scope
-            }
+            result= await RunPythonCodeAndGetOutput(Progress, script);
+           // using (Py.GIL()) // Acquire the Python Global Interpreter Lock
+           //{
+           //     result = PersistentScope.Exec(script); // Execute the script in the persistent scope
+           // }
 
             return result;
         }
@@ -960,7 +961,7 @@ result = [{'name': pkg.metadata['Name'], 'version': pkg.version} for pkg in impo
 result";
 
                 // Execute the script and get the result
-                dynamic packages = RunPythonScriptWithResult(script, null);
+                dynamic packages = RunPythonScriptWithResult(script, null).Result;
 
                 if (packages != null)
                 {
@@ -1326,7 +1327,7 @@ result";
 
             try
             {
-                var retval = listpackages( );
+                var retval = listpackagesAsync(progress,token );
                 IsBusy = false;
                 return true;
             }
@@ -1343,7 +1344,7 @@ result";
 
             try
             {
-                var retval = listpackages( );
+                var retval = listpackagesAsync(progress, token);
                 IsBusy = false;
                 return true;
             }

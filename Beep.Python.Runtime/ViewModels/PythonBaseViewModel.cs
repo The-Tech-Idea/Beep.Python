@@ -83,34 +83,47 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             {
                 return retval;
             }
-            if (PersistentScope == null && PythonRuntime.IsInitialized)
+            if (PythonRuntime.PersistentScope == null && PythonRuntime.IsInitialized)
             {
-                //using (Py.GIL())
-                //{
-                //    PersistentScope = Py.CreateScope("__main__");
-                //    PersistentScope.Exec("models = {}");  // Initialize the models dictionary
-                //    retval = true;
-                //}
+                using (Py.GIL())
+                {
+                    PythonRuntime.PersistentScope = Py.CreateScope("__main__");
+                    PythonRuntime.PersistentScope.Exec("models = {}");  // Initialize the models dictionary
+                    persistentScope = PythonRuntime.PersistentScope;
+                    retval = true;
+                }
                 retval = true;
             }
            
             return retval;
         }
-        public virtual void RunPythonScript(string script, dynamic parameters)
+        public virtual async Task<bool> RunPythonScript(string script,dynamic parameters)
         {
+            bool retval = false;
             if (!IsInitialized)
             {
-                return;
+                return retval;
             }
-            using (var gil = PythonRuntime.GIL()) // Acquire the Python Global Interpreter Lock
-            {
-                PersistentScope.Exec(script); // Execute the script in the persistent scope
-                                               // Handle outputs if needed
+            //using (var gil = PythonRuntime.GIL()) // Acquire the Python Global Interpreter Lock
+            //{
+            //    PersistentScope.Exec(script); // Execute the script in the persistent scope
+            //                                   // Handle outputs if needed
 
-                // If needed, return results or handle outputs
+            //    // If needed, return results or handle outputs
+            //}
+            try
+            {
+              await  Task.Run(()=> PythonRuntime.PersistentScope.Exec(script));
+                retval = true;
             }
+            catch (Exception ex)
+            {
+                return retval;
+               
+            }
+           return retval;
         }
-        public virtual string RunPythonCodeAndGetOutput(IProgress<PassedArgs> progress, string code)
+        public virtual async Task<string> RunPythonCodeAndGetOutput(IProgress<PassedArgs> progress, string code)
         {
             string wrappedPythonCode = $@"
 import sys
@@ -138,18 +151,18 @@ def capture_output(code, globals_dict):
             bool isImage = false;
             string output = "";
 
-            using (var gil = PythonRuntime.GIL())
-            {
+            //using (var gil = PythonRuntime.GIL())
+            //{
                     Action<string> OutputHandler = line =>
                     {
                         // runTimeManager.OutputLines.Add(line);
                         progress.Report(new PassedArgs() { Messege = line });
                         Console.WriteLine(line);
                     };
-                    PersistentScope.Set(nameof(OutputHandler), OutputHandler);
+                    PythonRuntime.PersistentScope.Set(nameof(OutputHandler), OutputHandler);
 
-                    PersistentScope.Exec(wrappedPythonCode);
-                    PyObject captureOutputFunc = PersistentScope.GetAttr("capture_output");
+                    await Task.Run(() => PythonRuntime.PersistentScope.Exec(wrappedPythonCode));
+                    PyObject captureOutputFunc = PythonRuntime.PersistentScope.GetAttr("capture_output");
                     Dictionary<string, object> globalsDict = new Dictionary<string, object>();
 
                     PyObject pyCode = code.ToPython();
@@ -163,13 +176,13 @@ def capture_output(code, globals_dict):
 
                     }
                
-            }
+           // }
 
             IsBusy = false;
             return output;
         }
 
-        public dynamic RunPythonScriptWithResult(string script, dynamic parameters)
+        public dynamic RunPythonScriptWithResult(string script,dynamic parameters)
         {
             dynamic result = null;
             if (PythonRuntime == null)
@@ -181,11 +194,11 @@ def capture_output(code, globals_dict):
                 return result;
             }
 
-            using (var gil = PythonRuntime.GIL()) // Acquire the Python Global Interpreter Lock
-            {
-                result = PersistentScope.Exec(script); // Execute the script in the persistent scope
-            }
-
+            //using (var gil = PythonRuntime.GIL()) // Acquire the Python Global Interpreter Lock
+            //{
+            //    result = PersistentScope.Exec(script); // Execute the script in the persistent scope
+            //}
+            result= PythonRuntime.PersistentScope.Exec(script);
             return result;
         }
         protected virtual void Dispose(bool disposing)

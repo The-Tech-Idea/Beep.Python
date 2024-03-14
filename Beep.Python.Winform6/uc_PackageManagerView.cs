@@ -113,7 +113,7 @@ namespace Beep.Python.Winform
             if (PythonRunTimeManager != null)
             {
                 Visutil.ShowWaitForm(new PassedArgs() { Messege = "Refreshing Installed Packages" });
-                await packageManager.RefreshAllPackagesAsync();
+                packageManager.RefreshAllPackagesAsync();
                 PythonRunTimeManager.SaveConfig();
                 Visutil.CloseWaitForm();
 

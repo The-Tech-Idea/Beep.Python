@@ -13,13 +13,13 @@ namespace Beep.Python.Model
         IDMEEditor Editor { get; set; }
 
         void Init();
-        Task<bool> InstallNewPackageAsync(string packagename);
-        Task<bool> InstallPipToolAsync();
-        Task<bool> RefreshAllPackagesAsync();
-        Task<bool> RefreshPackageAsync(string packagename);
-        Task<bool> UnInstallPackageAsync(string packagename);
-        Task<bool> UpgradeAllPackagesAsync();
-        Task<bool> UpgradePackageAsync(string packagename);
+        bool InstallNewPackageAsync(string packagename);
+        bool InstallPipToolAsync();
+        bool RefreshAllPackagesAsync();
+        bool RefreshPackageAsync(string packagename);
+        bool UnInstallPackageAsync(string packagename);
+        bool UpgradeAllPackagesAsync();
+        bool UpgradePackageAsync(string packagename);
        
     }
 }

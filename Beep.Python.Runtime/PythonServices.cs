@@ -32,6 +32,7 @@ namespace Beep.Python.RuntimeEngine
        
         public static IPythonRunTimeManager GetPythonRunTimeManager(this IDMEEditor dmeEditor)
         {
+            PythonRunTimeManager.DMEditor= dmeEditor;
            return  PythonRunTimeManager;
         }
         public static IPackageManagerViewModel GetPythonPackageManager(this IDMEEditor dmeEditor)
