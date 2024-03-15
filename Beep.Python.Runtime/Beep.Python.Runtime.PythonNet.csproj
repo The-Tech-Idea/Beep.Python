@@ -32,6 +32,8 @@
     <PackageReference Include="pythonnet" Version="3.0.3" />
     <PackageReference Include="System.Linq.Expressions" Version="4.3.0" />
     <PackageReference Include="System.Threading.Channels" Version="8.0.0" />
+    <PackageReference Include="TheTechIdea.Beep.Container" Version="1.0.0.24" />
+    <PackageReference Include="TheTechIdea.Beep.Container.Model" Version="1.0.0.15" />
     <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="1.0.122" />
   </ItemGroup>
   <ItemGroup>

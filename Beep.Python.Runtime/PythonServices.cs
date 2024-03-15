@@ -29,7 +29,19 @@ namespace Beep.Python.RuntimeEngine
             }
             return services;
         }
-       
+        public static IServiceCollection RegisterPythonPackageManagerService(this IServiceCollection services, string pythonruntimepath)
+        {
+            Pythonruntimepath = pythonruntimepath;
+
+            if (IsReady)
+            {
+                PackageManager = new PackageManagerViewModel(PythonRunTimeManager);
+                services.AddSingleton<IPackageManagerViewModel>(PackageManager);
+                PythonRunTimeManager.PackageManager = PackageManager;
+            }
+            return services;
+        }
+
         public static IPythonRunTimeManager GetPythonRunTimeManager(this IDMEEditor dmeEditor)
         {
             PythonRunTimeManager.DMEditor= dmeEditor;

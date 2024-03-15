@@ -15,12 +15,11 @@ namespace Beep.Python.RuntimeEngine
     {
         public PythonPlotManager(PythonNetRunTimeManager pythonRuntimeManager, PyModule persistentScope) : base(pythonRuntimeManager, persistentScope)
         {
-            pythonRuntimeManager = pythonRuntimeManager;
-            persistentScope = persistentScope;
+     
         }
         public PythonPlotManager(PythonNetRunTimeManager pythonRuntimeManager) : base(pythonRuntimeManager)
         {
-            pythonRuntimeManager = pythonRuntimeManager;
+          
             InitializePythonEnvironment();
         }
         public void CreateSeabornChart(string picfile, double[] data, string xLabel, string yLabel, string title, ChartType chartType)
