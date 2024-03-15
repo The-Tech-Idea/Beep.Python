@@ -29,6 +29,8 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         IDMEEditor editor;
         [ObservableProperty]
         bool isBusy;
+        [ObservableProperty]
+        string pythonDatafolder;
         public PythonBaseViewModel(IPythonRunTimeManager pythonRuntimeManager, PyModule persistentScope)
         {
             this.PythonRuntime = pythonRuntimeManager;
@@ -36,6 +38,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             this.PersistentScope = persistentScope;
             PythonHelpers._persistentScope = persistentScope;
             PythonHelpers._pythonRuntimeManager = pythonRuntimeManager;
+            pythonDatafolder = Editor.GetPythonDataPath();
         }
         public PythonBaseViewModel(IPythonRunTimeManager pythonRuntimeManager)
         {
@@ -44,6 +47,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             InitializePythonEnvironment();
             PythonHelpers._persistentScope = PersistentScope;
             PythonHelpers._pythonRuntimeManager = pythonRuntimeManager;
+            pythonDatafolder = Editor.GetPythonDataPath();
         }
         public void SendMessege(string messege = null)
         {
@@ -57,6 +61,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         }
         public PythonBaseViewModel()
         {
+            pythonDatafolder = Editor.GetPythonDataPath();
         }
 
         public virtual void ImportPythonModule(string moduleName)
@@ -97,7 +102,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
            
             return retval;
         }
-        public virtual async Task<bool> RunPythonScript(string script,dynamic parameters)
+        public virtual  bool RunPythonScript(string script,dynamic parameters)
         {
             bool retval = false;
             if (!IsInitialized)
@@ -113,14 +118,25 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             //}
             try
             {
-              await  Task.Run(()=> PythonRuntime.PersistentScope.Exec(script));
+                using (var gil = PythonRuntime.GIL())
+                {
+                    if (parameters != null)
+                    {
+                        PythonRuntime.PersistentScope.Set(nameof(parameters), parameters);
+                    }
+                     PythonRuntime.PersistentScope.Exec(script);
+                    retval = true;
+                }
+    //          await  Task.Run(()=> PythonRuntime.PersistentScope.Exec(script));
                 retval = true;
             }
             catch (Exception ex)
             {
-                return retval;
-               
+                Console.WriteLine($"Error executing Python script: {ex.Message}");
+                return false;
             }
+
+        
            return retval;
         }
         public virtual async Task<string> RunPythonCodeAndGetOutput(IProgress<PassedArgs> progress, string code)

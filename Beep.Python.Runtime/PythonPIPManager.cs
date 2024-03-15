@@ -9,16 +9,15 @@ namespace Beep.Python.RuntimeEngine
     public class PythonPIPManager: PythonBaseViewModel
     {
      
-        public PythonPIPManager(PythonNetRunTimeManager pythonRuntimeManager):base(pythonRuntimeManager)
+        public PythonPIPManager(IPythonRunTimeManager pythonRuntimeManager):base(pythonRuntimeManager)
         {
-            pythonRuntimeManager = pythonRuntimeManager;
+           
             InitializePythonEnvironment();
         }
       
-        public PythonPIPManager(PythonNetRunTimeManager pythonRuntimeManager, PyModule persistentScope):base(pythonRuntimeManager, persistentScope)
+        public PythonPIPManager(IPythonRunTimeManager pythonRuntimeManager, PyModule persistentScope):base(pythonRuntimeManager, persistentScope)
         {
-            pythonRuntimeManager = pythonRuntimeManager;
-            persistentScope = persistentScope;
+         
           
         }
         #region "PIP Methods"

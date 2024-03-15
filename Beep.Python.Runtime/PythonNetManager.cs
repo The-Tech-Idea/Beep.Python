@@ -17,14 +17,14 @@ namespace Beep.Python.RuntimeEngine
 {
     public class PythonNetManager :PythonBaseViewModel
     {
-        public PythonNetManager(PythonNetRunTimeManager pythonRuntimeManager, PyModule persistentScope) : base(pythonRuntimeManager, persistentScope)
+        public PythonNetManager(IPythonRunTimeManager pythonRuntimeManager, PyModule persistentScope) : base(pythonRuntimeManager, persistentScope)
         {
             pythonRuntimeManager = pythonRuntimeManager;
             persistentScope = persistentScope;
 
         }
 
-        public PythonNetManager(PythonNetRunTimeManager pythonRuntimeManager) : base(pythonRuntimeManager)
+        public PythonNetManager(IPythonRunTimeManager pythonRuntimeManager) : base(pythonRuntimeManager)
         {
             pythonRuntimeManager = pythonRuntimeManager;
             InitializePythonEnvironment();
@@ -228,7 +228,7 @@ def capture_output(code, globals_dict):
             runTimeManager.IsBusy = false;
             return output;
         }
-        public  void RunInteractivePython(PythonNetRunTimeManager runTimeManager)
+        public  void RunInteractivePython(IPythonRunTimeManager runTimeManager)
         {
 
             string wrappedPythonCode = $@"
@@ -282,7 +282,7 @@ def capture_output_line(code, globals_dict):
             }
             runTimeManager.IsBusy = false;
         }
-        public  void RunInteractivePython(PythonNetRunTimeManager runTimeManager, IProgress<PassedArgs> progress, string code)
+        public  void RunInteractivePython(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress, string code)
         {
 
             string wrappedPythonCode = $@"

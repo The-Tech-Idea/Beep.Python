@@ -1,6 +1,8 @@
 ﻿using Beep.Python.Model;
 using Beep.Python.RuntimeEngine.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.IO;
 using TheTechIdea.Beep;
 
 namespace Beep.Python.RuntimeEngine
@@ -12,6 +14,7 @@ namespace Beep.Python.RuntimeEngine
         private static IDMEEditor DMEditor;
         private static string Pythonruntimepath;
         private static IPackageManagerViewModel PackageManager;
+        private static string PythonDataPath;
         public static IServiceCollection RegisterPythonService(this IServiceCollection services,string pythonruntimepath)
         {
             Pythonruntimepath = pythonruntimepath;
@@ -20,15 +23,30 @@ namespace Beep.Python.RuntimeEngine
            
             services.AddSingleton<IPythonRunTimeManager>(PythonRunTimeManager);
             IsReady = PythonRunTimeManager.Initialize(pythonruntimepath, BinType32or64.p395x64, @"lib\site-packages");
-            if (IsReady)
-            {
-                PackageManager = new PackageManagerViewModel(PythonRunTimeManager);
-
-                services.AddSingleton<IPackageManagerViewModel>(PackageManager);
-                PythonRunTimeManager.PackageManager = PackageManager;
-            }
+            // check if projects directory exists if not create it 
+            Createfolder();
             return services;
         }
+        private static void Createfolder()
+        {
+            if (PythonRunTimeManager != null)
+            {
+                if (!Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "TheTechIdea", "Beep")))
+                {
+                    Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "TheTechIdea", "Beep"));
+
+                }
+               string beeppath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "TheTechIdea", "Beep");
+              
+                if (Directory.Exists(Path.Combine(beeppath, "Python")) == false)
+                {
+                    Directory.CreateDirectory(Path.Combine(beeppath, "Python"));
+                }
+                PythonDataPath= Path.Combine(beeppath, "Python");
+            }
+        }
+      
+       
         public static IServiceCollection RegisterPythonPackageManagerService(this IServiceCollection services, string pythonruntimepath)
         {
             Pythonruntimepath = pythonruntimepath;
@@ -41,7 +59,10 @@ namespace Beep.Python.RuntimeEngine
             }
             return services;
         }
-
+        public static string GetPythonDataPath(this IDMEEditor dmeEditor)
+        {
+            return PythonDataPath;
+        }
         public static IPythonRunTimeManager GetPythonRunTimeManager(this IDMEEditor dmeEditor)
         {
             PythonRunTimeManager.DMEditor= dmeEditor;

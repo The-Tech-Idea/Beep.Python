@@ -1,4 +1,5 @@
-﻿using Beep.Python.RuntimeEngine.ViewModels;
+﻿using Beep.Python.Model;
+using Beep.Python.RuntimeEngine.ViewModels;
 using Python.Runtime;
 using System;
 using System.Collections.Generic;
@@ -11,15 +12,14 @@ namespace Beep.Python.RuntimeEngine
 {
     public class PythonPandasManager: PythonBaseViewModel
     {
-        public PythonPandasManager(PythonNetRunTimeManager pythonRuntimeManager, PyModule persistentScope):base(pythonRuntimeManager, persistentScope)
+        public PythonPandasManager(IPythonRunTimeManager pythonRuntimeManager, PyModule persistentScope):base(pythonRuntimeManager, persistentScope)
         {
-            pythonRuntimeManager = pythonRuntimeManager;
-            persistentScope = persistentScope;
+          
        
         }
-        public PythonPandasManager(PythonNetRunTimeManager pythonRuntimeManager):base(pythonRuntimeManager)
+        public PythonPandasManager(IPythonRunTimeManager pythonRuntimeManager):base(pythonRuntimeManager)
         {
-            pythonRuntimeManager = pythonRuntimeManager;
+           
             InitializePythonEnvironment();
         }
         #region "Pandas DataFrame"
