@@ -30,57 +30,57 @@
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(uc_createaiproject));
-            DataGridViewCellStyle dataGridViewCellStyle6 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             statusStrip1 = new StatusStrip();
             splitContainer1 = new SplitContainer();
             toolStrip1 = new ToolStrip();
             toolStripButton1 = new ToolStripButton();
             toolStripButton2 = new ToolStripButton();
             label1 = new Label();
-            textBox1 = new TextBox();
+            label10 = new Label();
+            label9 = new Label();
+            LabelcomboBox = new ComboBox();
+            FeaturesbindingSource1 = new BindingSource(components);
             pythonAIProjectViewModelBindingSource = new BindingSource(components);
-            textBox2 = new TextBox();
-            comboBox1 = new ComboBox();
-            ListofAlgorithimsBidningSource = new BindingSource(components);
-            ParameterDictionaryForAlgorithmsbindingSource = new BindingSource(components);
-            textBox3 = new TextBox();
-            GetFilebutton = new Button();
-            dataGridView1 = new DataGridView();
-            PythonDataPipeLinebindingSource = new BindingSource(components);
-            FeaturesArraybindingSource = new BindingSource(components);
-            pARAMETERNAMEDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            pARAMETERDESCRIPTIONDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            pARAMETERVALUEDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            label2 = new Label();
-            label3 = new Label();
-            label4 = new Label();
-            label5 = new Label();
-            label6 = new Label();
+            PrimarycomboBox = new ComboBox();
+            label8 = new Label();
+            label7 = new Label();
             dataGridView2 = new DataGridView();
             iDDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             sTEPNAMEDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             oUTPUTFILENAMEDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            label7 = new Label();
-            label8 = new Label();
-            LabelcomboBox = new ComboBox();
-            PrimarycomboBox = new ComboBox();
-            FeaturesbindingSource1 = new BindingSource(components);
-            label9 = new Label();
-            label10 = new Label();
+            PythonDataPipeLinebindingSource = new BindingSource(components);
+            label6 = new Label();
+            label5 = new Label();
+            label4 = new Label();
+            label3 = new Label();
+            label2 = new Label();
+            dataGridView1 = new DataGridView();
+            pARAMETERNAMEDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            pARAMETERDESCRIPTIONDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            pARAMETERVALUEDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            ParameterDictionaryForAlgorithmsbindingSource = new BindingSource(components);
+            GetFilebutton = new Button();
+            textBox3 = new TextBox();
+            comboBox1 = new ComboBox();
+            ListofAlgorithimsBidningSource = new BindingSource(components);
+            textBox2 = new TextBox();
+            textBox1 = new TextBox();
+            FeaturesArraybindingSource = new BindingSource(components);
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
             splitContainer1.SuspendLayout();
             toolStrip1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)pythonAIProjectViewModelBindingSource).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)ListofAlgorithimsBidningSource).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)ParameterDictionaryForAlgorithmsbindingSource).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)PythonDataPipeLinebindingSource).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)FeaturesArraybindingSource).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)dataGridView2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)FeaturesbindingSource1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pythonAIProjectViewModelBindingSource).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dataGridView2).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)PythonDataPipeLinebindingSource).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)ParameterDictionaryForAlgorithmsbindingSource).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)ListofAlgorithimsBidningSource).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)FeaturesArraybindingSource).BeginInit();
             SuspendLayout();
             // 
             // statusStrip1
@@ -170,186 +170,90 @@
             label1.Text = "AI Project";
             label1.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // textBox1
+            // label10
             // 
-            textBox1.BorderStyle = BorderStyle.FixedSingle;
-            textBox1.DataBindings.Add(new Binding("Text", pythonAIProjectViewModelBindingSource, "Title", true));
-            textBox1.Location = new Point(165, 21);
-            textBox1.Name = "textBox1";
-            textBox1.PlaceholderText = "Title";
-            textBox1.Size = new Size(443, 23);
-            textBox1.TabIndex = 0;
+            label10.BorderStyle = BorderStyle.FixedSingle;
+            label10.Location = new Point(57, 169);
+            label10.Name = "label10";
+            label10.Size = new Size(100, 23);
+            label10.TabIndex = 71;
+            label10.Text = "Label";
+            label10.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // label9
+            // 
+            label9.BorderStyle = BorderStyle.FixedSingle;
+            label9.Location = new Point(57, 140);
+            label9.Name = "label9";
+            label9.Size = new Size(100, 23);
+            label9.TabIndex = 70;
+            label9.Text = "Key";
+            label9.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // LabelcomboBox
+            // 
+            LabelcomboBox.DataSource = FeaturesbindingSource1;
+            LabelcomboBox.DisplayMember = "DisplayValue";
+            LabelcomboBox.FormattingEnabled = true;
+            LabelcomboBox.Location = new Point(165, 169);
+            LabelcomboBox.Name = "LabelcomboBox";
+            LabelcomboBox.Size = new Size(441, 23);
+            LabelcomboBox.TabIndex = 69;
+            LabelcomboBox.ValueMember = "DisplayValue";
+            // 
+            // FeaturesbindingSource1
+            // 
+            FeaturesbindingSource1.DataMember = "Features";
+            FeaturesbindingSource1.DataSource = pythonAIProjectViewModelBindingSource;
             // 
             // pythonAIProjectViewModelBindingSource
             // 
             pythonAIProjectViewModelBindingSource.DataMember = "Projects";
             pythonAIProjectViewModelBindingSource.DataSource = typeof(RuntimeEngine.ViewModels.PythonAIProjectViewModel);
             // 
-            // textBox2
+            // PrimarycomboBox
             // 
-            textBox2.BackColor = Color.White;
-            textBox2.BorderStyle = BorderStyle.FixedSingle;
-            textBox2.DataBindings.Add(new Binding("Text", pythonAIProjectViewModelBindingSource, "Description", true));
-            textBox2.Location = new Point(165, 50);
-            textBox2.Name = "textBox2";
-            textBox2.PlaceholderText = "Description";
-            textBox2.Size = new Size(443, 23);
-            textBox2.TabIndex = 1;
+            PrimarycomboBox.DataSource = FeaturesbindingSource1;
+            PrimarycomboBox.DisplayMember = "DisplayValue";
+            PrimarycomboBox.FormattingEnabled = true;
+            PrimarycomboBox.Location = new Point(165, 140);
+            PrimarycomboBox.Name = "PrimarycomboBox";
+            PrimarycomboBox.Size = new Size(441, 23);
+            PrimarycomboBox.TabIndex = 68;
+            PrimarycomboBox.ValueMember = "DisplayValue";
             // 
-            // comboBox1
+            // label8
             // 
-            comboBox1.DataBindings.Add(new Binding("Text", pythonAIProjectViewModelBindingSource, "Algorithm", true));
-            comboBox1.DataSource = ListofAlgorithimsBidningSource;
-            comboBox1.DisplayMember = "LOVNAME";
-            comboBox1.FormattingEnabled = true;
-            comboBox1.Location = new Point(165, 231);
-            comboBox1.Name = "comboBox1";
-            comboBox1.Size = new Size(441, 23);
-            comboBox1.TabIndex = 2;
-            comboBox1.ValueMember = "LOVNAME";
+            label8.BorderStyle = BorderStyle.FixedSingle;
+            label8.Location = new Point(57, 112);
+            label8.Name = "label8";
+            label8.Size = new Size(100, 23);
+            label8.TabIndex = 14;
+            label8.Text = "Features";
+            label8.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // ListofAlgorithimsBidningSource
+            // label7
             // 
-            ListofAlgorithimsBidningSource.DataMember = "ListofAlgorithims";
-            ListofAlgorithimsBidningSource.DataSource = typeof(RuntimeEngine.ViewModels.PythonAIProjectViewModel);
-            // 
-            // ParameterDictionaryForAlgorithmsbindingSource
-            // 
-            ParameterDictionaryForAlgorithmsbindingSource.DataMember = "PythonAlgorithmParams";
-            ParameterDictionaryForAlgorithmsbindingSource.DataSource = pythonAIProjectViewModelBindingSource;
-            // 
-            // textBox3
-            // 
-            textBox3.BorderStyle = BorderStyle.FixedSingle;
-            textBox3.Location = new Point(165, 81);
-            textBox3.Name = "textBox3";
-            textBox3.PlaceholderText = "Data File";
-            textBox3.Size = new Size(443, 23);
-            textBox3.TabIndex = 3;
-            // 
-            // GetFilebutton
-            // 
-            GetFilebutton.Location = new Point(614, 81);
-            GetFilebutton.Name = "GetFilebutton";
-            GetFilebutton.Size = new Size(100, 23);
-            GetFilebutton.TabIndex = 4;
-            GetFilebutton.Text = "Get File";
-            GetFilebutton.UseVisualStyleBackColor = true;
-            // 
-            // dataGridView1
-            // 
-            dataGridView1.AutoGenerateColumns = false;
-            dataGridView1.BackgroundColor = Color.White;
-            dataGridViewCellStyle6.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle6.BackColor = Color.White;
-            dataGridViewCellStyle6.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
-            dataGridViewCellStyle6.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle6.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle6.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle6.WrapMode = DataGridViewTriState.True;
-            dataGridView1.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle6;
-            dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridView1.Columns.AddRange(new DataGridViewColumn[] { pARAMETERNAMEDataGridViewTextBoxColumn, pARAMETERDESCRIPTIONDataGridViewTextBoxColumn, pARAMETERVALUEDataGridViewTextBoxColumn });
-            dataGridView1.DataSource = ParameterDictionaryForAlgorithmsbindingSource;
-            dataGridView1.Location = new Point(165, 262);
-            dataGridView1.Name = "dataGridView1";
-            dataGridView1.RowHeadersVisible = false;
-            dataGridView1.RowTemplate.Height = 25;
-            dataGridView1.Size = new Size(441, 249);
-            dataGridView1.TabIndex = 5;
-            // 
-            // PythonDataPipeLinebindingSource
-            // 
-            PythonDataPipeLinebindingSource.DataMember = "PythonDataPipeLine";
-            PythonDataPipeLinebindingSource.DataSource = pythonAIProjectViewModelBindingSource;
-            // 
-            // FeaturesArraybindingSource
-            // 
-            FeaturesArraybindingSource.DataMember = "FeaturesArray";
-            FeaturesArraybindingSource.DataSource = pythonAIProjectViewModelBindingSource;
-            // 
-            // pARAMETERNAMEDataGridViewTextBoxColumn
-            // 
-            pARAMETERNAMEDataGridViewTextBoxColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            pARAMETERNAMEDataGridViewTextBoxColumn.DataPropertyName = "PARAMETERNAME";
-            pARAMETERNAMEDataGridViewTextBoxColumn.HeaderText = "PARAMETER NAME";
-            pARAMETERNAMEDataGridViewTextBoxColumn.Name = "pARAMETERNAMEDataGridViewTextBoxColumn";
-            // 
-            // pARAMETERDESCRIPTIONDataGridViewTextBoxColumn
-            // 
-            pARAMETERDESCRIPTIONDataGridViewTextBoxColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            pARAMETERDESCRIPTIONDataGridViewTextBoxColumn.DataPropertyName = "PARAMETERDESCRIPTION";
-            pARAMETERDESCRIPTIONDataGridViewTextBoxColumn.HeaderText = "DESCRIPTION";
-            pARAMETERDESCRIPTIONDataGridViewTextBoxColumn.Name = "pARAMETERDESCRIPTIONDataGridViewTextBoxColumn";
-            // 
-            // pARAMETERVALUEDataGridViewTextBoxColumn
-            // 
-            pARAMETERVALUEDataGridViewTextBoxColumn.DataPropertyName = "PARAMETERVALUE";
-            pARAMETERVALUEDataGridViewTextBoxColumn.HeaderText = "VALUE";
-            pARAMETERVALUEDataGridViewTextBoxColumn.Name = "pARAMETERVALUEDataGridViewTextBoxColumn";
-            // 
-            // label2
-            // 
-            label2.BorderStyle = BorderStyle.FixedSingle;
-            label2.Location = new Point(59, 231);
-            label2.Name = "label2";
-            label2.Size = new Size(100, 23);
-            label2.TabIndex = 6;
-            label2.Text = "Algorithm";
-            label2.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // label3
-            // 
-            label3.BorderStyle = BorderStyle.FixedSingle;
-            label3.Location = new Point(59, 262);
-            label3.Name = "label3";
-            label3.Size = new Size(100, 23);
-            label3.TabIndex = 7;
-            label3.Text = "Parameters";
-            label3.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // label4
-            // 
-            label4.BorderStyle = BorderStyle.FixedSingle;
-            label4.Location = new Point(57, 50);
-            label4.Name = "label4";
-            label4.Size = new Size(100, 23);
-            label4.TabIndex = 8;
-            label4.Text = "Description";
-            label4.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // label5
-            // 
-            label5.BorderStyle = BorderStyle.FixedSingle;
-            label5.Location = new Point(57, 21);
-            label5.Name = "label5";
-            label5.Size = new Size(100, 23);
-            label5.TabIndex = 9;
-            label5.Text = "Title";
-            label5.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // label6
-            // 
-            label6.BorderStyle = BorderStyle.FixedSingle;
-            label6.Location = new Point(57, 81);
-            label6.Name = "label6";
-            label6.Size = new Size(100, 23);
-            label6.TabIndex = 10;
-            label6.Text = "Data File";
-            label6.TextAlign = ContentAlignment.MiddleCenter;
+            label7.BorderStyle = BorderStyle.FixedSingle;
+            label7.Location = new Point(59, 531);
+            label7.Name = "label7";
+            label7.Size = new Size(100, 23);
+            label7.TabIndex = 12;
+            label7.Text = "Data PipeLine";
+            label7.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // dataGridView2
             // 
             dataGridView2.AutoGenerateColumns = false;
             dataGridView2.BackgroundColor = Color.White;
-            dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle5.BackColor = Color.White;
-            dataGridViewCellStyle5.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
-            dataGridViewCellStyle5.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle5.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle5.WrapMode = DataGridViewTriState.True;
-            dataGridView2.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = Color.White;
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
+            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            dataGridView2.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             dataGridView2.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView2.Columns.AddRange(new DataGridViewColumn[] { iDDataGridViewTextBoxColumn, sTEPNAMEDataGridViewTextBoxColumn, oUTPUTFILENAMEDataGridViewTextBoxColumn });
             dataGridView2.DataSource = PythonDataPipeLinebindingSource;
@@ -379,72 +283,168 @@
             oUTPUTFILENAMEDataGridViewTextBoxColumn.HeaderText = "OUTPUT FILENAME";
             oUTPUTFILENAMEDataGridViewTextBoxColumn.Name = "oUTPUTFILENAMEDataGridViewTextBoxColumn";
             // 
-            // label7
+            // PythonDataPipeLinebindingSource
             // 
-            label7.BorderStyle = BorderStyle.FixedSingle;
-            label7.Location = new Point(59, 531);
-            label7.Name = "label7";
-            label7.Size = new Size(100, 23);
-            label7.TabIndex = 12;
-            label7.Text = "Data PipeLine";
-            label7.TextAlign = ContentAlignment.MiddleCenter;
+            PythonDataPipeLinebindingSource.DataMember = "PythonDataPipeLine";
+            PythonDataPipeLinebindingSource.DataSource = pythonAIProjectViewModelBindingSource;
             // 
-            // label8
+            // label6
             // 
-            label8.BorderStyle = BorderStyle.FixedSingle;
-            label8.Location = new Point(57, 112);
-            label8.Name = "label8";
-            label8.Size = new Size(100, 23);
-            label8.TabIndex = 14;
-            label8.Text = "Features";
-            label8.TextAlign = ContentAlignment.MiddleCenter;
+            label6.BorderStyle = BorderStyle.FixedSingle;
+            label6.Location = new Point(57, 81);
+            label6.Name = "label6";
+            label6.Size = new Size(100, 23);
+            label6.TabIndex = 10;
+            label6.Text = "Input Data ";
+            label6.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // LabelcomboBox
+            // label5
             // 
-            LabelcomboBox.DataSource = FeaturesbindingSource1;
-            LabelcomboBox.DisplayMember = "DisplayValue";
-            LabelcomboBox.FormattingEnabled = true;
-            LabelcomboBox.Location = new Point(165, 169);
-            LabelcomboBox.Name = "LabelcomboBox";
-            LabelcomboBox.Size = new Size(441, 23);
-            LabelcomboBox.TabIndex = 69;
-            LabelcomboBox.ValueMember = "DisplayValue";
+            label5.BorderStyle = BorderStyle.FixedSingle;
+            label5.Location = new Point(57, 21);
+            label5.Name = "label5";
+            label5.Size = new Size(100, 23);
+            label5.TabIndex = 9;
+            label5.Text = "Title";
+            label5.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // PrimarycomboBox
+            // label4
             // 
-            PrimarycomboBox.DataSource = FeaturesbindingSource1;
-            PrimarycomboBox.DisplayMember = "DisplayValue";
-            PrimarycomboBox.FormattingEnabled = true;
-            PrimarycomboBox.Location = new Point(165, 140);
-            PrimarycomboBox.Name = "PrimarycomboBox";
-            PrimarycomboBox.Size = new Size(441, 23);
-            PrimarycomboBox.TabIndex = 68;
-            PrimarycomboBox.ValueMember = "DisplayValue";
+            label4.BorderStyle = BorderStyle.FixedSingle;
+            label4.Location = new Point(57, 50);
+            label4.Name = "label4";
+            label4.Size = new Size(100, 23);
+            label4.TabIndex = 8;
+            label4.Text = "Description";
+            label4.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // FeaturesbindingSource1
+            // label3
             // 
-            FeaturesbindingSource1.DataMember = "Features";
-            FeaturesbindingSource1.DataSource = pythonAIProjectViewModelBindingSource;
+            label3.BorderStyle = BorderStyle.FixedSingle;
+            label3.Location = new Point(59, 262);
+            label3.Name = "label3";
+            label3.Size = new Size(100, 23);
+            label3.TabIndex = 7;
+            label3.Text = "Parameters";
+            label3.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // label9
+            // label2
             // 
-            label9.BorderStyle = BorderStyle.FixedSingle;
-            label9.Location = new Point(57, 140);
-            label9.Name = "label9";
-            label9.Size = new Size(100, 23);
-            label9.TabIndex = 70;
-            label9.Text = "Key";
-            label9.TextAlign = ContentAlignment.MiddleCenter;
+            label2.BorderStyle = BorderStyle.FixedSingle;
+            label2.Location = new Point(59, 231);
+            label2.Name = "label2";
+            label2.Size = new Size(100, 23);
+            label2.TabIndex = 6;
+            label2.Text = "Algorithm";
+            label2.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // label10
+            // dataGridView1
             // 
-            label10.BorderStyle = BorderStyle.FixedSingle;
-            label10.Location = new Point(57, 169);
-            label10.Name = "label10";
-            label10.Size = new Size(100, 23);
-            label10.TabIndex = 71;
-            label10.Text = "Label";
-            label10.TextAlign = ContentAlignment.MiddleCenter;
+            dataGridView1.AutoGenerateColumns = false;
+            dataGridView1.BackgroundColor = Color.White;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = Color.White;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
+            dataGridViewCellStyle2.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+            dataGridView1.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridView1.Columns.AddRange(new DataGridViewColumn[] { pARAMETERNAMEDataGridViewTextBoxColumn, pARAMETERDESCRIPTIONDataGridViewTextBoxColumn, pARAMETERVALUEDataGridViewTextBoxColumn });
+            dataGridView1.DataSource = ParameterDictionaryForAlgorithmsbindingSource;
+            dataGridView1.Location = new Point(165, 262);
+            dataGridView1.Name = "dataGridView1";
+            dataGridView1.RowHeadersVisible = false;
+            dataGridView1.RowTemplate.Height = 25;
+            dataGridView1.Size = new Size(441, 249);
+            dataGridView1.TabIndex = 5;
+            // 
+            // pARAMETERNAMEDataGridViewTextBoxColumn
+            // 
+            pARAMETERNAMEDataGridViewTextBoxColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            pARAMETERNAMEDataGridViewTextBoxColumn.DataPropertyName = "PARAMETERNAME";
+            pARAMETERNAMEDataGridViewTextBoxColumn.HeaderText = "PARAMETER NAME";
+            pARAMETERNAMEDataGridViewTextBoxColumn.Name = "pARAMETERNAMEDataGridViewTextBoxColumn";
+            // 
+            // pARAMETERDESCRIPTIONDataGridViewTextBoxColumn
+            // 
+            pARAMETERDESCRIPTIONDataGridViewTextBoxColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            pARAMETERDESCRIPTIONDataGridViewTextBoxColumn.DataPropertyName = "PARAMETERDESCRIPTION";
+            pARAMETERDESCRIPTIONDataGridViewTextBoxColumn.HeaderText = "DESCRIPTION";
+            pARAMETERDESCRIPTIONDataGridViewTextBoxColumn.Name = "pARAMETERDESCRIPTIONDataGridViewTextBoxColumn";
+            // 
+            // pARAMETERVALUEDataGridViewTextBoxColumn
+            // 
+            pARAMETERVALUEDataGridViewTextBoxColumn.DataPropertyName = "PARAMETERVALUE";
+            pARAMETERVALUEDataGridViewTextBoxColumn.HeaderText = "VALUE";
+            pARAMETERVALUEDataGridViewTextBoxColumn.Name = "pARAMETERVALUEDataGridViewTextBoxColumn";
+            // 
+            // ParameterDictionaryForAlgorithmsbindingSource
+            // 
+            ParameterDictionaryForAlgorithmsbindingSource.DataMember = "PythonAlgorithmParams";
+            ParameterDictionaryForAlgorithmsbindingSource.DataSource = pythonAIProjectViewModelBindingSource;
+            // 
+            // GetFilebutton
+            // 
+            GetFilebutton.Location = new Point(614, 81);
+            GetFilebutton.Name = "GetFilebutton";
+            GetFilebutton.Size = new Size(100, 23);
+            GetFilebutton.TabIndex = 4;
+            GetFilebutton.Text = "Get File";
+            GetFilebutton.UseVisualStyleBackColor = true;
+            // 
+            // textBox3
+            // 
+            textBox3.BorderStyle = BorderStyle.FixedSingle;
+            textBox3.Location = new Point(165, 81);
+            textBox3.Name = "textBox3";
+            textBox3.PlaceholderText = "Data File";
+            textBox3.Size = new Size(167, 23);
+            textBox3.TabIndex = 3;
+            // 
+            // comboBox1
+            // 
+            comboBox1.DataBindings.Add(new Binding("Text", pythonAIProjectViewModelBindingSource, "Algorithm", true));
+            comboBox1.DataSource = ListofAlgorithimsBidningSource;
+            comboBox1.DisplayMember = "LOVNAME";
+            comboBox1.FormattingEnabled = true;
+            comboBox1.Location = new Point(165, 231);
+            comboBox1.Name = "comboBox1";
+            comboBox1.Size = new Size(441, 23);
+            comboBox1.TabIndex = 2;
+            comboBox1.ValueMember = "LOVNAME";
+            // 
+            // ListofAlgorithimsBidningSource
+            // 
+            ListofAlgorithimsBidningSource.DataMember = "ListofAlgorithims";
+            ListofAlgorithimsBidningSource.DataSource = typeof(RuntimeEngine.ViewModels.PythonAIProjectViewModel);
+            // 
+            // textBox2
+            // 
+            textBox2.BackColor = Color.White;
+            textBox2.BorderStyle = BorderStyle.FixedSingle;
+            textBox2.DataBindings.Add(new Binding("Text", pythonAIProjectViewModelBindingSource, "Description", true));
+            textBox2.Location = new Point(165, 50);
+            textBox2.Name = "textBox2";
+            textBox2.PlaceholderText = "Description";
+            textBox2.Size = new Size(443, 23);
+            textBox2.TabIndex = 1;
+            // 
+            // textBox1
+            // 
+            textBox1.BorderStyle = BorderStyle.FixedSingle;
+            textBox1.DataBindings.Add(new Binding("Text", pythonAIProjectViewModelBindingSource, "Title", true));
+            textBox1.Location = new Point(165, 21);
+            textBox1.Name = "textBox1";
+            textBox1.PlaceholderText = "Title";
+            textBox1.Size = new Size(443, 23);
+            textBox1.TabIndex = 0;
+            // 
+            // FeaturesArraybindingSource
+            // 
+            FeaturesArraybindingSource.DataMember = "FeaturesArray";
+            FeaturesArraybindingSource.DataSource = pythonAIProjectViewModelBindingSource;
             // 
             // uc_createaiproject
             // 
@@ -462,14 +462,14 @@
             splitContainer1.ResumeLayout(false);
             toolStrip1.ResumeLayout(false);
             toolStrip1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)pythonAIProjectViewModelBindingSource).EndInit();
-            ((System.ComponentModel.ISupportInitialize)ListofAlgorithimsBidningSource).EndInit();
-            ((System.ComponentModel.ISupportInitialize)ParameterDictionaryForAlgorithmsbindingSource).EndInit();
-            ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
-            ((System.ComponentModel.ISupportInitialize)PythonDataPipeLinebindingSource).EndInit();
-            ((System.ComponentModel.ISupportInitialize)FeaturesArraybindingSource).EndInit();
-            ((System.ComponentModel.ISupportInitialize)dataGridView2).EndInit();
             ((System.ComponentModel.ISupportInitialize)FeaturesbindingSource1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pythonAIProjectViewModelBindingSource).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dataGridView2).EndInit();
+            ((System.ComponentModel.ISupportInitialize)PythonDataPipeLinebindingSource).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)ParameterDictionaryForAlgorithmsbindingSource).EndInit();
+            ((System.ComponentModel.ISupportInitialize)ListofAlgorithimsBidningSource).EndInit();
+            ((System.ComponentModel.ISupportInitialize)FeaturesArraybindingSource).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }

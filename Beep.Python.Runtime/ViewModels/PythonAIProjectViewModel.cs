@@ -116,6 +116,15 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         {
             Editor.ConfigEditor.JsonLoader.Serialize(Path.Combine(PythonDatafolder, "Projects.json"), UnitofWork.Units);
         }
+        public void Get(string currentEntity)
+        {
+            UnitofWork.Get(new List<TheTechIdea.Beep.Report.AppFilter>() { new TheTechIdea.Beep.Report.AppFilter() { FieldName = "ProjectName", Operator = "=", FilterValue = $"{currentEntity}" } });
+            if(UnitofWork.Units.Count() > 0)
+            {
+                CurrentProject = UnitofWork.Units[0];
+            }
+            
+        }
         public bool CreateProject(string projectname)
         {
             try
@@ -353,6 +362,8 @@ namespace Beep.Python.RuntimeEngine.ViewModels
 
             return true;
         }
+
+       
         #endregion
 
     }

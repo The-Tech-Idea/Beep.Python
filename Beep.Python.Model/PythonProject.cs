@@ -28,6 +28,34 @@ namespace Beep.Python.Model
                 SetProperty(ref _SplitratioValue, value);
             }
         }
+        // create DataSourceName property
+        private string _DataSourceNameValue;
+        public string DataSourceName
+        {
+            get
+            {
+                return this._DataSourceNameValue;
+            }
+
+            set
+            {
+                SetProperty(ref _DataSourceNameValue, value);
+            }
+        }
+        //create EntityName property
+        private string _EntityNameValue;
+        public string EntityName
+        {
+            get
+            {
+                return this._EntityNameValue;
+            }
+
+            set
+            {
+                SetProperty(ref _EntityNameValue, value);
+            }
+        }
         // create DataFile property
         private string _DataFileValue;
         public string DataFile

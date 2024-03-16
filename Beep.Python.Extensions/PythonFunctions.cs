@@ -37,7 +37,17 @@ namespace Beep.Python.Extensions
             {
 
                 ExtensionsHelpers.GetValues(Passedarguments);
-                ExtensionsHelpers.Vismanager.ShowPage("uc_pythonmanager", (PassedArgs)DMEEditor.Passedarguments, DisplayType.InControl);
+                if(ExtensionsHelpers.pbr!=null)
+                {
+                  if(ExtensionsHelpers.pbr.BranchType== EnumPointType.Entity)
+                  {
+                        Passedarguments.DatasourceName= ExtensionsHelpers.pbr.DataSourceName;
+                        Passedarguments.CurrentEntity= ExtensionsHelpers.pbr.BranchText;
+                        Passedarguments.EventType = "CREATEAI";
+                        ExtensionsHelpers.Vismanager.ShowPage("uc_pythonmanager", (PassedArgs)Passedarguments, DisplayType.InControl);
+                  }    
+                }
+                
                 // DMEEditor.AddLogMessage("Success", $"Open Data Connection", DateTime.Now, 0, null, Errors.Ok);
             }
             catch (Exception ex)
@@ -55,7 +65,7 @@ namespace Beep.Python.Extensions
             {
 
                 ExtensionsHelpers.GetValues(Passedarguments);
-                ExtensionsHelpers.Vismanager.ShowPage("uc_createaiproject", (PassedArgs)DMEEditor.Passedarguments, DisplayType.InControl);
+                ExtensionsHelpers.Vismanager.ShowPage("uc_createaiproject", (PassedArgs)Passedarguments, DisplayType.InControl);
                 // DMEEditor.AddLogMessage("Success", $"Open Data Connection", DateTime.Now, 0, null, Errors.Ok);
             }
             catch (Exception ex)

@@ -23,8 +23,20 @@ namespace Beep.Python.Winform
         public override void SetConfig(IDMEEditor pDMEEditor, IDMLogger plogger, IUtil putil, string[] args, IPassedArgs e, IErrorsInfo per)
         {
             base.SetConfig(pDMEEditor, plogger, putil, args, e, per);
-            pythonRunTimeManager= pDMEEditor.GetPythonRunTimeManager();
+            Passedarg=e;
+            pythonRunTimeManager = pDMEEditor.GetPythonRunTimeManager();
             pythonAIProjectViewModel = new PythonAIProjectViewModel(pythonRunTimeManager, pythonRunTimeManager.PersistentScope);
+            if(Passedarg!=null)
+            {
+                if(Passedarg.EventType=="CREATEAI")
+                {
+                    pythonAIProjectViewModel.CreateProject(Passedarg.CurrentEntity);
+                }
+                if(Passedarg.EventType=="EDITAI")
+                {
+                    pythonAIProjectViewModel.Get(Passedarg.CurrentEntity);
+                }
+            }
             pythonAIProjectViewModel.Progress = new Progress<PassedArgs>();
             pythonAIProjectViewModel.Editor = pDMEEditor;
             pythonAIProjectViewModelBindingSource.DataSource = pythonAIProjectViewModel;
