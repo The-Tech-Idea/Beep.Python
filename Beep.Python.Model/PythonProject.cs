@@ -154,7 +154,20 @@ namespace Beep.Python.Model
                 SetProperty(ref _FeaturesArrayValue, value);
             }
         }
-        
+        // create modelid property
+        private string _ModelIDValue;
+        public string ModelID
+        {
+            get
+            {
+                return this._ModelIDValue;
+            }
+
+            set
+            {
+                SetProperty(ref _ModelIDValue, value);
+            }
+        }
             
         //create Title property
         private string _TitleValue;

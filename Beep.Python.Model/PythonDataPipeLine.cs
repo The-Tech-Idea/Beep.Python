@@ -38,7 +38,48 @@ public  PythonDataPipeLine (){}
        SetProperty(ref _STEPNAMEValue, value);
     }
     }
+        // create step type property 
+        private System.String  _STEPTYPEValue ;
+        public System.String STEPTYPE
+        {
+            get
+            {
+                return this._STEPTYPEValue;
+            }
 
+            set
+            {
+           SetProperty(ref _STEPTYPEValue, value);
+        }
+        }
+        //create code property 
+        private System.String  _CODEValue ;
+        public System.String CODE
+        {
+            get
+            {
+                return this._CODEValue;
+            }
+
+            set
+            {
+           SetProperty(ref _CODEValue, value);
+        }
+        }
+       //create InputFile property
+       private System.String  _INPUTFILENAMEValue ;
+        public System.String INPUTFILENAME
+        {
+            get
+            {
+                return this._INPUTFILENAMEValue;
+            }
+
+            set
+            {
+           SetProperty(ref _INPUTFILENAMEValue, value);
+        }
+        }
  private System.String  _OUTPUTFILENAMEValue ;
 
  public System.String OUTPUTFILENAME
