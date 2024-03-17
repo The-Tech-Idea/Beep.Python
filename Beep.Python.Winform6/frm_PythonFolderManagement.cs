@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Xml.Linq;
+using Beep.Vis.Module;
 using TheTechIdea;
 using TheTechIdea.Beep;
 using TheTechIdea.Beep.DataBase;
@@ -43,11 +43,11 @@ namespace Beep.Python.Winform
        // public IPIPManager pIPManager { get; set; }
 
      //   public IDEManager iDEManager { get; set; }
-        public BeepEnterprize.Vis.Module.IVisManager Visutil { get; set; }
+        public IVisManager Visutil { get; set; }
 
 
-        BeepEnterprize.Vis.Module.IBranch RootAppBranch;
-        BeepEnterprize.Vis.Module.IBranch branch;
+       IBranch RootAppBranch;
+       IBranch branch;
 
 
 
@@ -71,15 +71,15 @@ namespace Beep.Python.Winform
             DMEEditor = pbl;
             //Python = new PythonHandler(pbl,TextArea,OutputtextBox, griddatasource);
 
-            Visutil = (BeepEnterprize.Vis.Module.IVisManager)e.Objects.Where(c => c.Name == "VISUTIL").FirstOrDefault().obj;
+            Visutil = (IVisManager)e.Objects.Where(c => c.Name == "VISUTIL").FirstOrDefault().obj;
 
             if (e.Objects.Where(c => c.Name == "Branch").Any())
             {
-                branch = (BeepEnterprize.Vis.Module.IBranch)e.Objects.Where(c => c.Name == "Branch").FirstOrDefault().obj;
+                branch = (IBranch)e.Objects.Where(c => c.Name == "Branch").FirstOrDefault().obj;
             }
             if (e.Objects.Where(c => c.Name == "RootAppBranch").Any())
             {
-                RootAppBranch = (BeepEnterprize.Vis.Module.IBranch)e.Objects.Where(c => c.Name == "RootAppBranch").FirstOrDefault().obj;
+                RootAppBranch = (IBranch)e.Objects.Where(c => c.Name == "RootAppBranch").FirstOrDefault().obj;
             }
             if (DMEEditor.Passedarguments.Objects.Where(c => c.Name == "RunTime").Any())
             {
@@ -159,7 +159,7 @@ namespace Beep.Python.Winform
 
             DMEEditor.ErrorObject.Flag= Errors.Failed;
             DMEEditor.ErrorObject.Message = "User Cancelled";
-            this.DialogResult = DialogResult.Cancel;
+            this.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.Close();
         }
 
@@ -199,7 +199,7 @@ namespace Beep.Python.Winform
                 DMEEditor.ErrorObject.Flag = Errors.Ok;
                 DMEEditor.ErrorObject.Message = "PythonRuntime Selected";
 
-                this.DialogResult = DialogResult.OK;
+                this.DialogResult = System.Windows.Forms.DialogResult.OK;
                 this.Close();
             }
             else
@@ -229,7 +229,7 @@ namespace Beep.Python.Winform
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
             folderBrowserDialog.SelectedPath = txtRuntimePath.Text;
             folderBrowserDialog.ShowNewFolderButton = false;
-            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            if (folderBrowserDialog.ShowDialog()== System.Windows.Forms.DialogResult.OK )
             {
                 txtRuntimePath.Text = folderBrowserDialog.SelectedPath;
                 txtRuntimePath.SelectionStart = 0;
@@ -360,7 +360,7 @@ namespace Beep.Python.Winform
                     }
                 }
             } 
-            if(MessageBox.Show("There is Paths that either not exist or missing Bin,Would you like to Delete them?","Python",MessageBoxButtons.OKCancel)== DialogResult.OK){
+            if(MessageBox.Show("There is Paths that either not exist or missing Bin,Would you like to Delete them?","Python",MessageBoxButtons.OKCancel)== System.Windows.Forms.DialogResult.OK){
                 foreach (var item in listtodel)
                 {
                     int idx = PythonConfig.Runtimes.IndexOf(item);

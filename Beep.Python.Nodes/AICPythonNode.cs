@@ -8,7 +8,7 @@ using TheTechIdea.Util;
 
 
 using TheTechIdea.Beep.ConfigUtil;
-using BeepEnterprize.Vis.Module;
+using Beep.Vis.Module;
 
 namespace AI
 {

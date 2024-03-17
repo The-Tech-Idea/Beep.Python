@@ -1,7 +1,7 @@
 ﻿using Beep.Python.Model;
 using Beep.Python.RuntimeEngine;
 using Beep.Python.RuntimeEngine.ViewModels;
-using BeepEnterprize.Vis.Module;
+using Beep.Vis.Module;
 using System.Data;
 using TheTechIdea;
 using TheTechIdea.Beep;
