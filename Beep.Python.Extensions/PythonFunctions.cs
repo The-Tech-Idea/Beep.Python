@@ -13,7 +13,7 @@ using TheTechIdea.Util;
 
 namespace Beep.Python.Extensions
 {
-    [AddinAttribute(Caption = "Python", Name = "PythonFunctions", ObjectType = "Beep", menu = "Beep", misc = "IFunctionExtension", addinType = AddinType.Class, iconimage = "Python.png", order = 1)]
+    [AddinAttribute(Caption = "Python", Name = "PythonFunctions", ObjectType = "Beep", menu = "Beep", misc = "IFunctionExtension", addinType = AddinType.Class, iconimage = "python.png", order = 1)]
     public class PythonFunctions : IFunctionExtension
     {
         public IDMEEditor DMEEditor { get; set; }
@@ -29,7 +29,7 @@ namespace Beep.Python.Extensions
             ExtensionsHelpers = new FunctionandExtensionsHelpers(DMEEditor, pvisManager, ptreeControl, DMEEditor.GetPythonRunTimeManager());
 
         }
-        [CommandAttribute(Caption = "Python Manager", Name = "PythonManager", Click = true, iconimage = "newproject.png", ObjectType = "Beep", PointType = EnumPointType.Global)]
+        [CommandAttribute(Caption = "Python Manager", Name = "PythonManager", Click = true, iconimage = "pythonnewproject.png", ObjectType = "Beep", PointType = EnumPointType.Global)]
         public IErrorsInfo PythonManager(IPassedArgs Passedarguments)
         {
             DMEEditor.ErrorObject.Flag = Errors.Ok;

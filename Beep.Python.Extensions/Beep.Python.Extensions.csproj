@@ -21,6 +21,18 @@
 		<Copy SourceFiles="$(OutputPath)$(PackageId).$(PackageVersion).nupkg" DestinationFolder="..\..\..\LocalNugetFiles" />
 	</Target>
 	<ItemGroup>
+	  <None Remove="gfx\createai.png" />
+	  <None Remove="gfx\newproject.png" />
+	  <None Remove="gfx\python.png" />
+	  <None Remove="gfx\pythonnewproject.png" />
+	</ItemGroup>
+	<ItemGroup>
+	  <EmbeddedResource Include="gfx\createai.png" />
+	  <EmbeddedResource Include="gfx\newproject.png" />
+	  <EmbeddedResource Include="gfx\python.png" />
+	  <EmbeddedResource Include="gfx\pythonnewproject.png" />
+	</ItemGroup>
+	<ItemGroup>
 	  <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="1.0.124" />
 	  <PackageReference Include="TheTechIdea.Beep.Vis.Modules" Version="1.0.90" />
 	</ItemGroup>
