@@ -72,7 +72,7 @@ namespace AI
         public int MiscID { get; set; }
         public string ObjectType { get; set; } = "Beep";
         public AddinTreeStructure AddinTreeStructure { get; set; }
-        public object ParentBranch { get; set; }
+         public IBranch ParentBranch { get  ; set  ; }
 
         #endregion "Properties"
         #region "Interface Methods"
