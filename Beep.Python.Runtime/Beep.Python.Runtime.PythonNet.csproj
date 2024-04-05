@@ -34,7 +34,7 @@
     <PackageReference Include="System.Threading.Channels" Version="8.0.0" />
     <PackageReference Include="TheTechIdea.Beep.Container" Version="1.0.0.51" />
     <PackageReference Include="TheTechIdea.Beep.Container.Model" Version="1.0.0.27" />
-    <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="1.0.130" />
+    <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="1.0.133" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Beep.Python.Model\Beep.Python.Model.csproj" />
