@@ -29,7 +29,7 @@ namespace Beep.Python.Extensions
             ExtensionsHelpers = new FunctionandExtensionsHelpers(DMEEditor, pvisManager, ptreeControl, DMEEditor.GetPythonRunTimeManager());
 
         }
-        [CommandAttribute(Caption = "Python Manager", Name = "PythonManager", Click = true, iconimage = "pythonnewproject.png", ObjectType = "Beep", PointType = EnumPointType.Global)]
+        [CommandAttribute(Caption = "Python Manager", Name = "PythonManager", Click = true, iconimage = "pythonnewproject.png", ObjectType = "Beep", PointType = EnumPointType.Global, Showin = ShowinType.Menu)]
         public IErrorsInfo PythonManager(IPassedArgs Passedarguments)
         {
             DMEEditor.ErrorObject.Flag = Errors.Ok;
@@ -57,7 +57,7 @@ namespace Beep.Python.Extensions
             return DMEEditor.ErrorObject;
 
         }
-        [CommandAttribute(Caption = "Create AI Project", Name = "PythonManagerDataPoint", Click = true, iconimage = "createai.png", ObjectType = "Beep", PointType = EnumPointType.Entity)]
+        [CommandAttribute(Caption = "Create AI Project", Name = "PythonManagerDataPoint", Click = true, iconimage = "createai.png", ObjectType = "Beep", PointType = EnumPointType.Entity, Showin = ShowinType.Menu)]
         public IErrorsInfo PythonManagerDataPoint(IPassedArgs Passedarguments)
         {
             DMEEditor.ErrorObject.Flag = Errors.Ok;
