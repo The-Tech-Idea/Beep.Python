@@ -23,18 +23,18 @@ namespace Beep.Python.RuntimeEngine.Workflows.Pandas
             Name = "Create DataFrame";
         }
 
-        public IWorkFlowAction PrevAction { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public List<IWorkFlowAction> NextAction { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public List<IPassedArgs> InParameters { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public List<IPassedArgs> OutParameters { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public List<IWorkFlowRule> Rules { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public string Id { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public string ActionTypeName { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public string Code { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public bool IsFinish { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public bool IsRunning { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public string ClassName { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public string Name { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public IWorkFlowAction PrevAction { get  ; set  ; }
+        public List<IWorkFlowAction> NextAction { get  ; set  ; }
+        public List<IPassedArgs> InParameters { get  ; set  ; }
+        public List<IPassedArgs> OutParameters { get  ; set  ; }
+        public List<IWorkFlowRule> Rules { get  ; set  ; }
+        public string Id { get  ; set  ; }
+        public string ActionTypeName { get  ; set  ; }
+        public string Code { get  ; set  ; }
+        public bool IsFinish { get  ; set  ; }
+        public bool IsRunning { get  ; set  ; }
+        public string ClassName { get  ; set  ; }
+        public string Name { get  ; set  ; }
 
         public event EventHandler<WorkFlowEventArgs> WorkFlowActionStarted;
         public event EventHandler<WorkFlowEventArgs> WorkFlowActionEnded;
