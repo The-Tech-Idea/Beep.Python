@@ -43,7 +43,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         public PythonBaseViewModel(IPythonRunTimeManager pythonRuntimeManager)
         {
             this.PythonRuntime = pythonRuntimeManager;
-            Editor = this.PythonRuntime.DMEditor;
+  //          Editor = this.PythonRuntime.DMEditor;
             InitializePythonEnvironment();
             PythonHelpers._persistentScope = PersistentScope;
             PythonHelpers._pythonRuntimeManager = pythonRuntimeManager;
