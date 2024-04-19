@@ -34,7 +34,7 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="1.0.142" />
-	  <PackageReference Include="TheTechIdea.Beep.Vis.Modules" Version="1.0.102" />
+	  <PackageReference Include="TheTechIdea.Beep.Vis.Modules" Version="1.0.103" />
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\Beep.Python.Model\Beep.Python.Model.csproj" />
