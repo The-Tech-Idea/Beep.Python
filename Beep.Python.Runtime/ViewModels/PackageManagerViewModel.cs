@@ -37,14 +37,22 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         }
         public void Init()
         {
-            if(PythonRuntime.CurrentRuntimeConfig.Packagelist==null)
+            if (PythonRuntime != null)
             {
-                PythonRuntime.CurrentRuntimeConfig.Packagelist = new List<PackageDefinition>();
+                if (PythonRuntime.DMEditor != null)
+                {
+                    if (PythonRuntime.CurrentRuntimeConfig.Packagelist == null)
+                    {
+                        PythonRuntime.CurrentRuntimeConfig.Packagelist = new List<PackageDefinition>();
+                    }
+                    Packages = new ObservableBindingList<PackageDefinition>(PythonRuntime.CurrentRuntimeConfig.Packagelist);
+                    Editor = PythonRuntime.DMEditor;
+                    unitofWork = new UnitofWork<PackageDefinition>(Editor, true, new ObservableBindingList<PackageDefinition>(PythonRuntime.CurrentRuntimeConfig.Packagelist), "ID");
+                    unitofWork.PostCreate += UnitofWork_PostCreate;
+                }
             }
-            Packages=new ObservableBindingList<PackageDefinition>(PythonRuntime.CurrentRuntimeConfig.Packagelist);
-            Editor = PythonRuntime.DMEditor;
-            unitofWork = new UnitofWork<PackageDefinition>(Editor, true, new ObservableBindingList<PackageDefinition>(PythonRuntime.CurrentRuntimeConfig.Packagelist), "ID");
-            unitofWork.PostCreate += UnitofWork_PostCreate;
+           
+          
         }
         private void UnitofWork_PostCreate(object sender, UnitofWorkParams e)
         {
@@ -54,7 +62,16 @@ namespace Beep.Python.RuntimeEngine.ViewModels
                package.ID=global::System.Guid.NewGuid().ToString();
             }
         }
-
+        private bool loadPackages()
+        {
+            bool retval = false;
+            if (PythonRuntime.CurrentRuntimeConfig.Packagelist == null)
+            {
+                PythonRuntime.CurrentRuntimeConfig.Packagelist = new List<PackageDefinition>();
+            }
+            Packages = new ObservableBindingList<PackageDefinition>(PythonRuntime.CurrentRuntimeConfig.Packagelist);
+            return retval;
+        }
         public bool InstallPipToolAsync()
         {
             bool retval = false;
