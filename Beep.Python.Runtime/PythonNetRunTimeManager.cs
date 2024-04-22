@@ -16,32 +16,36 @@ using System.Net;
 
 using System.Net.Http;
 using System.Diagnostics;
+using TheTechIdea.Beep.Container.Services;
 
 
 namespace Beep.Python.RuntimeEngine
 {
     public class PythonNetRunTimeManager : IDisposable, IPythonRunTimeManager
     {
-        public PythonNetRunTimeManager(IDMEEditor dMEditor, IJsonLoader jsonLoader, IProgress<PassedArgs> progress,
-        CancellationToken token) // @"W:\Cpython\p395x32"
-        {
-            DMEditor = dMEditor;
-            JsonLoader = jsonLoader;
-            Progress = progress;
-            Token = token;
-            PythonRunTimeDiagnostics.SetFolderNames("x32", "x64");
+        //public PythonNetRunTimeManager(IDMEEditor dMEditor, IJsonLoader jsonLoader, IProgress<PassedArgs> progress,
+        //CancellationToken token) // @"W:\Cpython\p395x32"
+        //{
+        //    DMEditor = dMEditor;
+        //    JsonLoader = jsonLoader;
+        //    Progress = progress;
+        //    Token = token;
+        //    PythonRunTimeDiagnostics.SetFolderNames("x32", "x64");
 
-        }
-        public PythonNetRunTimeManager(IDMEEditor dMEditor) // @"W:\Cpython\p395x32"
-        {
-            DMEditor = dMEditor;
-            JsonLoader = dMEditor.ConfigEditor.JsonLoader;
-            PythonRunTimeDiagnostics.SetFolderNames("x32", "x64");
+        //}
+        //public PythonNetRunTimeManager(IDMEEditor dMEditor) // @"W:\Cpython\p395x32"
+        //{
+        //    DMEditor = dMEditor;
+        //    JsonLoader = dMEditor.ConfigEditor.JsonLoader;
+        //    PythonRunTimeDiagnostics.SetFolderNames("x32", "x64");
 
-        }
-        public PythonNetRunTimeManager() // @"W:\Cpython\p395x32"
+        //}
+        public PythonNetRunTimeManager(IBeepService beepService) // @"W:\Cpython\p395x32"
         {
-            
+            _beepService = beepService;
+            DMEditor= beepService.DMEEditor;
+            JsonLoader = DMEditor.ConfigEditor.JsonLoader;
+
             PythonRunTimeDiagnostics.SetFolderNames("x32", "x64");
 
         }
@@ -49,6 +53,8 @@ namespace Beep.Python.RuntimeEngine
         CancellationToken Token;
         bool _IsInitialized = false;
         private bool disposedValue;
+        private readonly IBeepService _beepService;
+
         public  Py.GILState GIL()
         {
             if (!IsInitialized)

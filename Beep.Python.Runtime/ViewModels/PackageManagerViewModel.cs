@@ -15,6 +15,7 @@ using TheTechIdea.Util;
 using System.Linq;
 using System.Net.Http;
 using CommunityToolkit.Mvvm.ComponentModel;
+using TheTechIdea.Beep.Container.Services;
 
 namespace Beep.Python.RuntimeEngine.ViewModels
 {
@@ -23,20 +24,22 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         [ObservableProperty]
         ObservableBindingList<PackageDefinition> packages;
         public UnitofWork<PackageDefinition> unitofWork { get; set; }
-        public PackageManagerViewModel() : base()
+        //public PackageManagerViewModel() : base()
+        //{
+        //}
+        //public PackageManagerViewModel(IPythonRunTimeManager pythonRuntimeManager, PyModule persistentScope) : base(pythonRuntimeManager, persistentScope)
+        //{
+
+        //}
+        public PackageManagerViewModel(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager) : base(beepservice, pythonRuntimeManager)
         {
-        }
-        public PackageManagerViewModel(IPythonRunTimeManager pythonRuntimeManager, PyModule persistentScope) : base(pythonRuntimeManager, persistentScope)
-        {
-            Init();
-        }
-        public PackageManagerViewModel(IPythonRunTimeManager pythonRuntimeManager) : base(pythonRuntimeManager)
-        {
+            //  pythonRuntimeManager = pythonRuntimeManager;
             InitializePythonEnvironment();
-            
         }
+
         public void Init()
         {
+            InitializePythonEnvironment();
             if (PythonRuntime != null)
             {
                 if (PythonRuntime.DMEditor != null)
@@ -74,6 +77,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         }
         public bool InstallPipToolAsync()
         {
+            Init();
             bool retval = false;
             if (!PythonRuntime.IsInitialized)
 
@@ -92,6 +96,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         }
         public bool InstallNewPackageAsync(string packagename)
         {
+            Init();
             bool retval = false;
             if (!PythonRuntime.IsInitialized)
 
@@ -110,6 +115,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         }
         public bool UnInstallPackageAsync(string packagename)
         {
+            Init();
             bool retval = false;
             if (!PythonRuntime.IsInitialized)
 
@@ -128,6 +134,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         }
         public bool UpgradePackageAsync(string packagename)
         {
+            Init();
             bool retval = false;
             if (!PythonRuntime.IsInitialized)
 
@@ -146,6 +153,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         }
         public bool UpgradeAllPackagesAsync()
         {
+            Init();
             bool retval = false;
             if (!PythonRuntime.IsInitialized)
 
@@ -160,6 +168,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         }
         public bool RefreshPackageAsync(string packagename)
         {
+            Init();
             bool retval = false;
             if (!PythonRuntime.IsInitialized)
 
@@ -178,6 +187,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         }
         public bool RefreshAllPackagesAsync()
         {
+            Init();
             bool retval = false;
             if (!PythonRuntime.IsInitialized)
 
@@ -196,6 +206,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         }
         public async Task<bool> GetPackagesAsync()
         {
+            Init();
             bool retval = false;
             if (!PythonRuntime.IsInitialized)
 
@@ -221,6 +232,8 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         #region "Package Manager"
         public async Task<string> RunPackageManagerAsync(IProgress<PassedArgs> progress, string packageName, PackageAction packageAction, bool useConda = false)
         {
+
+            Init();
             string customPath = $"{PythonRuntime.CurrentRuntimeConfig.BinPath.Trim()};{PythonRuntime.CurrentRuntimeConfig.ScriptPath.Trim()}".Trim();
             string modifiedFilePath = customPath.Replace("\\", "\\\\");
             string output = "";
@@ -397,6 +410,7 @@ def run_with_timeout(func, args, output_callback, timeout):
         public  bool ListpackagesAsync(IProgress<PassedArgs> _progress, CancellationToken token, bool useConda = false, string packagename = null)
         {
             if (IsBusy) return false;
+            Init();
             IsBusy = true;
             int i = 0;
             if (_progress != null)
@@ -544,6 +558,7 @@ def run_with_timeout(func, args, output_callback, timeout):
         public bool Listpackages2(IProgress<PassedArgs> _progress, CancellationToken token, bool useConda = false, string packagename = null)
         {
             if (IsBusy) return false;
+            Init();
             IsBusy = true;
             int i = 0;
             if (_progress != null)
@@ -688,6 +703,7 @@ def run_with_timeout(func, args, output_callback, timeout):
         }
         public bool listpackages(IProgress<PassedArgs> _progress, CancellationToken token, bool useConda = false, string packagename = null)
         {
+            Init();
             if (IsBusy) return false;
             IsBusy = true;
             int i = 0;
@@ -852,7 +868,7 @@ result";
         }
         public bool InstallPIP(IProgress<PassedArgs> progress, CancellationToken token)
         {
-
+            Init();
             bool pipInstall = true;
             if (IsBusy) return false;
             IsBusy = true;
@@ -895,6 +911,7 @@ result";
             bool IsInternetAvailabe = PythonRunTimeDiagnostics.CheckNet();
             PackageDefinition retval = null;
             Editor.ErrorObject.Flag = Errors.Ok;
+            Init();
             if (IsInternetAvailabe)
             {
                 retval =  await CheckIfPackageExistsAsync(packageName);
@@ -967,6 +984,7 @@ result";
 
             try
             {
+                Init();
                 // Create a new Python scope
                 // Check if a package is installed and capture output
                 using (Py.GIL())
@@ -1011,6 +1029,7 @@ result";
 
             try
             {
+                Init();
                 if (IsBusy) { return false; }
                 IsBusy = true;
                   RunPackageManagerAsync(progress, packageName, PackageAction.Install, PythonRunTimeDiagnostics.GetPackageType(PythonRuntime.CurrentRuntimeConfig.BinPath) == PackageType.conda);
@@ -1034,6 +1053,7 @@ result";
 
             try
             {
+                Init();
                 if (IsBusy) { return false; }
                 RunPackageManagerAsync(progress, packageName, PackageAction.Remove, false);
                 IsBusy = false;
@@ -1054,6 +1074,7 @@ result";
             bool isInstalled = false;
             try
             {
+                Init();
                 if (packageName.Equals("pip", StringComparison.CurrentCultureIgnoreCase))
                 {
                      RunPackageManagerAsync(progress, packageName, PackageAction.UpgradePackager, PythonRunTimeDiagnostics.GetPackageType(PythonRuntime.CurrentRuntimeConfig.BinPath) == PackageType.conda);

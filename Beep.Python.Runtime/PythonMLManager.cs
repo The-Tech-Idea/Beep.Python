@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using TheTechIdea.Beep.Container.Services;
 
 
 namespace Beep.Python.RuntimeEngine
@@ -12,17 +13,17 @@ namespace Beep.Python.RuntimeEngine
     public class PythonMLManager : PythonBaseViewModel,IPythonMLManager,IDisposable
     {
       
-        public PythonMLManager() : base()
-        {
+        //public PythonMLManager() : base()
+        //{
             
-        }
-        public  PythonMLManager(IPythonRunTimeManager pythonRuntimeManager, PyModule persistentScope):base(pythonRuntimeManager,persistentScope)
-        {
+        //}
+        //public  PythonMLManager(IPythonRunTimeManager pythonRuntimeManager, PyModule persistentScope):base(pythonRuntimeManager,persistentScope)
+        //{
            
           
-        }
+        //}
        
-        public PythonMLManager(IPythonRunTimeManager pythonRuntimeManager):base(pythonRuntimeManager)
+        public PythonMLManager(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager):base(beepservice,pythonRuntimeManager)
         {
           //  pythonRuntimeManager = pythonRuntimeManager;
              InitializePythonEnvironment();

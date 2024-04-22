@@ -5,7 +5,7 @@ using Python.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using TheTechIdea.Beep.Container.Services;
 
 namespace Beep.Python.RuntimeEngine
 {
@@ -13,13 +13,10 @@ namespace Beep.Python.RuntimeEngine
 
     public class PythonPlotManager : PythonBaseViewModel
     {
-        public PythonPlotManager(IPythonRunTimeManager pythonRuntimeManager, PyModule persistentScope) : base(pythonRuntimeManager, persistentScope)
+
+        public PythonPlotManager(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager) : base(beepservice, pythonRuntimeManager)
         {
-     
-        }
-        public PythonPlotManager(IPythonRunTimeManager pythonRuntimeManager) : base(pythonRuntimeManager)
-        {
-          
+
             InitializePythonEnvironment();
         }
         public void CreateSeabornChart(string picfile, double[] data, string xLabel, string yLabel, string title, ChartType chartType)

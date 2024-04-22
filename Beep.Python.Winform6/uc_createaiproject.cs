@@ -7,6 +7,7 @@ using TheTechIdea.Beep.Vis;
 using TheTechIdea.Beep.Winform.Controls.Basic;
 using TheTechIdea.Logger;
 using TheTechIdea.Util;
+using TheTechIdea.Beep.Container;
 
 namespace Beep.Python.Winform
 {
@@ -25,8 +26,9 @@ namespace Beep.Python.Winform
             base.SetConfig(pDMEEditor, plogger, putil, args, e, per);
             Passedarg=e;
             pythonRunTimeManager = pDMEEditor.GetPythonRunTimeManager();
-            pythonAIProjectViewModel = new PythonAIProjectViewModel(pythonRunTimeManager, pythonRunTimeManager.PersistentScope);
-            if(Passedarg!=null)
+            pythonAIProjectViewModel = new PythonAIProjectViewModel(pDMEEditor.GetBeepService(), pythonRunTimeManager);
+            pythonAIProjectViewModel.initialize();
+            if (Passedarg!=null)
             {
                 if(Passedarg.EventType=="CREATEAI")
                 {

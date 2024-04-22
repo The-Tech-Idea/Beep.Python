@@ -3,23 +3,19 @@ using Beep.Python.RuntimeEngine.ViewModels;
 using Newtonsoft.Json;
 using Python.Runtime;
 using System.Collections.Generic;
-
+using TheTechIdea.Beep.Container.Services;
 namespace Beep.Python.RuntimeEngine
 {
     public class PythonPIPManager: PythonBaseViewModel
     {
-     
-        public PythonPIPManager(IPythonRunTimeManager pythonRuntimeManager):base(pythonRuntimeManager)
+
+        public PythonPIPManager(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager) : base(beepservice, pythonRuntimeManager)
         {
-           
+
             InitializePythonEnvironment();
         }
       
-        public PythonPIPManager(IPythonRunTimeManager pythonRuntimeManager, PyModule persistentScope):base(pythonRuntimeManager, persistentScope)
-        {
-         
-          
-        }
+     
         #region "PIP Methods"
         public void InstallPackage(string packageName)
         {

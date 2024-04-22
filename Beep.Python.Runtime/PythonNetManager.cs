@@ -12,23 +12,29 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using TheTechIdea;
 using TheTechIdea.Util;
+using TheTechIdea.Beep.Container.Services;
 
 namespace Beep.Python.RuntimeEngine
 {
     public class PythonNetManager :PythonBaseViewModel
     {
-        public PythonNetManager(IPythonRunTimeManager pythonRuntimeManager, PyModule persistentScope) : base(pythonRuntimeManager, persistentScope)
+        public PythonNetManager(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager) : base(beepservice, pythonRuntimeManager)
         {
-            pythonRuntimeManager = pythonRuntimeManager;
-            persistentScope = persistentScope;
-
-        }
-
-        public PythonNetManager(IPythonRunTimeManager pythonRuntimeManager) : base(pythonRuntimeManager)
-        {
-            pythonRuntimeManager = pythonRuntimeManager;
+            //  pythonRuntimeManager = pythonRuntimeManager;
             InitializePythonEnvironment();
         }
+        //public PythonNetManager(IPythonRunTimeManager pythonRuntimeManager, PyModule persistentScope) : base(pythonRuntimeManager, persistentScope)
+        //{
+        //    pythonRuntimeManager = pythonRuntimeManager;
+        //    persistentScope = persistentScope;
+
+        //}
+
+        //public PythonNetManager(IPythonRunTimeManager pythonRuntimeManager) : base(pythonRuntimeManager)
+        //{
+        //    pythonRuntimeManager = pythonRuntimeManager;
+        //    InitializePythonEnvironment();
+        //}
 
         public async Task<bool> InstallPIP(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress, CancellationToken token)
         {

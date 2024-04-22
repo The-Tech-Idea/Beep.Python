@@ -8,6 +8,7 @@ using TheTechIdea.Beep.DataBase;
 using TheTechIdea.Logger;
 using TheTechIdea.Util;
 using Beep.Python.RuntimeEngine.ViewModels;
+using TheTechIdea.Beep.Container;
 
 namespace Beep.Python.Winform
 {
@@ -58,7 +59,7 @@ namespace Beep.Python.Winform
 
 
             PythonRunTimeManager = DMEEditor.GetPythonRunTimeManager();
-            packageManager = new PackageManagerViewModel(PythonRunTimeManager);
+            packageManager = new PackageManagerViewModel(DMEEditor.GetBeepService(),PythonRunTimeManager);
             packageManager.Editor = DMEEditor;
             pythonBaseViewModel = (PythonBaseViewModel)packageManager;
           

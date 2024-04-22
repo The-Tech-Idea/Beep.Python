@@ -7,19 +7,15 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-
+using TheTechIdea.Beep.Container.Services;
 namespace Beep.Python.RuntimeEngine
 {
     public class PythonPandasManager: PythonBaseViewModel
     {
-        public PythonPandasManager(IPythonRunTimeManager pythonRuntimeManager, PyModule persistentScope):base(pythonRuntimeManager, persistentScope)
-        {
-          
        
-        }
-        public PythonPandasManager(IPythonRunTimeManager pythonRuntimeManager):base(pythonRuntimeManager)
+        public PythonPandasManager(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager) : base(beepservice, pythonRuntimeManager)
         {
-           
+            //  pythonRuntimeManager = pythonRuntimeManager;
             InitializePythonEnvironment();
         }
         #region "Pandas DataFrame"

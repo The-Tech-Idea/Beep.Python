@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TheTechIdea.Beep.Editor;
+using TheTechIdea.Beep.Container.Services;
 
 namespace Beep.Python.RuntimeEngine.ViewModels
 {
@@ -54,25 +55,22 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         public UnitofWork<PythonProject> UnitofWork { get; set; }
         public IPythonMLManager PythonMLManager { get; set; }
     
-        public PythonAIProjectViewModel() : base()
+
+        public PythonAIProjectViewModel(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager) : base(beepservice, pythonRuntimeManager)
         {
-            initialize();
+
+            //  pythonRuntimeManager = pythonRuntimeManager;
+           
         }
-        public PythonAIProjectViewModel(IPythonRunTimeManager pythonRuntimeManager, PyModule persistentScope) : base(pythonRuntimeManager, persistentScope)
-        {
-            initialize();
-        }
-        public PythonAIProjectViewModel(IPythonRunTimeManager pythonRuntimeManager) : base(pythonRuntimeManager)
-        {
-            InitializePythonEnvironment();
-            initialize();
-        }
+       
         public bool InitPythonMLModule()
         {
             try
             {
+                InitializePythonEnvironment();
+                InitPythonMLModule();
                 IPythonRunTimeManager p =Editor.GetPythonRunTimeManager();
-                PythonMLManager = new PythonMLManager(p,p.PersistentScope);
+                PythonMLManager = new PythonMLManager(Beepservice,PythonRuntime);
                 PythonMLManager.ImportPythonModule("numpy as np");
                 PythonMLManager.ImportPythonModule("pandas as pd");
                 IsInit = true;
@@ -88,7 +86,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         }
         public void initialize()
         {
-            InitPythonMLModule();
+           
             UnitofWork = new UnitofWork<PythonProject>(Editor,true,new ObservableBindingList<PythonProject>() { }, "ProjectGuidValue");
             UnitofWork.PrimaryKey= "ProjectGuidValue";
             ListofAlgorithims = new List<LOVData>();
@@ -148,6 +146,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         {
             try
             {
+                InitPythonMLModule();
                 CurrentProject.FeaturesArray = PythonMLManager.SplitData(CurrentProject.DataFile, CurrentProject.Splitratio, GetTrainingFileString(), GetTestFileString());
                 CleanData();
                 GetFeatures();

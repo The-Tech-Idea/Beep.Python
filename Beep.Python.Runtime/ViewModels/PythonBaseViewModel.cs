@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TheTechIdea;
 using TheTechIdea.Beep;
+using TheTechIdea.Beep.Container.Services;
 
 
 namespace Beep.Python.RuntimeEngine.ViewModels
@@ -31,17 +32,22 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         bool isBusy;
         [ObservableProperty]
         string pythonDatafolder;
-        public PythonBaseViewModel(IPythonRunTimeManager pythonRuntimeManager, PyModule persistentScope)
+        public readonly IBeepService Beepservice;
+
+        //public PythonBaseViewModel(IPythonRunTimeManager pythonRuntimeManager, PyModule persistentScope)
+        //{
+        //    this.PythonRuntime = pythonRuntimeManager;
+        //    Editor = this.PythonRuntime.DMEditor;
+        //    this.PersistentScope = persistentScope;
+        //    PythonHelpers._persistentScope = persistentScope;
+        //    PythonHelpers._pythonRuntimeManager = pythonRuntimeManager;
+        //    pythonDatafolder = Editor.GetPythonDataPath();
+        //}
+        public PythonBaseViewModel(IBeepService beepservice,IPythonRunTimeManager pythonRuntimeManager)
         {
-            this.PythonRuntime = pythonRuntimeManager;
-            Editor = this.PythonRuntime.DMEditor;
-            this.PersistentScope = persistentScope;
-            PythonHelpers._persistentScope = persistentScope;
-            PythonHelpers._pythonRuntimeManager = pythonRuntimeManager;
-            pythonDatafolder = Editor.GetPythonDataPath();
-        }
-        public PythonBaseViewModel(IPythonRunTimeManager pythonRuntimeManager)
-        {
+            Beepservice=beepservice;
+            Editor= beepservice.DMEEditor;
+            
             this.PythonRuntime = pythonRuntimeManager;
   //          Editor = this.PythonRuntime.DMEditor;
             InitializePythonEnvironment();
