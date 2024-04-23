@@ -26,6 +26,7 @@ namespace Beep.Python.RuntimeEngine
         public PythonMLManager(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager):base(beepservice,pythonRuntimeManager)
         {
           //  pythonRuntimeManager = pythonRuntimeManager;
+            
              InitializePythonEnvironment();
         }
       
@@ -617,7 +618,7 @@ except Exception as e:
             // Check for this case and handle accordingly
             using (Py.GIL())
             {
-                dynamic pyModelId = PersistentScope.Get("model_id");
+                dynamic pyModelId = PythonRuntime.PersistentScope.Get("model_id");
                 if (pyModelId == null || pyModelId.ToString() == "None")
                 {
                     return null; // or handle the error as per your application's needs
@@ -753,7 +754,7 @@ output.to_csv(r'{filePath}', index=False)
             using (Py.GIL()) // Acquire the Python Global Interpreter Lock
             {
                 // Retrieve the 'predictions' variable from the persistent Python scope
-                dynamic predictions = PersistentScope.Get("predictions");
+                dynamic predictions = PythonRuntime.PersistentScope.Get("predictions");
 
                 // Convert the Python 'predictions' object to a C# object, if necessary
                 // Conversion depends on the expected format of 'predictions'
@@ -770,7 +771,7 @@ output.to_csv(r'{filePath}', index=False)
             // This might involve fetching the variable's value from the Python scope
             using (Py.GIL())
             {
-                dynamic pyScore = PersistentScope.Get("score");
+                dynamic pyScore = PythonRuntime.PersistentScope.Get("score");
                 return pyScore.As<double>(); // Convert the Python score to a C# double
             }
         }
@@ -784,7 +785,7 @@ output.to_csv(r'{filePath}', index=False)
             // This might involve fetching the variable's value from the Python scope
             using (Py.GIL())
             {
-                dynamic pyScore = PersistentScope.Get("accuracy");
+                dynamic pyScore = PythonRuntime.PersistentScope.Get("accuracy");
                 return pyScore.As<double>(); // Convert the Python score to a C# double
             }
         }
@@ -798,7 +799,7 @@ output.to_csv(r'{filePath}', index=False)
             // This might involve fetching the variable's value from the Python scope
             using (Py.GIL())
             {
-                dynamic pyMSE = PersistentScope.Get("mse");
+                dynamic pyMSE = PythonRuntime.PersistentScope.Get("mse");
                 return pyMSE.As<double>(); // Convert the Python MSE to a C# double
             }
         }
@@ -812,7 +813,7 @@ output.to_csv(r'{filePath}', index=False)
             // This might involve fetching the variable's value from the Python scope
             using (Py.GIL())
             {
-                dynamic pyRMSE = PersistentScope.Get("rmse");
+                dynamic pyRMSE = PythonRuntime.PersistentScope.Get("rmse");
                 return pyRMSE.As<double>(); // Convert the Python RMSE to a C# double
             }
         }
@@ -826,7 +827,7 @@ output.to_csv(r'{filePath}', index=False)
             // This might involve fetching the variable's value from the Python scope
             using (Py.GIL())
             {
-                dynamic pyMAE = PersistentScope.Get("mae");
+                dynamic pyMAE = PythonRuntime.PersistentScope.Get("mae");
                 return pyMAE.As<double>(); // Convert the Python MAE to a C# double
             }
         }
@@ -851,7 +852,7 @@ output.to_csv(r'{filePath}', index=False)
         {
             using (Py.GIL()) // Acquire the Python Global Interpreter Lock
             {
-                dynamic pyFeatures = PersistentScope.Get("features");
+                dynamic pyFeatures = PythonRuntime.PersistentScope.Get("features");
                 if (pyFeatures == null) return new string[0];
 
                 // Convert the Python list to a C# string array
@@ -867,7 +868,7 @@ output.to_csv(r'{filePath}', index=False)
         {
             using (Py.GIL()) // Acquire the Python Global Interpreter Lock
             {
-                dynamic pyFeatures = PersistentScope.Get("predict_features");
+                dynamic pyFeatures = PythonRuntime.PersistentScope.Get("predict_features");
                 if (pyFeatures == null) return new string[0];
 
                 // Convert the Python list to a C# string array
