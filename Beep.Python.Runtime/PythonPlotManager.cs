@@ -508,8 +508,8 @@ fig.write_image(r'{modifiedFilePath}')
             {
                 return;
             }
-            int rows = 100; // Determine based on your data structure
-            int cols = 100; // Determine based on your data structure
+            int rows = 200; // Determine based on your data structure
+            int cols = 200; // Determine based on your data structure
             // Generate the 2D array for Z values
        //     var zData = GenerateZDataForPlotly(data, rows, cols);
 
@@ -550,7 +550,9 @@ fig.write_image(r'{modifiedFilePath}')
                     fig.update_layout(
                         title: data.title,
                         xaxis_title: data.xLabel,
-                        yaxis_title: data.yLabel
+                        yaxis_title: data.yLabel,
+                        width: 1000, // Set the width of the figure (in pixels)
+                        height: 800  // Set the height of the figure (in pixels)
                     );
 
                     // Save the plot
