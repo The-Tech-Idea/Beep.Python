@@ -13,15 +13,7 @@ namespace Beep.Python.RuntimeEngine
     public class PythonMLManager : PythonBaseViewModel,IPythonMLManager,IDisposable
     {
       
-        //public PythonMLManager() : base()
-        //{
-            
-        //}
-        //public  PythonMLManager(IPythonRunTimeManager pythonRuntimeManager, PyModule persistentScope):base(pythonRuntimeManager,persistentScope)
-        //{
-           
-          
-        //}
+       
        
         public PythonMLManager(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager):base(beepservice,pythonRuntimeManager)
         {

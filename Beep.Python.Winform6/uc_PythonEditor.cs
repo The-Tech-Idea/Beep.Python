@@ -20,13 +20,12 @@ using Beep.Python.Model;
 
 namespace Beep.Python.Winform
 {
-    [AddinAttribute(Caption = "Python Machine Learning", Name = "uc_RunPythonTraining", misc = "AI", addinType = AddinType.Control)]
-    public partial class uc_RunPythonTraining : uc_Addin
+    [AddinAttribute(Caption = "Python Editor", Name = "uc_PythonEditor", misc = "AI", addinType = AddinType.Control)]
+    public partial class uc_PythonEditor : uc_Addin
     {
-        public uc_RunPythonTraining()
+        public uc_PythonEditor()
         {
             InitializeComponent();
-            AddinName = "Python Machine Learning";
         }
         IBeepService beepService;
         IPythonRunTimeManager pythonRunTimeManager;
@@ -35,6 +34,7 @@ namespace Beep.Python.Winform
             base.SetConfig(pDMEEditor, plogger, putil, args, e, per);
             beepService = DMEEditor.GetBeepService();
             pythonRunTimeManager = DMEEditor.GetPythonRunTimeManager();
+
         }
     }
 }

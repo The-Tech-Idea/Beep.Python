@@ -75,5 +75,23 @@ namespace Beep.Python.Extensions
             return DMEEditor.ErrorObject;
 
         }
+        [CommandAttribute(Caption = "Create ML Training ", Name = "PythonTrainingDataPoint", Click = true, iconimage = "createai.png", ObjectType = "Beep", PointType = EnumPointType.Entity, Showin = ShowinType.Menu)]
+        public IErrorsInfo PythonTrainingDataPoint(IPassedArgs Passedarguments)
+        {
+            DMEEditor.ErrorObject.Flag = Errors.Ok;
+            try
+            {
+
+                ExtensionsHelpers.GetValues(Passedarguments);
+                ExtensionsHelpers.Vismanager.ShowPage("uc_RunPythonTraining", (PassedArgs)Passedarguments, DisplayType.InControl);
+                // DMEEditor.AddLogMessage("Success", $"Open Data Connection", DateTime.Now, 0, null, Errors.Ok);
+            }
+            catch (Exception ex)
+            {
+                DMEEditor.AddLogMessage("Fail", $"Could not create new project {ex.Message}", DateTime.Now, 0, Passedarguments.DatasourceName, Errors.Failed);
+            }
+            return DMEEditor.ErrorObject;
+
+        }
     }
 }

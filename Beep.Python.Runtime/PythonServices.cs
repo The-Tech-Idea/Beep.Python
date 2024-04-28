@@ -15,6 +15,7 @@ namespace Beep.Python.RuntimeEngine
         private static IDMEEditor DMEditor;
         public static string Pythonruntimepath;
         public static IPackageManagerViewModel PackageManager;
+        public static IPythonMLManager PythonMLManager;
         public static string PythonDataPath;
         public static IServiceCollection RegisterPythonService(this IServiceCollection services,string pythonruntimepath)
         {
@@ -39,12 +40,13 @@ namespace Beep.Python.RuntimeEngine
           
             services.AddSingleton<IPackageManagerViewModel,PackageManagerViewModel>();
 
-            //if (IsReady)
-            // {
-            //PackageManager = new PackageManagerViewModel(PythonRunTimeManager);
-            // services.AddSingleton<IPackageManagerViewModel>(PackageManager);
-            // PythonRunTimeManager.PackageManager = PackageManager;
-            // }
+            return services;
+        }
+        public static IServiceCollection RegisterPythonMLService(this IServiceCollection services)
+        {
+
+            services.AddSingleton<IPythonMLManager, PythonMLManager>();
+
             return services;
         }
         public static string GetPythonDataPath(this IDMEEditor dmeEditor)
@@ -60,6 +62,11 @@ namespace Beep.Python.RuntimeEngine
         {
             PackageManager.Editor = dmeEditor;
             return PackageManager;
+        }
+        public static IPythonMLManager GetPythonMLManager(this IDMEEditor dmeEditor)
+        {
+           
+            return PythonMLManager;
         }
 
     }
