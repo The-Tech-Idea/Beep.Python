@@ -62,10 +62,10 @@ namespace Beep.Python.Winform
             PythonRunTimeManager = DMEEditor.GetPythonRunTimeManager();
             Pythonpackagemanager = DMEEditor.GetPythonPackageManager();
             pythonBaseViewModel = (PythonBaseViewModel)Pythonpackagemanager;
+          //  PythonRunTimeManager.PackageManager = Pythonpackagemanager;
 
 
-
-             Visutil = (IVisManager)e.Objects.Where(c => c.Name == "VISUTIL").FirstOrDefault().obj;
+            Visutil = (IVisManager)e.Objects.Where(c => c.Name == "VISUTIL").FirstOrDefault().obj;
 
             if (e.Objects.Where(c => c.Name == "Branch").Any())
             {
@@ -161,6 +161,7 @@ namespace Beep.Python.Winform
         public uc_PackageList()
         {
             InitializeComponent();
+            
             packagelistDataGridView.Columns["imageColumn"].DefaultCellStyle.NullValue = null;
             this.packagelistDataGridView.CellContentClick += PackagelistDataGridView_CellContentClick;
             this.packagelistDataGridView.CellValueChanged += PackagelistDataGridView_CellValueChanged;
