@@ -201,7 +201,7 @@ namespace Beep.Python.Winform
                 return;
             }
             // Refresh();
-            PythonRunTimeManager.PackageManager.RefreshAllPackagesAsync();
+            Pythonpackagemanager.RefreshAllPackagesAsync();
             RefreshUI();
             PythonRunTimeManager.SaveConfig();
 
@@ -347,7 +347,7 @@ namespace Beep.Python.Winform
             try
             {
                 // Visutil.ShowWaitForm(new PassedArgs() { Messege = "Refreshing Installed Packages" });
-                PythonRunTimeManager.PackageManager.RefreshAllPackagesAsync();
+                Pythonpackagemanager.RefreshAllPackagesAsync();
                 RefreshUI();
                 return true;
                 // Visutil.CloseWaitForm();

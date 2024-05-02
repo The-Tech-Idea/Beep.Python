@@ -23,23 +23,6 @@ namespace Beep.Python.RuntimeEngine
 {
     public class PythonNetRunTimeManager : IDisposable, IPythonRunTimeManager
     {
-        //public PythonNetRunTimeManager(IDMEEditor dMEditor, IJsonLoader jsonLoader, IProgress<PassedArgs> progress,
-        //CancellationToken token) // @"W:\Cpython\p395x32"
-        //{
-        //    DMEditor = dMEditor;
-        //    JsonLoader = jsonLoader;
-        //    Progress = progress;
-        //    Token = token;
-        //    PythonRunTimeDiagnostics.SetFolderNames("x32", "x64");
-
-        //}
-        //public PythonNetRunTimeManager(IDMEEditor dMEditor) // @"W:\Cpython\p395x32"
-        //{
-        //    DMEditor = dMEditor;
-        //    JsonLoader = dMEditor.ConfigEditor.JsonLoader;
-        //    PythonRunTimeDiagnostics.SetFolderNames("x32", "x64");
-
-        //}
         public PythonNetRunTimeManager(IBeepService beepService) // @"W:\Cpython\p395x32"
         {
             _beepService = beepService;
@@ -54,8 +37,9 @@ namespace Beep.Python.RuntimeEngine
         bool _IsInitialized = false;
         private bool disposedValue;
         private readonly IBeepService _beepService;
+   
 
-        public  Py.GILState GIL()
+        public Py.GILState GIL()
         {
             if (!IsInitialized)
             {
@@ -94,8 +78,8 @@ namespace Beep.Python.RuntimeEngine
         public bool IsCompilerAvailable => GetIsPythonAvailable();
         public ObservableCollection<string> OutputLines { get; set; } = new ObservableCollection<string>();
         public bool IsBusy { get; set; } = false;
-        public IPIPManager PIPManager { get; set; }
-        public IPackageManagerViewModel PackageManager { get; set; }
+      //  public IPIPManager PIPManager { get; set; }
+      //  public IPackageManagerViewModel PackageManager { get; set; }
         public PythonConfiguration PythonConfig { get; set; } = new PythonConfiguration();
         public bool IsConfigLoaded { get {return  GetIsConfigLoaded(); } set { } } 
         public bool IsRunning { get; set; }
@@ -105,25 +89,122 @@ namespace Beep.Python.RuntimeEngine
         public IDMEEditor DMEditor { get; set; }
         public IJsonLoader JsonLoader { get; set; }
         public BinType32or64 BinType { get; set; } = BinType32or64.p395x32;
-      
-     
+
+
         #region "Initialization and Shutdown"
-        public bool Initialize()
+        public bool InitializeForUser(string envBasePath,string username)
+        {
+            
+            string userEnvPath = Path.Combine(envBasePath, username);
+
+            if (!Directory.Exists(userEnvPath))
+            {
+                // Create the virtual environment if it does not exist
+                bool creationSuccess = CreateVirtualEnvironment(userEnvPath);
+                if (!creationSuccess)
+                {
+                    return false;
+                }
+            }
+
+            return Initialize(userEnvPath);  // Call to the modified Initialize method with the path to the virtual environment
+        }
+        public bool CreateVirtualEnvironmentFromCommand(string envPath)
+        {
+            if (Directory.Exists(envPath))
+            {
+                Console.WriteLine("Virtual environment already exists.");
+                return true; // No need to create if it already exists
+            }
+
+            try
+            {
+                // Command to create virtual environment
+                var process = new Process()
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "python", // Ensure this points to the global/system Python executable
+                        Arguments = $"-m venv {envPath}",
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        CreateNoWindow = true
+                    }
+                };
+                process.Start();
+                string output = process.StandardOutput.ReadToEnd();
+                string err = process.StandardError.ReadToEnd();
+                process.WaitForExit();
+
+                if (process.ExitCode == 0)
+                {
+                    Console.WriteLine($"Virtual environment created at: {envPath}");
+                    return true;
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to create virtual environment: {err}");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception occurred: {ex.Message}");
+                return false;
+            }
+        }
+        public bool CreateVirtualEnvironment(string envPath)
+        {
+            if (Directory.Exists(envPath))
+            {
+                Console.WriteLine("Virtual environment already exists.");
+                return false;
+            }
+
+            try
+            {
+                // Ensure the directory exists
+                Directory.CreateDirectory(envPath);
+
+                using (Py.GIL())  // Acquire the Python Global Interpreter Lock
+                {
+                    // Import the required Python module
+                    dynamic venv = Py.Import("venv");
+
+                    // Create the virtual environment
+                    venv.create(envPath, with_pip: true);
+                }
+
+                Console.WriteLine($"Virtual environment created at: {envPath}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to create virtual environment: {ex.Message}");
+                return false;
+            }
+        }
+        public bool Initialize(string virtualEnvPath = null)
         {
 
             if (IsBusy) return false;
             IsBusy = true;
+            // Use the provided virtual environment path or fall back to a default
+            string pythonBinPath = virtualEnvPath ?? CurrentRuntimeConfig.BinPath;
+            string pythonScriptPath = Path.Combine(pythonBinPath, "Scripts"); // Common for Windows virtual environments
+            string pythonPackagePath = Path.Combine(pythonBinPath, "Lib\\site-packages");
             if (CurrentRuntimeConfig.IsPythonInstalled)
             {
                 if (!PythonEngine.IsInitialized)
                 {
 
                     PythonRunTimeDiagnostics.SetAiFolderPath(DMEditor);
-                    Environment.SetEnvironmentVariable("PATH", $"{CurrentRuntimeConfig.BinPath};{CurrentRuntimeConfig.ScriptPath};" + Environment.GetEnvironmentVariable("PATH"), EnvironmentVariableTarget.Process);
-                    Environment.SetEnvironmentVariable("PYTHONNET_RUNTIME", $"{CurrentRuntimeConfig.BinPath}", EnvironmentVariableTarget.Process);
-                    Environment.SetEnvironmentVariable("PYTHONNET_PYTHON_RUNTIME", $"{CurrentRuntimeConfig.BinPath}", EnvironmentVariableTarget.Process);
-                    Environment.SetEnvironmentVariable("PYTHONHOME", CurrentRuntimeConfig.BinPath, EnvironmentVariableTarget.Process);
-                    Environment.SetEnvironmentVariable("PYTHONPATH", $"{CurrentRuntimeConfig.Packageinstallpath};", EnvironmentVariableTarget.Process);
+                    Environment.SetEnvironmentVariable("PATH", $"{pythonBinPath};{pythonScriptPath};" + Environment.GetEnvironmentVariable("PATH"), EnvironmentVariableTarget.Process);//CurrentRuntimeConfig.ScriptPath
+                    Environment.SetEnvironmentVariable("PYTHONNET_RUNTIME", $"{pythonBinPath}", EnvironmentVariableTarget.Process);
+                    Environment.SetEnvironmentVariable("PYTHONNET_PYTHON_RUNTIME", $"{pythonBinPath}", EnvironmentVariableTarget.Process);
+                    Environment.SetEnvironmentVariable("PYTHONHOME", pythonBinPath , EnvironmentVariableTarget.Process);//CurrentRuntimeConfig.BinPath
+                    Environment.SetEnvironmentVariable("PYTHONPATH", $"{pythonPackagePath};", EnvironmentVariableTarget.Process); //CurrentRuntimeConfig.Packageinstallpath
                     try
                     {
                         PassedArgs args = new PassedArgs();
@@ -131,8 +212,8 @@ namespace Beep.Python.RuntimeEngine
 
 
                         //  Runtime.PythonRuntimePath= CurrentRuntimeConfig.BinPath;
-                        Runtime.PythonDLL = CurrentRuntimeConfig.PythonDll;
-                        PythonEngine.PythonHome = CurrentRuntimeConfig.BinPath;
+                        Runtime.PythonDLL = Path.Combine(pythonBinPath,Path.GetFileName(CurrentRuntimeConfig.PythonDll));
+                        PythonEngine.PythonHome = pythonBinPath;//CurrentRuntimeConfig.BinPath;
                         //       PythonEngine.PythonPath = CurrentRuntimeConfig.Packageinstallpath;
                         PythonEngine.Initialize();
 

@@ -21,7 +21,7 @@ namespace Beep.Python.Model
         PyModule PersistentScope { get; set; }
         bool CreateScope();
         PythonConfiguration PythonConfig { get; set; }
-        IPackageManagerViewModel PackageManager { get; set; }
+     //   IPackageManagerViewModel PackageManager { get; set; }
         PythonRunTime CurrentRuntimeConfig { get;  }
         string CurrentFileLoaded { get; set; }
         bool IsConfigLoaded { get;  }
@@ -30,12 +30,11 @@ namespace Beep.Python.Model
         void Dispose();
          bool PickConfig(string path);
          bool PickConfig(PythonRunTime cfg);
-        
-        bool Initialize();
+        bool InitializeForUser(string envBasePath, string username);
+        bool CreateVirtualEnvironment(string envPath);
+        bool CreateVirtualEnvironmentFromCommand(string envPath);
+        bool Initialize(string virtualEnvPath = null);
         bool Initialize(string pythonhome,  BinType32or64 binType, string libpath);
-
-     
-       // Task<bool> InstallPIP(IProgress<PassedArgs> progress, CancellationToken token);
         Task<IErrorsInfo> RunCode(string code, IProgress<PassedArgs> progress, CancellationToken token);
         Task<dynamic> RunCommand(string command, IProgress<PassedArgs> progress, CancellationToken token);
         Task<IErrorsInfo> RunFile(string file, IProgress<PassedArgs> progress, CancellationToken token);

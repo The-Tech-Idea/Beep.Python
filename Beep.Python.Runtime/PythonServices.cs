@@ -16,16 +16,12 @@ namespace Beep.Python.RuntimeEngine
         public static string Pythonruntimepath;
         public static IPackageManagerViewModel PackageManager;
         public static IPythonMLManager PythonMLManager;
+        public static IPythonVirtualEnvViewModel PythonvirtualEnvViewModel;
         public static string PythonDataPath;
         public static IServiceCollection RegisterPythonService(this IServiceCollection services,string pythonruntimepath)
         {
             Pythonruntimepath = pythonruntimepath;
             services.AddSingleton<IPythonRunTimeManager,PythonNetRunTimeManager>();
-            //PythonRunTimeManager=new PythonNetRunTimeManager();
-
-            //services.AddSingleton<IPythonRunTimeManager>(PythonRunTimeManager);
-            //IsReady = PythonRunTimeManager.Initialize(pythonruntimepath, BinType32or64.p395x64, @"lib\site-packages");
-            // check if projects directory exists if not create it 
             Createfolder();
             return services;
         }
@@ -33,8 +29,19 @@ namespace Beep.Python.RuntimeEngine
         {
             PythonDataPath= ContainerMisc.CreateAppfolder("Python");
         }
-      
-       
+
+        public static IServiceCollection RegisterPythonVirtualEnvService(this IServiceCollection services)
+        {
+
+            services.AddSingleton<IPythonVirtualEnvViewModel, PythonVirtualEnvViewModel>();
+
+            return services;
+        }
+        public static IPythonVirtualEnvViewModel GetPythonVirtualEnv(this IDMEEditor dmeEditor)
+        {
+
+            return PythonvirtualEnvViewModel;
+        }
         public static IServiceCollection RegisterPythonPackageManagerService(this IServiceCollection services)
         {
           
