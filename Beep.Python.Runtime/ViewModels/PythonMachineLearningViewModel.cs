@@ -23,11 +23,11 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         private string pythonImports;
         private string pythonDataPreparation { get; set; }
         private string pythonModelTraining { get; set; }
-        private string pythonModelEvaluation { get; set; }  
+        private string pythonModelEvaluation { get; set; }
 
-       
 
-        private void UpdateDataPreparationScript()
+
+        public void UpdateDataPreparationScript()
         {
             pythonDataPreparation = $@"
 data = pd.read_csv('{DataSetPath}')

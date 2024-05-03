@@ -17,6 +17,9 @@ namespace Beep.Python.RuntimeEngine
         public static IPackageManagerViewModel PackageManager;
         public static IPythonMLManager PythonMLManager;
         public static IPythonVirtualEnvViewModel PythonvirtualEnvViewModel;
+        public static IPythonTrainingViewModel PythonTrainingViewModel;
+        public static IPythonAIProjectViewModel PythonAIProjectViewModel;
+        public static IPythonModelEvaluationGraphsViewModel PythonModelEvaluationGraphsViewModel;
         public static string PythonDataPath;
         public static IServiceCollection RegisterPythonService(this IServiceCollection services,string pythonruntimepath)
         {
@@ -56,18 +59,42 @@ namespace Beep.Python.RuntimeEngine
 
             return services;
         }
+        public static IServiceCollection RegisterPythonAIProjectService(this IServiceCollection services)
+        {
+
+            services.AddSingleton<IPythonAIProjectViewModel, PythonAIProjectViewModel>();
+
+            return services;
+        }
+        public static IPythonAIProjectViewModel GetPythonAIProjectViewModel(this IDMEEditor dmeEditor)
+        {
+            
+            return PythonAIProjectViewModel;
+        }
+        public static IServiceCollection RegisterPythonModelEvaluationGraphsService(this IServiceCollection services)
+        {
+
+            services.AddSingleton<IPythonModelEvaluationGraphsViewModel, PythonModelEvaluationGraphsViewModel>();
+
+            return services;
+        }
+        public static IPythonModelEvaluationGraphsViewModel GetPythonModelEvaluationGraphsViewModel(this IDMEEditor dmeEditor)
+        {
+
+            return PythonModelEvaluationGraphsViewModel;
+        }
         public static string GetPythonDataPath(this IDMEEditor dmeEditor)
         {
             return PythonDataPath;
         }
         public static IPythonRunTimeManager GetPythonRunTimeManager(this IDMEEditor dmeEditor)
         {
-            PythonRunTimeManager.DMEditor= dmeEditor;
+         //   PythonRunTimeManager.DMEditor= dmeEditor;
            return  PythonRunTimeManager;
         }
         public static IPackageManagerViewModel GetPythonPackageManager(this IDMEEditor dmeEditor)
         {
-            PackageManager.Editor = dmeEditor;
+         //   PackageManager.Editor = dmeEditor;
             return PackageManager;
         }
         public static IPythonMLManager GetPythonMLManager(this IDMEEditor dmeEditor)

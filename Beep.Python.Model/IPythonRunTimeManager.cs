@@ -10,7 +10,7 @@ using TheTechIdea.Util;
 
 namespace Beep.Python.Model
 {
-    public interface IPythonRunTimeManager
+    public interface IPythonRunTimeManager:IDisposable
     {
         Py.GILState GIL();
         BinType32or64 BinType { get; set; }

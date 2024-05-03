@@ -19,10 +19,7 @@ namespace KOC.ViewModels.AI
      
 
        
-        [ObservableProperty]
-        List<ParameterDictionaryForAlgorithm> parameterDictionaryForAlgorithms;
-        [ObservableProperty]
-        List<string> algorithims;
+     
         [ObservableProperty]
         PythonDataClasses currentDataClass;
         [ObservableProperty]
@@ -49,8 +46,7 @@ namespace KOC.ViewModels.AI
             Unitofwork.PostCreate += AlgorithmsParametersunitofWork_PostCreate;
             aIAlgorithimsViewModel=new AIAlgorithimsViewModel(beepservice, pythonRuntimeManager);
             DataClassUnits = new UnitofWork<PythonDataClasses>(Editor, "dhubdb", "PythonDataClasses", "ID");
-            Algorithims = MLAlgorithmsHelpers.GetAlgorithms();
-            ParameterDictionaryForAlgorithms = MLAlgorithmsHelpers.GetParameterDictionaryForAlgorithms();
+         
             aiCompFileDirName = "/AIComp";
            
         }

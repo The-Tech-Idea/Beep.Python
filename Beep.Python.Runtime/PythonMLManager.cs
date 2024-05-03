@@ -10,20 +10,49 @@ using TheTechIdea.Beep.Container.Services;
 
 namespace Beep.Python.RuntimeEngine
 {
-    public class PythonMLManager : PythonBaseViewModel,IPythonMLManager,IDisposable
+    public class PythonMLManager : PythonBaseViewModel, IPythonMLManager, IDisposable
     {
-      
-       
-       
-        public PythonMLManager(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager):base(beepservice,pythonRuntimeManager)
+
+        private bool IsInitialized = true; // Ensure this flag is managed based on actual initialization logic
+        private Dictionary<string, bool> algorithmSupervision = new Dictionary<string, bool>();
+
+        public PythonMLManager(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager) : base(beepservice, pythonRuntimeManager)
         {
-          //  pythonRuntimeManager = pythonRuntimeManager;
-            
-             InitializePythonEnvironment();
+            //  pythonRuntimeManager = pythonRuntimeManager;
+
+            InitializePythonEnvironment();
+            InitializeAlgorithmSupervision();
         }
-      
-       
-       
+
+        private void InitializeAlgorithmSupervision()
+        {
+            // Here you set whether each algorithm is supervised or not
+            algorithmSupervision["HistGradientBoostingRegressor"] = true;
+            algorithmSupervision["HistGradientBoostingClassifier"] = true;
+            algorithmSupervision["LogisticRegression"] = true;
+            algorithmSupervision["RandomForestClassifier"] = true;
+            algorithmSupervision["RandomForestRegressor"] = true;
+            algorithmSupervision["SVC"] = true;
+            algorithmSupervision["SVR"] = true;
+            algorithmSupervision["KNeighborsClassifier"] = true;
+            algorithmSupervision["KNeighborsRegressor"] = true;
+            algorithmSupervision["GradientBoostingClassifier"] = true;
+            algorithmSupervision["GradientBoostingRegressor"] = true;
+            algorithmSupervision["DecisionTreeClassifier"] = true;
+            algorithmSupervision["DecisionTreeRegressor"] = true;
+            algorithmSupervision["LinearRegression"] = true;
+            algorithmSupervision["LassoRegression"] = true;
+            algorithmSupervision["RidgeRegression"] = true;
+            algorithmSupervision["ElasticNet"] = true;
+            algorithmSupervision["KMeans"] = false;
+            algorithmSupervision["DBSCAN"] = false;
+            algorithmSupervision["AgglomerativeClustering"] = false;
+            algorithmSupervision["GaussianNB"] = true;
+            algorithmSupervision["MultinomialNB"] = true;
+            algorithmSupervision["BernoulliNB"] = true;
+            algorithmSupervision["AdaBoostClassifier"] = true;
+        }
+
         public Tuple<double, double, double> GetModelRegressionScores(string modelId)
         {
             if (!IsInitialized)
@@ -66,7 +95,7 @@ mae = mean_absolute_error(y_test, predictions)
         {
             if (!IsInitialized)
             {
-                return new Tuple<double, double>(-1,-1);
+                return new Tuple<double, double>(-1, -1);
             }
 
             // Script to prepare test data (X_test and y_test) similarly to how training data was prepared
@@ -81,7 +110,7 @@ test_encoded = X_test.reindex(columns = X.columns, fill_value=0)
 ";
 
             RunPythonScript(prepareTestDataScript, null);
-            string script  =$@"
+            string script = $@"
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 model = models['{modelId}']
@@ -89,11 +118,11 @@ predictions = model.predict(test_encoded)
 accuracy = accuracy_score(y_test, predictions)
 score = f1_score(y_test, predictions)
 ";
-           
+
             RunPythonScript(script, null);
 
             // Retrieve the score from the Python script
-            return new Tuple<double,double>(FetchScoreFromPython(),FetchAccuracyFromPython());
+            return new Tuple<double, double>(FetchScoreFromPython(), FetchAccuracyFromPython());
         }
         public string[] LoadData(string filePath)
         {
@@ -148,7 +177,7 @@ predict_data = pd.read_csv('{formattedFilePath}')
 # Split into features and label
 predict_features = predict_data.columns.tolist()
 ";
-      
+
             RunPythonScript(script, null);
             RemoveSpecialCharacters("predict_data");
             return FetchTestFeaturesFromPython();
@@ -179,14 +208,14 @@ test_data.to_csv(r'{formattedTestDataFilePath}', index=False)
 
             RunPythonScript(script, null);
         }
-        public void AddLabelColumnIfMissing( string labelColumn)
+        public void AddLabelColumnIfMissing(string labelColumn)
         {
             if (!IsInitialized)
             {
                 return;
             }
 
-        
+
             string script = $@"
 import pandas as pd
 
@@ -198,7 +227,7 @@ if '{labelColumn}' not in test_data.columns:
 
             RunPythonScript(script, null);
         }
-        public string[] SplitData(string dataFilePath, float testSize,string trainFilePath,string testFilePath)
+        public string[] SplitData(string dataFilePath, float testSize, string trainFilePath, string testFilePath)
         {
             if (!IsInitialized)
             {
@@ -228,12 +257,12 @@ test_data.to_csv('{formattedtestFilePath}', index = False)
 test_features = test_data.columns.tolist()
 features = data.columns.tolist()
 ";
-//            train_data.to_csv('{trainFilePath}', index = False)
-//test_data.to_csv('{testFilePath}', index = False)
+            //            train_data.to_csv('{trainFilePath}', index = False)
+            //test_data.to_csv('{testFilePath}', index = False)
             RunPythonScript(script, null);
             return FetchFeaturesFromPython();
         }
-        public string[] SplitData(string dataFilePath, float testSize,float validationSize, string trainFilePath, string testFilePath,string validationFilePath)
+        public string[] SplitData(string dataFilePath, float testSize, float validationSize, string trainFilePath, string testFilePath, string validationFilePath)
         {
             if (!IsInitialized)
             {
@@ -294,30 +323,30 @@ features = data.columns.tolist()
             string formattedTestFilePath = testFilePath.Replace("\\", "\\\\");
             string formattedValidationFilePath = validationFilePath.Replace("\\", "\\\\");
 
-//            string script = $@"
-//import pandas as pd
-//from sklearn.model_selection import train_test_split
+            //            string script = $@"
+            //import pandas as pd
+            //from sklearn.model_selection import train_test_split
 
-//# Load the dataset
-//data = pd.read_csv('{formattedFilePath}')
+            //# Load the dataset
+            //data = pd.read_csv('{formattedFilePath}')
 
-//# Split the dataset into training and test sets
-//train_data, test_data = train_test_split(data, test_size={testSize})
+            //# Split the dataset into training and test sets
+            //train_data, test_data = train_test_split(data, test_size={testSize})
 
-//# Prepare test data (without label column)
-//test_data_without_label = test_data.drop(columns=['{labelColumn}'])
+            //# Prepare test data (without label column)
+            //test_data_without_label = test_data.drop(columns=['{labelColumn}'])
 
-//# Prepare validation data (only primary key and label)
-//validation_data = test_data[['{primaryFeatureKeyID}', '{labelColumn}']]
+            //# Prepare validation data (only primary key and label)
+            //validation_data = test_data[['{primaryFeatureKeyID}', '{labelColumn}']]
 
-//# Save the datasets to files
-//train_data.to_csv('{formattedTrainFilePath}', index=False)
-//test_data_without_label.to_csv('{formattedTestFilePath}', index=False)
-//validation_data.to_csv('{formattedValidationFilePath}', index=False)
-//test_features = test_data.columns.tolist()
-//features = data.columns.tolist()
-//";
-    string script = $@"
+            //# Save the datasets to files
+            //train_data.to_csv('{formattedTrainFilePath}', index=False)
+            //test_data_without_label.to_csv('{formattedTestFilePath}', index=False)
+            //validation_data.to_csv('{formattedValidationFilePath}', index=False)
+            //test_features = test_data.columns.tolist()
+            //features = data.columns.tolist()
+            //";
+            string script = $@"
 import pandas as pd
 import re
 from sklearn.model_selection import train_test_split
@@ -396,7 +425,7 @@ def remove_special_characters_from_data(df):
             string algorithmName = Enum.GetName(typeof(MachineLearningAlgorithm), algorithm);
             string features = string.Join(", ", featureColumns.Select(fc => @$"'{fc}'"));
             string paramsDict = String.Join(", ", parameters.Select(kv => $"{kv.Key}={kv.Value.ToString()}"));
-
+            bool isSupervised = algorithmSupervision[algorithmName];
             string importStatement;
             switch (algorithmName)
             {
@@ -495,12 +524,19 @@ else:
 X= pd.get_dummies(train_data[features])
 X.fillna(X.mean(), inplace=True)  # Simple mean imputation for missing values
 
-Y=train_data[label_column]
-Y = train_data[label_column].fillna(train_data[label_column].mean())  # Assuming you also want to handle NaN in labels
-
-
-model.fit(X, Y)
-label = train_data[label_column]
+if {isSupervised.ToString().ToLower()}:
+    Y = train_data[label_column].fillna(train_data[label_column].mean())  # Impute missing labels
+    if '{modelId}' in models:
+        model = models['{modelId}']
+    else:
+        model = {algorithmName}({paramsDict})
+    model.fit(X, Y)
+else:
+    if '{modelId}' in models:
+        model = models['{modelId}']
+    else:
+        model = {algorithmName}({paramsDict})
+    model.fit(X)
 
 # Store or update the model
 models['{modelId}'] = model
@@ -639,20 +675,19 @@ output.to_csv(r'{filePath}', index=False)
 
             RunPythonScript(script, null);
         }
-     
-        public Tuple<string,string> SplitDataClassFile(string urlpath,string filename, double splitRatio)
+        public Tuple<string, string> SplitDataClassFile(string urlpath, string filename, double splitRatio)
         {
             try
             {
                 ValidateSplitRatio(ref splitRatio); // Ensuring split ratio is valid
 
                 string dataFilePath = Path.Combine(urlpath, filename);
-              
+
 
                 if (!File.Exists(dataFilePath))
                 {
 
-                    return new Tuple<string,string>(null,null);
+                    return new Tuple<string, string>(null, null);
                 }
 
                 string[] lines = File.ReadAllLines(dataFilePath);
@@ -668,7 +703,7 @@ output.to_csv(r'{filePath}', index=False)
                 string trainingFileName = CreateSplitFile(urlpath, "train_", filename, trainingData);
                 string testingFileName = CreateSplitFile(urlpath, "test_", filename, testingData);
 
-                 string TRAININGFILENAME = Path.GetFileName(trainingFileName);
+                string TRAININGFILENAME = Path.GetFileName(trainingFileName);
                 string TESTDATAFILENAME = Path.GetFileName(testingFileName);
 
                 CreateValidationFile(urlpath, testingFileName);
@@ -704,7 +739,7 @@ output.to_csv(r'{filePath}', index=False)
             // Check if the split ratio is within the acceptable range
             if (splitRatio < minRatio || splitRatio > maxRatio)
             {
-               // DMEditor.AddLogMessage("Beep", $"Split ratio must be between {minRatio * 100}% and {maxRatio * 100}%", DateTime.Now, -1, null, Errors.Failed);
+                // DMEditor.AddLogMessage("Beep", $"Split ratio must be between {minRatio * 100}% and {maxRatio * 100}%", DateTime.Now, -1, null, Errors.Failed);
             }
         }
         private string CreateSplitFile(string path, string prefix, string originalFileName, string[] data)
@@ -721,7 +756,7 @@ output.to_csv(r'{filePath}', index=False)
             string[] lines = File.ReadAllLines(validationFileName);
             ClearLabelColumn(lines);
             File.WriteAllLines(validationFileName, lines);
-          
+
         }
         private void ClearLabelColumn(string[] lines)
         {
@@ -919,7 +954,7 @@ plt.ylabel('True')
 plt.show()";
             RunPythonScript(script, null);
         }
-       
+
         #endregion
     }
 

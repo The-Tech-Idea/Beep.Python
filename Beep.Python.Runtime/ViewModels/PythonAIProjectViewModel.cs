@@ -13,7 +13,7 @@ using TheTechIdea.Beep.Container.Services;
 
 namespace Beep.Python.RuntimeEngine.ViewModels
 {
-    public partial class PythonAIProjectViewModel:PythonBaseViewModel
+    public partial class PythonAIProjectViewModel:PythonBaseViewModel, IPythonAIProjectViewModel
     {
         public bool IsDataReady { get; private set; }
         public bool IsTrainingReady { get; private set; }
@@ -46,12 +46,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         [ObservableProperty]
         PythonProject currentProject;
         public ObservableBindingList<PythonProject> Projects => UnitofWork.Units;
-        [ObservableProperty]
-        List<LOVData>  listofAlgorithims;
-        [ObservableProperty]    
-        List<string> algorithims;
-        [ObservableProperty]
-        List<ParameterDictionaryForAlgorithm> parameterDictionaryForAlgorithms;
+      
         public UnitofWork<PythonProject> UnitofWork { get; set; }
         public IPythonMLManager PythonMLManager { get; set; }
     
@@ -59,8 +54,9 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         public PythonAIProjectViewModel(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager) : base(beepservice, pythonRuntimeManager)
         {
 
-            //  pythonRuntimeManager = pythonRuntimeManager;
-           
+            PythonMLManager=Editor.GetPythonMLManager();
+
+
         }
        
         public bool InitPythonMLModule()
@@ -68,9 +64,6 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             try
             {
                 InitializePythonEnvironment();
-                InitPythonMLModule();
-                IPythonRunTimeManager p =Editor.GetPythonRunTimeManager();
-                PythonMLManager = new PythonMLManager(Beepservice,PythonRuntime);
                 PythonMLManager.ImportPythonModule("numpy as np");
                 PythonMLManager.ImportPythonModule("pandas as pd");
                 IsInit = true;
@@ -92,13 +85,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             ListofAlgorithims = new List<LOVData>();
 
             LoadProjects();
-            foreach (var item in Enum.GetNames(typeof(MachineLearningAlgorithm)))
-            {
-                LOVData data = new LOVData() { ID = item, DisplayValue = item, LOVDESCRIPTION = MLAlgorithmsHelpers.GenerateAlgorithmDescription((MachineLearningAlgorithm)Enum.Parse(typeof(MachineLearningAlgorithm), item)) };
-                ListofAlgorithims.Add(data);
-            }
-            Algorithims = MLAlgorithmsHelpers.GetAlgorithms();
-            ParameterDictionaryForAlgorithms = MLAlgorithmsHelpers.GetParameterDictionaryForAlgorithms();
+            
         }
         public void LoadProjects()
         {

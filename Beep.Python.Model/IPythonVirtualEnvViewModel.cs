@@ -2,7 +2,7 @@
 
 namespace Beep.Python.Model
 {
-    public interface IPythonVirtualEnvViewModel
+    public interface IPythonVirtualEnvViewModel:IDisposable
     {
         bool CreateVirtualEnvironment(string envPath);
         bool CreateVirtualEnvironmentFromCommand(string envPath);

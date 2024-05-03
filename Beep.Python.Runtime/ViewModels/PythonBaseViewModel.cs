@@ -32,29 +32,39 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         bool isBusy;
         [ObservableProperty]
         string pythonDatafolder;
+        [ObservableProperty]
+        List<LOVData> listofAlgorithims;
+        [ObservableProperty]
+        List<ParameterDictionaryForAlgorithm> parameterDictionaryForAlgorithms;
+        [ObservableProperty]
+        List<string> algorithims;
         public readonly IBeepService Beepservice;
 
-        //public PythonBaseViewModel(IPythonRunTimeManager pythonRuntimeManager, PyModule persistentScope)
-        //{
-        //    this.PythonRuntime = pythonRuntimeManager;
-        //    Editor = this.PythonRuntime.DMEditor;
-        //    this.PersistentScope = persistentScope;
-        //    PythonHelpers._persistentScope = persistentScope;
-        //    PythonHelpers._pythonRuntimeManager = pythonRuntimeManager;
-        //    pythonDatafolder = Editor.GetPythonDataPath();
-        //}
+        
+        public string GetAlgorithimName(string algorithim)
+        {
+            return Enum.GetName(typeof(MachineLearningAlgorithm), algorithim);
+        }
+
         public PythonBaseViewModel(IBeepService beepservice,IPythonRunTimeManager pythonRuntimeManager)
         {
             Beepservice=beepservice;
             Editor= beepservice.DMEEditor;
-            
             this.PythonRuntime = pythonRuntimeManager;
-  //          Editor = this.PythonRuntime.DMEditor;
             InitializePythonEnvironment();
             PythonHelpers._persistentScope = PersistentScope;
             PythonHelpers._pythonRuntimeManager = pythonRuntimeManager;
             pythonDatafolder = Editor.GetPythonDataPath();
+            ListofAlgorithims = new List<LOVData>();
+            foreach (var item in Enum.GetNames(typeof(MachineLearningAlgorithm)))
+            {
+                LOVData data = new LOVData() { ID = item, DisplayValue = item, LOVDESCRIPTION = MLAlgorithmsHelpers.GenerateAlgorithmDescription((MachineLearningAlgorithm)Enum.Parse(typeof(MachineLearningAlgorithm), item)) };
+                ListofAlgorithims.Add(data);
+            }
+            Algorithims = MLAlgorithmsHelpers.GetAlgorithms();
+            ParameterDictionaryForAlgorithms = MLAlgorithmsHelpers.GetParameterDictionaryForAlgorithms();
         }
+
         public void SendMessege(string messege = null)
         {
 
@@ -65,11 +75,6 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             }
 
         }
-        public PythonBaseViewModel()
-        {
-            pythonDatafolder = Editor.GetPythonDataPath();
-        }
-
         public virtual void ImportPythonModule(string moduleName)
         {
             if (!IsInitialized)
@@ -80,9 +85,6 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             RunPythonScript(script, null);
         }
         public bool IsInitialized => PythonRuntime.IsInitialized;
-
-      
-
         public virtual bool InitializePythonEnvironment()
         {
             bool retval = false;
@@ -203,7 +205,6 @@ def capture_output(code, globals_dict):
             IsBusy = false;
             return output;
         }
-
         public dynamic RunPythonScriptWithResult(string script,dynamic parameters)
         {
             dynamic result = null;

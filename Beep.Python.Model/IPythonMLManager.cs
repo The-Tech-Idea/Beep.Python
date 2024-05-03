@@ -2,7 +2,7 @@
 
 namespace Beep.Python.Model
 {
-    public interface IPythonMLManager
+    public interface IPythonMLManager:IDisposable
     {
         bool IsInitialized { get; }
         bool RemoveSpecialCharacters(string dataFrameName);

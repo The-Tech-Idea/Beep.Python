@@ -31,10 +31,8 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         string datasourcename;
         [ObservableProperty]
         bool isFile;
-        [ObservableProperty]
-        List<LOVData> listofAlgorithims;
-        [ObservableProperty]
-        List<string> algorithims;
+     
+      
         [ObservableProperty]
         MachineLearningAlgorithm selectAlgorithm;
         [ObservableProperty]

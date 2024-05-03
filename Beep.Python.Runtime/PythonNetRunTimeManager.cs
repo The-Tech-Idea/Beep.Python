@@ -28,7 +28,7 @@ namespace Beep.Python.RuntimeEngine
             _beepService = beepService;
             DMEditor= beepService.DMEEditor;
             JsonLoader = DMEditor.ConfigEditor.JsonLoader;
-
+            
             PythonRunTimeDiagnostics.SetFolderNames("x32", "x64");
 
         }
@@ -88,9 +88,12 @@ namespace Beep.Python.RuntimeEngine
         public string NewPath { get; set; } = null;
         public IDMEEditor DMEditor { get; set; }
         public IJsonLoader JsonLoader { get; set; }
+
+        private string pythonpath;
+
         public BinType32or64 BinType { get; set; } = BinType32or64.p395x32;
 
-
+        string configfile;
         #region "Initialization and Shutdown"
         public bool InitializeForUser(string envBasePath,string username)
         {
@@ -187,7 +190,7 @@ namespace Beep.Python.RuntimeEngine
         }
         public bool Initialize(string virtualEnvPath = null)
         {
-
+        
             if (IsBusy) return false;
             IsBusy = true;
             // Use the provided virtual environment path or fall back to a default
@@ -371,21 +374,37 @@ namespace Beep.Python.RuntimeEngine
         }
         public bool Initialize(string pythonhome, BinType32or64 binType, string libpath = @"lib\site-packages")
         {
+            pythonpath = DMEditor.GetPythonDataPath();
+            configfile = Path.Combine(pythonpath, "cpython.config");
+            IsConfigLoaded = false;
             if (IsBusy) return false;
             // IsBusy = true;
             try
             {
+                PythonRunTime cfg = new PythonRunTime();
                 if (PythonRunTimeDiagnostics.IsPythonInstalled(pythonhome))
                 {
-                    PythonRunTime cfg;
+                    
                     int idx = PythonConfig.Runtimes.FindIndex(p => p.BinPath.Equals(pythonhome, StringComparison.InvariantCultureIgnoreCase));
                     if (idx == -1)
                     {
-                        cfg = new PythonRunTime();
-                        cfg = PythonRunTimeDiagnostics.GetPythonConfig(pythonhome);
-                        PythonConfig.Runtimes.Add(cfg);
-                        idx = PythonConfig.Runtimes.IndexOf(cfg);
+                        if (File.Exists(configfile) && !IsConfigLoaded)
+                        {
+                            PythonConfig = JsonLoader.DeserializeSingleObject<PythonConfiguration>(configfile);
+                            IsConfigLoaded = true;
+                            cfg = PythonConfig.Runtimes[PythonConfig.RunTimeIndex];
+                        }
+                        else
+                        {
+                           
+                            cfg = PythonRunTimeDiagnostics.GetPythonConfig(pythonhome);
+
+                            PythonConfig.Runtimes.Add(cfg);
+                           
+                        }
+                        
                     }
+                    idx = PythonConfig.Runtimes.IndexOf(cfg);
                     cfg = PythonConfig.Runtimes[idx];
                     PythonConfig.RunTimeIndex = idx;
 
@@ -459,7 +478,7 @@ namespace Beep.Python.RuntimeEngine
         }
         public void CreateLoadConfig()
         {
-            string configfile = Path.Combine(DMEditor.ConfigEditor.ConfigPath, "cpython.config");
+           
             if (File.Exists(configfile) && !IsConfigLoaded)
             {
                 PythonConfig = JsonLoader.DeserializeSingleObject<PythonConfiguration>(configfile);
@@ -493,7 +512,7 @@ namespace Beep.Python.RuntimeEngine
         }
         public void SaveConfig()
         {
-            string configfile = Path.Combine(DMEditor.ConfigEditor.ConfigPath, "cpython.config");
+            string configfile = Path.Combine(pythonpath, "cpython.config");
             if (PythonConfig == null)
             {
                 PythonConfig = new PythonConfiguration();

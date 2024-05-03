@@ -108,7 +108,7 @@ namespace Beep.Python.Winform
         }
         private  void RunRefresh()
         {
-            progress = new Progress<PassedArgs>(percent =>
+            pythonBaseViewModel.Progress = new Progress<PassedArgs>(percent =>
             {
                 //progressBar1.CustomText = percent.ParameterInt1 + " out of " + percent.ParameterInt2;
                 toolStripProgressBar1.Maximum= Pythonpackagemanager.Packages.Count;
@@ -132,12 +132,8 @@ namespace Beep.Python.Winform
                     }
                 }
             });
-            CancellationTokenRegistration ctr = token.Register(() => StopTask());
-            pythonBaseViewModel.Progress = progress;
-            pythonBaseViewModel.Editor= DMEEditor;
-            Pythonpackagemanager.Editor = DMEEditor;
-            PythonRunTimeManager.DMEditor = DMEEditor;
-            pythonBaseViewModel.Token = token;
+            CancellationTokenRegistration ctr = pythonBaseViewModel.Token.Register(() => StopTask());
+            
           
             //    Action action =
             //() =>
@@ -170,7 +166,13 @@ namespace Beep.Python.Winform
             this.InstallNewPackagetoolStripButton.Click += InstallNewPackagetoolStripButton_Click;
             this.RefreshtoolStripButton.Click += RefreshtoolStripButton_Click;
             this.InstallPIPtoolStripButton.Click += InstallPIPtoolStripButton_Click;
+            this.packagelistBindingNavigatorSaveItem.Click += PackagelistBindingNavigatorSaveItem_Click;
 
+        }
+
+        private void PackagelistBindingNavigatorSaveItem_Click(object? sender, EventArgs e)
+        {
+            PythonRunTimeManager.SaveConfig();
         }
 
         private void InstallPIPtoolStripButton_Click(object sender, EventArgs e)
