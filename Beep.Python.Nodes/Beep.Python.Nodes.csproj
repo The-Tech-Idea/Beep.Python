@@ -33,8 +33,8 @@
 		</None>
 	</ItemGroup>
 	<ItemGroup>
-	  <PackageReference Include="TheTechIdea.Beep.DataManagementEngine" Version="1.0.438" />
-	  <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="1.0.149" />
+	  <PackageReference Include="TheTechIdea.Beep.DataManagementEngine" Version="1.0.441" />
+	  <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="1.0.153" />
 	  <PackageReference Include="TheTechIdea.Beep.Vis.Modules" Version="1.0.108" />
 	</ItemGroup>
 </Project>

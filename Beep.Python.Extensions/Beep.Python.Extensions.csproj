@@ -33,7 +33,7 @@
 	  <EmbeddedResource Include="gfx\pythonnewproject.png" />
 	</ItemGroup>
 	<ItemGroup>
-	  <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="1.0.149" />
+	  <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="1.0.153" />
 	  <PackageReference Include="TheTechIdea.Beep.Vis.Modules" Version="1.0.108" />
 	</ItemGroup>
 	<ItemGroup>
