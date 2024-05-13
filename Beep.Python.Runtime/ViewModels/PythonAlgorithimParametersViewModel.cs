@@ -12,7 +12,7 @@ using System.IO;
 using System.Linq;
 
 
-namespace KOC.ViewModels.AI
+namespace Beep.Python.RuntimeEngine.ViewModels
 {
     public partial class AIAlgorithimParametersViewModel : PythonBaseViewModel,IDisposable
     {
@@ -34,7 +34,7 @@ namespace KOC.ViewModels.AI
         public ObservableBindingList<PythonalgorithmParams> AlgorithmsParameters => Unitofwork.Units;
         public UnitofWork<PythonalgorithmParams> Unitofwork;
         UnitofWork<PythonDataClasses> DataClassUnits;
-        AIAlgorithimsViewModel aIAlgorithimsViewModel;
+        PythonAlgorithimsViewModel aIAlgorithimsViewModel;
         private bool disposedValue;
 
        
@@ -44,7 +44,7 @@ namespace KOC.ViewModels.AI
             Unitofwork.Sequencer = "AI_ALGORTHIMSPARAMS_SEQ";
           
             Unitofwork.PostCreate += AlgorithmsParametersunitofWork_PostCreate;
-            aIAlgorithimsViewModel=new AIAlgorithimsViewModel(beepservice, pythonRuntimeManager);
+            aIAlgorithimsViewModel=new PythonAlgorithimsViewModel(beepservice, pythonRuntimeManager);
             DataClassUnits = new UnitofWork<PythonDataClasses>(Editor, "dhubdb", "PythonDataClasses", "ID");
          
             aiCompFileDirName = "/AIComp";

@@ -11,9 +11,9 @@ using System;
 using System.IO;
 using System.Linq;
 
-namespace KOC.ViewModels.AI
+namespace Beep.Python.RuntimeEngine.ViewModels
 {
-    public partial class AIAlgorithimsViewModel : PythonBaseViewModel
+    public partial class PythonAlgorithimsViewModel : PythonBaseViewModel
     {
         [ObservableProperty]
         string selectedAlgorithim;
@@ -28,7 +28,7 @@ namespace KOC.ViewModels.AI
         public ObservableBindingList<PythonAlgorithm> Algorithms => Unitofwork.Units;
         public UnitofWork<PythonAlgorithm> Unitofwork { get; set; }
         public UnitofWork<PythonDataClasses> DataClassUnits;
-        public AIAlgorithimsViewModel(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager) : base(beepservice, pythonRuntimeManager)
+        public PythonAlgorithimsViewModel(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager) : base(beepservice, pythonRuntimeManager)
         {
             Unitofwork = new UnitofWork<PythonAlgorithm>(Editor, "dhubdb", "PythonAlgorithm", "ID");
             DataClassUnits = new UnitofWork<PythonDataClasses>(Editor, "dhubdb", "PythonDataClasses", "ID");
