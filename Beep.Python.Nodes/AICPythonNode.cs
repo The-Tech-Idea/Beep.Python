@@ -21,6 +21,8 @@ namespace AI
         public string DataSourceConnectionGuidID { get; set; }
         public string EntityGuidID { get; set; }
         public string MiscStringID { get; set; }
+        public bool Visible { get; set; } = true;
+
         public AICPythonNode()
         {
 
