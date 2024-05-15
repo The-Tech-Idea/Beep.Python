@@ -12,7 +12,7 @@ using Beep.Vis.Module;
 
 namespace AI
 {
-    [AddinAttribute(Caption ="CPython",misc ="AI", FileType = "AI",iconimage = "python.png",menu ="AI",ObjectType ="Beep")]
+    [AddinAttribute(Caption ="CPython",misc ="AI", FileType = "AI",iconimage = "python.png",menu ="AI",ObjectType ="Beep", ClassType = "LJ")]
     public class AICPythonNode : IBranch
     {
         public bool IsDataSourceNode { get; set; } = false;
