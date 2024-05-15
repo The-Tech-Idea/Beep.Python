@@ -34,7 +34,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         public PackageManagerViewModel(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager) : base(beepservice, pythonRuntimeManager)
         {
             //  pythonRuntimeManager = pythonRuntimeManager;
-            InitializePythonEnvironment();
+         //   InitializePythonEnvironment();
         }
 
         public void Init()
