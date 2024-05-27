@@ -17,6 +17,7 @@ using System.Net;
 using System.Net.Http;
 using System.Diagnostics;
 using TheTechIdea.Beep.Container.Services;
+using static System.Formats.Asn1.AsnWriter;
 
 
 namespace Beep.Python.RuntimeEngine
@@ -589,6 +590,12 @@ namespace Beep.Python.RuntimeEngine
             return DMEditor.ErrorObject;
 
         }
+        private volatile bool _shouldStop = false;
+
+        public void Stop()
+        {
+            _shouldStop = true;
+        }
         public async Task<dynamic> RunCommand(string command, IProgress<PassedArgs> progress, CancellationToken token)
         {
             PyObject pyObject = null;
@@ -614,63 +621,80 @@ namespace Beep.Python.RuntimeEngine
         }
         public async Task<string> RunPythonCodeAndGetOutput(IProgress<PassedArgs> progress, string code)
         {
-            string wrappedPythonCode = $@"
+            string wrappedPythonCode = @"
 import sys
 import io
-import clr
 
 class CustomStringIO(io.StringIO):
+    def __init__(self, output_handler, should_stop):
+        super().__init__()
+        self.output_handler = output_handler
+        self.should_stop = should_stop
+
     def write(self, s):
         super().write(s)
         output = self.getvalue()
         if output.strip():
-            OutputHandler(output.strip())
+            self.output_handler(output.strip())
             self.truncate(0)  # Clear the internal buffer
             self.seek(0)  # Reset the buffer pointer
 
-def capture_output(code, globals_dict):
+def capture_output(code, globals_dict, output_handler, should_stop):
     original_stdout = sys.stdout
-    sys.stdout = CustomStringIO()
+    sys.stdout = CustomStringIO(output_handler, should_stop)
 
     try:
         exec(code, dict(globals_dict))
+        if should_stop():
+            raise KeyboardInterrupt
     finally:
         sys.stdout = original_stdout
 ";
             bool isImage = false;
             string output = "";
-
-            using (Py.GIL())
+            try
             {
-                using (PyModule scope = Py.CreateScope())
+                //  using (Py.GIL())
+                //   {
+                //using (PyModule scope = Py.CreateScope())
+                //{
+
+
+                Action<string> OutputHandler = line =>
                 {
-
-
-                    Action<string> OutputHandler = line =>
-                    {
-                        // runTimeManager.OutputLines.Add(line);
-                        progress.Report(new PassedArgs() { Messege = line });
-                        Console.WriteLine(line);
-                    };
-                    scope.Set(nameof(OutputHandler), OutputHandler);
-
-                    scope.Exec(wrappedPythonCode);
-                    PyObject captureOutputFunc = scope.GetAttr("capture_output");
-                    Dictionary<string, object> globalsDict = new Dictionary<string, object>();
-
-                    PyObject pyCode = code.ToPython();
-                    PyObject pyGlobalsDict = globalsDict.ToPython();
-                    PyObject result = captureOutputFunc.Invoke(pyCode, pyGlobalsDict);
-                    if (result is PyObject pyObj)
-                    {
-                        var pyObjType = pyObj.GetPythonType();
-                        var pyObjTypeName = pyObjType.ToString();
-
-
-                    }
+                    progress.Report(new PassedArgs() { Messege = line });
+                    output += line + "\n";
+                };
+                Func<bool> ShouldStop = () => _shouldStop;
+                PersistentScope.Set("output_handler", OutputHandler);
+                PersistentScope.Set("should_stop", ShouldStop);
+                PersistentScope.Exec(wrappedPythonCode);
+                PyObject captureOutputFunc = PersistentScope.GetAttr("capture_output");
+                Dictionary<string, object> globalsDict = new Dictionary<string, object>();
+                using (PyObject pyCode = new PyString(code))
+                using (PyObject pyGlobalsDict = globalsDict.ToPython())
+                using (PyObject pyOutputHandler = PersistentScope.Get("output_handler"))
+                using (PyObject pyShouldStop = PersistentScope.Get("should_stop"))
+                {
+                    captureOutputFunc.Invoke(pyCode, pyGlobalsDict, pyOutputHandler, pyShouldStop);
                 }
+                //      }
+                //   }
+            }
+            catch (PythonException ex)
+            {
+                // Handle Python exceptions
+                progress.Report(new PassedArgs() { Messege = $"Python error: {ex.Message}" });
+                output += $"Python error: {ex.Message}\n";
+            }
+            catch (Exception ex)
+            {
+                // Handle general exceptions
+                progress.Report(new PassedArgs() { Messege = $"Error: {ex.Message}" });
+                output += $"Error: {ex.Message}\n";
             }
 
+            progress.Report(new PassedArgs() { Messege = $"Finished", EventType="CODEFINISH" });
             IsBusy = false;
             return output;
         }

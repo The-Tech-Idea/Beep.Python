@@ -18,6 +18,7 @@ namespace Beep.Python.Model
         bool listpackages( bool useConda = false, string packagename = null);
         ObservableCollection<string> OutputLines { get; set; }
         bool IsBusy { get; set; }
+        void Stop();
         PyModule PersistentScope { get; set; }
         bool CreateScope();
         PythonConfiguration PythonConfig { get; set; }
