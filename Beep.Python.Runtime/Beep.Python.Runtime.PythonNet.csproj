@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net7.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
 	  <LangVersion>latest</LangVersion>
 	  <RootNamespace>Beep.Python.RuntimeEngine</RootNamespace>
 	  <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -34,7 +34,7 @@
     <PackageReference Include="System.Threading.Channels" Version="8.0.0" />
     <PackageReference Include="TheTechIdea.Beep.Container" Version="1.0.0.64" />
     <PackageReference Include="TheTechIdea.Beep.Container.Model" Version="1.0.0.29" />
-    <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="1.0.187" />
+    <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="1.0.194" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Beep.Python.Model\Beep.Python.Model.csproj" />
