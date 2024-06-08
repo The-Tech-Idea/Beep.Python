@@ -22,7 +22,7 @@
 	</Target>
 	<ItemGroup>
 	  <PackageReference Include="pythonnet" Version="3.0.3" />
-	  <PackageReference Include="TheTechIdea.Beep.DataManagementEngine" Version="1.0.517" />
+	  <PackageReference Include="TheTechIdea.Beep.DataManagementEngine" Version="1.0.518" />
 	  <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="1.0.198" />
 	</ItemGroup>
 	<ItemGroup>
