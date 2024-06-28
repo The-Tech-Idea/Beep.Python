@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
-	  <LangVersion>latest</LangVersion>
+	  <LangVersion>12.0</LangVersion>
 	  <RootNamespace>Beep.Python.RuntimeEngine</RootNamespace>
 	  <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 	  <Authors>The Tech Idea</Authors>
@@ -32,9 +32,9 @@
     <PackageReference Include="pythonnet" Version="3.0.3" />
     <PackageReference Include="System.Linq.Expressions" Version="4.3.0" />
     <PackageReference Include="System.Threading.Channels" Version="8.0.0" />
-    <PackageReference Include="TheTechIdea.Beep.Container" Version="1.0.0.64" />
+    <PackageReference Include="TheTechIdea.Beep.Container" Version="1.0.0.65" />
     <PackageReference Include="TheTechIdea.Beep.Container.Model" Version="1.0.0.29" />
-    <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="1.0.223" />
+    <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="1.0.225" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Beep.Python.Model\Beep.Python.Model.csproj" />
