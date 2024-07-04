@@ -39,6 +39,7 @@ namespace Beep.Python.Model
         Task<IErrorsInfo> RunCode(string code, IProgress<PassedArgs> progress, CancellationToken token);
         Task<dynamic> RunCommand(string command, IProgress<PassedArgs> progress, CancellationToken token);
         Task<IErrorsInfo> RunFile(string file, IProgress<PassedArgs> progress, CancellationToken token);
+        bool RunPythonScript(string script, dynamic parameters);
         void CreateLoadConfig();
         void SaveConfig( );
         void SetRuntimePath(string runtimepath, BinType32or64 binType, string libpath = @"lib\site-packages");

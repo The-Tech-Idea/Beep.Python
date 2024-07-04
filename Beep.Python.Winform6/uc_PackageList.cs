@@ -273,7 +273,7 @@ namespace Beep.Python.Winform
                 if (installed)
                 {
                     // Set the green circle picture
-                    Bitmap bmp = Properties.Resources.FlagDarkGreen;
+                   Bitmap bmp = Beep.Python.WinformCore.Properties.Resources.FlagDarkGreen;
                     cell.Value = bmp;
 
                     //  but.Value = "Installed";
@@ -281,7 +281,7 @@ namespace Beep.Python.Winform
                 else
                 {
                     // Set the red circle picture
-                    Bitmap bmp = Properties.Resources.FlagRed;
+                   Bitmap bmp = Beep.Python.WinformCore.Properties.Resources.FlagRed;
                     cell.Value = bmp;
                     //  but.Value = "Not";
                 }
@@ -413,13 +413,13 @@ namespace Beep.Python.Winform
                     if (installed)
                     {
                         // Set the green circle picture
-                        Bitmap bmp = Properties.Resources.FlagDarkGreen;
+                        Bitmap bmp = Beep.Python.WinformCore.Properties.Resources.FlagDarkGreen;
                         cell.Value = bmp;
                     }
                     else
                     {
                         // Set the red circle picture
-                        Bitmap bmp = Properties.Resources.FlagRed;
+                        Bitmap bmp = Beep.Python.WinformCore.Properties.Resources.FlagRed;
                         cell.Value = bmp;
                     }
                 }

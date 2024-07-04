@@ -90,7 +90,7 @@
             // SetFolderbutton
             // 
             this.SetFolderbutton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.SetFolderbutton.Image = global::Beep.Python.Winform.Properties.Resources.FolderCodeAnalysis;
+         //   this.SetFolderbutton.Image = global::Beep.Python.Winform.Properties.Resources.FolderCodeAnalysis;
             this.SetFolderbutton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.SetFolderbutton.Location = new System.Drawing.Point(657, 331);
             this.SetFolderbutton.Name = "SetFolderbutton";
@@ -101,7 +101,7 @@
             // 
             // Validatebutton
             // 
-            this.Validatebutton.Image = global::Beep.Python.Winform.Properties.Resources.Checklist;
+         //   this.Validatebutton.Image = global::Beep.Python.Winform.Properties.Resources.Checklist;
             this.Validatebutton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.Validatebutton.Location = new System.Drawing.Point(645, 41);
             this.Validatebutton.Name = "Validatebutton";
@@ -113,7 +113,7 @@
             // 
             // Browserbutton
             // 
-            this.Browserbutton.Image = global::Beep.Python.Winform.Properties.Resources.FolderBottomPanel;
+        //    this.Browserbutton.Image = global::Beep.Python.Winform.Properties.Resources.FolderBottomPanel;
             this.Browserbutton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.Browserbutton.Location = new System.Drawing.Point(12, 16);
             this.Browserbutton.Name = "Browserbutton";
@@ -124,7 +124,7 @@
             // 
             // GetFolderbutton
             // 
-            this.GetFolderbutton.Image = global::Beep.Python.Winform.Properties.Resources.FolderOpened;
+         //   this.GetFolderbutton.Image = global::Beep.Python.Winform.Properties.Resources.FolderOpened;
             this.GetFolderbutton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.GetFolderbutton.Location = new System.Drawing.Point(645, 16);
             this.GetFolderbutton.Name = "GetFolderbutton";
@@ -216,7 +216,7 @@
             // Cancelbutton
             // 
             this.Cancelbutton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.Cancelbutton.Image = global::Beep.Python.Winform.Properties.Resources.FolderError;
+          //  this.Cancelbutton.Image = global::Beep.Python.Winform.Properties.Resources.FolderError;
             this.Cancelbutton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.Cancelbutton.Location = new System.Drawing.Point(33, 331);
             this.Cancelbutton.Name = "Cancelbutton";

@@ -2,15 +2,30 @@
 
   <PropertyGroup>
 	  <TargetFrameworks>net8.0-windows</TargetFrameworks>
-	  <LangVersion>Latest</LangVersion>
-    <Nullable>enable</Nullable>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>Beep.Python.Winform</RootNamespace>
-    <Platforms>AnyCPU;x64</Platforms>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.0.0</Version>
+	  <Nullable>enable</Nullable>
+	  <UseWindowsForms>true</UseWindowsForms>
+	  <ImplicitUsings>enable</ImplicitUsings>
+	  <RootNamespace>Beep.Python.WinformCore</RootNamespace>
+	  <LangVersion>latest</LangVersion>
+	  <Authors>The Tech Idea</Authors>
+	  <Company>The Tech Idea</Company>
+	  <Copyright>2022</Copyright>
+	  <PackageIcon>SimpleODM.png</PackageIcon>
+	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
+	  <IncludeSymbols>True</IncludeSymbols>
+	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	  <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Version>1.0.6</Version>
     <Title>Beep.Python.Winform</Title>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows|AnyCPU'">
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows|AnyCPU'">
+    <Optimize>True</Optimize>
   </PropertyGroup>
 
   <ItemGroup>
@@ -112,15 +127,23 @@
     <EmbeddedResource Include="gfx\tools64.png" />
   </ItemGroup>
 
-
+	<ItemGroup>
+		<EmbeddedResource Update="Properties\Resources.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+	</ItemGroup>
+	
   <ItemGroup>
+    <PackageReference Include="CefSharp.Common.NETCore" Version="126.2.70" />
+    <PackageReference Include="CefSharp.WinForms.NETCore" Version="126.2.70" />
     <PackageReference Include="Scintilla.NET" Version="5.3.2.9" />
     <PackageReference Include="TheTechIdea.Beep.Vis.Modules" Version="1.0.111" />
+    <PackageReference Include="TheTechIdea.Beep.Winform.Controls" Version="1.0.108" />
   </ItemGroup>
 
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Plugins\TheTechIdea.Beep.Winform.Controls\TheTechIdea.Beep.Winform.Controls.csproj" />
     <ProjectReference Include="..\Beep.Python.Model\Beep.Python.Model.csproj" />
     <ProjectReference Include="..\Beep.Python.Runtime\Beep.Python.Runtime.PythonNet.csproj" />
   </ItemGroup>
@@ -147,13 +170,18 @@
     </Compile>
     <Compile Update="uc_PackageList.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<Copy SourceFiles="$(TargetDir)$(PackageId).dll" DestinationFolder="$(ProjectDir)..\..\outputDLL\$(PackageId)" SkipUnchangedFiles="false" />
+
+	<Target Name="CopyPackage" AfterTargets="Pack">
+		<Copy SourceFiles="$(OutputPath)$(PackageId).$(PackageVersion).nupkg" DestinationFolder="..\..\..\LocalNugetFiles" />
 	</Target>
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+		<Copy SourceFiles="$(TargetDir)$(PackageId).dll" DestinationFolder="$(ProjectDir)..\..\outputDLL\$(PackageId)\$(TargetFramework)" SkipUnchangedFiles="false" />
+	</Target>
+
+	<ItemGroup>
+		<None Include="..\..\InstallationScripts\LogoGFx\128\SimpleODM.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
 </Project>

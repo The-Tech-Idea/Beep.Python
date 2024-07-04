@@ -175,7 +175,7 @@
             // 
             // toolStripButton1
             // 
-            toolStripButton1.Image = Properties.Resources.RunUpdate;
+            toolStripButton1.Image = Beep.Python.WinformCore.Properties.Resources.RunUpdate;
             toolStripButton1.ImageTransparentColor = Color.Magenta;
             toolStripButton1.Name = "toolStripButton1";
             toolStripButton1.Size = new Size(83, 31);

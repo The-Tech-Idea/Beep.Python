@@ -1,4 +1,4 @@
-﻿using Beep.Python.Winform.Properties;
+﻿
 using System;
 using System.Collections.Generic;
 using System.IO;

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -11,7 +11,7 @@
 		<PackageIcon>SimpleODM.png</PackageIcon>
 		<RepositoryUrl>https://github.com/The-Tech-Idea/</RepositoryUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<Version>1.0.1</Version>
+		<Version>1.0.3</Version>
 	
 
 	</PropertyGroup>
@@ -22,9 +22,11 @@
 		<Copy SourceFiles="$(TargetDir)$(PackageId).dll" DestinationFolder="$(ProjectDir)..\..\outputDLL\$(PackageId)\$(TargetFramework)" SkipUnchangedFiles="false" />
 	</Target>
 	<ItemGroup>
+	  <None Remove="GFX\jupyter.jpg" />
 	  <None Remove="GFX\python.png" />
 	</ItemGroup>
 	<ItemGroup>
+	  <EmbeddedResource Include="GFX\jupyter.jpg" />
 	  <EmbeddedResource Include="GFX\python.png" />
 	</ItemGroup>
 	<ItemGroup>

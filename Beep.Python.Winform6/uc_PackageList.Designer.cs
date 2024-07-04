@@ -199,7 +199,7 @@
             // InstallNewPackagetoolStripButton
             // 
             InstallNewPackagetoolStripButton.DisplayStyle = ToolStripItemDisplayStyle.Image;
-            InstallNewPackagetoolStripButton.Image = Properties.Resources.PackageLayout;
+            InstallNewPackagetoolStripButton.Image = Beep.Python.WinformCore.Properties.Resources.PackageLayout;
             InstallNewPackagetoolStripButton.ImageTransparentColor = Color.Magenta;
             InstallNewPackagetoolStripButton.Name = "InstallNewPackagetoolStripButton";
             InstallNewPackagetoolStripButton.Size = new Size(23, 22);
@@ -209,7 +209,7 @@
             // InstallPIPtoolStripButton
             // 
             InstallPIPtoolStripButton.DisplayStyle = ToolStripItemDisplayStyle.Image;
-            InstallPIPtoolStripButton.Image = Properties.Resources.ConfigurationEditor;
+            InstallPIPtoolStripButton.Image = Beep.Python.WinformCore.Properties.Resources.ConfigurationEditor;
             InstallPIPtoolStripButton.ImageTransparentColor = Color.Magenta;
             InstallPIPtoolStripButton.Name = "InstallPIPtoolStripButton";
             InstallPIPtoolStripButton.Size = new Size(23, 22);
@@ -238,7 +238,7 @@
             // 
             dataGridViewImageColumn1.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
             dataGridViewImageColumn1.HeaderText = "";
-            dataGridViewImageColumn1.Image = Properties.Resources.FlagDarkGreen;
+            dataGridViewImageColumn1.Image = Beep.Python.WinformCore.Properties.Resources.FlagDarkGreen;
             dataGridViewImageColumn1.Name = "dataGridViewImageColumn1";
             // 
             // statusStrip1
@@ -276,7 +276,7 @@
             // 
             ImageColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
             ImageColumn.HeaderText = "";
-            ImageColumn.Image = Properties.Resources.FlagDarkGreen;
+            ImageColumn.Image = Beep.Python.WinformCore.Properties.Resources.FlagDarkGreen;
             ImageColumn.Name = "ImageColumn";
             ImageColumn.Width = 21;
             // 

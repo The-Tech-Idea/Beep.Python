@@ -529,6 +529,35 @@ namespace Beep.Python.RuntimeEngine
         }
         #endregion "Configuration Methods"
         #region "Python Run Code"
+        public virtual bool RunPythonScript(string script, dynamic parameters)
+        {
+            bool retval = false;
+            if (!IsInitialized)
+            {
+                return retval;
+            }
+           
+            try
+            {
+
+               
+                    if (parameters != null)
+                    {
+                        PersistentScope.Set(nameof(parameters), parameters);
+                    }
+                    PersistentScope.Exec(script);
+                    retval = true;
+             
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error executing Python script: {ex.Message}");
+                return false;
+            }
+
+
+            return retval;
+        }
         public async Task<dynamic> RunPythonScriptWithResult(string script, dynamic parameters)
         {
             dynamic result = null;
