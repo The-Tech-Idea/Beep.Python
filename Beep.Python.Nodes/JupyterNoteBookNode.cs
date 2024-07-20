@@ -138,7 +138,7 @@ namespace Beep.Python.Nodes
         }
         #endregion "Interface Methods"
         #region "Exposed Interface"
-        [CommandAttribute(Caption = "Script Editor", Hidden = false, DoubleClick = true)]
+        [CommandAttribute(Caption = "Script Editor", Hidden = false,iconimage = "jupyter.png", DoubleClick = true)]
         public IErrorsInfo ScriptEditor()
         {
 

@@ -15,7 +15,7 @@ namespace Beep.Python.Model
         Py.GILState GIL();
         BinType32or64 BinType { get; set; }
         IDMEEditor DMEditor { get; set; }
-        bool listpackages( bool useConda = false, string packagename = null);
+       // bool listpackages( bool useConda = false, string packagename = null);
         ObservableCollection<string> OutputLines { get; set; }
         bool IsBusy { get; set; }
         void Stop();
@@ -39,6 +39,7 @@ namespace Beep.Python.Model
         Task<IErrorsInfo> RunCode(string code, IProgress<PassedArgs> progress, CancellationToken token);
         Task<dynamic> RunCommand(string command, IProgress<PassedArgs> progress, CancellationToken token);
         Task<IErrorsInfo> RunFile(string file, IProgress<PassedArgs> progress, CancellationToken token);
+        Task<string> RunPythonCommandLineAsync(  IProgress<PassedArgs> progress, string commandstring, bool useConda = false);
         bool RunPythonScript(string script, dynamic parameters);
         void CreateLoadConfig();
         void SaveConfig( );

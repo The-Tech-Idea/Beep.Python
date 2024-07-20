@@ -22,11 +22,11 @@
 		<Copy SourceFiles="$(TargetDir)$(PackageId).dll" DestinationFolder="$(ProjectDir)..\..\outputDLL\$(PackageId)\$(TargetFramework)" SkipUnchangedFiles="false" />
 	</Target>
 	<ItemGroup>
-	  <None Remove="GFX\jupyter.jpg" />
+	  <None Remove="GFX\jupyter.png" />
 	  <None Remove="GFX\python.png" />
 	</ItemGroup>
 	<ItemGroup>
-	  <EmbeddedResource Include="GFX\jupyter.jpg" />
+	  <EmbeddedResource Include="GFX\jupyter.png" />
 	  <EmbeddedResource Include="GFX\python.png" />
 	</ItemGroup>
 	<ItemGroup>

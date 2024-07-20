@@ -15,17 +15,19 @@
 	  <IncludeSymbols>True</IncludeSymbols>
 	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 	  <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.0.6</Version>
+    <Version>1.0.33</Version>
     <Title>Beep.Python.Winform</Title>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows|AnyCPU'">
     <Optimize>True</Optimize>
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows|AnyCPU'">
     <Optimize>True</Optimize>
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -135,11 +137,11 @@
 	</ItemGroup>
 	
   <ItemGroup>
-    <PackageReference Include="CefSharp.Common.NETCore" Version="126.2.70" />
-    <PackageReference Include="CefSharp.WinForms.NETCore" Version="126.2.70" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2592.51" />
     <PackageReference Include="Scintilla.NET" Version="5.3.2.9" />
+    <PackageReference Include="System.Text.Json" Version="8.0.4" />
     <PackageReference Include="TheTechIdea.Beep.Vis.Modules" Version="1.0.111" />
-    <PackageReference Include="TheTechIdea.Beep.Winform.Controls" Version="1.0.108" />
+    <PackageReference Include="TheTechIdea.Beep.Winform.Controls" Version="1.0.114" />
   </ItemGroup>
 
 

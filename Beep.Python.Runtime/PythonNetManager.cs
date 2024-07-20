@@ -381,6 +381,142 @@ def capture_output_line(code, globals_dict):
             }
         }
     }
+        public async Task<string> RunPythonCommandLineAsync(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress, string commandstring, bool useConda = false)
+        {
+            string customPath = $"{runTimeManager.CurrentRuntimeConfig.BinPath.Trim()};{runTimeManager.CurrentRuntimeConfig.ScriptPath.Trim()}".Trim();
+            string modifiedFilePath = customPath.Replace("\\", "\\\\");
+            string output = "";
+            string command = "";
+            string wrappedPythonCode = $@"
+import os
+import subprocess
+import threading
+import queue
+
+def set_custom_path(custom_path):
+    # Modify the PATH environment variable
+    os.environ[""PATH""] = '{modifiedFilePath}' + os.pathsep + os.environ[""PATH""]
+
+def run_pip_and_capture_output(args, output_callback):
+    def enqueue_output(stream, queue):
+        for line in iter(stream.readline, b''):
+            queue.put(line.decode('utf-8').strip())
+        stream.close()
+
+    process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    stdout_queue = queue.Queue()
+    stderr_queue = queue.Queue()
+
+    stdout_thread = threading.Thread(target=enqueue_output, args=(process.stdout, stdout_queue))
+    stderr_thread = threading.Thread(target=enqueue_output, args=(process.stderr, stderr_queue))
+
+    stdout_thread.start()
+    stderr_thread.start()
+
+    while process.poll() is None or not stdout_queue.empty() or not stderr_queue.empty():
+        while not stdout_queue.empty():
+            line = stdout_queue.get_nowait()
+            output_callback(line)
+
+        while not stderr_queue.empty():
+            line = stderr_queue.get_nowait()
+            output_callback(line)
+
+    stdout_thread.join()
+    stderr_thread.join()
+    process.communicate()
+
+def run_with_timeout(func, args, output_callback, timeout):
+    try:
+        func(args, output_callback)
+    except Exception as e:
+        output_callback(str(e))
+";
+
+            using (Py.GIL())
+            {
+                using (PyModule scope = Py.CreateScope())
+                {
+                    PyObject globalsDict = scope.GetAttr("__dict__");
+
+
+                    scope.Exec(wrappedPythonCode);
+                    // Set the custom_path from C# and call set_custom_path function in Python
+
+                    PyObject setCustomPathFunc = scope.GetAttr("set_custom_path");
+                    setCustomPathFunc.Invoke(modifiedFilePath.ToPython());
+
+                    PyObject captureOutputFunc = scope.GetAttr("run_pip_and_capture_output");
+
+
+
+                    if (useConda)
+                    {
+                        command = $"conda {commandstring}";
+                      
+                    }
+                    else
+                    {
+                        command = $"python.exe {commandstring}";
+                    }
+                    progress.Report(new PassedArgs() { Messege = $"Running {command}" });
+                    //runTimeManager.OutputLines.Add($"Running {command}");
+                    PyObject pyArgs = new PyList();
+
+                    pyArgs.InvokeMethod("extend", command.Split(' ').ToPython());
+
+
+                    // Set the output_callback function in Python
+                    Channel<string> outputChannel = Channel.CreateUnbounded<string>();
+                    PyObject outputCallback = PyObject.FromManagedObject((Action<string>)(s => {
+                        outputChannel.Writer.TryWrite(s);
+                    }));
+                    globalsDict.SetItem("output_callback", outputCallback);
+
+                    // Run the Python code with a timeout
+                    int timeoutInSeconds = 120; // Adjust this value as needed
+                    PyObject runWithTimeoutFunc = scope.GetAttr("run_with_timeout");
+                    Task pythonTask = Task.Run(() => runWithTimeoutFunc.Invoke(captureOutputFunc, pyArgs, outputCallback, timeoutInSeconds.ToPython()));
+
+                    var outputList = new List<string>();
+                    // Create an async method to read from the channel
+                    async Task ReadFromChannelAsync()
+                    {
+                        while (await outputChannel.Reader.WaitToReadAsync())
+                        {
+                            if (outputChannel.Reader.TryRead(out var line))
+                            {
+                                outputList.Add(line);
+                                progress.Report(new PassedArgs() { Messege = line });
+                                Console.WriteLine(line);
+                            }
+                        }
+
+                    }
+
+                    // Process the output lines asynchronously
+                    Task readOutputTask = ReadFromChannelAsync();
+
+                    // Wait for the Python task to complete and close the channel writer
+                    await pythonTask;
+                    outputChannel.Writer.Complete();
+
+                    // Wait for the readOutputTask to complete
+                    await readOutputTask;
+
+
+                    output = string.Join("\n", outputList);
+                }
+            }
+            if (output.Length > 0)
+            {
+                progress.Report(new PassedArgs() { Messege = $"Finished {command}" });
+            }
+            else
+                progress.Report(new PassedArgs() { Messege = $"Finished {command} eith error" });
+            return output;
+        }
         public  async Task<string> RunPackageManagerAsync(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress,string packageName, PackageAction packageAction, bool useConda = false)
         {
             string customPath = $"{runTimeManager.CurrentRuntimeConfig.BinPath.Trim()};{runTimeManager.CurrentRuntimeConfig.ScriptPath.Trim()}".Trim();
