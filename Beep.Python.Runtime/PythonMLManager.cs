@@ -16,6 +16,23 @@ namespace Beep.Python.RuntimeEngine
         private bool IsInitialized = true; // Ensure this flag is managed based on actual initialization logic
         private Dictionary<string, bool> algorithmSupervision = new Dictionary<string, bool>();
 
+        public bool IsDataLoaded { get; set; } = false;
+        public bool IsModelTrained { get; set; }= false;
+        public bool IsModelSaved { get; set; } = false;
+        public bool IsModelLoaded { get; set; } = false;
+        public bool IsModelPredicted { get; set; }=false;
+        public bool IsModelScored { get; set; } = false;
+        public bool IsModelExported { get; set; }=false;
+        public bool IsDataSplit { get; set; } = false;
+        public string DataFilePath { get; set; }=string.Empty;
+        public string ModelFilePath { get; set; }=string.Empty;
+        public string PredictionsFilePath { get; set; } = string.Empty;
+        public string TrainingFilePath { get; set; }=string.Empty;
+        public string TestingFilePath { get; set; } = string.Empty;
+        public string ValidationFilePath { get; set; } = string.Empty;
+        
+
+
         public PythonMLManager(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager) : base(beepservice, pythonRuntimeManager)
         {
             //  pythonRuntimeManager = pythonRuntimeManager;
@@ -134,14 +151,50 @@ score = f1_score(y_test, predictions)
             string modifiedFilePath = filePath.Replace("\\", "\\\\");
             string script = $@"
 import pandas as pd
-train_data = pd.read_csv('{modifiedFilePath}')
+data = pd.read_csv('{modifiedFilePath}')
 features = train_data.columns.tolist()
 ";
 
-            RunPythonScript(script, null);
+            if (RunPythonScript(script, null))
+            {
+                IsDataLoaded = true;
+                DataFilePath = modifiedFilePath;
+            }else
+            {
+                IsDataLoaded = false;
+            }
+            
             // Retrieve the features (column names) from the Python script
             return FetchFeaturesFromPython();
         }
+        public string[] GetFeatures(string filePath)
+        {
+            if (!IsInitialized)
+            {
+                return null;
+            }
+
+            // Convert the file path to a raw string format for Python
+            string formattedFilePath = filePath.Replace("\\", "\\\\");
+
+            // Python script to load the data and extract feature names
+            string script = $@"
+import pandas as pd
+
+# Read only the first chunk to get column names
+chunk = pd.read_csv('{formattedFilePath}', chunksize=1)
+
+# Extract column names from the first chunk
+features = chunk.columns.tolist()
+";
+
+            // Execute the Python script
+            RunPythonScript(script, null);
+
+            // Retrieve the features from Python
+            return FetchFeaturesFromPython();
+        }
+
         // Method to retrieve the features from Python
         public string[] LoadTestData(string filePath)
         {
@@ -227,6 +280,41 @@ if '{labelColumn}' not in test_data.columns:
 
             RunPythonScript(script, null);
         }
+        public string[] SplitData( float testSize, string trainFilePath, string testFilePath)
+        {
+            if (!IsInitialized)
+            {
+                return null;
+            }
+            // Ensure testSize is more than 0.5 to make test set larger
+            if (testSize <= 0.5)
+            {
+                throw new ArgumentException("Test size must be more than 50% of the data.");
+            }
+            string formattedFilePath = string.Empty; // dataFilePath.Replace("\\", "\\\\");
+            string formattedtrainFilePath = trainFilePath.Replace("\\", "\\\\");
+            string formattedtestFilePath = testFilePath.Replace("\\", "\\\\");
+            string script = $@"
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
+# Load the dataset
+#data = pd.read_csv('{formattedFilePath}')
+
+# Split the dataset into training and testing sets
+train_data, test_data = train_test_split(data, test_size={testSize})
+
+# Save the split datasets to files
+train_data.to_csv('{formattedtrainFilePath}', index = False)
+test_data.to_csv('{formattedtestFilePath}', index = False)
+test_features = test_data.columns.tolist()
+features = data.columns.tolist()
+";
+            //            train_data.to_csv('{trainFilePath}', index = False)
+            //test_data.to_csv('{testFilePath}', index = False)
+            RunPythonScript(script, null);
+            return FetchFeaturesFromPython();
+        }
         public string[] SplitData(string dataFilePath, float testSize, string trainFilePath, string testFilePath)
         {
             if (!IsInitialized)
@@ -259,7 +347,16 @@ features = data.columns.tolist()
 ";
             //            train_data.to_csv('{trainFilePath}', index = False)
             //test_data.to_csv('{testFilePath}', index = False)
-            RunPythonScript(script, null);
+
+            if (RunPythonScript(script, null))
+            {
+                IsDataLoaded = true;
+                DataFilePath = formattedFilePath;
+            }
+            else
+            {
+                IsDataLoaded = false;
+            }
             return FetchFeaturesFromPython();
         }
         public string[] SplitData(string dataFilePath, float testSize, float validationSize, string trainFilePath, string testFilePath, string validationFilePath)
@@ -303,7 +400,16 @@ features = data.columns.tolist()
 ";
             //            train_data.to_csv('{trainFilePath}', index = False)
             //test_data.to_csv('{testFilePath}', index = False)
-            RunPythonScript(script, null);
+
+            if (RunPythonScript(script, null))
+            {
+                IsDataLoaded = true;
+                DataFilePath = formattedFilePath;
+            }
+            else
+            {
+                IsDataLoaded = false;
+            }
             return FetchFeaturesFromPython();
         }
         public string[] SplitData(string dataFilePath, float testSize, string trainFilePath, string testFilePath, string validationFilePath, string primaryFeatureKeyID, string labelColumn)
@@ -388,7 +494,15 @@ test_features = test_data_without_label.columns.tolist()
 features = train_data.columns.tolist()
 ";
 
-            RunPythonScript(script, null);
+
+            if (RunPythonScript(script, null))
+            {
+                IsDataLoaded = true;
+            }
+            else
+            {
+                IsDataLoaded = false;
+            }
             return FetchFeaturesFromPython();
         }
         public bool RemoveSpecialCharacters(string dataFrameName)
