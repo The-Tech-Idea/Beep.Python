@@ -69,78 +69,99 @@ namespace Beep.Python.RuntimeEngine
             algorithmSupervision["BernoulliNB"] = true;
             algorithmSupervision["AdaBoostClassifier"] = true;
         }
-
-        public Tuple<double, double, double> GetModelRegressionScores(string modelId)
+        #region "Validate CSV File"
+        public string[] ValidateAndPreviewData(string filePath, int numRows = 5)
         {
             if (!IsInitialized)
             {
-                return new Tuple<double, double, double>(-1, -1, -1);
+                return null;
             }
 
-            // Script to prepare test data (X_test and y_test) similarly to how training data was prepared
-            string prepareTestDataScript = @"
-# Assuming test data is loaded and preprocessed similarly to training data
-X_test = pd.get_dummies(test_data[test_features])
-X_test.fillna(X_test.mean(), inplace=True)
-y_test = test_data[label_column].astype(float)  # Ensure y_test is float for regression
-# Align the test set columns with the training set
-# This adds missing columns in the test set and sets them to zero
-test_encoded = X_test.reindex(columns = X.columns, fill_value=0)
-";
+            string formattedFilePath = filePath.Replace("\\", "\\\\");
 
-            RunPythonScript(prepareTestDataScript, null);
+            // Python script to load the first few rows and perform basic validation
             string script = $@"
-from sklearn.metrics import mean_squared_error, mean_absolute_error
-import numpy as np
-model = models['{modelId}']
-predictions = model.predict(test_encoded)
-mse = mean_squared_error(y_test, predictions)
-rmse = np.sqrt(mse)
-mae = mean_absolute_error(y_test, predictions)
+import pandas as pd
+
+# Load the first few rows of the dataset
+preview_data = pd.read_csv('{formattedFilePath}', nrows={numRows})
+
+# Perform basic validation
+expected_columns = preview_data.columns.tolist()
+
+# Check for missing values in the preview (optional)
+missing_values = preview_data.isnull().sum().tolist()
+
+# Check data types (optional)
+data_types = preview_data.dtypes.apply(lambda x: x.name).tolist()
+
+# Assign results to the persistent scope
+preview_columns = expected_columns
+preview_missing_values = missing_values
+preview_data_types = data_types
 ";
 
+            // Execute the Python script
             RunPythonScript(script, null);
 
-            // Retrieve the scores from the Python script
-            double mse = FetchMSEFromPython();
-            double rmse = FetchRMSEFromPython();
-            double mae = FetchMAEFromPython();
-
-            return new Tuple<double, double, double>(mse, rmse, mae);
+            // Fetch and return the preview column names
+            return FetchPreviewColumnsFromPython();
         }
-        public Tuple<double, double> GetModelClassificationScore(string modelId)
+
+        private string[] FetchPreviewColumnsFromPython()
         {
-            if (!IsInitialized)
+            using (Py.GIL()) // Acquire the Python Global Interpreter Lock
             {
-                return new Tuple<double, double>(-1, -1);
+                dynamic pyColumns = PythonRuntime.PersistentScope.Get("preview_columns");
+                if (pyColumns == null) return new string[0];
+
+                // Convert the Python list to a C# string array
+                var columnsList = new List<string>();
+                foreach (var column in pyColumns)
+                {
+                    columnsList.Add(column.ToString());
+                }
+                return columnsList.ToArray();
             }
-
-            // Script to prepare test data (X_test and y_test) similarly to how training data was prepared
-            string prepareTestDataScript = @"
-# Assuming test data is loaded and preprocessed similarly to training data
-X_test = pd.get_dummies(test_data[test_features])
-X_test.fillna(X_test.mean(), inplace=True)
-y_test = test_data[label_column]
-# Align the test set columns with the training set
-# This adds missing columns in the test set and sets them to zero
-test_encoded = X_test.reindex(columns = X.columns, fill_value=0)
-";
-
-            RunPythonScript(prepareTestDataScript, null);
-            string script = $@"
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import f1_score
-model = models['{modelId}']
-predictions = model.predict(test_encoded)
-accuracy = accuracy_score(y_test, predictions)
-score = f1_score(y_test, predictions)
-";
-
-            RunPythonScript(script, null);
-
-            // Retrieve the score from the Python script
-            return new Tuple<double, double>(FetchScoreFromPython(), FetchAccuracyFromPython());
         }
+
+        // Additional methods to fetch missing values and data types if needed
+        private int[] FetchPreviewMissingValuesFromPython()
+        {
+            using (Py.GIL()) // Acquire the Python Global Interpreter Lock
+            {
+                dynamic pyMissingValues = PythonRuntime.PersistentScope.Get("preview_missing_values");
+                if (pyMissingValues == null) return new int[0];
+
+                // Convert the Python list to a C# int array
+                var missingValuesList = new List<int>();
+                foreach (var value in pyMissingValues)
+                {
+                    missingValuesList.Add((int)value);
+                }
+                return missingValuesList.ToArray();
+            }
+        }
+
+        private string[] FetchPreviewDataTypesFromPython()
+        {
+            using (Py.GIL()) // Acquire the Python Global Interpreter Lock
+            {
+                dynamic pyDataTypes = PythonRuntime.PersistentScope.Get("preview_data_types");
+                if (pyDataTypes == null) return new string[0];
+
+                // Convert the Python list to a C# string array
+                var dataTypesList = new List<string>();
+                foreach (var dtype in pyDataTypes)
+                {
+                    dataTypesList.Add(dtype.ToString());
+                }
+                return dataTypesList.ToArray();
+            }
+        }
+
+        #endregion "Validate CSV File"
+        #region "Data File Manup"
         public string[] LoadData(string filePath)
         {
             if (!IsInitialized)
@@ -159,43 +180,15 @@ features = train_data.columns.tolist()
             {
                 IsDataLoaded = true;
                 DataFilePath = modifiedFilePath;
-            }else
+            }
+            else
             {
                 IsDataLoaded = false;
             }
-            
+
             // Retrieve the features (column names) from the Python script
             return FetchFeaturesFromPython();
         }
-        public string[] GetFeatures(string filePath)
-        {
-            if (!IsInitialized)
-            {
-                return null;
-            }
-
-            // Convert the file path to a raw string format for Python
-            string formattedFilePath = filePath.Replace("\\", "\\\\");
-
-            // Python script to load the data and extract feature names
-            string script = $@"
-import pandas as pd
-
-# Read only the first chunk to get column names
-chunk = pd.read_csv('{formattedFilePath}', chunksize=1)
-
-# Extract column names from the first chunk
-features = chunk.columns.tolist()
-";
-
-            // Execute the Python script
-            RunPythonScript(script, null);
-
-            // Retrieve the features from Python
-            return FetchFeaturesFromPython();
-        }
-
-        // Method to retrieve the features from Python
         public string[] LoadTestData(string filePath)
         {
             if (!IsInitialized)
@@ -235,52 +228,67 @@ predict_features = predict_data.columns.tolist()
             RemoveSpecialCharacters("predict_data");
             return FetchTestFeaturesFromPython();
         }
-        public void AddLabelColumnIfMissing(string testDataFilePath, string labelColumn)
+        private string CreateSplitFile(string path, string prefix, string originalFileName, string[] data)
         {
-            if (!IsInitialized)
-            {
-                return;
-            }
-
-            // Convert file paths to a raw string format for Python
-            string formattedTestDataFilePath = testDataFilePath.Replace("\\", "\\\\");
-
-            string script = $@"
-import pandas as pd
-
-# Load test data
-test_data = pd.read_csv(r'{formattedTestDataFilePath}')
-
-# Check if the label column is missing and add it if necessary
-if '{labelColumn}' not in test_data.columns:
-    test_data['{labelColumn}'] = None  # Assign None for missing label column
-
-# Optionally, save the modified test data back to a file or handle it as needed
-test_data.to_csv(r'{formattedTestDataFilePath}', index=False)
-";
-
-            RunPythonScript(script, null);
+            string newFileName = Path.Combine(path, $"{prefix}{originalFileName}");
+            File.WriteAllLines(newFileName, data);
+            return newFileName;
         }
-        public void AddLabelColumnIfMissing(string labelColumn)
+        private void CreateValidationFile(string path, string sourceFileName)
         {
-            if (!IsInitialized)
-            {
-                return;
-            }
+            string validationFileName = Path.Combine(path, $"validation_{Path.GetFileName(sourceFileName)}");
+            File.Copy(sourceFileName, validationFileName);
 
+            string[] lines = File.ReadAllLines(validationFileName);
+            ClearLabelColumn(lines);
+            File.WriteAllLines(validationFileName, lines);
 
-            string script = $@"
-import pandas as pd
-
-
-# Check if the label column is missing and add it if necessary
-if '{labelColumn}' not in test_data.columns:
-    test_data['{labelColumn}'] = None  # Assign None for missing label column
-";
-
-            RunPythonScript(script, null);
         }
-        public string[] SplitData( float testSize, string trainFilePath, string testFilePath)
+        #endregion "Data File Manup"
+        #region "Split Data"
+        public Tuple<string, string> SplitDataClassFile(string urlpath, string filename, double splitRatio)
+        {
+            try
+            {
+                ValidateSplitRatio(ref splitRatio); // Ensuring split ratio is valid
+
+                string dataFilePath = Path.Combine(urlpath, filename);
+
+
+                if (!File.Exists(dataFilePath))
+                {
+
+                    return new Tuple<string, string>(null, null);
+                }
+
+                string[] lines = File.ReadAllLines(dataFilePath);
+                ShuffleData(lines); // Shuffling the data
+
+                int totalLines = lines.Length;
+                int trainingLinesCount = (int)(totalLines * splitRatio);
+                int testingLinesCount = totalLines - trainingLinesCount;
+
+                string[] trainingData = lines.Take(trainingLinesCount).ToArray();
+                string[] testingData = lines.Skip(trainingLinesCount).Take(testingLinesCount).ToArray();
+
+                string trainingFileName = CreateSplitFile(urlpath, "train_", filename, trainingData);
+                string testingFileName = CreateSplitFile(urlpath, "test_", filename, testingData);
+
+                string TRAININGFILENAME = Path.GetFileName(trainingFileName);
+                string TESTDATAFILENAME = Path.GetFileName(testingFileName);
+
+                CreateValidationFile(urlpath, testingFileName);
+                return new Tuple<string, string>(TRAININGFILENAME, TESTDATAFILENAME);
+            }
+            catch (Exception ex)
+            {
+                return new Tuple<string, string>(null, null);
+                //DMEditor.ErrorObject.Ex = ex;
+                //DMEditor.ErrorObject.Message = $"Error in  {System.Reflection.MethodBase.GetCurrentMethod().Name} -  {ex.Message}";
+                //DMEditor.ErrorObject.Flag = Errors.Failed;
+            }
+        }
+        public string[] SplitData(float testSize, string trainFilePath, string testFilePath)
         {
             if (!IsInitialized)
             {
@@ -505,31 +513,134 @@ features = train_data.columns.tolist()
             }
             return FetchFeaturesFromPython();
         }
-        public bool RemoveSpecialCharacters(string dataFrameName)
+
+        #endregion "Split Data"
+        #region "Predictions"
+        public Tuple<double, double, double> GetModelRegressionScores(string modelId)
         {
             if (!IsInitialized)
             {
-                return false;
+                return new Tuple<double, double, double>(-1, -1, -1);
             }
 
+            // Script to prepare test data (X_test and y_test) similarly to how training data was prepared
+            string prepareTestDataScript = @"
+# Assuming test data is loaded and preprocessed similarly to training data
+X_test = pd.get_dummies(test_data[test_features])
+X_test.fillna(X_test.mean(), inplace=True)
+y_test = test_data[label_column].astype(float)  # Ensure y_test is float for regression
+# Align the test set columns with the training set
+# This adds missing columns in the test set and sets them to zero
+test_encoded = X_test.reindex(columns = X.columns, fill_value=0)
+";
+
+            RunPythonScript(prepareTestDataScript, null);
             string script = $@"
-import pandas as pd
-import re
-
-def remove_special_characters_from_data(df):
-    for col in df.columns:
-        if df[col].dtype == 'object':  # Checking if the column is of string type
-            # Apply the regex to each element in the column to remove special characters
-          df[col] = df[col].apply(lambda x: re.sub(r""[^a-zA-Z0-9_]+"", '', str(x)))
-    return df
-
-# Apply the function to the DataFrame
-{dataFrameName} = remove_special_characters_from_data({dataFrameName})
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+import numpy as np
+model = models['{modelId}']
+predictions = model.predict(test_encoded)
+mse = mean_squared_error(y_test, predictions)
+rmse = np.sqrt(mse)
+mae = mean_absolute_error(y_test, predictions)
 ";
 
             RunPythonScript(script, null);
-            return true;
+
+            // Retrieve the scores from the Python script
+            double mse = FetchMSEFromPython();
+            double rmse = FetchRMSEFromPython();
+            double mae = FetchMAEFromPython();
+
+            return new Tuple<double, double, double>(mse, rmse, mae);
         }
+        public Tuple<double, double> GetModelClassificationScore(string modelId)
+        {
+            if (!IsInitialized)
+            {
+                return new Tuple<double, double>(-1, -1);
+            }
+
+            // Script to prepare test data (X_test and y_test) similarly to how training data was prepared
+            string prepareTestDataScript = @"
+# Assuming test data is loaded and preprocessed similarly to training data
+X_test = pd.get_dummies(test_data[test_features])
+X_test.fillna(X_test.mean(), inplace=True)
+y_test = test_data[label_column]
+# Align the test set columns with the training set
+# This adds missing columns in the test set and sets them to zero
+test_encoded = X_test.reindex(columns = X.columns, fill_value=0)
+";
+
+            RunPythonScript(prepareTestDataScript, null);
+            string script = $@"
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import f1_score
+model = models['{modelId}']
+predictions = model.predict(test_encoded)
+accuracy = accuracy_score(y_test, predictions)
+score = f1_score(y_test, predictions)
+";
+
+            RunPythonScript(script, null);
+
+            // Retrieve the score from the Python script
+            return new Tuple<double, double>(FetchScoreFromPython(), FetchAccuracyFromPython());
+        }
+        public dynamic PredictClassification(string[] training_columns)
+        {
+            if (!IsInitialized)
+            {
+                return null;
+            }
+            string trainingCols = String.Join(", ", training_columns.Select(col => $"'{col}'"));
+            //   string inputAsString = inputData.ToString(); // Convert inputData to a string representation
+            string script = $@"
+X_predict = pd.get_dummies(predict_data[features])
+
+X_predict.fillna(X_predict.mean(), inplace=True)  # Simple mean imputation for missing values
+# Align the columns of X_predict to match the training data
+
+predictions = model.predict(X_predict)
+";
+
+            RunPythonScript(script, null);
+
+            // Retrieve predictions from Python script
+            dynamic predictions = FetchPredictionsFromPython(); // Use the method to fetch predictions
+            return predictions;
+        }
+        public dynamic PredictRegression(string[] training_columns)
+        {
+            if (!IsInitialized)
+            {
+                return null;
+            }
+            string trainingCols = String.Join(", ", training_columns.Select(col => $"'{col}'"));
+            // Prepare the script to predict and round off the predictions
+            string script = $@"
+import numpy as np
+X_predict = pd.get_dummies(predict_data[features])
+
+X_predict.fillna(X_predict.mean(), inplace=True)  # Simple mean imputation for missing values
+# Align the columns of X_predict to match the training data
+
+predictions = model.predict(X_predict)
+
+# Round predictions to the nearest integer
+rounded_predictions = np.rint(predictions)
+predictions=rounded_predictions
+";
+
+            // Execute the Python script
+            RunPythonScript(script, null);
+
+            // Retrieve rounded predictions from Python script
+            dynamic rounded_predictions = FetchPredictionsFromPython(); // Make sure this method can handle the rounded predictions
+            return rounded_predictions;
+        }
+        #endregion "Predictions"
+        #region "Model Methods"
         public void TrainModel(string modelId, MachineLearningAlgorithm algorithm, Dictionary<string, object> parameters, string[] featureColumns, string labelColumn)
         {
             if (!IsInitialized)
@@ -658,60 +769,6 @@ models['{modelId}'] = model
 
             RunPythonScript(script, null);
         }
-        public dynamic PredictClassification(string[] training_columns)
-        {
-            if (!IsInitialized)
-            {
-                return null;
-            }
-            string trainingCols = String.Join(", ", training_columns.Select(col => $"'{col}'"));
-            //   string inputAsString = inputData.ToString(); // Convert inputData to a string representation
-            string script = $@"
-X_predict = pd.get_dummies(predict_data[features])
-
-X_predict.fillna(X_predict.mean(), inplace=True)  # Simple mean imputation for missing values
-# Align the columns of X_predict to match the training data
-
-predictions = model.predict(X_predict)
-";
-
-            RunPythonScript(script, null);
-
-            // Retrieve predictions from Python script
-            dynamic predictions = FetchPredictionsFromPython(); // Use the method to fetch predictions
-            return predictions;
-        }
-        public dynamic PredictRegression(string[] training_columns)
-        {
-            if (!IsInitialized)
-            {
-                return null;
-            }
-            string trainingCols = String.Join(", ", training_columns.Select(col => $"'{col}'"));
-            // Prepare the script to predict and round off the predictions
-            string script = $@"
-import numpy as np
-X_predict = pd.get_dummies(predict_data[features])
-
-X_predict.fillna(X_predict.mean(), inplace=True)  # Simple mean imputation for missing values
-# Align the columns of X_predict to match the training data
-
-predictions = model.predict(X_predict)
-
-# Round predictions to the nearest integer
-rounded_predictions = np.rint(predictions)
-predictions=rounded_predictions
-";
-
-            // Execute the Python script
-            RunPythonScript(script, null);
-
-            // Retrieve rounded predictions from Python script
-            dynamic rounded_predictions = FetchPredictionsFromPython(); // Make sure this method can handle the rounded predictions
-            return rounded_predictions;
-        }
-
-        // Helper method to retrieve predictions from Python
         public void SaveModel(string modelId, string filePath)
         {
             if (!IsInitialized)
@@ -770,7 +827,106 @@ except Exception as e:
             // Return the model ID to the caller
             return modelId;
         }
-        // Example helper method to fetch the score from Python
+        #endregion "Model Methods"
+        #region "Helper Methods"
+        public string[] GetFeatures(string filePath)
+        {
+            if (!IsInitialized)
+            {
+                return null;
+            }
+
+            // Convert the file path to a raw string format for Python
+            string formattedFilePath = filePath.Replace("\\", "\\\\");
+
+            // Python script to load the data and extract feature names
+            string script = $@"
+import pandas as pd
+
+# Read only the first chunk to get column names
+chunk_iter = pd.read_csv('{formattedFilePath}', chunksize=1)
+chunk = next(chunk_iter)
+
+# Extract column names from the first chunk
+features = chunk.columns.tolist()
+";
+
+            // Execute the Python script
+            RunPythonScript(script, null);
+
+            // Retrieve the features from Python
+            return FetchFeaturesFromPython();
+        }
+        public bool RemoveSpecialCharacters(string dataFrameName)
+        {
+            if (!IsInitialized)
+            {
+                return false;
+            }
+
+            string script = $@"
+import pandas as pd
+import re
+
+def remove_special_characters_from_data(df):
+    for col in df.columns:
+        if df[col].dtype == 'object':  # Checking if the column is of string type
+            # Apply the regex to each element in the column to remove special characters
+          df[col] = df[col].apply(lambda x: re.sub(r""[^a-zA-Z0-9_]+"", '', str(x)))
+    return df
+
+# Apply the function to the DataFrame
+{dataFrameName} = remove_special_characters_from_data({dataFrameName})
+";
+
+            RunPythonScript(script, null);
+            return true;
+        }
+        public void AddLabelColumnIfMissing(string testDataFilePath, string labelColumn)
+        {
+            if (!IsInitialized)
+            {
+                return;
+            }
+
+            // Convert file paths to a raw string format for Python
+            string formattedTestDataFilePath = testDataFilePath.Replace("\\", "\\\\");
+
+            string script = $@"
+import pandas as pd
+
+# Load test data
+test_data = pd.read_csv(r'{formattedTestDataFilePath}')
+
+# Check if the label column is missing and add it if necessary
+if '{labelColumn}' not in test_data.columns:
+    test_data['{labelColumn}'] = None  # Assign None for missing label column
+
+# Optionally, save the modified test data back to a file or handle it as needed
+test_data.to_csv(r'{formattedTestDataFilePath}', index=False)
+";
+
+            RunPythonScript(script, null);
+        }
+        public void AddLabelColumnIfMissing(string labelColumn)
+        {
+            if (!IsInitialized)
+            {
+                return;
+            }
+
+
+            string script = $@"
+import pandas as pd
+
+
+# Check if the label column is missing and add it if necessary
+if '{labelColumn}' not in test_data.columns:
+    test_data['{labelColumn}'] = None  # Assign None for missing label column
+";
+
+            RunPythonScript(script, null);
+        }
         public void ExportTestResult(string filePath, string iDColumn, string labelColumn)
         {
             if (!IsInitialized)
@@ -788,48 +944,6 @@ output.to_csv(r'{filePath}', index=False)
 ";
 
             RunPythonScript(script, null);
-        }
-        public Tuple<string, string> SplitDataClassFile(string urlpath, string filename, double splitRatio)
-        {
-            try
-            {
-                ValidateSplitRatio(ref splitRatio); // Ensuring split ratio is valid
-
-                string dataFilePath = Path.Combine(urlpath, filename);
-
-
-                if (!File.Exists(dataFilePath))
-                {
-
-                    return new Tuple<string, string>(null, null);
-                }
-
-                string[] lines = File.ReadAllLines(dataFilePath);
-                ShuffleData(lines); // Shuffling the data
-
-                int totalLines = lines.Length;
-                int trainingLinesCount = (int)(totalLines * splitRatio);
-                int testingLinesCount = totalLines - trainingLinesCount;
-
-                string[] trainingData = lines.Take(trainingLinesCount).ToArray();
-                string[] testingData = lines.Skip(trainingLinesCount).Take(testingLinesCount).ToArray();
-
-                string trainingFileName = CreateSplitFile(urlpath, "train_", filename, trainingData);
-                string testingFileName = CreateSplitFile(urlpath, "test_", filename, testingData);
-
-                string TRAININGFILENAME = Path.GetFileName(trainingFileName);
-                string TESTDATAFILENAME = Path.GetFileName(testingFileName);
-
-                CreateValidationFile(urlpath, testingFileName);
-                return new Tuple<string, string>(TRAININGFILENAME, TESTDATAFILENAME);
-            }
-            catch (Exception ex)
-            {
-                return new Tuple<string, string>(null, null);
-                //DMEditor.ErrorObject.Ex = ex;
-                //DMEditor.ErrorObject.Message = $"Error in  {System.Reflection.MethodBase.GetCurrentMethod().Name} -  {ex.Message}";
-                //DMEditor.ErrorObject.Flag = Errors.Failed;
-            }
         }
         private void ShuffleData(string[] lines)
         {
@@ -856,22 +970,6 @@ output.to_csv(r'{filePath}', index=False)
                 // DMEditor.AddLogMessage("Beep", $"Split ratio must be between {minRatio * 100}% and {maxRatio * 100}%", DateTime.Now, -1, null, Errors.Failed);
             }
         }
-        private string CreateSplitFile(string path, string prefix, string originalFileName, string[] data)
-        {
-            string newFileName = Path.Combine(path, $"{prefix}{originalFileName}");
-            File.WriteAllLines(newFileName, data);
-            return newFileName;
-        }
-        private void CreateValidationFile(string path, string sourceFileName)
-        {
-            string validationFileName = Path.Combine(path, $"validation_{Path.GetFileName(sourceFileName)}");
-            File.Copy(sourceFileName, validationFileName);
-
-            string[] lines = File.ReadAllLines(validationFileName);
-            ClearLabelColumn(lines);
-            File.WriteAllLines(validationFileName, lines);
-
-        }
         private void ClearLabelColumn(string[] lines)
         {
             for (int i = 0; i < lines.Length; i++)
@@ -886,6 +984,8 @@ output.to_csv(r'{filePath}', index=False)
                 lines[i] = string.Join(",", columns);
             }
         }
+        #endregion "Helper Methods"
+        #region "Fetch Values"
         private dynamic FetchPredictionsFromPython()
         {
             if (!IsInitialized)
@@ -991,7 +1091,7 @@ output.to_csv(r'{filePath}', index=False)
         }
         private string[] FetchFeaturesFromPython()
         {
-            using (Py.GIL()) // Acquire the Python Global Interpreter Lock
+            using (Py.GIL()) // Acquire the Python Global Interpreter Lock features
             {
                 dynamic pyFeatures = PythonRuntime.PersistentScope.Get("features");
                 if (pyFeatures == null) return new string[0];
@@ -1021,6 +1121,7 @@ output.to_csv(r'{filePath}', index=False)
                 return featuresList.ToArray();
             }
         }
+        #endregion "Fetch Values"
         #region "Graphs"
         public void CreateROC()
         {

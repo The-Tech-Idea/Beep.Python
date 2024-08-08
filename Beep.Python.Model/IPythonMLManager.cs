@@ -19,6 +19,7 @@ namespace Beep.Python.Model
           string TestingFilePath { get; set; } 
           string ValidationFilePath { get; set; } 
         bool IsInitialized { get; }
+        string[] ValidateAndPreviewData(string filePath, int numRows );
         bool RemoveSpecialCharacters(string dataFrameName);
         string[] GetFeatures(string filePath);
         Tuple<double,double> GetModelClassificationScore(string modelId);
