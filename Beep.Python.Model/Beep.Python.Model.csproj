@@ -22,8 +22,8 @@
 	</Target>
 	<ItemGroup>
 	  <PackageReference Include="pythonnet" Version="3.0.3" />
-	  <PackageReference Include="TheTechIdea.Beep.DataManagementEngine" Version="1.0.563" />
-	  <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="1.0.249" />
+	  <PackageReference Include="TheTechIdea.Beep.DataManagementEngine" Version="1.0.566" />
+	  <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="1.0.252" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="..\..\InstallationScripts\LogoGFx\128\SimpleODM.png">
