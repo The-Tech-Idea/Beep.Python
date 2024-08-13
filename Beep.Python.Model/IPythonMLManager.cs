@@ -42,5 +42,13 @@ namespace Beep.Python.Model
         void AddLabelColumnIfMissing(string testDataFilePath, string labelColumn);
         void AddLabelColumnIfMissing(string labelColumn);
         Tuple<string, string> SplitDataClassFile(string urlpath, string filename, double splitRatio);
+        void CreateROC();
+        void CreateConfusionMatrix();
+        void CreateLearningCurve(string modelId, string imagePath);
+        void CreatePrecisionRecallCurve(string modelId, string imagePath);
+        void CreateFeatureImportance(string modelId, string imagePath);
+        void CreateConfusionMatrix(string modelId, string imagePath);
+        void CreateROC(string modelId, string imagePath);
+        void GenerateEvaluationReport(string modelId, string outputHtmlPath);
     }
 };

@@ -3,8 +3,10 @@ using Beep.Python.RuntimeEngine.ViewModels;
 using Python.Runtime;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection.Emit;
 using TheTechIdea.Beep.Container.Services;
 
 
@@ -543,6 +545,11 @@ predictions = model.predict(test_encoded)
 mse = mean_squared_error(y_test, predictions)
 rmse = np.sqrt(mse)
 mae = mean_absolute_error(y_test, predictions)
+# Store the scores in the Python persistent scope
+globals()['mse'] = mse
+globals()['rmse'] = rmse
+globals()['mae'] = mae
+
 ";
 
             RunPythonScript(script, null);
@@ -580,6 +587,9 @@ model = models['{modelId}']
 predictions = model.predict(test_encoded)
 accuracy = accuracy_score(y_test, predictions)
 score = f1_score(y_test, predictions)
+# Store the score and accuracy in the Python persistent scope
+globals()['score'] = score
+globals()['accuracy'] = accuracy
 ";
 
             RunPythonScript(script, null);
@@ -630,6 +640,8 @@ predictions = model.predict(X_predict)
 # Round predictions to the nearest integer
 rounded_predictions = np.rint(predictions)
 predictions=rounded_predictions
+
+
 ";
 
             // Execute the Python script
@@ -651,6 +663,7 @@ predictions=rounded_predictions
             string features = string.Join(", ", featureColumns.Select(fc => @$"'{fc}'"));
             string paramsDict = String.Join(", ", parameters.Select(kv => $"{kv.Key}={kv.Value.ToString()}"));
             bool isSupervised = algorithmSupervision[algorithmName];
+            string isSupervisedPythonLiteral = isSupervised ? "True" : "False";
             string importStatement;
             switch (algorithmName)
             {
@@ -734,38 +747,33 @@ predictions=rounded_predictions
                 default:
                     throw new ArgumentException($"Unsupported algorithm: {algorithmName}");
             }
-
             string script = $@"
 {importStatement}
 features = [{features}]
 label_column ='{labelColumn}'
-# Check if the model already exists
+
+# If the model exists, retrieve it; otherwise, create it
 if '{modelId}' in models:
+    # Retrieve the existing model from the dictionary
     model = models['{modelId}']
 else:
+    # Create a new model instance using the specified algorithm
     model = {algorithmName}({paramsDict})
 
 # Train or re-train the model
-X= pd.get_dummies(train_data[features])
+X = pd.get_dummies(train_data[features])
 X.fillna(X.mean(), inplace=True)  # Simple mean imputation for missing values
 
-if {isSupervised.ToString().ToLower()}:
+if {isSupervisedPythonLiteral}:
     Y = train_data[label_column].fillna(train_data[label_column].mean())  # Impute missing labels
-    if '{modelId}' in models:
-        model = models['{modelId}']
-    else:
-        model = {algorithmName}({paramsDict})
     model.fit(X, Y)
 else:
-    if '{modelId}' in models:
-        model = models['{modelId}']
-    else:
-        model = {algorithmName}({paramsDict})
     model.fit(X)
 
-# Store or update the model
+# Store or update the model in the dictionary under the same modelId
 models['{modelId}'] = model
 ";
+
 
             RunPythonScript(script, null);
         }
@@ -1145,7 +1153,7 @@ plt.ylim([0.0, 1.05])
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
 plt.title('Receiver operating characteristic')
-plt.legend(loc=""lower right"")
+plt.legend(loc='lower right')
 plt.show()";
             RunPythonScript(script, null);
         }
@@ -1168,6 +1176,205 @@ plt.xlabel('Predicted')
 plt.ylabel('True')
 plt.show()";
             RunPythonScript(script, null);
+        }
+        public void CreateLearningCurve(string modelId, string imagePath)
+        {
+            if (!IsInitialized)
+            {
+                return;
+            }
+
+            string script = $@"
+from sklearn.model_selection import learning_curve
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Assuming model is a scikit-learn estimator
+model = models['{modelId}']
+train_sizes, train_scores, test_scores = learning_curve(model, X, y, cv=5, n_jobs=-1, train_sizes=np.linspace(0.1, 1.0, 10))
+
+# Calculate mean and std for train and test scores
+train_scores_mean = np.mean(train_scores, axis=1)
+train_scores_std = np.std(train_scores, axis=1)
+test_scores_mean = np.mean(test_scores, axis=1)
+test_scores_std = np.std(test_scores, axis=1)
+
+plt.figure()
+plt.fill_between(train_sizes, train_scores_mean - train_scores_std, train_scores_mean + train_scores_std, alpha=0.1, color='r')
+plt.fill_between(train_sizes, test_scores_mean - test_scores_std, test_scores_mean + test_scores_std, alpha = 0.1, color = 'g')
+plt.plot(train_sizes, train_scores_mean, 'o-', color = 'r', label = 'Training score')
+plt.plot(train_sizes, test_scores_mean, 'o-', color = 'g', label = 'Cross-validation score')
+
+plt.title('Learning Curve')
+plt.xlabel('Training Examples')
+plt.ylabel('Score')
+plt.legend(loc = 'best')
+plt.grid()
+plt.savefig('{imagePath}')
+plt.show()
+";
+            RunPythonScript(script, null);
+        }
+        public void CreateFeatureImportance(string modelId, string imagePath)
+        {
+            if (!IsInitialized)
+            {
+                return;
+            }
+
+            string script = $@"
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Assuming model is a tree-based model like RandomForest or GradientBoosting
+model = models['{modelId}']
+importances = model.feature_importances_
+indices = np.argsort(importances)[::-1]
+
+plt.figure()
+plt.title('Feature Importance')
+plt.bar(range(X.shape[1]), importances[indices], align='center')
+plt.xticks(range(X.shape[1]), [features[i] for i in indices], rotation=90)
+plt.xlim([-1, X.shape[1]])
+plt.savefig('{imagePath}')
+plt.show()
+";
+            RunPythonScript(script, null);
+        }
+        public void CreatePrecisionRecallCurve(string modelId, string imagePath)
+        {
+            if (!IsInitialized)
+            {
+                return;
+            }
+
+            string script = $@"
+from sklearn.metrics import precision_recall_curve, average_precision_score
+import matplotlib.pyplot as plt
+
+# Assuming y_test and predictions are available
+model = models['{modelId}']
+y_score = model.predict_proba(X_test)[:, 1]  # Assuming binary classification
+precision, recall, _ = precision_recall_curve(y_test, y_score)
+average_precision = average_precision_score(y_test, y_score)
+
+plt.figure()
+plt.plot(recall, precision, color='b', lw=2, label='Precision-Recall curve')
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision-Recall Curve (AP={0:0.2f})'.format(average_precision))
+plt.legend(loc='lower left')
+plt.savefig('{imagePath}')
+plt.show()
+";
+            RunPythonScript(script, null);
+        }
+        public void CreateConfusionMatrix(string modelId, string imagePath)
+        {
+            if (!IsInitialized)
+            {
+                return;
+            }
+
+            string script = $@"
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
+
+# Assuming y_test and predictions are available
+model = models['{modelId}']
+predictions = model.predict(X_test)
+cm = confusion_matrix(y_test, predictions)
+
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.title('Confusion Matrix')
+plt.savefig('{imagePath}')
+plt.show()
+";
+            RunPythonScript(script, null);
+        }
+        public void CreateROC(string modelId, string imagePath)
+        {
+            if (!IsInitialized)
+            {
+                return;
+            }
+
+            string script = $@"
+from sklearn.metrics import roc_curve, auc
+import matplotlib.pyplot as plt
+
+# Assuming y_test and predictions are available
+model = models['{modelId}']
+y_score = model.predict_proba(X_test)[:, 1]  # Assuming binary classification
+fpr, tpr, _ = roc_curve(y_test, y_score)
+roc_auc = auc(fpr, tpr)
+
+plt.figure()
+plt.plot(fpr, tpr, color='darkorange', lw=2, label='ROC curve (area = %0.2f)' % roc_auc)
+plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic')
+plt.legend(loc='lower right')
+plt.savefig('{imagePath}')
+plt.show()
+";
+            RunPythonScript(script, null);
+        }
+        public void GenerateEvaluationReport(string modelId, string outputHtmlPath)
+        {
+            if (!IsInitialized)
+            {
+                return;
+            }
+
+            string rocImagePath = Path.Combine(Path.GetDirectoryName(outputHtmlPath), "roc_curve.png");
+            string confusionMatrixImagePath = Path.Combine(Path.GetDirectoryName(outputHtmlPath), "confusion_matrix.png");
+            string precisionRecallImagePath = Path.Combine(Path.GetDirectoryName(outputHtmlPath), "precision_recall_curve.png");
+            string learningCurveImagePath = Path.Combine(Path.GetDirectoryName(outputHtmlPath), "learning_curve.png");
+            string featureImportanceImagePath = Path.Combine(Path.GetDirectoryName(outputHtmlPath), "feature_importance.png");
+
+            // Generate and save the images
+            CreateROC(modelId, rocImagePath);
+            CreateConfusionMatrix(modelId, confusionMatrixImagePath);
+            CreatePrecisionRecallCurve(modelId, precisionRecallImagePath);
+            CreateLearningCurve(modelId, learningCurveImagePath);
+            CreateFeatureImportance(modelId, featureImportanceImagePath);
+
+            // Create the HTML content
+            string htmlContent = $@"
+<html>
+<head>
+    <title>Model Evaluation Report</title>
+</head>
+<body>
+    <h1>Model Evaluation Report</h1>
+    
+    <h2>ROC Curve</h2>
+    <img src='{Path.GetFileName(rocImagePath)}' alt='ROC Curve'>
+    
+    <h2>Confusion Matrix</h2>
+    <img src='{Path.GetFileName(confusionMatrixImagePath)}' alt='Confusion Matrix'>
+    
+    <h2>Precision-Recall Curve</h2>
+    <img src='{Path.GetFileName(precisionRecallImagePath)}' alt='Precision-Recall Curve'>
+    
+    <h2>Learning Curve</h2>
+    <img src='{Path.GetFileName(learningCurveImagePath)}' alt='Learning Curve'>
+    
+    <h2>Feature Importance</h2>
+    <img src='{Path.GetFileName(featureImportanceImagePath)}' alt='Feature Importance'>
+</body>
+</html>
+";
+
+            // Save the HTML content to the output file
+            File.WriteAllText(outputHtmlPath, htmlContent);
         }
 
         #endregion
