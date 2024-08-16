@@ -38,7 +38,8 @@ namespace Beep.Python.Model
         string[] SplitData(string dataFilePath, float testSize, float validationSize, string trainFilePath, string testFilePath, string validationFilePath);
         void TrainModel(string modelId, MachineLearningAlgorithm algorithm, Dictionary<string, object> parameters, string[] featureColumns, string labelColumn);
         void ExportTestResult(string filePath, string iDColumn, string labelColumn);
-        void HandleCategoricalData(string[] categoricalFeatures);
+        void HandleCategoricalDataEncoder(string[] categoricalFeatures);
+        void HandleMultiValueCategoricalFeatures(string[] multiValueFeatures);
         void HandleDateData(string[] dateFeatures);
         void ImputeMissingValues(string strategy = "mean");
         void ImputeMissingValuesWithFill(string method = "ffill");

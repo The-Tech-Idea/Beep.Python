@@ -140,6 +140,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             }
             catch (Exception ex)
             {
+                Editor.AddLogMessage("Beep", $"Error in running python : {ex.Message}", DateTime.Now, -1, null, TheTechIdea.Util.Errors.Failed);
                 Console.WriteLine($"Error executing Python script: {ex.Message}");
                 return false;
             }

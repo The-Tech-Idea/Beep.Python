@@ -1,5 +1,6 @@
 ﻿using Beep.Python.Model;
 using Beep.Python.RuntimeEngine.ViewModels;
+using Newtonsoft.Json.Linq;
 using Python.Runtime;
 using System;
 using System.Collections.Generic;
@@ -396,6 +397,9 @@ train_data, test_data = train_test_split(data, test_size={testSize})
 train_data.to_csv('{formattedtrainFilePath}', index = False)
 test_data.to_csv('{formattedtestFilePath}', index = False)
 test_features = test_data.columns.tolist()
+globals()['train_data'] = train_data
+globals()['test_data'] = test_data
+globals()['data'] = data
 ";
             //            train_data.to_csv('{trainFilePath}', index = False)
             //test_data.to_csv('{testFilePath}', index = False)
@@ -651,9 +655,9 @@ globals()['mae'] = mae
 X_test = pd.get_dummies(test_data[test_features])
 X_test.fillna(X_test.mean(), inplace=True)
 y_test = test_data[label_column]
-# Align the test set columns with the training set
-# This adds missing columns in the test set and sets them to zero
-test_encoded = X_test.reindex(columns = X.columns, fill_value=0)
+
+# Align the test set columns with the training set columns
+X_test = X_test.reindex(columns=X.columns, fill_value=0)
 ";
 
             RunPythonScript(prepareTestDataScript, null);
@@ -1069,7 +1073,61 @@ output.to_csv(r'{filePath}', index=False)
                 lines[i] = string.Join(",", columns);
             }
         }
-        public void HandleCategoricalData(string[] categoricalFeatures)
+        public void HandleMultiValueCategoricalFeatures(string[] multiValueFeatures)
+        {
+            if (!IsInitialized)
+            {
+                throw new InvalidOperationException("The Python environment is not initialized.");
+            }
+
+            string multiValueFeaturesList = string.Join(", ", multiValueFeatures.Select(f => $"'{f}'"));
+
+            string script = $@"
+import pandas as pd
+
+def handle_multi_value_categorical_features(data, feature_list):
+    for feature in feature_list:
+        # Split the multi-value feature into individual values
+        split_features = data[feature].str.split(',', expand=True)
+        
+        # Get unique values across the entire column to create dummy variables
+        unique_values = pd.unique(split_features.values.ravel('K'))
+        unique_values = [val for val in unique_values if val is not None]
+        
+        # For each unique value, create a binary column
+        for value in unique_values:
+            if value is not None and value != '':
+                data[f'{{feature}}_{{value}}'] = split_features.apply(lambda row: int(value in row.values), axis=1)
+        
+        # Drop the original multi-value feature column
+        data = data.drop(columns=[feature])
+    
+    return data
+
+# List of features with multiple values
+multi_value_features = [{multiValueFeaturesList}]
+
+# Process the multi-value features for train_data, test_data, and predict_data if they exist
+if 'train_data' in globals():
+    train_data = handle_multi_value_categorical_features(train_data, multi_value_features)
+    globals()['train_data'] = train_data
+
+if 'test_data' in globals():
+    test_data = handle_multi_value_categorical_features(test_data, multi_value_features)
+    globals()['test_data'] = test_data
+
+if 'predict_data' in globals():
+    predict_data = handle_multi_value_categorical_features(predict_data, multi_value_features)
+    globals()['predict_data'] = predict_data
+";
+
+            RunPythonScript(script, null);
+        }
+
+
+
+
+        public void HandleCategoricalDataEncoder(string[] categoricalFeatures)
         {
             if (!IsInitialized)
             {
@@ -1145,7 +1203,6 @@ data.drop(columns=date_features, inplace=True)
             // Execute the Python script
             RunPythonScript(script, null);
         }
-
         public string[] GetCategoricalFeatures(string[] selectedFeatures)
         {
             if (!IsInitialized)
@@ -1176,7 +1233,6 @@ categorical_features = dtypes[dtypes == 'object'].index.tolist()
             // Fetch and return the categorical features
             return FetchCategoricalFeaturesFromPython();
         }
-
         private string[] FetchCategoricalFeaturesFromPython()
         {
             using (Py.GIL()) // Acquire the Python Global Interpreter Lock
@@ -1218,6 +1274,15 @@ categorical_features = dtypes[dtypes == 'object'].index.tolist()
 
 # Filter and get the date features (datetime64 or object with date parsing required)
 date_features = dtypes[dtypes == 'datetime64[ns]'].index.tolist()
+
+
+# Ensure the lists are initialized even if empty
+if 'categorical_features' not in globals():
+    categorical_features = []
+
+if 'date_features' not in globals():
+    date_features = []
+
 # Optionally, you might want to include object types that could be dates:
 # for col in dtypes[dtypes == 'object'].index:
 #     if pd.to_datetime(data[col], errors='coerce').notnull().all():
@@ -1233,7 +1298,6 @@ date_features = dtypes[dtypes == 'datetime64[ns]'].index.tolist()
 
             return new Tuple<string[], string[]>(categoricalFeatures, dateFeatures);
         }
-
         private string[] FetchDateFeaturesFromPython()
         {
             using (Py.GIL()) // Acquire the Python Global Interpreter Lock
@@ -1274,7 +1338,6 @@ if 'data' in globals():
 
             RunPythonScript(script, null);
         }
-
         public void RobustScaleData()
         {
             if (!IsInitialized)
@@ -1299,7 +1362,6 @@ if 'data' in globals():
 
             RunPythonScript(script, null);
         }
-
         public void MinMaxScaleData(double featureRangeMin = 0.0, double featureRangeMax = 1.0)
         {
             if (!IsInitialized)
@@ -1324,7 +1386,6 @@ if 'data' in globals():
 
             RunPythonScript(script, null);
         }
-
         public void StandardizeData()
         {
             if (!IsInitialized)
@@ -1349,7 +1410,6 @@ if 'data' in globals():
 
             RunPythonScript(script, null);
         }
-
         public void DropMissingValues(string axis = "rows")
         {
             if (!IsInitialized)
@@ -1378,7 +1438,6 @@ if 'data' in globals():
 
             RunPythonScript(script, null);
         }
-
         public void ImputeMissingValuesWithCustomValue(object customValue)
         {
             if (!IsInitialized)
@@ -1459,8 +1518,6 @@ if 'data' in globals():
 
             RunPythonScript(script, null);
         }
-
-
         public void StandardizeData(string[] selectedFeatures = null)
         {
             if (!IsInitialized)
@@ -1498,7 +1555,6 @@ if 'data' in globals():
 
             RunPythonScript(script, null);
         }
-
         public void MinMaxScaleData(double featureRangeMin = 0.0, double featureRangeMax = 1.0, string[] selectedFeatures = null)
         {
             if (!IsInitialized)
