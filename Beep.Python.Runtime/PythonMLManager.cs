@@ -665,7 +665,7 @@ X_test = X_test.reindex(columns=X.columns, fill_value=0)
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 model = models['{modelId}']
-predictions = model.predict(test_encoded)
+predictions = model.predict(X_test)
 accuracy = accuracy_score(y_test, predictions)
 score = f1_score(y_test, predictions)
 # Store the score and accuracy in the Python persistent scope
