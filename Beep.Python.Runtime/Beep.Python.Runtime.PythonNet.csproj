@@ -25,11 +25,11 @@
 		</None>
 	</ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.0" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="pythonnet" Version="3.0.3" />
+    <PackageReference Include="pythonnet" Version="3.0.4" />
     <PackageReference Include="System.Linq.Expressions" Version="4.3.0" />
     <PackageReference Include="System.Threading.Channels" Version="8.0.0" />
     <PackageReference Include="TheTechIdea.Beep.Container" Version="1.0.0.69" />

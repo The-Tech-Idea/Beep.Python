@@ -21,7 +21,7 @@
 		<Copy SourceFiles="$(OutputPath)$(PackageId).$(PackageVersion).nupkg" DestinationFolder="..\..\..\LocalNugetFiles" />
 	</Target>
 	<ItemGroup>
-	  <PackageReference Include="pythonnet" Version="3.0.3" />
+	  <PackageReference Include="pythonnet" Version="3.0.4" />
 	  <PackageReference Include="TheTechIdea.Beep.DataManagementEngine" Version="1.0.571" />
 	  <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="1.0.253" />
 	</ItemGroup>
