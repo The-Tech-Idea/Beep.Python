@@ -6,15 +6,23 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using TheTechIdea.Beep.Addin;
+using TheTechIdea.Beep.Vis;
+using TheTechIdea.Beep.Logger;
+using TheTechIdea.Beep.Utilities;
+using TheTechIdea.Beep.ConfigUtil;
 
+using TheTechIdea.Beep.DriversConfigurations;
+using TheTechIdea.Beep.Editor;
+using TheTechIdea.Beep.Vis.Modules;
 
 using AI;
 using Beep.Python.Model;
-using DataManagementModels.DriversConfigurations;
+
 using ScintillaNET;
-using TheTechIdea.Beep;
 using TheTechIdea.Beep.AIBuilder;
-using TheTechIdea.Util;
+using DialogResult = System.Windows.Forms.DialogResult;
+
 
 namespace AIBuilder.Cpython
 {

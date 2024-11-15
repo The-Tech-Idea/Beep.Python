@@ -1,15 +1,16 @@
 ﻿using AIBuilder;
 
 using Beep.Python.Model;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Resources;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using TheTechIdea.Util;
+using TheTechIdea.Beep.Addin;
+using TheTechIdea.Beep.Vis;
+using TheTechIdea.Beep.Logger;
+using TheTechIdea.Beep.Utilities;
+using TheTechIdea.Beep.ConfigUtil;
+
+using TheTechIdea.Beep.DriversConfigurations;
+using TheTechIdea.Beep.Editor;
+using TheTechIdea.Beep.Vis.Modules;
+using DialogResult = System.Windows.Forms.DialogResult;
 
 namespace TheTechIdea.Beep.AIBuilder.Cpython
 {

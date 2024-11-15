@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using TheTechIdea.Beep;
 using TheTechIdea.Beep.Editor;
-using DataManagementModels.Editor;
+
 using Beep.Python.Model;
 using Beep.Python.RuntimeEngine;
 using System.Collections.Generic;
@@ -10,6 +10,13 @@ using TheTechIdea.Beep.Container.Services;
 using System;
 using System.IO;
 using System.Linq;
+using TheTechIdea.Beep.Logger;
+using TheTechIdea.Beep.Utilities;
+using TheTechIdea.Beep.ConfigUtil;
+using TheTechIdea.Beep.Addin;
+using TheTechIdea.Beep.DriversConfigurations;
+using TheTechIdea.Beep.Editor;
+
 
 namespace Beep.Python.RuntimeEngine.ViewModels
 {

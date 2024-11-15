@@ -1,9 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-using TheTechIdea.Beep;
-using TheTechIdea.Util;
+
 using TheTechIdea.Beep.Editor;
-using DataManagementModels.Editor;
+using TheTechIdea.Beep.Logger;
+using TheTechIdea.Beep.Utilities;
+using TheTechIdea.Beep.ConfigUtil;
+using TheTechIdea.Beep.Addin;
+using TheTechIdea.Beep.DriversConfigurations;
+
+
 using Beep.Python.RuntimeEngine;
 using Beep.Python.Model;
 using Python.Runtime;
@@ -68,7 +73,7 @@ namespace Beep.Python.Logic.ViewModels
 
             }
             doc.ROW_CREATE_DATE = DateTime.Now;
-            doc.ROW_CREATE_BY = DhubConfig.userManager.User.KOCNO;
+           // doc.ROW_CREATE_BY = DhubConfig.userManager.User.KOCNO;
             doc.ALGORITHIM_ID = CurrentAlgorithim.ID;
 
         }
@@ -112,7 +117,7 @@ namespace Beep.Python.Logic.ViewModels
 
                     doc.PARAMETERDESCRIPTION = item.Description + $" - example : ({item.Example})";
                     doc.ROW_CREATE_DATE = DateTime.Now;
-                    doc.ROW_CREATE_BY = DhubConfig.userManager.User.KOCNO;
+                   // doc.ROW_CREATE_BY = DhubConfig.userManager.User.KOCNO;
                     Unitofwork.Create(doc);
                 }
               

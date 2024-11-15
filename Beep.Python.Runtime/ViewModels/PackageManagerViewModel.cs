@@ -1,5 +1,5 @@
 ﻿using Beep.Python.Model;
-using DataManagementModels.Editor;
+
 using Python.Runtime;
 using System;
 using System.Collections.Generic;
@@ -8,10 +8,15 @@ using System.Net;
 using System.Threading.Channels;
 using System.Threading;
 using System.Threading.Tasks;
-using TheTechIdea;
-using TheTechIdea.Beep;
+using TheTechIdea.Beep.Logger;
+using TheTechIdea.Beep.Utilities;
+using TheTechIdea.Beep.ConfigUtil;
+using TheTechIdea.Beep.Addin;
+using TheTechIdea.Beep.DriversConfigurations;
 using TheTechIdea.Beep.Editor;
-using TheTechIdea.Util;
+
+using TheTechIdea.Beep.Editor;
+
 using System.Linq;
 using System.Net.Http;
 using CommunityToolkit.Mvvm.ComponentModel;

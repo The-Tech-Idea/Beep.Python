@@ -9,10 +9,15 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using TheTechIdea.Beep.Winform.Controls.Basic;
 using TheTechIdea.Beep.Vis;
-using TheTechIdea.Beep;
-using TheTechIdea.Logger;
-using TheTechIdea;
-using TheTechIdea.Util;
+using TheTechIdea.Beep.Addin;
+
+using TheTechIdea.Beep.Logger;
+using TheTechIdea.Beep.Utilities;
+using TheTechIdea.Beep.ConfigUtil;
+
+using TheTechIdea.Beep.DriversConfigurations;
+using TheTechIdea.Beep.Editor;
+using TheTechIdea.Beep.Vis.Modules;
 using TheTechIdea.Beep.Container;
 using TheTechIdea.Beep.Container.Services;
 using Beep.Python.RuntimeEngine;

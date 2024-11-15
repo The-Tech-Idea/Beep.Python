@@ -1,14 +1,19 @@
 ﻿using Beep.Python.Model;
 using CommunityToolkit.Mvvm.ComponentModel;
-using DataManagementModels.Editor;
-using Python.Runtime;
+using TheTechIdea.Beep.Logger;
+using TheTechIdea.Beep.Utilities;
+using TheTechIdea.Beep.ConfigUtil;
+using TheTechIdea.Beep.Addin;
+using TheTechIdea.Beep.DriversConfigurations;
+using TheTechIdea.Beep.Editor;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TheTechIdea.Beep.Editor;
+
 using TheTechIdea.Beep.Container.Services;
 
 namespace Beep.Python.RuntimeEngine.ViewModels
@@ -71,7 +76,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             }
             catch (Exception ex)
             {
-                Editor.AddLogMessage("Beep", $"Error in Python Init - {ex.Message}", DateTime.Now, -1, null, TheTechIdea.Util.Errors.Failed);
+                Editor.AddLogMessage("Beep", $"Error in Python Init - {ex.Message}", DateTime.Now, -1, null,    Errors.Failed);
                 IsInit = false;
                 return false;
             }
@@ -124,7 +129,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             }
             catch (Exception ex)
             {
-                Editor.AddLogMessage("Beep", $"Error in Create Project - {ex.Message}", DateTime.Now, -1, null, TheTechIdea.Util.Errors.Failed);
+                Editor.AddLogMessage("Beep", $"Error in Create Project - {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
                 return false;
             }
          return true;
@@ -154,7 +159,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
                 IsModelEvaluated = false;
                 IsModelPredicted = false;
              
-                Editor.AddLogMessage("Beep", $"Error in Setup Training  - {ex.Message}", DateTime.Now, -1, null, TheTechIdea.Util.Errors.Failed);
+                Editor.AddLogMessage("Beep", $"Error in Setup Training  - {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
                 return false;
             }
         }
@@ -178,7 +183,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
                 IsModelEvaluated = false;
                 IsModelPredicted = false;
                
-                Editor.AddLogMessage("Beep", $"Error in Python Train - {ex.Message}", DateTime.Now, -1, null, TheTechIdea.Util.Errors.Failed);
+                Editor.AddLogMessage("Beep", $"Error in Python Train - {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
                 return false;
             }
 
@@ -217,7 +222,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
                 IsModelEvaluated = false;
                 IsModelPredicted = false;
              
-                Editor.AddLogMessage("Beep", $"Error in Python Prediction - {ex.Message}", DateTime.Now, -1, null, TheTechIdea.Util.Errors.Failed);
+                Editor.AddLogMessage("Beep", $"Error in Python Prediction - {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
                 return false;
             }
 
@@ -247,7 +252,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             catch (Exception ex)
             {
                 IsModelPredicted = false;
-                Editor.AddLogMessage("Beep", $"Error in Python Submit Results - {ex.Message}", DateTime.Now, -1, null, TheTechIdea.Util.Errors.Failed);
+                Editor.AddLogMessage("Beep", $"Error in Python Submit Results - {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
                 return false;
             }
 
@@ -285,7 +290,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             }
             catch (Exception ex)
             {
-                Editor.AddLogMessage("Beep", $"Error in Clean up  - {ex.Message}", DateTime.Now, -1, null, TheTechIdea.Util.Errors.Failed);
+                Editor.AddLogMessage("Beep", $"Error in Clean up  - {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
                 return false;
             }
         }
@@ -302,7 +307,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             }
             catch (Exception ex)
             {
-                Editor.AddLogMessage("Beep", $"Error in Create Project - {ex.Message}", DateTime.Now, -1, null, TheTechIdea.Util.Errors.Failed);
+                Editor.AddLogMessage("Beep", $"Error in Create Project - {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
                 return false;
             }
             return true;

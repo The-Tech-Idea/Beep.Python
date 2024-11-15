@@ -32,9 +32,9 @@
     <PackageReference Include="pythonnet" Version="3.0.4" />
     <PackageReference Include="System.Linq.Expressions" Version="4.3.0" />
     <PackageReference Include="System.Threading.Channels" Version="8.0.0" />
-    <PackageReference Include="TheTechIdea.Beep.Container" Version="1.0.0.69" />
-    <PackageReference Include="TheTechIdea.Beep.Container.Model" Version="1.0.0.33" />
-    <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="1.0.254" />
+    <PackageReference Include="TheTechIdea.Beep.Container" Version="1.0.0.70" />
+    <PackageReference Include="TheTechIdea.Beep.Container.Model" Version="1.0.0.35" />
+    <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="2.0.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Beep.Python.Model\Beep.Python.Model.csproj" />

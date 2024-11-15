@@ -1,19 +1,18 @@
 ﻿using Beep.Python.Model;
-using Beep.Python.RuntimeEngine;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TheTechIdea;
-using TheTechIdea.Beep;
+using TheTechIdea.Beep.Logger;
+using TheTechIdea.Beep.Utilities;
+using TheTechIdea.Beep.ConfigUtil;
+using TheTechIdea.Beep.Addin;
+using TheTechIdea.Beep.DriversConfigurations;
+using TheTechIdea.Beep.Editor;
+
 using TheTechIdea.Beep.Vis;
+using TheTechIdea.Beep.Workflow.Interfaces;
 using TheTechIdea.Beep.Workflow;
 
 namespace Beep.Python.WorkFlows
 {
-    [AddinAttribute( Caption ="Python",Category = TheTechIdea.Util.DatasourceCategory.NONE, Description ="Run Python Code",ClassType ="Python",menu ="Script",Name ="Python")]
+    [AddinAttribute( Caption ="Python",Category = DatasourceCategory.NONE, Description ="Run Python Code",ClassType ="Python",menu ="Script",Name ="Python")]
     public class RunPython : IWorkFlowAction
     {
         public IDMEEditor DMEEditor { get ; set ; }
@@ -27,10 +26,13 @@ namespace Beep.Python.WorkFlows
         public string ClassName { get ; set ; }
         public string Name { get ; set ; }
         public ICPythonManager CPythonManager { get; private set; }
+        public string Id { get  ; set  ; }
+        public string ActionTypeName { get  ; set  ; }
+        public string Code { get  ; set  ; }
 
-        public event EventHandler<IWorkFlowEventArgs> WorkFlowActionStarted;
-        public event EventHandler<IWorkFlowEventArgs> WorkFlowActionEnded;
-        public event EventHandler<IWorkFlowEventArgs> WorkFlowActionRunning;
+        public event EventHandler<WorkFlowEventArgs> WorkFlowActionStarted;
+        public event EventHandler<WorkFlowEventArgs> WorkFlowActionEnded;
+        public event EventHandler<WorkFlowEventArgs> WorkFlowActionRunning;
 
         IProgress<PassedArgs> Progress;
         CancellationToken Token;
@@ -41,7 +43,7 @@ namespace Beep.Python.WorkFlows
             Token=token;
             IsFinish = false;
             PassedArgs args = new PassedArgs();
-            WorkFlowActionStarted.Invoke(this, new IWorkFlowEventArgs() { FlowAction = this });
+            WorkFlowActionStarted.Invoke(this, new WorkFlowEventArgs() { FlowAction = this });
             args.ParameterString1 = "Started Python Script";
             IsRunning = true;
             Progress.Report(args);
