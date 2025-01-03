@@ -106,7 +106,8 @@ namespace Beep.Python.Winform
      
         public PythonRunTime PythonRuntime { get; set; } = new PythonRunTime();
         public PythonConfiguration PythonConfig { get; set; } = new PythonConfiguration();
-       
+        public string GuidID { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
         private void init()
         {
             runtimesBindingSource = new BindingSource();
@@ -371,5 +372,9 @@ namespace Beep.Python.Winform
             dataGridView1.DataSource = runtimesBindingSource;
         }
 
+        public void Run(params object[] args)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

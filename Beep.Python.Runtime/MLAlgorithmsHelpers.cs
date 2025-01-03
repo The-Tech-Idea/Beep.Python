@@ -8,69 +8,149 @@ namespace Beep.Python.RuntimeEngine
 {
     public static class MLAlgorithmsHelpers
     {
-    
-            public static string GenerateAlgorithmDescription(MachineLearningAlgorithm algorithm)
+        private static readonly Dictionary<string, string> CustomAlgorithms = new();
+        private static readonly Dictionary<MachineLearningAlgorithm, AlgorithmCategory> AlgorithmCategories =
+               new()
+               {
+                { MachineLearningAlgorithm.RandomForestClassifier, AlgorithmCategory.Classification },
+                { MachineLearningAlgorithm.LogisticRegression, AlgorithmCategory.Classification },
+                { MachineLearningAlgorithm.SVM, AlgorithmCategory.Classification },
+                { MachineLearningAlgorithm.KNN, AlgorithmCategory.Classification },
+                { MachineLearningAlgorithm.DecisionTreeClassifier, AlgorithmCategory.Classification },
+                { MachineLearningAlgorithm.GradientBoostingClassifier, AlgorithmCategory.Classification },
+                { MachineLearningAlgorithm.AdaBoostClassifier, AlgorithmCategory.Classification },
+                { MachineLearningAlgorithm.GaussianNB, AlgorithmCategory.Classification },
+                { MachineLearningAlgorithm.MultinomialNB, AlgorithmCategory.Classification },
+                { MachineLearningAlgorithm.BernoulliNB, AlgorithmCategory.Classification },
+                { MachineLearningAlgorithm.LinearRegression, AlgorithmCategory.Regression },
+                { MachineLearningAlgorithm.LassoRegression, AlgorithmCategory.Regression },
+                { MachineLearningAlgorithm.RidgeRegression, AlgorithmCategory.Regression },
+                { MachineLearningAlgorithm.ElasticNet, AlgorithmCategory.Regression },
+                { MachineLearningAlgorithm.DecisionTreeRegressor, AlgorithmCategory.Regression },
+                { MachineLearningAlgorithm.RandomForestRegressor, AlgorithmCategory.Regression },
+                { MachineLearningAlgorithm.GradientBoostingRegressor, AlgorithmCategory.Regression },
+                { MachineLearningAlgorithm.HistGradientBoostingRegressor, AlgorithmCategory.Regression },
+                { MachineLearningAlgorithm.SVR, AlgorithmCategory.Regression },
+                { MachineLearningAlgorithm.KMeans, AlgorithmCategory.Clustering },
+                { MachineLearningAlgorithm.DBSCAN, AlgorithmCategory.Clustering },
+                { MachineLearningAlgorithm.AgglomerativeClustering, AlgorithmCategory.Clustering }
+               }; 
+        private static readonly Dictionary<MachineLearningAlgorithm, bool> AlgorithmSupervision = new();
+
+        /// <summary>
+        /// Initializes the supervision status of each algorithm.
+        /// </summary>
+        public static void InitializeAlgorithmSupervision()
+        {
+            AlgorithmSupervision[MachineLearningAlgorithm.HistGradientBoostingRegressor] = true;
+            AlgorithmSupervision[MachineLearningAlgorithm.RandomForestClassifier] = true;
+            AlgorithmSupervision[MachineLearningAlgorithm.LogisticRegression] = true;
+            AlgorithmSupervision[MachineLearningAlgorithm.SVM] = true;
+            AlgorithmSupervision[MachineLearningAlgorithm.KNN] = true;
+            AlgorithmSupervision[MachineLearningAlgorithm.DecisionTreeClassifier] = true;
+            AlgorithmSupervision[MachineLearningAlgorithm.GradientBoostingClassifier] = true;
+            AlgorithmSupervision[MachineLearningAlgorithm.AdaBoostClassifier] = true;
+            AlgorithmSupervision[MachineLearningAlgorithm.GaussianNB] = true;
+            AlgorithmSupervision[MachineLearningAlgorithm.MultinomialNB] = true;
+            AlgorithmSupervision[MachineLearningAlgorithm.BernoulliNB] = true;
+            AlgorithmSupervision[MachineLearningAlgorithm.LinearRegression] = true;
+            AlgorithmSupervision[MachineLearningAlgorithm.LassoRegression] = true;
+            AlgorithmSupervision[MachineLearningAlgorithm.RidgeRegression] = true;
+            AlgorithmSupervision[MachineLearningAlgorithm.ElasticNet] = true;
+            AlgorithmSupervision[MachineLearningAlgorithm.DecisionTreeRegressor] = true;
+            AlgorithmSupervision[MachineLearningAlgorithm.RandomForestRegressor] = true;
+            AlgorithmSupervision[MachineLearningAlgorithm.GradientBoostingRegressor] = true;
+            AlgorithmSupervision[MachineLearningAlgorithm.SVR] = true;
+            AlgorithmSupervision[MachineLearningAlgorithm.KMeans] = false;
+            AlgorithmSupervision[MachineLearningAlgorithm.DBSCAN] = false;
+            AlgorithmSupervision[MachineLearningAlgorithm.AgglomerativeClustering] = false;
+        }
+        public static void AddCustomAlgorithm(string algorithmName, string description, AlgorithmCategory category)
+        {
+            if (!CustomAlgorithms.ContainsKey(algorithmName))
             {
-                switch (algorithm)
-                {
-                    case MachineLearningAlgorithm.HistGradientBoostingRegressor:
+                CustomAlgorithms[algorithmName] = description;
+                AlgorithmCategories.Add(Enum.Parse<MachineLearningAlgorithm>(algorithmName), category);
+            }
+        }
+        public static List<string> GetAlgorithmsByCategory(AlgorithmCategory category)
+        {
+            return AlgorithmCategories
+                .Where(kvp => kvp.Value == category)
+                .Select(kvp => kvp.Key.ToString())
+                .ToList();
+        }
+
+        public static List<string> GetAllAlgorithms()
+        {
+            return Enum.GetNames(typeof(MachineLearningAlgorithm))
+                       .Concat(CustomAlgorithms.Keys)
+                       .ToList();
+        }
+        public static string GenerateAlgorithmDescription(MachineLearningAlgorithm algorithm)
+        {
+            switch (algorithm)
+            {
+                case MachineLearningAlgorithm.HistGradientBoostingRegressor:
                     return "Histogram-Based Gradient Boosting Regressor - A fast and efficient gradient boosting algorithm that uses histograms to speed up training and reduce memory usage.";
-                    case MachineLearningAlgorithm.RandomForestClassifier:
-                        return "Random Forest Classifier - An ensemble learning method for classification. It's like asking a group of friends to vote on whether a picture is of a cat or a dog.";
-                    case MachineLearningAlgorithm.LogisticRegression:
-                        return "Logistic Regression - A linear classification algorithm used for binary and multi-class classification. It's like predicting if it will rain based on past weather data.";
-                    case MachineLearningAlgorithm.SVM:
-                        return "Support Vector Machine (SVM) - A powerful classification algorithm that finds the best line to separate two groups, like drawing a line between red and blue dots.";
-                    case MachineLearningAlgorithm.KNN:
-                        return "K-Nearest Neighbors (KNN) - A simple classification algorithm that asks neighbors for advice, similar to asking neighbors if a movie is good or bad.";
-                    case MachineLearningAlgorithm.DecisionTreeClassifier:
-                        return "Decision Tree Classifier - A tree-based classification algorithm that makes choices like a flowchart, like deciding what to eat based on questions.";
-                    case MachineLearningAlgorithm.GradientBoostingClassifier:
-                        return "Gradient Boosting Classifier - An ensemble learning method that combines weak opinions for a strong decision, like choosing the best restaurant by asking multiple friends.";
-                    case MachineLearningAlgorithm.AdaBoostClassifier:
-                        return "AdaBoost Classifier - A boosting algorithm that focuses on what you got wrong last time, similar to studying more for topics you made mistakes in.";
-                    case MachineLearningAlgorithm.GaussianNB:
-                        return "Gaussian Naive Bayes - A probabilistic classification algorithm that guesses based on patterns you've seen before, like predicting rain based on clouds.";
-                    case MachineLearningAlgorithm.MultinomialNB:
-                        return "Multinomial Naive Bayes - A variant of Naive Bayes that counts how often things happen, like counting word occurrences in books to predict topics.";
-                    case MachineLearningAlgorithm.BernoulliNB:
-                        return "Bernoulli Naive Bayes - Another variant of Naive Bayes that checks if something is present or not, like checking if a friend is present at a party.";
-                    case MachineLearningAlgorithm.LinearRegression:
-                        return "Linear Regression - An algorithm that draws a straight line through data points, like drawing a line to predict a child's height based on their age.";
-                    case MachineLearningAlgorithm.LassoRegression:
-                        return "Lasso Regression - A linear regression with L1 regularization to simplify by removing less important things, similar to packing only essential items for a trip.";
-                    case MachineLearningAlgorithm.RidgeRegression:
-                        return "Ridge Regression - A linear regression with L2 regularization that balances between simplicity and accuracy, like adding just the right amount of spice for flavor.";
-                    case MachineLearningAlgorithm.ElasticNet:
-                        return "Elastic Net - A linear regression with a combination of L1 and L2 regularization, like choosing products that balance quality and price.";
-                    case MachineLearningAlgorithm.DecisionTreeRegressor:
-                        return "Decision Tree Regressor - A tree-based regression algorithm for making predictions, like estimating a car's price based on its characteristics.";
-                    case MachineLearningAlgorithm.RandomForestRegressor:
-                        return "Random Forest Regressor - An ensemble regression algorithm that combines friends' price estimates for better accuracy.";
-                    case MachineLearningAlgorithm.GradientBoostingRegressor:
-                        return "Gradient Boosting Regressor - An ensemble regression algorithm that combines friends' opinions to improve price estimation.";
-                    case MachineLearningAlgorithm.SVR:
-                        return "Support Vector Regression (SVR) - A regression algorithm that draws a line to predict numbers, similar to drawing a line through points on a graph.";
-                    case MachineLearningAlgorithm.KMeans:
-                        return "K-Means Clustering - A clustering algorithm that groups similar data points, like grouping similar flowers based on petal and sepal size.";
-                    case MachineLearningAlgorithm.DBSCAN:
-                        return "DBSCAN - A clustering algorithm that finds clusters of varying shapes and sizes in data, like identifying groups of stars in the night sky.";
-                    case MachineLearningAlgorithm.AgglomerativeClustering:
-                        return "Agglomerative Clustering - A hierarchical clustering algorithm that builds a cluster hierarchy, like organizing data into a family tree structure.";
-                    default:
-                        return "Unknown Algorithm";
-                }
+                case MachineLearningAlgorithm.RandomForestClassifier:
+                    return "Random Forest Classifier - An ensemble learning method for classification. It's like asking a group of friends to vote on whether a picture is of a cat or a dog.";
+                case MachineLearningAlgorithm.LogisticRegression:
+                    return "Logistic Regression - A linear classification algorithm used for binary and multi-class classification. It's like predicting if it will rain based on past weather data.";
+                case MachineLearningAlgorithm.SVM:
+                    return "Support Vector Machine (SVM) - A powerful classification algorithm that finds the best line to separate two groups, like drawing a line between red and blue dots.";
+                case MachineLearningAlgorithm.KNN:
+                    return "K-Nearest Neighbors (KNN) - A simple classification algorithm that asks neighbors for advice, similar to asking neighbors if a movie is good or bad.";
+                case MachineLearningAlgorithm.DecisionTreeClassifier:
+                    return "Decision Tree Classifier - A tree-based classification algorithm that makes choices like a flowchart, like deciding what to eat based on questions.";
+                case MachineLearningAlgorithm.GradientBoostingClassifier:
+                    return "Gradient Boosting Classifier - An ensemble learning method that combines weak opinions for a strong decision, like choosing the best restaurant by asking multiple friends.";
+                case MachineLearningAlgorithm.AdaBoostClassifier:
+                    return "AdaBoost Classifier - A boosting algorithm that focuses on what you got wrong last time, similar to studying more for topics you made mistakes in.";
+                case MachineLearningAlgorithm.GaussianNB:
+                    return "Gaussian Naive Bayes - A probabilistic classification algorithm that guesses based on patterns you've seen before, like predicting rain based on clouds.";
+                case MachineLearningAlgorithm.MultinomialNB:
+                    return "Multinomial Naive Bayes - A variant of Naive Bayes that counts how often things happen, like counting word occurrences in books to predict topics.";
+                case MachineLearningAlgorithm.BernoulliNB:
+                    return "Bernoulli Naive Bayes - Another variant of Naive Bayes that checks if something is present or not, like checking if a friend is present at a party.";
+                case MachineLearningAlgorithm.LinearRegression:
+                    return "Linear Regression - An algorithm that draws a straight line through data points, like drawing a line to predict a child's height based on their age.";
+                case MachineLearningAlgorithm.LassoRegression:
+                    return "Lasso Regression - A linear regression with L1 regularization to simplify by removing less important things, similar to packing only essential items for a trip.";
+                case MachineLearningAlgorithm.RidgeRegression:
+                    return "Ridge Regression - A linear regression with L2 regularization that balances between simplicity and accuracy, like adding just the right amount of spice for flavor.";
+                case MachineLearningAlgorithm.ElasticNet:
+                    return "Elastic Net - A linear regression with a combination of L1 and L2 regularization, like choosing products that balance quality and price.";
+                case MachineLearningAlgorithm.DecisionTreeRegressor:
+                    return "Decision Tree Regressor - A tree-based regression algorithm for making predictions, like estimating a car's price based on its characteristics.";
+                case MachineLearningAlgorithm.RandomForestRegressor:
+                    return "Random Forest Regressor - An ensemble regression algorithm that combines friends' price estimates for better accuracy.";
+                case MachineLearningAlgorithm.GradientBoostingRegressor:
+                    return "Gradient Boosting Regressor - An ensemble regression algorithm that combines friends' opinions to improve price estimation.";
+                case MachineLearningAlgorithm.SVR:
+                    return "Support Vector Regression (SVR) - A regression algorithm that draws a line to predict numbers, similar to drawing a line through points on a graph.";
+                case MachineLearningAlgorithm.KMeans:
+                    return "K-Means Clustering - A clustering algorithm that groups similar data points, like grouping similar flowers based on petal and sepal size.";
+                case MachineLearningAlgorithm.DBSCAN:
+                    return "DBSCAN - A clustering algorithm that finds clusters of varying shapes and sizes in data, like identifying groups of stars in the night sky.";
+                case MachineLearningAlgorithm.AgglomerativeClustering:
+                    return "Agglomerative Clustering - A hierarchical clustering algorithm that builds a cluster hierarchy, like organizing data into a family tree structure.";
+                default:
+                    return CustomAlgorithms.ContainsKey(algorithm.ToString())
+                        ? CustomAlgorithms[algorithm.ToString()]
+                        : "Unknown Algorithm";
             }
-            public static List<string> GetAlgorithms()
-            {
-                List<string> algorithmName = Enum.GetNames(typeof(MachineLearningAlgorithm)).ToList();
-                return algorithmName;
-            }
-            public static MachineLearningAlgorithm GetAlgorithm(string algorithm)
-            {
-                return Enum.Parse<MachineLearningAlgorithm>(algorithm);
-            }
-            public static List<ParameterDictionaryForAlgorithm> GenerateParametersForHistGradientBoostingRegressor()
+        }
+        public static List<string> GetAlgorithms()
+        {
+            List<string> algorithmName = Enum.GetNames(typeof(MachineLearningAlgorithm)).ToList();
+            return algorithmName;
+        }
+        public static MachineLearningAlgorithm GetAlgorithm(string algorithm)
+        {
+            return Enum.Parse<MachineLearningAlgorithm>(algorithm);
+        }
+        public static List<ParameterDictionaryForAlgorithm> GenerateParametersForHistGradientBoostingRegressor()
         {
             var parameters = new List<ParameterDictionaryForAlgorithm>
     {
@@ -142,35 +222,35 @@ namespace Beep.Python.RuntimeEngine
 
             return parameters;
         }
-            public static List<ParameterDictionaryForAlgorithm> GetParameterDictionaryForAlgorithms()
-            {
+        public static List<ParameterDictionaryForAlgorithm> GetParameterDictionaryForAlgorithms()
+        {
 
-                var parameters = new List<ParameterDictionaryForAlgorithm>();
-                parameters.AddRange(GenerateParametersForHistGradientBoostingRegressor());
-                parameters.AddRange(GenerateParametersForAdaBoostClassifier());
-                parameters.AddRange(GenerateParametersForDecisionTreeClassifier());
-                parameters.AddRange(GenerateParametersForGradientBoostingClassifier());
-                parameters.AddRange(GenerateParametersForKNN());
-                parameters.AddRange(GenerateParametersForLogisticRegression());
-                parameters.AddRange(GenerateParametersForRandomForestClassifier());
-                parameters.AddRange(GenerateParametersForSVM());
-                parameters.AddRange(GenerateParametersForNaiveBayes());
-                parameters.AddRange(GenerateParametersForLinearRegression());
-                parameters.AddRange(GenerateParametersForLassoRegression());
-                parameters.AddRange(GenerateParametersForRidgeRegression());
-                parameters.AddRange(GenerateParametersForElasticNet());
-                parameters.AddRange(GenerateParametersForDecisionTreeRegressor());
-                parameters.AddRange(GenerateParametersForRandomForestRegressor());
-                parameters.AddRange(GenerateParametersForGradientBoostingRegressor());
-                parameters.AddRange(GenerateParametersForSVR());
-                parameters.AddRange(GenerateParametersForKMeans());
-                parameters.AddRange(GenerateParametersForDBSCAN());
-                parameters.AddRange(GenerateParametersForAgglomerativeClustering());
-                return parameters;
-            }
-            public static List<ParameterDictionaryForAlgorithm> GenerateParametersForRandomForestClassifier()
-            {
-                var parameters = new List<ParameterDictionaryForAlgorithm>
+            var parameters = new List<ParameterDictionaryForAlgorithm>();
+            parameters.AddRange(GenerateParametersForHistGradientBoostingRegressor());
+            parameters.AddRange(GenerateParametersForAdaBoostClassifier());
+            parameters.AddRange(GenerateParametersForDecisionTreeClassifier());
+            parameters.AddRange(GenerateParametersForGradientBoostingClassifier());
+            parameters.AddRange(GenerateParametersForKNN());
+            parameters.AddRange(GenerateParametersForLogisticRegression());
+            parameters.AddRange(GenerateParametersForRandomForestClassifier());
+            parameters.AddRange(GenerateParametersForSVM());
+            parameters.AddRange(GenerateParametersForNaiveBayes());
+            parameters.AddRange(GenerateParametersForLinearRegression());
+            parameters.AddRange(GenerateParametersForLassoRegression());
+            parameters.AddRange(GenerateParametersForRidgeRegression());
+            parameters.AddRange(GenerateParametersForElasticNet());
+            parameters.AddRange(GenerateParametersForDecisionTreeRegressor());
+            parameters.AddRange(GenerateParametersForRandomForestRegressor());
+            parameters.AddRange(GenerateParametersForGradientBoostingRegressor());
+            parameters.AddRange(GenerateParametersForSVR());
+            parameters.AddRange(GenerateParametersForKMeans());
+            parameters.AddRange(GenerateParametersForDBSCAN());
+            parameters.AddRange(GenerateParametersForAgglomerativeClustering());
+            return parameters;
+        }
+        public static List<ParameterDictionaryForAlgorithm> GenerateParametersForRandomForestClassifier()
+        {
+            var parameters = new List<ParameterDictionaryForAlgorithm>
     {
         new ParameterDictionaryForAlgorithm
         {
@@ -273,12 +353,12 @@ namespace Beep.Python.RuntimeEngine
         // Add more parameters as needed
     };
 
-                return parameters;
+            return parameters;
 
-            }
-            public static List<ParameterDictionaryForAlgorithm> GenerateParametersForLogisticRegression()
-            {
-                var parameters = new List<ParameterDictionaryForAlgorithm>
+        }
+        public static List<ParameterDictionaryForAlgorithm> GenerateParametersForLogisticRegression()
+        {
+            var parameters = new List<ParameterDictionaryForAlgorithm>
     {
         new ParameterDictionaryForAlgorithm
         {
@@ -388,11 +468,11 @@ namespace Beep.Python.RuntimeEngine
         // Add more parameters as needed
     };
 
-                return parameters;
-            }
-            public static List<ParameterDictionaryForAlgorithm> GenerateParametersForSVM()
-            {
-                var parameters = new List<ParameterDictionaryForAlgorithm>
+            return parameters;
+        }
+        public static List<ParameterDictionaryForAlgorithm> GenerateParametersForSVM()
+        {
+            var parameters = new List<ParameterDictionaryForAlgorithm>
     {
         new ParameterDictionaryForAlgorithm
         {
@@ -502,11 +582,11 @@ namespace Beep.Python.RuntimeEngine
         // Add more parameters as needed
     };
 
-                return parameters;
-            }
-            public static List<ParameterDictionaryForAlgorithm> GenerateParametersForKNN()
-            {
-                var parameters = new List<ParameterDictionaryForAlgorithm>
+            return parameters;
+        }
+        public static List<ParameterDictionaryForAlgorithm> GenerateParametersForKNN()
+        {
+            var parameters = new List<ParameterDictionaryForAlgorithm>
     {
         new ParameterDictionaryForAlgorithm
         {
@@ -567,11 +647,11 @@ namespace Beep.Python.RuntimeEngine
         // Add more parameters as needed
     };
 
-                return parameters;
-            }
-            public static List<ParameterDictionaryForAlgorithm> GenerateParametersForDecisionTreeClassifier()
-            {
-                var parameters = new List<ParameterDictionaryForAlgorithm>
+            return parameters;
+        }
+        public static List<ParameterDictionaryForAlgorithm> GenerateParametersForDecisionTreeClassifier()
+        {
+            var parameters = new List<ParameterDictionaryForAlgorithm>
     {
         new ParameterDictionaryForAlgorithm
         {
@@ -660,11 +740,11 @@ namespace Beep.Python.RuntimeEngine
         // Add more parameters as needed
     };
 
-                return parameters;
-            }
-            public static List<ParameterDictionaryForAlgorithm> GenerateParametersForGradientBoostingClassifier()
-            {
-                var parameters = new List<ParameterDictionaryForAlgorithm>
+            return parameters;
+        }
+        public static List<ParameterDictionaryForAlgorithm> GenerateParametersForGradientBoostingClassifier()
+        {
+            var parameters = new List<ParameterDictionaryForAlgorithm>
     {
         new ParameterDictionaryForAlgorithm
         {
@@ -795,11 +875,11 @@ namespace Beep.Python.RuntimeEngine
         // Add more parameters as needed
     };
 
-                return parameters;
-            }
-            public static List<ParameterDictionaryForAlgorithm> GenerateParametersForAdaBoostClassifier()
-            {
-                var parameters = new List<ParameterDictionaryForAlgorithm>
+            return parameters;
+        }
+        public static List<ParameterDictionaryForAlgorithm> GenerateParametersForAdaBoostClassifier()
+        {
+            var parameters = new List<ParameterDictionaryForAlgorithm>
     {
         new ParameterDictionaryForAlgorithm
         {
@@ -839,11 +919,11 @@ namespace Beep.Python.RuntimeEngine
         // Add more parameters as needed
     };
 
-                return parameters;
-            }
-            public static List<ParameterDictionaryForAlgorithm> GenerateParametersForNaiveBayes()
-            {
-                var parameters = new List<ParameterDictionaryForAlgorithm>
+            return parameters;
+        }
+        public static List<ParameterDictionaryForAlgorithm> GenerateParametersForNaiveBayes()
+        {
+            var parameters = new List<ParameterDictionaryForAlgorithm>
             {
                 new ParameterDictionaryForAlgorithm
                 {
@@ -895,11 +975,11 @@ namespace Beep.Python.RuntimeEngine
                     Example = "class_prior=None"
                 }
             };
-                return parameters;
-            }
-            public static List<ParameterDictionaryForAlgorithm> GenerateParametersForLinearRegression()
-            {
-                var parameters = new List<ParameterDictionaryForAlgorithm>
+            return parameters;
+        }
+        public static List<ParameterDictionaryForAlgorithm> GenerateParametersForLinearRegression()
+        {
+            var parameters = new List<ParameterDictionaryForAlgorithm>
     {
         new ParameterDictionaryForAlgorithm
         {
@@ -939,11 +1019,11 @@ namespace Beep.Python.RuntimeEngine
         // Add more parameters as needed
     };
 
-                return parameters;
-            }
-            public static List<ParameterDictionaryForAlgorithm> GenerateParametersForLassoRegression()
-            {
-                var parameters = new List<ParameterDictionaryForAlgorithm>
+            return parameters;
+        }
+        public static List<ParameterDictionaryForAlgorithm> GenerateParametersForLassoRegression()
+        {
+            var parameters = new List<ParameterDictionaryForAlgorithm>
     {
         new ParameterDictionaryForAlgorithm
         {
@@ -1025,11 +1105,11 @@ namespace Beep.Python.RuntimeEngine
         // Add more parameters as needed
     };
 
-                return parameters;
-            }
-            public static List<ParameterDictionaryForAlgorithm> GenerateParametersForRidgeRegression()
-            {
-                var parameters = new List<ParameterDictionaryForAlgorithm>
+            return parameters;
+        }
+        public static List<ParameterDictionaryForAlgorithm> GenerateParametersForRidgeRegression()
+        {
+            var parameters = new List<ParameterDictionaryForAlgorithm>
     {
         new ParameterDictionaryForAlgorithm
         {
@@ -1090,11 +1170,11 @@ namespace Beep.Python.RuntimeEngine
         // Add more parameters as needed
     };
 
-                return parameters;
-            }
-            public static List<ParameterDictionaryForAlgorithm> GenerateParametersForElasticNet()
-            {
-                var parameters = new List<ParameterDictionaryForAlgorithm>
+            return parameters;
+        }
+        public static List<ParameterDictionaryForAlgorithm> GenerateParametersForElasticNet()
+        {
+            var parameters = new List<ParameterDictionaryForAlgorithm>
     {
         new ParameterDictionaryForAlgorithm
         {
@@ -1183,11 +1263,11 @@ namespace Beep.Python.RuntimeEngine
         // Add more parameters as needed
     };
 
-                return parameters;
-            }
-            public static List<ParameterDictionaryForAlgorithm> GenerateParametersForDecisionTreeRegressor()
-            {
-                var parameters = new List<ParameterDictionaryForAlgorithm>
+            return parameters;
+        }
+        public static List<ParameterDictionaryForAlgorithm> GenerateParametersForDecisionTreeRegressor()
+        {
+            var parameters = new List<ParameterDictionaryForAlgorithm>
     {
         new ParameterDictionaryForAlgorithm
         {
@@ -1269,11 +1349,11 @@ namespace Beep.Python.RuntimeEngine
         // Add more parameters as needed
     };
 
-                return parameters;
-            }
-            public static List<ParameterDictionaryForAlgorithm> GenerateParametersForRandomForestRegressor()
-            {
-                var parameters = new List<ParameterDictionaryForAlgorithm>
+            return parameters;
+        }
+        public static List<ParameterDictionaryForAlgorithm> GenerateParametersForRandomForestRegressor()
+        {
+            var parameters = new List<ParameterDictionaryForAlgorithm>
     {
         new ParameterDictionaryForAlgorithm
         {
@@ -1390,11 +1470,11 @@ namespace Beep.Python.RuntimeEngine
         // Add more parameters as needed
     };
 
-                return parameters;
-            }
-            public static List<ParameterDictionaryForAlgorithm> GenerateParametersForGradientBoostingRegressor()
-            {
-                var parameters = new List<ParameterDictionaryForAlgorithm>
+            return parameters;
+        }
+        public static List<ParameterDictionaryForAlgorithm> GenerateParametersForGradientBoostingRegressor()
+        {
+            var parameters = new List<ParameterDictionaryForAlgorithm>
     {
         new ParameterDictionaryForAlgorithm
         {
@@ -1532,11 +1612,11 @@ namespace Beep.Python.RuntimeEngine
         // Add more parameters as needed
     };
 
-                return parameters;
-            }
-            public static List<ParameterDictionaryForAlgorithm> GenerateParametersForSVR()
-            {
-                var parameters = new List<ParameterDictionaryForAlgorithm>
+            return parameters;
+        }
+        public static List<ParameterDictionaryForAlgorithm> GenerateParametersForSVR()
+        {
+            var parameters = new List<ParameterDictionaryForAlgorithm>
     {
         new ParameterDictionaryForAlgorithm
         {
@@ -1618,11 +1698,11 @@ namespace Beep.Python.RuntimeEngine
         // Add more parameters as needed
     };
 
-                return parameters;
-            }
-            public static List<ParameterDictionaryForAlgorithm> GenerateParametersForKMeans()
-            {
-                var parameters = new List<ParameterDictionaryForAlgorithm>
+            return parameters;
+        }
+        public static List<ParameterDictionaryForAlgorithm> GenerateParametersForKMeans()
+        {
+            var parameters = new List<ParameterDictionaryForAlgorithm>
     {
         new ParameterDictionaryForAlgorithm
         {
@@ -1704,11 +1784,11 @@ namespace Beep.Python.RuntimeEngine
         // Add more parameters as needed
     };
 
-                return parameters;
-            }
-            public static List<ParameterDictionaryForAlgorithm> GenerateParametersForDBSCAN()
-            {
-                var parameters = new List<ParameterDictionaryForAlgorithm>
+            return parameters;
+        }
+        public static List<ParameterDictionaryForAlgorithm> GenerateParametersForDBSCAN()
+        {
+            var parameters = new List<ParameterDictionaryForAlgorithm>
     {
         new ParameterDictionaryForAlgorithm
         {
@@ -1769,11 +1849,11 @@ namespace Beep.Python.RuntimeEngine
         // Add more parameters as needed
     };
 
-                return parameters;
-            }
-            public static List<ParameterDictionaryForAlgorithm> GenerateParametersForAgglomerativeClustering()
-            {
-                var parameters = new List<ParameterDictionaryForAlgorithm>
+            return parameters;
+        }
+        public static List<ParameterDictionaryForAlgorithm> GenerateParametersForAgglomerativeClustering()
+        {
+            var parameters = new List<ParameterDictionaryForAlgorithm>
     {
         new ParameterDictionaryForAlgorithm
         {
@@ -1827,10 +1907,10 @@ namespace Beep.Python.RuntimeEngine
         // Add more parameters as needed
     };
 
-                return parameters;
-            }
-
-
-
+            return parameters;
         }
+
+
+
     }
+}

@@ -1,13 +1,10 @@
 ﻿using Beep.Python.Model;
 using Beep.Python.RuntimeEngine.ViewModels;
-using Newtonsoft.Json.Linq;
 using Python.Runtime;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Reflection.Emit;
 using TheTechIdea.Beep.Container.Services;
 
 
@@ -2618,8 +2615,6 @@ test_data.to_csv('{testFilePath}', index=False)
 
             RunPythonScript(script, null);
         }
-
-
         #endregion "Cross-Validation and Stratified Sampling"
         #region "Data Cleaning"
         public void ImputeMissingValues(string[] featureList = null, string strategy = "mean")

@@ -42,6 +42,7 @@ namespace Beep.Python.Winform
         public EntityStructure EntityStructure { get  ; set  ; }
         public string EntityName { get  ; set  ; }
         public IPassedArgs Passedarg { get  ; set  ; }
+        public string GuidID { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         IPackageManagerViewModel  packageManager;
         IPythonRunTimeManager PythonRunTimeManager;
@@ -125,6 +126,11 @@ namespace Beep.Python.Winform
 
             }
 
+        }
+
+        public void Run(params object[] args)
+        {
+            throw new NotImplementedException();
         }
     }
 }

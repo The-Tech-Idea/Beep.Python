@@ -77,6 +77,16 @@ namespace Beep.Python.Model
             //LDA // Linear Discriminant Analysis
             //    // ... Add more as required
         }
+    /// <summary>
+    /// Enum representing categories of machine learning algorithms.
+    /// </summary>
+    public enum AlgorithmCategory
+    {
+        Classification,
+        Regression,
+        Clustering,
+        DimensionalityReduction,
+        Others
+    }
 
-    
 }

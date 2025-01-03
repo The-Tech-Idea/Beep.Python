@@ -12,11 +12,8 @@ using TheTechIdea.Beep.Logger;
 using TheTechIdea.Beep.Utilities;
 using TheTechIdea.Beep.ConfigUtil;
 using TheTechIdea.Beep.Addin;
-using TheTechIdea.Beep.DriversConfigurations;
-using TheTechIdea.Beep.Editor;
 
 using TheTechIdea.Beep.Editor;
-
 using System.Linq;
 using System.Net.Http;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -28,14 +25,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
     {
         [ObservableProperty]
         ObservableBindingList<PackageDefinition> packages;
-        public UnitofWork<PackageDefinition> unitofWork { get; set; }
-        //public PackageManagerViewModel() : base()
-        //{
-        //}
-        //public PackageManagerViewModel(IPythonRunTimeManager pythonRuntimeManager, PyModule persistentScope) : base(pythonRuntimeManager, persistentScope)
-        //{
-
-        //}
+        public UnitofWork<PackageDefinition> UnitofWork { get; set; }
         public PackageManagerViewModel(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager) : base(beepservice, pythonRuntimeManager)
         {
             //  pythonRuntimeManager = pythonRuntimeManager;
@@ -55,8 +45,8 @@ namespace Beep.Python.RuntimeEngine.ViewModels
                     }
                     Packages = new ObservableBindingList<PackageDefinition>(PythonRuntime.CurrentRuntimeConfig.Packagelist);
                     Editor = PythonRuntime.DMEditor;
-                    unitofWork = new UnitofWork<PackageDefinition>(Editor, true, new ObservableBindingList<PackageDefinition>(PythonRuntime.CurrentRuntimeConfig.Packagelist), "ID");
-                    unitofWork.PostCreate += UnitofWork_PostCreate;
+                    UnitofWork = new UnitofWork<PackageDefinition>(Editor, true, new ObservableBindingList<PackageDefinition>(PythonRuntime.CurrentRuntimeConfig.Packagelist), "ID");
+                    UnitofWork.PostCreate += UnitofWork_PostCreate;
                 }
             }
            
@@ -231,7 +221,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         public void Dispose()
         {
            
-            unitofWork = null;
+            UnitofWork = null;
            
         }
         #region "Package Manager"

@@ -53,6 +53,11 @@ namespace Beep.Python.RuntimeEngine.Workflows.Pandas
             return new PassedArgs();
         }
 
+        public PassedArgs PerformAction(IProgress<PassedArgs> progress, CancellationToken token, Func<PassedArgs, object> actionToExecute)
+        {
+            throw new NotImplementedException();
+        }
+
         public PassedArgs StopAction()
         {
             // Implement the stop logic if applicable...

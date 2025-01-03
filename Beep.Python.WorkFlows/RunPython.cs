@@ -84,5 +84,10 @@ namespace Beep.Python.WorkFlows
             IsFinish = true;
             return args;
         }
+
+        public PassedArgs PerformAction(IProgress<PassedArgs> progress, CancellationToken token, Func<PassedArgs, object> actionToExecute)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

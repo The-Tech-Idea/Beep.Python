@@ -41,46 +41,46 @@ namespace Beep.Python.RuntimeEngine
         //    InitializePythonEnvironment();
         //}
 
-        public async Task<bool> InstallPIP(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress, CancellationToken token)
-        {
+        //public async Task<bool> InstallPIP(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress, CancellationToken token)
+        //{
 
-            bool pipInstall = true;
-            if (runTimeManager.IsBusy) return false;
-            runTimeManager.IsBusy = true;
-            try
-            {// Execute Python code and capture its output
-             // Download the pip installer script
-                string url = "https://bootstrap.pypa.io/get-pip.py";
-                string scriptPath = Path.Combine(Path.GetTempPath(), "get-pip.py");
-                WebClient client = new WebClient();
-                client.DownloadFile(url, scriptPath);
+        //    bool pipInstall = true;
+        //    if (runTimeManager.IsBusy) return false;
+        //    runTimeManager.IsBusy = true;
+        //    try
+        //    {// Execute Python code and capture its output
+        //     // Download the pip installer script
+        //        string url = "https://bootstrap.pypa.io/get-pip.py";
+        //        string scriptPath = Path.Combine(Path.GetTempPath(), "get-pip.py");
+        //        WebClient client = new WebClient();
+        //        client.DownloadFile(url, scriptPath);
 
-                // Install pip
-                //using (Py.GIL())
-                //{
-                //    using (PyModule scope = Py.CreateScope())
-                //    {
-                //        string code = File.ReadAllText(scriptPath);
-                //       //unPythonCodeAndGetOutput(runTimeManager,progress,code);
-                //    }
+        //        // Install pip
+        //        //using (Py.GIL())
+        //        //{
+        //        //    using (PyModule scope = Py.CreateScope())
+        //        //    {
+        //        //        string code = File.ReadAllText(scriptPath);
+        //        //       //unPythonCodeAndGetOutput(runTimeManager,progress,code);
+        //        //    }
 
 
-                //}
-               await  RunPackageManagerAsync(runTimeManager, progress, scriptPath, PackageAction.InstallPackager,PythonRunTimeDiagnostics.GetPackageType(runTimeManager.CurrentRuntimeConfig.BinPath)== PackageType.conda);
-                runTimeManager.IsBusy = false;
-                // Delete the installer script
-                File.Delete(scriptPath);
+        //        //}
+        //       await  RunPackageManagerAsync(runTimeManager, progress, scriptPath, PackageAction.InstallPackager,PythonRunTimeDiagnostics.GetPackageType(runTimeManager.CurrentRuntimeConfig.BinPath)== PackageType.conda);
+        //        runTimeManager.IsBusy = false;
+        //        // Delete the installer script
+        //        File.Delete(scriptPath);
 
-            }
-            catch (Exception ex)
-            {
-                runTimeManager.IsBusy = false;
-                pipInstall = false;
-                runTimeManager.DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
-            }
-            runTimeManager.IsBusy = false;
-            return pipInstall;
-        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        runTimeManager.IsBusy = false;
+        //        pipInstall = false;
+        //        runTimeManager.DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
+        //    }
+        //    runTimeManager.IsBusy = false;
+        //    return pipInstall;
+        //}
         public  string RunPythonCodeAndGetOutput(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress, string code)
         {
             string wrappedPythonCode = $@"
@@ -695,166 +695,166 @@ def run_with_timeout(func, args, output_callback, timeout):
                 progress.Report(new PassedArgs() { Messege = $"Finished {command} eith error" });
             return output;
         }
-        public  async Task<bool> listpackagesAsync(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress,  CancellationToken token, bool useConda = false, string packagename = null)
-        {
-            if (runTimeManager.IsBusy) return false;
-            runTimeManager.IsBusy = true;
-            int i = 0;
-            try
-            {
-                bool checkall = true;
-                if (!string.IsNullOrEmpty(packagename))
-                {
-                    checkall = false;
-                }
-      //           runTimeManager.CurrentRuntimeConfig.Packagelist = new List<PackageDefinition>();
-                using (Py.GIL())
-                {
-                    dynamic pkgResources = Py.Import("importlib.metadata");
-                    dynamic workingSet = pkgResources.distributions();
+      //  public  async Task<bool> listpackagesAsync(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress,  CancellationToken token, bool useConda = false, string packagename = null)
+      //  {
+      //      if (runTimeManager.IsBusy) return false;
+      //      runTimeManager.IsBusy = true;
+      //      int i = 0;
+      //      try
+      //      {
+      //          bool checkall = true;
+      //          if (!string.IsNullOrEmpty(packagename))
+      //          {
+      //              checkall = false;
+      //          }
+      ////           runTimeManager.CurrentRuntimeConfig.Packagelist = new List<PackageDefinition>();
+      //          using (Py.GIL())
+      //          {
+      //              dynamic pkgResources = Py.Import("importlib.metadata");
+      //              dynamic workingSet = pkgResources.distributions();
                
-                    foreach (dynamic pkg in workingSet)
-                    {
-                        i++;
-                        string packageName = pkg.metadata["Name"];
-                        string packageVersion = pkg.version.ToString();
-                        string line = $"Checking Package {packageName}: {packageVersion}";
-                        Console.WriteLine(line);
-                       // runTimeManager.OutputLines.Add(line);
-                        progress.Report(new PassedArgs() { Messege = line });
-                        bool IsInternetAvailabe = PythonRunTimeDiagnostics.CheckNet();
-                        PackageDefinition onlinepk = new PackageDefinition();
-                        if (!string.IsNullOrEmpty(packageVersion))
-                        {
-                            if (checkall)
-                            {
-                                if (IsInternetAvailabe)
-                                {
-                                    onlinepk = PythonRunTimeDiagnostics.CheckIfPackageExistsAsync(packageName).Result;
-                                }
+      //              foreach (dynamic pkg in workingSet)
+      //              {
+      //                  i++;
+      //                  string packageName = pkg.metadata["Name"];
+      //                  string packageVersion = pkg.version.ToString();
+      //                  string line = $"Checking Package {packageName}: {packageVersion}";
+      //                  Console.WriteLine(line);
+      //                 // runTimeManager.OutputLines.Add(line);
+      //                  progress.Report(new PassedArgs() { Messege = line });
+      //                  bool IsInternetAvailabe = PythonRunTimeDiagnostics.CheckNet();
+      //                  PackageDefinition onlinepk = new PackageDefinition();
+      //                  if (!string.IsNullOrEmpty(packageVersion))
+      //                  {
+      //                      if (checkall)
+      //                      {
+      //                          if (IsInternetAvailabe)
+      //                          {
+      //                              onlinepk = PythonRunTimeDiagnostics.CheckIfPackageExistsAsync(packageName).Result;
+      //                          }
                                 
 
-                                PackageDefinition package = runTimeManager.CurrentRuntimeConfig.Packagelist.Where(p => p.packagename !=null && p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
-                                if (package != null)
-                                {
-                                    int idx = runTimeManager.CurrentRuntimeConfig.Packagelist.IndexOf(package);
-                                    package.version = packageVersion;
-                                    if (onlinepk != null)
-                                    {
-                                        package.updateversion = onlinepk.version;
-                                    }
-                                    else package.updateversion = packageVersion;
-                                    package.installed = true;
-                                    package.buttondisplay = "Installed";
+      //                          PackageDefinition package = runTimeManager.CurrentRuntimeConfig.Packagelist.Where(p => p.packagename !=null && p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+      //                          if (package != null)
+      //                          {
+      //                              int idx = runTimeManager.CurrentRuntimeConfig.Packagelist.IndexOf(package);
+      //                              package.version = packageVersion;
+      //                              if (onlinepk != null)
+      //                              {
+      //                                  package.updateversion = onlinepk.version;
+      //                              }
+      //                              else package.updateversion = packageVersion;
+      //                              package.installed = true;
+      //                              package.buttondisplay = "Installed";
 
-                                    if (onlinepk != null)
-                                    {
-                                        runTimeManager.CurrentRuntimeConfig.Packagelist[idx].updateversion = onlinepk.updateversion;
-                                        line = $"Package {packageName}: {packageVersion} found with version {onlinepk.updateversion}";
-                                    }
-                                    else
-                                    {
-                                        runTimeManager.CurrentRuntimeConfig.Packagelist[idx].updateversion = "Not Found";
-                                        line = $"Package {packageName}: {"Not Found"}";
-                                    }
+      //                              if (onlinepk != null)
+      //                              {
+      //                                  runTimeManager.CurrentRuntimeConfig.Packagelist[idx].updateversion = onlinepk.updateversion;
+      //                                  line = $"Package {packageName}: {packageVersion} found with version {onlinepk.updateversion}";
+      //                              }
+      //                              else
+      //                              {
+      //                                  runTimeManager.CurrentRuntimeConfig.Packagelist[idx].updateversion = "Not Found";
+      //                                  line = $"Package {packageName}: {"Not Found"}";
+      //                              }
 
-                                    Console.WriteLine(line);
-                                   // runTimeManager.OutputLines.Add(line);
-                                    progress.Report(new PassedArgs() { Messege = line });
-                                }
-                                else
-                                {
-                                    PackageDefinition packagelist = new PackageDefinition();
-                                    packagelist.packagename = packageName;
-                                    packagelist.version = packageVersion;
-                                    if (onlinepk != null)
-                                    {
-                                        packagelist.updateversion = onlinepk.version;
-                                    }
-                                    else packagelist.updateversion = packageVersion;
+      //                              Console.WriteLine(line);
+      //                             // runTimeManager.OutputLines.Add(line);
+      //                              progress.Report(new PassedArgs() { Messege = line });
+      //                          }
+      //                          else
+      //                          {
+      //                              PackageDefinition packagelist = new PackageDefinition();
+      //                              packagelist.packagename = packageName;
+      //                              packagelist.version = packageVersion;
+      //                              if (onlinepk != null)
+      //                              {
+      //                                  packagelist.updateversion = onlinepk.version;
+      //                              }
+      //                              else packagelist.updateversion = packageVersion;
 
-                                    packagelist.installed = true;
-                                    packagelist.buttondisplay = "Installed";
-                                    runTimeManager.CurrentRuntimeConfig.Packagelist.Add(packagelist);
-                                    line = $"Added new Package {packagelist}: {packagelist.version}";
-                                    Console.WriteLine(line);
-                                  //  runTimeManager.OutputLines.Add(line);
-                                    progress.Report(new PassedArgs() { Messege = line });
-                                }
+      //                              packagelist.installed = true;
+      //                              packagelist.buttondisplay = "Installed";
+      //                              runTimeManager.CurrentRuntimeConfig.Packagelist.Add(packagelist);
+      //                              line = $"Added new Package {packagelist}: {packagelist.version}";
+      //                              Console.WriteLine(line);
+      //                            //  runTimeManager.OutputLines.Add(line);
+      //                              progress.Report(new PassedArgs() { Messege = line });
+      //                          }
                                
-                            }
-                            else
-                            {
-                                if (runTimeManager.CurrentRuntimeConfig.Packagelist.Any(p => p.packagename != null && p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)))
-                                {
-                                    PackageDefinition package = runTimeManager.CurrentRuntimeConfig.Packagelist.Where(p => p.packagename != null && p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
-                                    int idx = runTimeManager.CurrentRuntimeConfig.Packagelist.IndexOf(package);
-                                    package.version = packageVersion;
-                                    package.updateversion = packageVersion;
-                                    package.installed = true;
-                                    package.buttondisplay = "Installed";
-                                    if (IsInternetAvailabe)
-                                    {
-                                        onlinepk = PythonRunTimeDiagnostics.CheckIfPackageExistsAsync(packageName).Result;
-                                    }
-                                    if (onlinepk != null)
-                                    {
-                                        runTimeManager.CurrentRuntimeConfig.Packagelist[idx].updateversion = onlinepk.updateversion;
-                                        package.updateversion = onlinepk.version;
-                                        line = $"Package {packageName}: {packageVersion} found with version {onlinepk.updateversion}";
-                                    }
-                                    else
-                                    {
-                                        runTimeManager.CurrentRuntimeConfig.Packagelist[idx].updateversion = "Not Found";
-                                        line = $"Package {packageName}: {"Not Found"}";
-                                    }
+      //                      }
+      //                      else
+      //                      {
+      //                          if (runTimeManager.CurrentRuntimeConfig.Packagelist.Any(p => p.packagename != null && p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)))
+      //                          {
+      //                              PackageDefinition package = runTimeManager.CurrentRuntimeConfig.Packagelist.Where(p => p.packagename != null && p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+      //                              int idx = runTimeManager.CurrentRuntimeConfig.Packagelist.IndexOf(package);
+      //                              package.version = packageVersion;
+      //                              package.updateversion = packageVersion;
+      //                              package.installed = true;
+      //                              package.buttondisplay = "Installed";
+      //                              if (IsInternetAvailabe)
+      //                              {
+      //                                  onlinepk = PythonRunTimeDiagnostics.CheckIfPackageExistsAsync(packageName).Result;
+      //                              }
+      //                              if (onlinepk != null)
+      //                              {
+      //                                  runTimeManager.CurrentRuntimeConfig.Packagelist[idx].updateversion = onlinepk.updateversion;
+      //                                  package.updateversion = onlinepk.version;
+      //                                  line = $"Package {packageName}: {packageVersion} found with version {onlinepk.updateversion}";
+      //                              }
+      //                              else
+      //                              {
+      //                                  runTimeManager.CurrentRuntimeConfig.Packagelist[idx].updateversion = "Not Found";
+      //                                  line = $"Package {packageName}: {"Not Found"}";
+      //                              }
 
-                                    Console.WriteLine(line);
-                                   // runTimeManager.OutputLines.Add(line);
-                                    progress.Report(new PassedArgs() { Messege = line });
-                                }
-                            }
-
-
-                        }
-                        else Console.WriteLine($" empty {packageName}: {packageVersion}");
+      //                              Console.WriteLine(line);
+      //                             // runTimeManager.OutputLines.Add(line);
+      //                              progress.Report(new PassedArgs() { Messege = line });
+      //                          }
+      //                      }
 
 
-                    }
-                }
-                if (i == 0)
-                {
-                    progress.Report(new PassedArgs() { Messege = "No Packages Found" });
-                    runTimeManager.CurrentRuntimeConfig.Packagelist = new List<PackageDefinition>();
-                }
-                runTimeManager.IsBusy = false;
-            }
-            catch (Exception ex)
-            {
-                runTimeManager.IsBusy = false;
-                Console.WriteLine("Error: in Listing Packages");
-            }
-            runTimeManager.IsBusy = false;
-            return await Task.FromResult<bool>(runTimeManager.IsBusy);
-        }
-        public  string Execute(string code)
-        {
-            StringBuilder output = new StringBuilder();
-            using (Py.GIL()) // Acquire Python GIL (Global Interpreter Lock)
-            {
-                dynamic sys = Py.Import("sys");
-                sys.stdout = new StringWriter(output);
+      //                  }
+      //                  else Console.WriteLine($" empty {packageName}: {packageVersion}");
 
-                try
-                {
-                    PythonEngine.Exec(code);
-                }
-                catch (PythonException ex)
-                {
-                    output.AppendLine("Error: " + ex.Message);
-                }
-            }
-            return output.ToString();
-        }
+
+      //              }
+      //          }
+      //          if (i == 0)
+      //          {
+      //              progress.Report(new PassedArgs() { Messege = "No Packages Found" });
+      //              runTimeManager.CurrentRuntimeConfig.Packagelist = new List<PackageDefinition>();
+      //          }
+      //          runTimeManager.IsBusy = false;
+      //      }
+      //      catch (Exception ex)
+      //      {
+      //          runTimeManager.IsBusy = false;
+      //          Console.WriteLine("Error: in Listing Packages");
+      //      }
+      //      runTimeManager.IsBusy = false;
+      //      return await Task.FromResult<bool>(runTimeManager.IsBusy);
+      //  }
+      //  public  string Execute(string code)
+      //  {
+      //      StringBuilder output = new StringBuilder();
+      //      using (Py.GIL()) // Acquire Python GIL (Global Interpreter Lock)
+      //      {
+      //          dynamic sys = Py.Import("sys");
+      //          sys.stdout = new StringWriter(output);
+
+      //          try
+      //          {
+      //              PythonEngine.Exec(code);
+      //          }
+      //          catch (PythonException ex)
+      //          {
+      //              output.AppendLine("Error: " + ex.Message);
+      //          }
+      //      }
+      //      return output.ToString();
+      //  }
     }
 }
