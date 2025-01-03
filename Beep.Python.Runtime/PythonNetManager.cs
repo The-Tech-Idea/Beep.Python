@@ -3,87 +3,53 @@ using Beep.Python.RuntimeEngine.ViewModels;
 using Python.Runtime;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using TheTechIdea.Beep.Logger;
-using TheTechIdea.Beep.Utilities;
-using TheTechIdea.Beep.ConfigUtil;
 using TheTechIdea.Beep.Addin;
-using TheTechIdea.Beep.DriversConfigurations;
-using TheTechIdea.Beep.Editor;
-
 using TheTechIdea.Beep.Container.Services;
 
 namespace Beep.Python.RuntimeEngine
 {
-    public class PythonNetManager :PythonBaseViewModel
+    /// <summary>
+    /// A Python .NET manager that provides methods for running Python code, scripts, and interactive sessions.
+    /// </summary>
+    public class PythonNetManager : PythonBaseViewModel
     {
-        public PythonNetManager(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager) : base(beepservice, pythonRuntimeManager)
+        // An event that consumers can subscribe to for error notifications
+        public event EventHandler<PythonErrorEventArgs> OnError;
+        private CancellationTokenSource _cts;
+        private volatile bool _shouldStop = false;
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="PythonNetManager"/>.
+        /// </summary>
+        /// <param name="beepservice">An <see cref="IBeepService"/> instance for service resolution and logging.</param>
+        /// <param name="pythonRuntimeManager">The <see cref="IPythonRunTimeManager"/> that manages the Python runtime environment.</param>
+        public PythonNetManager(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager)
+            : base(beepservice, pythonRuntimeManager)
         {
             //  pythonRuntimeManager = pythonRuntimeManager;
-            InitializePythonEnvironment();
+            InitializePythonEnvironment(); // Presumably from the base class
         }
-        //public PythonNetManager(IPythonRunTimeManager pythonRuntimeManager, PyModule persistentScope) : base(pythonRuntimeManager, persistentScope)
-        //{
-        //    pythonRuntimeManager = pythonRuntimeManager;
-        //    persistentScope = persistentScope;
 
-        //}
-
-        //public PythonNetManager(IPythonRunTimeManager pythonRuntimeManager) : base(pythonRuntimeManager)
-        //{
-        //    pythonRuntimeManager = pythonRuntimeManager;
-        //    InitializePythonEnvironment();
-        //}
-
-        //public async Task<bool> InstallPIP(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress, CancellationToken token)
-        //{
-
-        //    bool pipInstall = true;
-        //    if (runTimeManager.IsBusy) return false;
-        //    runTimeManager.IsBusy = true;
-        //    try
-        //    {// Execute Python code and capture its output
-        //     // Download the pip installer script
-        //        string url = "https://bootstrap.pypa.io/get-pip.py";
-        //        string scriptPath = Path.Combine(Path.GetTempPath(), "get-pip.py");
-        //        WebClient client = new WebClient();
-        //        client.DownloadFile(url, scriptPath);
-
-        //        // Install pip
-        //        //using (Py.GIL())
-        //        //{
-        //        //    using (PyModule scope = Py.CreateScope())
-        //        //    {
-        //        //        string code = File.ReadAllText(scriptPath);
-        //        //       //unPythonCodeAndGetOutput(runTimeManager,progress,code);
-        //        //    }
-
-
-        //        //}
-        //       await  RunPackageManagerAsync(runTimeManager, progress, scriptPath, PackageAction.InstallPackager,PythonRunTimeDiagnostics.GetPackageType(runTimeManager.CurrentRuntimeConfig.BinPath)== PackageType.conda);
-        //        runTimeManager.IsBusy = false;
-        //        // Delete the installer script
-        //        File.Delete(scriptPath);
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        runTimeManager.IsBusy = false;
-        //        pipInstall = false;
-        //        runTimeManager.DMEditor.AddLogMessage("Beep AI Python", ex.Message, DateTime.Now, 0, null, Errors.Failed);
-        //    }
-        //    runTimeManager.IsBusy = false;
-        //    return pipInstall;
-        //}
-        public  string RunPythonCodeAndGetOutput(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress, string code)
+        /// <summary>
+        /// Runs Python code (string) and captures both text output and a potential image object.
+        /// </summary>
+        /// <param name="runTimeManager">Reference to the active <see cref="IPythonRunTimeManager"/>.</param>
+        /// <param name="progress">A progress reporter for real-time messages.</param>
+        /// <param name="code">The Python code to execute.</param>
+        /// <returns>A string representing captured textual output.</returns>
+        public string RunPythonCodeAndGetOutput(
+        string code,
+        bool detectImages, // Required parameter must come before optional parameters
+        out bool isImage, // Out parameter
+        IProgress<PassedArgs> progress = null // Optional parameter
+                                              )
         {
-            string wrappedPythonCode = $@"
+            string wrappedPythonCode = @"
 import sys
 import io
 import clr
@@ -96,66 +62,6 @@ class CustomStringIO(io.StringIO):
             OutputHandler(output.strip())
             self.truncate(0)  # Clear the internal buffer
             self.seek(0)  # Reset the buffer pointer
-
-def capture_output(code, globals_dict):
-    original_stdout = sys.stdout
-    sys.stdout = CustomStringIO()
-
-    try:
-        exec(code, dict(globals_dict))
-    finally:
-        sys.stdout = original_stdout
-";
-            bool isImage = false;
-            string output = "";
-
-            using (Py.GIL())
-            {
-                using (PyModule scope = Py.CreateScope())
-                {
-                 
-
-                    Action<string> OutputHandler = line =>
-                    {
-                       // runTimeManager.OutputLines.Add(line);
-                        progress.Report(new PassedArgs() { Messege = line });
-                        Console.WriteLine(line);
-                    };
-                    scope.Set(nameof(OutputHandler), OutputHandler);
-
-                    scope.Exec(wrappedPythonCode);
-                    PyObject captureOutputFunc = scope.GetAttr("capture_output");
-                    Dictionary<string, object> globalsDict = new Dictionary<string, object>();
-
-                    PyObject pyCode = code.ToPython();
-                    PyObject pyGlobalsDict = globalsDict.ToPython();
-                    PyObject result = captureOutputFunc.Invoke(pyCode, pyGlobalsDict);
-                    if (result is PyObject pyObj)
-                    {
-                        var pyObjType = pyObj.GetPythonType();
-                        var pyObjTypeName = pyObjType.ToString();
-
-
-                    }
-                }
-            }
-
-            runTimeManager.IsBusy = false;
-            return output;
-        }
-        public  string RunPythonCodeAndGetOutput2(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress, string code)
-        {
-            string wrappedPythonCode = $@"
-import sys
-import io
-import clr
-
-class CustomStringIO(io.StringIO):
-    def write(self, s):
-        super().write(s)
-        output = self.getvalue()
-        if output.strip():
-            OutputHandler(output.strip())
 
 def is_image(obj):
     try:
@@ -172,25 +78,26 @@ def is_image(obj):
     except ImportError:
         pass
 
-    # Add checks for other image libraries here
-
     return False
 
-def capture_output(code, globals_dict):
+def capture_output(code, globals_dict, detect_images):
     original_stdout = sys.stdout
     sys.stdout = CustomStringIO()
 
     output = None
+    is_img = False
     try:
         output = exec(code, dict(globals_dict))
+        if detect_images:
+            is_img = is_image(output)
     finally:
         sys.stdout = original_stdout
 
-    return output, is_image(output)
+    return output, is_img
 ";
 
             string output = "";
-            bool isImage = false;
+            isImage = false;
 
             using (Py.GIL())
             {
@@ -198,50 +105,35 @@ def capture_output(code, globals_dict):
                 {
                     Action<string> OutputHandler = line =>
                     {
-                        //runTimeManager.OutputLines.Add(line);
-                        progress.Report(new PassedArgs() { Messege = line });
+                        progress?.Report(new PassedArgs() { Messege = line });
                         Console.WriteLine(line);
                     };
                     scope.Set(nameof(OutputHandler), OutputHandler);
 
                     scope.Exec(wrappedPythonCode);
                     PyObject captureOutputFunc = scope.GetAttr("capture_output");
-                    Dictionary<string, object> globalsDict = new Dictionary<string, object>();
 
+                    Dictionary<string, object> globalsDict = new Dictionary<string, object>();
                     PyObject pyCode = code.ToPython();
                     PyObject pyGlobalsDict = globalsDict.ToPython();
-                    PyTuple resultTuple = captureOutputFunc.Invoke(pyCode, pyGlobalsDict).As<PyTuple>();
+                    PyObject pyDetectImages = detectImages.ToPython();
 
-                    PyObject result = resultTuple[0];
-
-                    // Check if the returned object is an image
-                    using (Py.GIL())
-                    {
-                        if (result is PyObject pyObj)
-                        {
-                            isImage = resultTuple[1].As<bool>();
-
-                            if (!isImage)
-                            {
-                                var pyObjType = pyObj.GetPythonType();
-                                var pyObjTypeName = pyObjType.ToString();
-
-                                if (pyObjTypeName == "<class 'str'>")
-                                {
-                                    output = pyObj.As<string>();
-                                }
-                            }
-                        }
-                    }
+                    PyTuple resultTuple = captureOutputFunc.Invoke(pyCode, pyGlobalsDict, pyDetectImages).As<PyTuple>();
+                    output = resultTuple[0].As<string>();
+                    isImage = resultTuple[1].As<bool>();
                 }
             }
 
-            runTimeManager.IsBusy = false;
             return output;
         }
-        public  void RunInteractivePython(IPythonRunTimeManager runTimeManager)
-        {
 
+        #region "Interactive Python"
+        /// <summary>
+        /// Runs an interactive Python session in the console, line by line, until 'exit()' is typed. 
+        /// </summary>
+        /// <param name="runTimeManager">Reference to the active <see cref="IPythonRunTimeManager"/>.</param>
+        public void RunInteractivePython(IPythonRunTimeManager runTimeManager)
+        {
             string wrappedPythonCode = $@"
 from io import StringIO
 import sys
@@ -291,11 +183,21 @@ def capture_output_line(code, globals_dict):
                     }
                 }
             }
+
             runTimeManager.IsBusy = false;
         }
-        public  void RunInteractivePython(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress, string code)
-        {
 
+        /// <summary>
+        /// Runs an interactive Python session for a given block of code, line by line, reporting to <paramref name="progress"/> as needed.
+        /// </summary>
+        /// <param name="runTimeManager">Reference to the active <see cref="IPythonRunTimeManager"/>.</param>
+        /// <param name="progress">Progress reporter for output lines.</param>
+        /// <param name="code">A block of Python code, possibly multiline, to execute interactively.</param>
+        public void RunInteractivePython(
+            IPythonRunTimeManager runTimeManager,
+            IProgress<PassedArgs> progress,
+            string code)
+        {
             string wrappedPythonCode = $@"
 from io import StringIO
 import sys
@@ -326,11 +228,13 @@ def capture_output_line(code, globals_dict):
                     StringBuilder codeBlock = new StringBuilder();
                     int currentIndentLevel = 0;
                     bool inBlock = false;
+
+                    // Split code by lines
                     string[] lines = code.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
                     foreach (string inputLine in lines)
                     {
                         Console.Write(codeBlock.Length == 0 ? ">>> " : "... ");
-
 
                         if (inputLine.ToLower().Trim() == "exit()")
                         {
@@ -351,6 +255,7 @@ def capture_output_line(code, globals_dict):
                         if (inBlock && (isDedent || isEmptyLine))
                         {
                             inBlock = false;
+
                             PyObject pyCodeBlock = codeBlock.ToString().ToPython();
                             PyObject pyGlobalsDict = globalsDict.ToPython();
                             PyObject pyOutput = captureOutputFunc.Invoke(pyCodeBlock, pyGlobalsDict);
@@ -368,493 +273,381 @@ def capture_output_line(code, globals_dict):
                     }
                 }
             }
+
             runTimeManager.IsBusy = false;
         }
-        private  void UpgradePackage(string packageName)
-    {
-        using (Py.GIL()) // Ensure the Global Interpreter Lock is acquired
+
+        public void AdvancedMultilineInteractiveSession()
         {
-            dynamic sys = Py.Import("sys");
-            dynamic pip = Py.Import("pip");
+            using (Py.GIL())
+            {
+                using (PyModule scope = Py.CreateScope())
+                {
+                    Console.WriteLine("Advanced Python-like REPL. Type 'exit()' to quit.\n");
+
+                    var codeBlock = new List<string>();
+                    bool inBlock = false;
+
+                    while (true)
+                    {
+                        Console.Write(inBlock ? "... " : ">>> ");
+                        string line = Console.ReadLine();
+                        if (line == null) break;  // Ctrl+Z/Ctrl+D
+                        if (line.Trim().ToLower() == "exit()") break;
+
+                        // If we are not already in a block, check if we need to start one
+                        if (!inBlock && NeedsMoreInput(line))
+                        {
+                            inBlock = true;
+                            codeBlock.Clear();
+                        }
+
+                        codeBlock.Add(line);
+
+                        // If the block has ended, execute it
+                        if (inBlock && BlockEnded(line))
+                        {
+                            string fullCode = string.Join("\n", codeBlock);
+                            codeBlock.Clear();
+                            inBlock = false;
+
+                            try
+                            {
+                                scope.Exec(fullCode);
+                            }
+                            catch (PythonException pex)
+                            {
+                                Console.WriteLine($"Python error:\n{pex}");
+                            }
+                        }
+                        else if (!inBlock)
+                        {
+                            // Single-line command
+                            try
+                            {
+                                scope.Exec(line);
+                            }
+                            catch (PythonException pex)
+                            {
+                                Console.WriteLine($"Python error:\n{pex}");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private int _previousIndentLevel = 0;
+        private bool BlockEnded(string line)
+        {
+            // If the line is empty or whitespace, the block is assumed to end
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                return true;
+            }
+
+            // Check if the current line closes all open brackets/parentheses
+            int openParentheses = line.Count(c => c == '(') - line.Count(c => c == ')');
+            int openBrackets = line.Count(c => c == '[') - line.Count(c => c == ']');
+            int openBraces = line.Count(c => c == '{') - line.Count(c => c == '}');
+
+            if (openParentheses > 0 || openBrackets > 0 || openBraces > 0)
+            {
+                // Block is not complete if there are unmatched brackets
+                return false;
+            }
+
+            // Check for dedentation (assumes we are tracking indentation levels)
+            int currentIndentLevel = line.TakeWhile(char.IsWhiteSpace).Count();
+            if (currentIndentLevel < _previousIndentLevel)
+            {
+                // Dedentation typically indicates the end of a block
+                return true;
+            }
+
+            // Save current indentation level for the next call
+            _previousIndentLevel = currentIndentLevel;
+
+            // Block ends if none of the above indicate continuation
+            return false;
+        }
+        private bool NeedsMoreInput(string line)
+        {
+            // Check if the line ends with a colon (indicates a block starts)
+            if (line.TrimEnd().EndsWith(":"))
+            {
+                return true;
+            }
+
+            // Check for unmatched parentheses, brackets, or braces
+            int openParentheses = line.Count(c => c == '(') - line.Count(c => c == ')');
+            int openBrackets = line.Count(c => c == '[') - line.Count(c => c == ']');
+            int openBraces = line.Count(c => c == '{') - line.Count(c => c == '}');
+
+            if (openParentheses > 0 || openBrackets > 0 || openBraces > 0)
+            {
+                return true;
+            }
+
+            return false; // Otherwise, assume the input is complete
+        }
+
+        #endregion "Interactive Python"
+
+        /// <summary>
+        /// Runs a Python command line (pip or conda) asynchronously, capturing console output in real time.
+        /// </summary>
+        /// <param name="runTimeManager">Reference to the active <see cref="IPythonRunTimeManager"/>.</param>
+        /// <param name="progress">Progress reporter for output messages.</param>
+        /// <param name="commandstring">Command arguments (e.g., "install requests").</param>
+        /// <param name="useConda">If true, use conda; otherwise use pip/python.exe.</param>
+        /// <returns>A string containing the captured console output.</returns>
+        public async Task<string> RunPythonCommandLineAsync(
+     IPythonRunTimeManager runTimeManager,
+     string commandString,
+     IProgress<PassedArgs> progress = null,
+     bool useConda = false,
+     int timeoutInSeconds = 120)
+        {
+            string customPath = $"{runTimeManager.CurrentRuntimeConfig.BinPath.Trim()};{runTimeManager.CurrentRuntimeConfig.ScriptPath.Trim()}".Trim();
+            string modifiedFilePath = customPath.Replace("\\", "\\\\");
+            string output = "";
+
+            string wrappedPythonCode = @"
+import os
+import subprocess
+import queue
+import threading
+
+def set_custom_path(custom_path):
+    os.environ['PATH'] = custom_path + os.pathsep + os.environ['PATH']
+
+def run_command_with_output(args, output_callback, timeout):
+    def enqueue_output(stream, queue):
+        for line in iter(stream.readline, b''):
+            queue.put(line.decode('utf-8').strip())
+        stream.close()
+
+    process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout_queue = queue.Queue()
+    stderr_queue = queue.Queue()
+
+    stdout_thread = threading.Thread(target=enqueue_output, args=(process.stdout, stdout_queue))
+    stderr_thread = threading.Thread(target=enqueue_output, args=(process.stderr, stderr_queue))
+    stdout_thread.start()
+    stderr_thread.start()
+
+    try:
+        process.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        process.kill()
+        output_callback('Timeout expired. Process killed.')
+        return
+
+    while not stdout_queue.empty():
+        output_callback(stdout_queue.get_nowait())
+    while not stderr_queue.empty():
+        output_callback(stderr_queue.get_nowait())
+
+    stdout_thread.join()
+    stderr_thread.join()
+";
+
             try
             {
-                pip.main(new[] { "install", "--upgrade", packageName });
+                using (Py.GIL())
+                {
+                    using (PyModule scope = Py.CreateScope())
+                    {
+                        scope.Exec(wrappedPythonCode);
+                        PyObject setCustomPathFunc = scope.GetAttr("set_custom_path");
+                        setCustomPathFunc.Invoke(modifiedFilePath.ToPython());
+
+                        PyObject runCommandFunc = scope.GetAttr("run_command_with_output");
+
+                        string command = useConda
+                            ? $"conda {commandString}"
+                            : $"python.exe {commandString}";
+
+                        progress?.Report(new PassedArgs { Messege = $"Running {command}" });
+
+                        // Set up the Python function arguments
+                        PyObject pyArgs = new PyList(command.Split(' ').ToPython());
+                        Channel<string> outputChannel = Channel.CreateUnbounded<string>();
+                        PyObject outputCallback = PyObject.FromManagedObject((Action<string>)(line =>
+                        {
+                            outputChannel.Writer.TryWrite(line);
+                        }));
+
+                        Task pythonTask = Task.Run(() =>
+                            runCommandFunc.Invoke(pyArgs, outputCallback, timeoutInSeconds.ToPython()));
+
+                        // Collect output from the channel
+                        var outputList = new List<string>();
+                        async Task ReadFromChannelAsync()
+                        {
+                            while (await outputChannel.Reader.WaitToReadAsync())
+                            {
+                                if (outputChannel.Reader.TryRead(out var line))
+                                {
+                                    outputList.Add(line);
+                                    progress?.Report(new PassedArgs { Messege = line });
+                                    Console.WriteLine(line);
+                                }
+                            }
+                        }
+
+                        Task readOutputTask = ReadFromChannelAsync();
+                        await pythonTask;
+                        outputChannel.Writer.Complete();
+                        await readOutputTask;
+
+                        output = string.Join("\n", outputList);
+                    }
+                }
+
+                progress?.Report(new PassedArgs { Messege = $"Finished {commandString}" });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error upgrading package: {ex.Message}");
+                progress?.Report(new PassedArgs { Messege = $"Error: {ex.Message}" });
+                Console.WriteLine($"Error: {ex}");
+            }
+
+            return output;
+        }
+
+        #region "Error Handling"
+        /// <summary>
+        /// Invokes the OnError event with the given Python and .NET error information.
+        /// </summary>
+        private void RaiseOnError(string errorMessage, string pythonTraceback, Exception ex)
+        {
+            OnError?.Invoke(this, new PythonErrorEventArgs
+            {
+                ErrorMessage = errorMessage,
+                PythonTraceback = pythonTraceback,
+                DotNetException = ex
+            });
+        }
+        /// <summary>
+        /// Example method that shows how to capture a Python traceback in case of failure.
+        /// </summary>
+        public void RunWithDetailedErrorHandling(string code)
+        {
+            try
+            {
+                // Acquire the GIL
+                using (Py.GIL())
+                {
+                    // Attempt to execute code
+                    using (PyModule scope = Py.CreateScope())
+                    {
+                        scope.Exec(code);
+                    }
+                }
+            }
+            catch (PythonException pex)
+            {
+                // PythonException gives you .NET access to the Python traceback
+                string pythonTraceback = pex.StackTrace; // This typically includes the Python traceback
+
+                // Optionally, you can get more detail by:
+                // string fullDetails = pex.Format(); 
+                // or pex.ToString()
+
+                // Raise event or log
+                RaiseOnError(
+                    $"A PythonException occurred: {pex.Message}",
+                    pythonTraceback,
+                    pex
+                );
+            }
+            catch (Exception ex)
+            {
+                // Handle other .NET exceptions
+                RaiseOnError(
+                    $"A .NET exception occurred: {ex.Message}",
+                    null,
+                    ex
+                );
+            }
+        }
+        #endregion "Error Handling"
+        #region "Long Running Task"
+        /// <summary>
+        /// Example method showing how to pass a CancellationToken to a Python execution loop.
+        /// </summary>
+        /// <remarks>
+        /// The Python code itself should periodically check an external condition
+        /// or the `_shouldStop` flag. Alternatively, you can forcibly shut down
+        /// the Python engine if needed.
+        /// </remarks>
+        public async Task RunLongPythonScriptAsync(string script, IProgress<PassedArgs> progress, CancellationToken externalToken)
+        {
+            _cts = CancellationTokenSource.CreateLinkedTokenSource(externalToken);
+            _shouldStop = false;
+
+            try
+            {
+                // Example: We pass the token to a helper method
+                await Task.Run(() =>
+                {
+                    // Acquire GIL
+                    using (Py.GIL())
+                    {
+                        using (PyModule scope = Py.CreateScope())
+                        {
+                            // Insert your usual code capturing mechanism here
+                            // E.g., scope.Exec(...), but wrap it in a while loop or code chunk
+                            // that checks `_shouldStop` or `_cts.Token.IsCancellationRequested`.
+                            scope.Exec(script);
+                        }
+                    }
+                }, _cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // Execution was cancelled
+                progress?.Report(new PassedArgs() { Messege = "Python script cancelled." });
+            }
+            catch (PythonException pex)
+            {
+                // Handle Python exceptions, see "More Robust Error Handling"
+                progress?.Report(new PassedArgs() { Messege = $"Python error: {pex.Message}" });
+            }
+            catch (Exception ex)
+            {
+                // Handle .NET exceptions
+                progress?.Report(new PassedArgs() { Messege = $"C# error: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Signals that execution should stop gracefully.
+        /// </summary>
+        public void Stop()
+        {
+            _shouldStop = true;
+            _cts?.Cancel(); // Cancel any tasks
+        }
+
+        /// <summary>
+        /// Forces a Python shutdown if you need a more drastic kill.
+        /// (Use with caution: affects the entire Python runtime in your process.)
+        /// </summary>
+        public void ForceStopPython()
+        {
+            try
+            {
+                PythonEngine.Shutdown();
+            }
+            catch (Exception ex)
+            {
+                // Log or handle
             }
         }
     }
-        public async Task<string> RunPythonCommandLineAsync(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress, string commandstring, bool useConda = false)
-        {
-            string customPath = $"{runTimeManager.CurrentRuntimeConfig.BinPath.Trim()};{runTimeManager.CurrentRuntimeConfig.ScriptPath.Trim()}".Trim();
-            string modifiedFilePath = customPath.Replace("\\", "\\\\");
-            string output = "";
-            string command = "";
-            string wrappedPythonCode = $@"
-import os
-import subprocess
-import threading
-import queue
+    #endregion "Long Running Task"
 
-def set_custom_path(custom_path):
-    # Modify the PATH environment variable
-    os.environ[""PATH""] = '{modifiedFilePath}' + os.pathsep + os.environ[""PATH""]
-
-def run_pip_and_capture_output(args, output_callback):
-    def enqueue_output(stream, queue):
-        for line in iter(stream.readline, b''):
-            queue.put(line.decode('utf-8').strip())
-        stream.close()
-
-    process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-    stdout_queue = queue.Queue()
-    stderr_queue = queue.Queue()
-
-    stdout_thread = threading.Thread(target=enqueue_output, args=(process.stdout, stdout_queue))
-    stderr_thread = threading.Thread(target=enqueue_output, args=(process.stderr, stderr_queue))
-
-    stdout_thread.start()
-    stderr_thread.start()
-
-    while process.poll() is None or not stdout_queue.empty() or not stderr_queue.empty():
-        while not stdout_queue.empty():
-            line = stdout_queue.get_nowait()
-            output_callback(line)
-
-        while not stderr_queue.empty():
-            line = stderr_queue.get_nowait()
-            output_callback(line)
-
-    stdout_thread.join()
-    stderr_thread.join()
-    process.communicate()
-
-def run_with_timeout(func, args, output_callback, timeout):
-    try:
-        func(args, output_callback)
-    except Exception as e:
-        output_callback(str(e))
-";
-
-            using (Py.GIL())
-            {
-                using (PyModule scope = Py.CreateScope())
-                {
-                    PyObject globalsDict = scope.GetAttr("__dict__");
-
-
-                    scope.Exec(wrappedPythonCode);
-                    // Set the custom_path from C# and call set_custom_path function in Python
-
-                    PyObject setCustomPathFunc = scope.GetAttr("set_custom_path");
-                    setCustomPathFunc.Invoke(modifiedFilePath.ToPython());
-
-                    PyObject captureOutputFunc = scope.GetAttr("run_pip_and_capture_output");
-
-
-
-                    if (useConda)
-                    {
-                        command = $"conda {commandstring}";
-                      
-                    }
-                    else
-                    {
-                        command = $"python.exe {commandstring}";
-                    }
-                    progress.Report(new PassedArgs() { Messege = $"Running {command}" });
-                    //runTimeManager.OutputLines.Add($"Running {command}");
-                    PyObject pyArgs = new PyList();
-
-                    pyArgs.InvokeMethod("extend", command.Split(' ').ToPython());
-
-
-                    // Set the output_callback function in Python
-                    Channel<string> outputChannel = Channel.CreateUnbounded<string>();
-                    PyObject outputCallback = PyObject.FromManagedObject((Action<string>)(s => {
-                        outputChannel.Writer.TryWrite(s);
-                    }));
-                    globalsDict.SetItem("output_callback", outputCallback);
-
-                    // Run the Python code with a timeout
-                    int timeoutInSeconds = 120; // Adjust this value as needed
-                    PyObject runWithTimeoutFunc = scope.GetAttr("run_with_timeout");
-                    Task pythonTask = Task.Run(() => runWithTimeoutFunc.Invoke(captureOutputFunc, pyArgs, outputCallback, timeoutInSeconds.ToPython()));
-
-                    var outputList = new List<string>();
-                    // Create an async method to read from the channel
-                    async Task ReadFromChannelAsync()
-                    {
-                        while (await outputChannel.Reader.WaitToReadAsync())
-                        {
-                            if (outputChannel.Reader.TryRead(out var line))
-                            {
-                                outputList.Add(line);
-                                progress.Report(new PassedArgs() { Messege = line });
-                                Console.WriteLine(line);
-                            }
-                        }
-
-                    }
-
-                    // Process the output lines asynchronously
-                    Task readOutputTask = ReadFromChannelAsync();
-
-                    // Wait for the Python task to complete and close the channel writer
-                    await pythonTask;
-                    outputChannel.Writer.Complete();
-
-                    // Wait for the readOutputTask to complete
-                    await readOutputTask;
-
-
-                    output = string.Join("\n", outputList);
-                }
-            }
-            if (output.Length > 0)
-            {
-                progress.Report(new PassedArgs() { Messege = $"Finished {command}" });
-            }
-            else
-                progress.Report(new PassedArgs() { Messege = $"Finished {command} eith error" });
-            return output;
-        }
-        public  async Task<string> RunPackageManagerAsync(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress,string packageName, PackageAction packageAction, bool useConda = false)
-        {
-            string customPath = $"{runTimeManager.CurrentRuntimeConfig.BinPath.Trim()};{runTimeManager.CurrentRuntimeConfig.ScriptPath.Trim()}".Trim();
-            string modifiedFilePath = customPath.Replace("\\", "\\\\");
-            string output = "";
-            string command = "";
-            string wrappedPythonCode = $@"
-import os
-import subprocess
-import threading
-import queue
-
-def set_custom_path(custom_path):
-    # Modify the PATH environment variable
-    os.environ[""PATH""] = '{modifiedFilePath}' + os.pathsep + os.environ[""PATH""]
-
-def run_pip_and_capture_output(args, output_callback):
-    def enqueue_output(stream, queue):
-        for line in iter(stream.readline, b''):
-            queue.put(line.decode('utf-8').strip())
-        stream.close()
-
-    process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-    stdout_queue = queue.Queue()
-    stderr_queue = queue.Queue()
-
-    stdout_thread = threading.Thread(target=enqueue_output, args=(process.stdout, stdout_queue))
-    stderr_thread = threading.Thread(target=enqueue_output, args=(process.stderr, stderr_queue))
-
-    stdout_thread.start()
-    stderr_thread.start()
-
-    while process.poll() is None or not stdout_queue.empty() or not stderr_queue.empty():
-        while not stdout_queue.empty():
-            line = stdout_queue.get_nowait()
-            output_callback(line)
-
-        while not stderr_queue.empty():
-            line = stderr_queue.get_nowait()
-            output_callback(line)
-
-    stdout_thread.join()
-    stderr_thread.join()
-    process.communicate()
-
-def run_with_timeout(func, args, output_callback, timeout):
-    try:
-        func(args, output_callback)
-    except Exception as e:
-        output_callback(str(e))
-";
-
-            using (Py.GIL())
-            {
-                using (PyModule scope = Py.CreateScope())
-                {
-                    PyObject globalsDict = scope.GetAttr("__dict__");
-
-                 
-                    scope.Exec(wrappedPythonCode);
-                   // Set the custom_path from C# and call set_custom_path function in Python
-                 
-                    PyObject setCustomPathFunc = scope.GetAttr("set_custom_path");
-                    setCustomPathFunc.Invoke(modifiedFilePath.ToPython());
-
-                    PyObject captureOutputFunc = scope.GetAttr("run_pip_and_capture_output");
-
-                   
-
-                    if (useConda)
-                    {
-                        switch (packageAction)
-                        {
-                            case PackageAction.Install:
-                                command = $"conda install -c conda-forge {packageName}";
-                                break;
-                            case PackageAction.Remove:
-                                command = $"conda remove {packageName}";
-                                break;
-                            case PackageAction.Update:
-                                command = $"conda update {packageName}";
-                                break;
-                            case PackageAction.UpgradePackager:
-                                command = $"conda update conda";
-                                break;
-                              
-                            case PackageAction.InstallPackager:
-                                command = $"conda {packageName}";
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        switch (packageAction)
-                        {
-                            case PackageAction.Install:
-                                command = $"pip install -U {packageName}";
-                                break;
-                            case PackageAction.Remove:
-                                command = $"pip uninstall  {packageName}";
-                                break;
-                            case PackageAction.Update:
-                                command = $"pip install --upgrade {packageName}";
-                                break;
-                            case PackageAction.UpgradePackager:
-                                command = $"python.exe -m pip install --upgrade pip";
-                                break;
-                            case PackageAction.InstallPackager:
-                                command = $"python.exe {packageName}";
-                                break;
-                            default:
-                                break;
-                        }
-
-                    }
-                    progress.Report(new PassedArgs() { Messege = $"Running {command}" });
-                    //runTimeManager.OutputLines.Add($"Running {command}");
-                    PyObject pyArgs = new PyList();
-
-                    pyArgs.InvokeMethod("extend", command.Split(' ').ToPython());
-
-
-                    // Set the output_callback function in Python
-                    Channel<string> outputChannel = Channel.CreateUnbounded<string>();
-                    PyObject outputCallback = PyObject.FromManagedObject((Action<string>)(s => {
-                        outputChannel.Writer.TryWrite(s);
-                    }));
-                    globalsDict.SetItem("output_callback", outputCallback);
-
-                    // Run the Python code with a timeout
-                    int timeoutInSeconds = 120; // Adjust this value as needed
-                    PyObject runWithTimeoutFunc = scope.GetAttr("run_with_timeout");
-                    Task pythonTask = Task.Run(() => runWithTimeoutFunc.Invoke(captureOutputFunc, pyArgs, outputCallback, timeoutInSeconds.ToPython()));
-
-                    var outputList = new List<string>();
-                    // Create an async method to read from the channel
-                    async Task ReadFromChannelAsync()
-                    { while (await outputChannel.Reader.WaitToReadAsync())
-                        {
-                            if (outputChannel.Reader.TryRead(out var line))
-                            {
-                                outputList.Add(line);
-                                progress.Report(new PassedArgs() { Messege = line });
-                                Console.WriteLine(line);
-                            }
-                        }
-                       
-                    }
-
-                    // Process the output lines asynchronously
-                    Task readOutputTask = ReadFromChannelAsync();
-
-                    // Wait for the Python task to complete and close the channel writer
-                    await pythonTask;
-                    outputChannel.Writer.Complete();
-
-                    // Wait for the readOutputTask to complete
-                    await readOutputTask;
-
-
-                    output = string.Join("\n", outputList);
-                }
-            }
-            if(output.Length > 0)
-            {
-                progress.Report(new PassedArgs() { Messege = $"Finished {command}" });
-            }else
-                progress.Report(new PassedArgs() { Messege = $"Finished {command} eith error" });
-            return output;
-        }
-      //  public  async Task<bool> listpackagesAsync(IPythonRunTimeManager runTimeManager, IProgress<PassedArgs> progress,  CancellationToken token, bool useConda = false, string packagename = null)
-      //  {
-      //      if (runTimeManager.IsBusy) return false;
-      //      runTimeManager.IsBusy = true;
-      //      int i = 0;
-      //      try
-      //      {
-      //          bool checkall = true;
-      //          if (!string.IsNullOrEmpty(packagename))
-      //          {
-      //              checkall = false;
-      //          }
-      ////           runTimeManager.CurrentRuntimeConfig.Packagelist = new List<PackageDefinition>();
-      //          using (Py.GIL())
-      //          {
-      //              dynamic pkgResources = Py.Import("importlib.metadata");
-      //              dynamic workingSet = pkgResources.distributions();
-               
-      //              foreach (dynamic pkg in workingSet)
-      //              {
-      //                  i++;
-      //                  string packageName = pkg.metadata["Name"];
-      //                  string packageVersion = pkg.version.ToString();
-      //                  string line = $"Checking Package {packageName}: {packageVersion}";
-      //                  Console.WriteLine(line);
-      //                 // runTimeManager.OutputLines.Add(line);
-      //                  progress.Report(new PassedArgs() { Messege = line });
-      //                  bool IsInternetAvailabe = PythonRunTimeDiagnostics.CheckNet();
-      //                  PackageDefinition onlinepk = new PackageDefinition();
-      //                  if (!string.IsNullOrEmpty(packageVersion))
-      //                  {
-      //                      if (checkall)
-      //                      {
-      //                          if (IsInternetAvailabe)
-      //                          {
-      //                              onlinepk = PythonRunTimeDiagnostics.CheckIfPackageExistsAsync(packageName).Result;
-      //                          }
-                                
-
-      //                          PackageDefinition package = runTimeManager.CurrentRuntimeConfig.Packagelist.Where(p => p.packagename !=null && p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
-      //                          if (package != null)
-      //                          {
-      //                              int idx = runTimeManager.CurrentRuntimeConfig.Packagelist.IndexOf(package);
-      //                              package.version = packageVersion;
-      //                              if (onlinepk != null)
-      //                              {
-      //                                  package.updateversion = onlinepk.version;
-      //                              }
-      //                              else package.updateversion = packageVersion;
-      //                              package.installed = true;
-      //                              package.buttondisplay = "Installed";
-
-      //                              if (onlinepk != null)
-      //                              {
-      //                                  runTimeManager.CurrentRuntimeConfig.Packagelist[idx].updateversion = onlinepk.updateversion;
-      //                                  line = $"Package {packageName}: {packageVersion} found with version {onlinepk.updateversion}";
-      //                              }
-      //                              else
-      //                              {
-      //                                  runTimeManager.CurrentRuntimeConfig.Packagelist[idx].updateversion = "Not Found";
-      //                                  line = $"Package {packageName}: {"Not Found"}";
-      //                              }
-
-      //                              Console.WriteLine(line);
-      //                             // runTimeManager.OutputLines.Add(line);
-      //                              progress.Report(new PassedArgs() { Messege = line });
-      //                          }
-      //                          else
-      //                          {
-      //                              PackageDefinition packagelist = new PackageDefinition();
-      //                              packagelist.packagename = packageName;
-      //                              packagelist.version = packageVersion;
-      //                              if (onlinepk != null)
-      //                              {
-      //                                  packagelist.updateversion = onlinepk.version;
-      //                              }
-      //                              else packagelist.updateversion = packageVersion;
-
-      //                              packagelist.installed = true;
-      //                              packagelist.buttondisplay = "Installed";
-      //                              runTimeManager.CurrentRuntimeConfig.Packagelist.Add(packagelist);
-      //                              line = $"Added new Package {packagelist}: {packagelist.version}";
-      //                              Console.WriteLine(line);
-      //                            //  runTimeManager.OutputLines.Add(line);
-      //                              progress.Report(new PassedArgs() { Messege = line });
-      //                          }
-                               
-      //                      }
-      //                      else
-      //                      {
-      //                          if (runTimeManager.CurrentRuntimeConfig.Packagelist.Any(p => p.packagename != null && p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)))
-      //                          {
-      //                              PackageDefinition package = runTimeManager.CurrentRuntimeConfig.Packagelist.Where(p => p.packagename != null && p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
-      //                              int idx = runTimeManager.CurrentRuntimeConfig.Packagelist.IndexOf(package);
-      //                              package.version = packageVersion;
-      //                              package.updateversion = packageVersion;
-      //                              package.installed = true;
-      //                              package.buttondisplay = "Installed";
-      //                              if (IsInternetAvailabe)
-      //                              {
-      //                                  onlinepk = PythonRunTimeDiagnostics.CheckIfPackageExistsAsync(packageName).Result;
-      //                              }
-      //                              if (onlinepk != null)
-      //                              {
-      //                                  runTimeManager.CurrentRuntimeConfig.Packagelist[idx].updateversion = onlinepk.updateversion;
-      //                                  package.updateversion = onlinepk.version;
-      //                                  line = $"Package {packageName}: {packageVersion} found with version {onlinepk.updateversion}";
-      //                              }
-      //                              else
-      //                              {
-      //                                  runTimeManager.CurrentRuntimeConfig.Packagelist[idx].updateversion = "Not Found";
-      //                                  line = $"Package {packageName}: {"Not Found"}";
-      //                              }
-
-      //                              Console.WriteLine(line);
-      //                             // runTimeManager.OutputLines.Add(line);
-      //                              progress.Report(new PassedArgs() { Messege = line });
-      //                          }
-      //                      }
-
-
-      //                  }
-      //                  else Console.WriteLine($" empty {packageName}: {packageVersion}");
-
-
-      //              }
-      //          }
-      //          if (i == 0)
-      //          {
-      //              progress.Report(new PassedArgs() { Messege = "No Packages Found" });
-      //              runTimeManager.CurrentRuntimeConfig.Packagelist = new List<PackageDefinition>();
-      //          }
-      //          runTimeManager.IsBusy = false;
-      //      }
-      //      catch (Exception ex)
-      //      {
-      //          runTimeManager.IsBusy = false;
-      //          Console.WriteLine("Error: in Listing Packages");
-      //      }
-      //      runTimeManager.IsBusy = false;
-      //      return await Task.FromResult<bool>(runTimeManager.IsBusy);
-      //  }
-      //  public  string Execute(string code)
-      //  {
-      //      StringBuilder output = new StringBuilder();
-      //      using (Py.GIL()) // Acquire Python GIL (Global Interpreter Lock)
-      //      {
-      //          dynamic sys = Py.Import("sys");
-      //          sys.stdout = new StringWriter(output);
-
-      //          try
-      //          {
-      //              PythonEngine.Exec(code);
-      //          }
-      //          catch (PythonException ex)
-      //          {
-      //              output.AppendLine("Error: " + ex.Message);
-      //          }
-      //      }
-      //      return output.ToString();
-      //  }
-    }
 }

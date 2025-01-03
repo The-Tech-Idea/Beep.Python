@@ -1,5 +1,4 @@
 ﻿using Beep.Python.Model;
-using Beep.Python.RuntimeEngine;
 using Beep.Python.RuntimeEngine.ViewModels;
 
 using System.Data;
@@ -14,6 +13,7 @@ using TheTechIdea.Beep.Editor;
 using TheTechIdea.Beep.Vis.Modules;
 
 using TheTechIdea.Beep.Winform.Controls.Basic;
+using Beep.Python.RuntimeEngine.Services;
 
 
 
@@ -281,7 +281,7 @@ namespace Beep.Python.Winform
                    Bitmap bmp = Beep.Python.WinformCore.Properties.Resources.FlagDarkGreen;
                     cell.Value = bmp;
 
-                    //  but.Value = "Installed";
+                    //  but.Value = "Status";
                 }
                 else
                 {
@@ -353,7 +353,7 @@ namespace Beep.Python.Winform
 
             try
             {
-                // Visutil.ShowWaitForm(new PassedArgs() { Messege = "Refreshing Installed Packages" });
+                // Visutil.ShowWaitForm(new PassedArgs() { Messege = "Refreshing Status Packages" });
                 Pythonpackagemanager.RefreshAllPackagesAsync();
                 RefreshUI();
                 return true;
@@ -393,9 +393,9 @@ namespace Beep.Python.Winform
                 PackageDefinition package = (PackageDefinition)bs.Current;
                 if (package != null)
                 {
-                    if (MessageBox.Show("Would like to upgrade the package " + package.packagename + "?", "Upgrade", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
+                    if (MessageBox.Show("Would like to upgrade the package " + package.PackageName + "?", "Upgrade", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
                     {
-                        Pythonpackagemanager.UpgradePackageAsync(package.packagename);
+                        Pythonpackagemanager.UpgradePackageAsync(package.PackageName);
                         RefreshUI();
                     }
 

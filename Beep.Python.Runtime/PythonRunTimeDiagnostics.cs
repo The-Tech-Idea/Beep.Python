@@ -15,12 +15,20 @@ using TheTechIdea.Beep.ConfigUtil;
 using TheTechIdea.Beep.Addin;
 using TheTechIdea.Beep.DriversConfigurations;
 using TheTechIdea.Beep.Editor;
+using Microsoft.Extensions.Logging;
 
 
 namespace Beep.Python.RuntimeEngine
 {
     public static class PythonRunTimeDiagnostics
     {
+        private static readonly object _lock = new object();
+        public static string Bin32FolderName { get; set; } = "x32";
+        public static string Bin64FolderName { get; set; } = "x64";
+        public static string PythonVersion { get; set; } = "3.10";
+        public static string Bin64FolderPath { get; set; }
+        public static string Bin32FolderPath { get; set; }
+
         [System.Runtime.InteropServices.DllImport("wininet.dll")]
         private extern static bool InternetGetConnectedState(out int Description, int ReservedValue);
         public static BinType32or64 GetDllArchitecture(string dllPath)
@@ -48,18 +56,25 @@ namespace Beep.Python.RuntimeEngine
                 }
             }
         }
-
+        public static async Task<bool> IsUrlReachableAsync(string url)
+        {
+            try
+            {
+                using HttpClient httpClient = new HttpClient();
+                HttpResponseMessage response = await httpClient.GetAsync(url);
+                return response.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
+        }
         public static bool CheckNet()
         {
             int desc;
             return InternetGetConnectedState(out desc, 0);
         }
         public static List<FolderStructure> Folders { get; set; } = new List<FolderStructure>();
-        public static string Bin32FolderName { get; set; } = "x32";
-        public static string Bin64FolderName { get; set; } = "x64";
-        public static string PythonVersion { get; set; } = "3.10";
-        public static string Bin64FolderPath { get; set; }
-        public static string Bin32FolderPath { get; set; }
         public static void SetFolderNames(string bin32FolderName, string bin64FolderName)
         {
             bin32FolderName = bin32FolderName.ToLower();
@@ -76,6 +91,14 @@ namespace Beep.Python.RuntimeEngine
         public static bool IsFileExist(string path)
         {
             return System.IO.File.Exists(path);
+        }
+        public static async Task<bool> IsFileExistAsync(string path)
+        {
+            return await Task.Run(() => File.Exists(path));
+        }
+        public static async Task<bool> IsFileExistAsync(string path, string fileName)
+        {
+            return await Task.Run(() => File.Exists(Path.Combine(path, fileName)));
         }
         public static bool IsFileExist(string path, string fileName)
         {
@@ -134,22 +157,34 @@ namespace Beep.Python.RuntimeEngine
         {
             if (Directory.Exists(path))
             {
-                bool exist = Directory.EnumerateFiles(path, "python*.dll").Any();
-                return IsFileExist(path, "python.exe") && exist;
-            }return false;
+                return FileExists(path, "python.exe", "conda.exe");
+            }
+            return false;
          
+        }
+        public static async Task<bool> IsPythonInstalledAsync(string path)
+        {
+            if (!Directory.Exists(path)) return false;
+
+            bool dllExists = await Task.Run(() => Directory.EnumerateFiles(path, "python*.dll").Any());
+            bool exeExists = await IsFileExistAsync(path, "python.exe");
+
+            return dllExists && exeExists;
+        }
+        private static bool FileExists(string path, params string[] files)
+        {
+            foreach (var file in files)
+            {
+                if (File.Exists(Path.Combine(path, file)))
+                    return true;
+            }
+            return false;
         }
         public static string GetPythonExe(string path)
         {
-            if (IsCondaInstalled(path)!=null)
-            {
-                return Path.Combine(path, IsCondaInstalled(path));
-            }
-            if (IsPythonInstalled(path))
-            {
-                return  Path.Combine(path, "python.exe"); 
-            }else
-                return null;
+            if (!Directory.Exists(path)) return null;
+
+            return IsCondaInstalled(path) ?? (IsPythonInstalled(path) ? Path.Combine(path, "python.exe") : null);
         }
         public static string IsCondaInstalled(string path)
         {
@@ -189,7 +224,7 @@ namespace Beep.Python.RuntimeEngine
 
                 System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
                 startInfo.FileName = Path.Combine(folderpath, "python.exe");
-                startInfo.Arguments = "--version";
+                startInfo.Arguments = "--Version";
                 startInfo.UseShellExecute = false;
                 startInfo.RedirectStandardOutput = true;
                 startInfo.CreateNoWindow = true;
@@ -200,6 +235,29 @@ namespace Beep.Python.RuntimeEngine
                 process.WaitForExit();
             }
             return version;
+        }
+        public static async Task<string> GetPythonVersionFromPythonAsync(string path)
+        {
+            if (!await IsPythonInstalledAsync(path)) return string.Empty;
+
+            return await Task.Run(() =>
+            {
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    FileName = Path.Combine(path, "python.exe"),
+                    Arguments = "--version",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    CreateNoWindow = true
+                };
+
+                using Process process = new Process { StartInfo = startInfo };
+                process.Start();
+                string version = process.StandardOutput.ReadToEnd();
+                process.WaitForExit();
+
+                return version;
+            });
         }
         public static string GetPythonVersionFromDll(string path)
         {
@@ -295,213 +353,81 @@ namespace Beep.Python.RuntimeEngine
             }
              return BinType32or64.Unknown;
         }
-        //public static PythonRunTime GetPythonConfig(string path, BinType32or64 binType32Or64)
-        //{
-        //    PythonRunTime config = new PythonRunTime();
-        //    config.IsPythonInstalled = false;
-        //    string foldername = new DirectoryInfo(path).Name;
-        //    string folderpath = string.Empty;
-        //    string runtimepath = string.Empty;
-        //    string binpath = string.Empty;
-        //    bool Is32Exist = FolderExist(path, BinType32or64.p395x32);
-        //    bool Is64Exist = FolderExist(path, BinType32or64.p395x64);
-        //    bool IsPython32Installed = true;
-        //    bool IsPython64Installed = true;
-        //    if (!Is32Exist && !Is64Exist)
-        //    {
-        //        config.IsPythonInstalled = false;
-        //        config.Message = "Python is not installed - Cannot Find Folders";
-        //        return config;
-        //    }
-
-
-        //    if (!IsPython64Installed && !IsPython32Installed)
-        //    {
-        //        config.IsPythonInstalled = false;
-        //        config.Message = "Python is not installed";
-        //        return config;
-        //    }
-        //    string direname = GetPythonFolderName(path);
-        //    if (direname.Equals(Bin32FolderName, StringComparison.CurrentCultureIgnoreCase) || direname.Equals(Bin64FolderName, StringComparison.CurrentCultureIgnoreCase))
-        //    {
-        //        folderpath = path;
-        //        runtimepath = path.Substring(0, path.LastIndexOf('\\'));
-        //    }
-        //    else
-        //    {
-
-        //        if (binType32Or64 == BinType32or64.p395x32)
-        //        {
-        //            folderpath = Path.Combine(path, Bin32FolderName);
-        //        }
-        //        else
-        //        {
-        //            folderpath = Path.Combine(path, Bin64FolderName);
-        //        }
-        //        runtimepath = path;
-        //    }
-        //    if (binType32Or64 == BinType32or64.p395x32)
-        //    {
-        //        if (Is32Exist)
-        //        {
-        //            IsPython32Installed = IsPythonInstalled(path, BinType32or64.p395x32);
-        //            if (IsPython32Installed)
-        //            {
-
-        //                config.IsPythonInstalled = true;
-        //                Bin32FolderName = foldername;
-        //            }
-        //            if (!IsPython32Installed)
-        //            {
-        //                config.IsPythonInstalled = false;
-        //                config.Message = "Python is not installed - Cannot Find Folder32X";
-        //                return config;
-        //            }
-        //            binpath = folderpath;
-        //        }
-
-        //    }
-        //    else
-        //    {
-        //        if (Is64Exist)
-        //        {
-        //            IsPython64Installed = IsPythonInstalled(path, BinType32or64.p395x64);
-        //            if (IsPython64Installed)
-        //            {
-        //                config.IsPythonInstalled = true;
-        //                Bin64FolderName = foldername;
-        //            }
-        //            if (!IsPython64Installed)
-        //            {
-        //                config.IsPythonInstalled = false;
-        //                config.Message = "Python is not installed - Cannot Find Folder64X";
-        //                return config;
-        //            }
-        //            binpath = folderpath;
-        //        }
-
-        //    }
-        //    if (config.IsPythonInstalled)
-        //    {
-        //        config.RuntimePath = runtimepath;
-        //        config.PythonVersion = GetPythonVersionFromDll(binpath);
-        //        config.BinPath = folderpath;
-        //        config.PythonDll = Path.Combine(config.BinPath, "python" + config.PythonVersion + ".dll");
-        //        config.Packageinstallpath = Path.Combine(config.BinPath, "Lib", "site-packages");
-        //        config.ScriptPath = Path.Combine(config.BinPath, "Scripts");
-        //        config.BinType = binType32Or64;
-        //        config.PackageType = GetPackageType(binpath);
-        //    }
-
-
-
-        //    return config;
-        //}
         public static PythonRunTime GetPythonConfig(string path)
         {
-            PythonRunTime config = new PythonRunTime();
-            config.IsPythonInstalled = false;
-            string foldername = new DirectoryInfo(path).Name;
-            string folderpath = string.Empty;
-            string runtimepath = string.Empty;
-            string binpath = string.Empty;
-            bool Is32Exist = FolderExist(path, BinType32or64.p395x32);
-            bool Is64Exist = FolderExist(path, BinType32or64.p395x64);
-            bool IsPython32Installed = true;
-            bool IsPython64Installed = true;
-            BinType32or64 binType32Or64 = BinType32or64.p395x32;
-            //if (!Is32Exist && !Is64Exist)
-            //{
-            //    config.IsPythonInstalled = false;
-            //    config.Message = "Python is not installed - Cannot Find Folders";
-            //    return config;
-            //}
-            string version = GetVersion(path);
-            string filename = Path.Combine(path, $"python{version}.dll");
-            BinType32or64 retval= GetDllArchitecture(filename);
-            if (retval == BinType32or64.p395x32)
+            var config = new PythonRunTime();
+
+            if (!Directory.Exists(path))
             {
-                IsPython32Installed = true;
-                IsPython64Installed = false;
-                Is32Exist = true; Is64Exist=false;
-            }
-            else
-            {
-                IsPython64Installed = true;
-                IsPython32Installed = false;
-                Is32Exist = false;Is64Exist=true    ;
-            }
-                
-            if (!IsPython64Installed && !IsPython32Installed)
-            {
-                config.IsPythonInstalled = false;
-                config.Message = "Python is not installed";
+                config.Message = "Directory does not exist.";
                 return config;
             }
-            string direname = GetPythonFolderName(path);
-            if (direname.Equals(Bin32FolderName, StringComparison.CurrentCultureIgnoreCase) || direname.Equals(Bin64FolderName, StringComparison.CurrentCultureIgnoreCase))
+
+            var version = GetVersion(path);
+            var dllPath = Path.Combine(path, $"python{version}.dll");
+            var architecture = GetDllArchitecture(dllPath);
+
+            if (architecture == BinType32or64.Unknown)
             {
-                folderpath = path;
-                runtimepath = path.Substring(0, path.LastIndexOf('\\'));
+                config.Message = "Python DLL architecture could not be determined.";
+                return config;
             }
 
-            if (Is32Exist)
+            config.IsPythonInstalled = IsPythonInstalled(path);
+            if (!config.IsPythonInstalled)
             {
-                //IsPython32Installed = IsPythonInstalled(path, BinType32or64.p395x32);
-                //if (IsPython32Installed)
-                //{
-
-                //    config.IsPythonInstalled = true;
-                //    Bin32FolderPath = folderpath;
-                //}
-                //if (!IsPython32Installed)
-                //{
-                //    config.IsPythonInstalled = false;
-                //    config.Message = "Python is not installed - Cannot Find Folder32X";
-                //    return config;
-                //}
-                binpath = folderpath;
-                binType32Or64 = BinType32or64.p395x32;
-                config.IsPythonInstalled = true;
-
+                config.Message = "Python is not installed.";
+                return config;
             }
 
-            if (Is64Exist)
+            config.RuntimePath = path;
+            config.BinPath = path;
+            config.PythonVersion = version;
+            config.PythonDll = dllPath;
+            config.Packageinstallpath = Path.Combine(path, "Lib", "site-packages");
+            config.ScriptPath = Path.Combine(path, "Scripts");
+            config.BinType = architecture;
+            config.PackageType = GetPackageType(path);
+            config.Message = "Python configuration detected.";
+
+            return config;
+        }
+        public static async Task<PythonRunTime> GetPythonConfigAsync(string path)
+        {
+            PythonRunTime config = new PythonRunTime();
+
+            if (!Directory.Exists(path))
             {
-        ////        IsPython64Installed = IsPythonInstalled(path, BinType32or64.p395x64);
-        //        if (IsPython64Installed)
-        //        {
-        //            config.IsPythonInstalled = true;
-        //            Bin32FolderPath = folderpath;
-        //        }
-        //        if (!IsPython64Installed)
-        //        {
-        //            config.IsPythonInstalled = false;
-        //            config.Message = "Python is not installed - Cannot Find Folder64X";
-        //            return config;
-        //        }
-                binpath = folderpath;
-                binType32Or64 = BinType32or64.p395x64;
-                config.IsPythonInstalled=true;
+                config.Message = "Directory does not exist.";
+                return config;
             }
 
+            string version = await Task.Run(() => GetVersion(path));
+            string dllPath = Path.Combine(path, $"python{version}.dll");
+            BinType32or64 architecture = await Task.Run(() => GetDllArchitecture(dllPath));
 
-            if (config.IsPythonInstalled)
+            if (architecture == BinType32or64.Unknown)
             {
-                folderpath = path;
-                runtimepath = path;
-                config.RuntimePath = runtimepath;
-                config.PythonVersion = version;
-                config.BinPath = runtimepath;
-                config.PythonDll = Path.Combine(config.BinPath, "python" + config.PythonVersion + ".dll");
-                config.Packageinstallpath = Path.Combine(config.BinPath, "Lib", "site-packages");
-                config.ScriptPath = Path.Combine(config.BinPath, "Scripts");
-                config.Message = "Found Python";
-                config.BinType = binType32Or64;
-                config.PackageType = GetPackageType(binpath);
+                config.Message = "Python DLL architecture could not be determined.";
+                return config;
             }
 
+            config.IsPythonInstalled = await IsPythonInstalledAsync(path);
+            if (!config.IsPythonInstalled)
+            {
+                config.Message = "Python is not installed.";
+                return config;
+            }
 
+            config.RuntimePath = path;
+            config.BinPath = path;
+            config.PythonVersion = version;
+            config.PythonDll = dllPath;
+            config.Packageinstallpath = Path.Combine(path, "Lib", "site-packages");
+            config.ScriptPath = Path.Combine(path, "Scripts");
+            config.BinType = architecture;
+            config.PackageType = GetPackageType(path);
+            config.Message = "Python configuration detected.";
 
             return config;
         }
@@ -580,6 +506,22 @@ namespace Beep.Python.RuntimeEngine
             // Read a file
             // string readText = File.ReadAllText(file)
         }
+        public static async Task<string> WriteStringToFileAsync(string path, string code, string filename = null)
+        {
+            try
+            {
+                string filepath = string.IsNullOrEmpty(filename)
+                    ? Path.Combine(path, "test.py")
+                    : Path.Combine(path, filename);
+
+                await File.WriteAllTextAsync(filepath, code, Encoding.Default);
+                return filepath;
+            }
+            catch
+            {
+                return null;
+            }
+        }
         public static async Task<PackageDefinition> CheckIfPackageExistsAsync(string packageName)
         {
             using HttpClient httpClient = new HttpClient();
@@ -614,9 +556,9 @@ namespace Beep.Python.RuntimeEngine
 
                     PackageDefinition packageInfo = new PackageDefinition
                     {
-                        packagename = packageName,
-                        version = latestVersion,
-                        description = description
+                        PackageName = packageName,
+                        Version = latestVersion,
+                        Description = description
                     };
 
                     return packageInfo;
@@ -633,7 +575,13 @@ namespace Beep.Python.RuntimeEngine
                 return null;
             }
         }
-
+        public static void AddFolder(FolderStructure folder)
+        {
+            lock (_lock)
+            {
+                Folders.Add(folder);
+            }
+        }
 
     }
 }

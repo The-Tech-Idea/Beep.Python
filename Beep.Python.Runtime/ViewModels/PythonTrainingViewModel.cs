@@ -16,6 +16,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TheTechIdea.Beep.Editor;
 using TheTechIdea.Beep.Container.Services;
+using Beep.Python.RuntimeEngine.Services;
 
 namespace Beep.Python.RuntimeEngine.ViewModels
 {

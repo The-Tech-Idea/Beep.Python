@@ -10,6 +10,7 @@ using TheTechIdea.Beep.Addin;
 using TheTechIdea.Beep.Editor;
 
 using TheTechIdea.Beep.Container.Services;
+using Beep.Python.RuntimeEngine.Services;
 
 
 namespace Beep.Python.RuntimeEngine.ViewModels

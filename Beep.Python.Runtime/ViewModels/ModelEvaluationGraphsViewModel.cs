@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Beep.Python.Model;
+using Beep.Python.RuntimeEngine.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Python.Runtime;
 using TheTechIdea.Beep.Container.Services;

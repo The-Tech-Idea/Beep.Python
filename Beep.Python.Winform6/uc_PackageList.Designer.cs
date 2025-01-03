@@ -282,37 +282,37 @@
             // 
             // installedDataGridViewCheckBoxColumn
             // 
-            installedDataGridViewCheckBoxColumn.DataPropertyName = "installed";
-            installedDataGridViewCheckBoxColumn.HeaderText = "installed";
+            installedDataGridViewCheckBoxColumn.DataPropertyName = "Status";
+            installedDataGridViewCheckBoxColumn.HeaderText = "Status";
             installedDataGridViewCheckBoxColumn.Name = "installedDataGridViewCheckBoxColumn";
             // 
             // packagenameDataGridViewTextBoxColumn
             // 
             packagenameDataGridViewTextBoxColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            packagenameDataGridViewTextBoxColumn.DataPropertyName = "packagename";
+            packagenameDataGridViewTextBoxColumn.DataPropertyName = "PackageName";
             packagenameDataGridViewTextBoxColumn.HeaderText = "Name";
             packagenameDataGridViewTextBoxColumn.Name = "packagenameDataGridViewTextBoxColumn";
             // 
             // UpDateInstallGridButton
             // 
             UpDateInstallGridButton.AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader;
-            UpDateInstallGridButton.DataPropertyName = "buttondisplay";
+            UpDateInstallGridButton.DataPropertyName = "Buttondisplay";
             UpDateInstallGridButton.HeaderText = "UpDate/Install";
             UpDateInstallGridButton.Name = "UpDateInstallGridButton";
-            UpDateInstallGridButton.Text = "Installed";
+            UpDateInstallGridButton.Text = "Status";
             UpDateInstallGridButton.UseColumnTextForButtonValue = true;
             UpDateInstallGridButton.Width = 88;
             // 
             // versionDataGridViewTextBoxColumn
             // 
-            versionDataGridViewTextBoxColumn.DataPropertyName = "version";
-            versionDataGridViewTextBoxColumn.HeaderText = "version";
+            versionDataGridViewTextBoxColumn.DataPropertyName = "Version";
+            versionDataGridViewTextBoxColumn.HeaderText = "Version";
             versionDataGridViewTextBoxColumn.Name = "versionDataGridViewTextBoxColumn";
             // 
             // updateversionDataGridViewTextBoxColumn
             // 
-            updateversionDataGridViewTextBoxColumn.DataPropertyName = "updateversion";
-            updateversionDataGridViewTextBoxColumn.HeaderText = "updateversion";
+            updateversionDataGridViewTextBoxColumn.DataPropertyName = "Updateversion";
+            updateversionDataGridViewTextBoxColumn.HeaderText = "Updateversion";
             updateversionDataGridViewTextBoxColumn.Name = "updateversionDataGridViewTextBoxColumn";
             // 
             // uc_PackageList

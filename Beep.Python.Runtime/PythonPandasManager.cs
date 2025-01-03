@@ -389,7 +389,7 @@ namespace Beep.Python.RuntimeEngine
         {
             using (Py.GIL())
             {
-                string script = $"{dataFrameName}['{columnName}'] = {dataFrameName}['{columnName}'].astype('category')";
+                string script = $"{dataFrameName}['{columnName}'] = {dataFrameName}['{columnName}'].astype('Category')";
                 PersistentScope.Exec(script);
             }
         }

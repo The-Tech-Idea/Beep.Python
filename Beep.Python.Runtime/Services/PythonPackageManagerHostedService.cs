@@ -20,13 +20,26 @@ namespace Beep.Python.RuntimeEngine.Services
             _pythonRuntimePath = pythonRuntimePath;
         }
 
-        public Task StartAsync(CancellationToken cancellationToken)
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
-            // Perform initialization logic here to ensure it runs after the application starts
-            IsReady = _pythonRunTimeManager.Initialize(_pythonRuntimePath, BinType32or64.p395x64, @"lib\site-packages");
+            try
+            {
+                IsReady = _pythonRunTimeManager.Initialize(_pythonRuntimePath, BinType32or64.p395x64, @"lib\site-packages");
+                if (!IsReady)
+                {
+                    throw new InvalidOperationException("Failed to initialize the Python runtime.");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the error
+                Console.WriteLine($"Python runtime initialization failed: {ex.Message}");
+                IsReady = false;
+            }
 
-            return Task.CompletedTask;
+            await Task.CompletedTask;
         }
+
 
         public Task StopAsync(CancellationToken cancellationToken)
         {

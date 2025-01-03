@@ -16,7 +16,7 @@ namespace Beep.Python.Model
         Py.GILState GIL();
         BinType32or64 BinType { get; set; }
         IDMEEditor DMEditor { get; set; }
-       // bool listpackages( bool useConda = false, string packagename = null);
+       // bool listpackages( bool useConda = false, string PackageName = null);
         ObservableCollection<string> OutputLines { get; set; }
         bool IsBusy { get; set; }
         void Stop();

@@ -71,14 +71,14 @@ pkg_version = None
 installed_packages = [pkg.key for pkg in pkg_resources.working_set]
 
 if '{packageName}' in installed_packages:
-    pkg_version = pkg_resources.get_distribution('{packageName}').version
+    pkg_version = pkg_resources.get_distribution('{packageName}').Version
 
 pkg_version
 ";
 
             dynamic result = RunPythonScriptWithResult(script, null);
 
-            // Parse and return the package version
+            // Parse and return the package Version
             string packageVersion = result?.ToString();
             return packageVersion;
         }
@@ -158,8 +158,8 @@ json.dumps(result)
                 foreach (var packageDict in packageDicts)
                 {
                     PackageDefinition package = new PackageDefinition();
-                    package.packagetitle = packageDict["name"];
-                    package.packagename = packageDict["version"];
+                    package.PackageTitle = packageDict["name"];
+                    package.PackageName = packageDict["Version"];
                     packageList.Add(package);
                 }
             }

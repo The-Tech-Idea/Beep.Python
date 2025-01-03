@@ -451,25 +451,25 @@ def run_with_timeout(func, args, output_callback, timeout):
                                 }
 
 
-                                PackageDefinition package = PythonRuntime.CurrentRuntimeConfig.Packagelist.Where(p => p.packagename != null && p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                                PackageDefinition package = PythonRuntime.CurrentRuntimeConfig.Packagelist.Where(p => p.PackageName != null && p.PackageName.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
                                     if (package != null)
                                     {
                                         int idx = PythonRuntime.CurrentRuntimeConfig.Packagelist.IndexOf(package);
                                         if (onlinepk != null)
                                         {
-                                            package.updateversion = onlinepk.version;
+                                            package.Updateversion = onlinepk.Version;
                                         }
-                                        package.installed = true;
-                                        package.buttondisplay = "Installed";
+                                        package.Status =  PackageStatus.Installed;
+                                        package.Buttondisplay = "Status";
 
                                         if (onlinepk != null)
                                         {
-                                            PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].updateversion = onlinepk.updateversion;
-                                            line = $"Package {packageName}: {packageVersion} found with version {onlinepk.updateversion}";
+                                            PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].Updateversion = onlinepk.Updateversion;
+                                            line = $"Package {packageName}: {packageVersion} found with Version {onlinepk.Updateversion}";
                                         }
                                         else
                                         {
-                                            PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].updateversion = "Not Found";
+                                            PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].Updateversion = "Not Found";
                                             line = $"Package {packageName}: {"Not Found"}";
                                         }
 
@@ -480,13 +480,13 @@ def run_with_timeout(func, args, output_callback, timeout):
                                     else
                                     {
                                         PackageDefinition packagelist = new PackageDefinition();
-                                        packagelist.packagename = packageName;
-                                        packagelist.version = packageVersion;
-                                        packagelist.updateversion = packageVersion;
-                                        packagelist.installed = true;
-                                        packagelist.buttondisplay = "Added";
+                                        packagelist.PackageName = packageName;
+                                        packagelist.Version = packageVersion;
+                                        packagelist.Updateversion = packageVersion;
+                                        packagelist.Status =  PackageStatus.Installed;
+                                        packagelist.Buttondisplay = "Added";
                                         PythonRuntime.CurrentRuntimeConfig.Packagelist.Add(packagelist);
-                                        line = $"Added new Package {packagelist}: {packagelist.version}";
+                                        line = $"Added new Package {packagelist}: {packagelist.Version}";
                                         Console.WriteLine(line);
                                         //  runTimeManager.OutputLines.Add(line);
                                         Progress.Report(new PassedArgs() { Messege = line });
@@ -495,27 +495,27 @@ def run_with_timeout(func, args, output_callback, timeout):
                                 }
                                 else
                                 {
-                                    if (PythonRuntime.CurrentRuntimeConfig.Packagelist.Any(p => p.packagename != null && p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)))
+                                    if (PythonRuntime.CurrentRuntimeConfig.Packagelist.Any(p => p.PackageName != null && p.PackageName.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)))
                                     {
-                                        PackageDefinition package = PythonRuntime.CurrentRuntimeConfig.Packagelist.Where(p => p.packagename != null && p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                                        PackageDefinition package = PythonRuntime.CurrentRuntimeConfig.Packagelist.Where(p => p.PackageName != null && p.PackageName.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
                                         int idx = PythonRuntime.CurrentRuntimeConfig.Packagelist.IndexOf(package);
-                                        package.version = packageVersion;
-                                        package.updateversion = packageVersion;
-                                        package.installed = true;
-                                        package.buttondisplay = "Installed";
+                                        package.Version = packageVersion;
+                                        package.Updateversion = packageVersion;
+                                        package.Status =  PackageStatus.Installed;
+                                        package.Buttondisplay = "Status";
                                         if (IsInternetAvailabe)
                                         {
                                             onlinepk = PythonRunTimeDiagnostics.CheckIfPackageExistsAsync(packageName).Result;
                                         }
                                         if (onlinepk != null)
                                         {
-                                            PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].updateversion = onlinepk.updateversion;
-                                            package.updateversion = onlinepk.version;
-                                            line = $"Package {packageName}: {packageVersion} found with version {onlinepk.updateversion}";
+                                            PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].Updateversion = onlinepk.Updateversion;
+                                            package.Updateversion = onlinepk.Version;
+                                            line = $"Package {packageName}: {packageVersion} found with Version {onlinepk.Updateversion}";
                                         }
                                         else
                                         {
-                                            PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].updateversion = "Not Found";
+                                            PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].Updateversion = "Not Found";
                                             line = $"Package {packageName}: {"Not Found"}";
                                         }
 
@@ -598,25 +598,25 @@ def run_with_timeout(func, args, output_callback, timeout):
                                 }
 
 
-                                PackageDefinition package = PythonRuntime.CurrentRuntimeConfig.Packagelist.Where(p => p.packagename != null && p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                                PackageDefinition package = PythonRuntime.CurrentRuntimeConfig.Packagelist.Where(p => p.PackageName != null && p.PackageName.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
                                 if (package != null)
                                 {
                                     int idx = PythonRuntime.CurrentRuntimeConfig.Packagelist.IndexOf(package);
                                     if (onlinepk != null)
                                     {
-                                        package.updateversion = onlinepk.version;
+                                        package.Updateversion = onlinepk.Version;
                                     }
-                                    package.installed = true;
-                                    package.buttondisplay = "Installed";
+                                    package.Status =  PackageStatus.Installed;
+                                    package.Buttondisplay = "Status";
 
                                     if (onlinepk != null)
                                     {
-                                        PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].updateversion = onlinepk.updateversion;
-                                        line = $"Package {packageName}: {packageVersion} found with version {onlinepk.updateversion}";
+                                        PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].Updateversion = onlinepk.Updateversion;
+                                        line = $"Package {packageName}: {packageVersion} found with Version {onlinepk.Updateversion}";
                                     }
                                     else
                                     {
-                                        PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].updateversion = "Not Found";
+                                        PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].Updateversion = "Not Found";
                                         line = $"Package {packageName}: {"Not Found"}";
                                     }
 
@@ -627,13 +627,13 @@ def run_with_timeout(func, args, output_callback, timeout):
                                 else
                                 {
                                     PackageDefinition packagelist = new PackageDefinition();
-                                    packagelist.packagename = packageName;
-                                    packagelist.version = packageVersion;
-                                    packagelist.updateversion = packageVersion;
-                                    packagelist.installed = true;
-                                    packagelist.buttondisplay = "Added";
+                                    packagelist.PackageName = packageName;
+                                    packagelist.Version = packageVersion;
+                                    packagelist.Updateversion = packageVersion;
+                                    packagelist.Status =  PackageStatus.Installed;
+                                    packagelist.Buttondisplay = "Added";
                                     PythonRuntime.CurrentRuntimeConfig.Packagelist.Add(packagelist);
-                                    line = $"Added new Package {packagelist}: {packagelist.version}";
+                                    line = $"Added new Package {packagelist}: {packagelist.Version}";
                                     Console.WriteLine(line);
                                     //  runTimeManager.OutputLines.Add(line);
                                     Progress.Report(new PassedArgs() { Messege = line });
@@ -642,27 +642,27 @@ def run_with_timeout(func, args, output_callback, timeout):
                             }
                             else
                             {
-                                if (PythonRuntime.CurrentRuntimeConfig.Packagelist.Any(p => p.packagename != null && p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)))
+                                if (PythonRuntime.CurrentRuntimeConfig.Packagelist.Any(p => p.PackageName != null && p.PackageName.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)))
                                 {
-                                    PackageDefinition package = PythonRuntime.CurrentRuntimeConfig.Packagelist.Where(p => p.packagename != null && p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                                    PackageDefinition package = PythonRuntime.CurrentRuntimeConfig.Packagelist.Where(p => p.PackageName != null && p.PackageName.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
                                     int idx = PythonRuntime.CurrentRuntimeConfig.Packagelist.IndexOf(package);
-                                    package.version = packageVersion;
-                                    package.updateversion = packageVersion;
-                                    package.installed = true;
-                                    package.buttondisplay = "Installed";
+                                    package.Version = packageVersion;
+                                    package.Updateversion = packageVersion;
+                                    package.Status =  PackageStatus.Installed;
+                                    package.Buttondisplay = "Status";
                                     if (IsInternetAvailabe)
                                     {
                                         onlinepk = PythonRunTimeDiagnostics.CheckIfPackageExistsAsync(packageName).Result;
                                     }
                                     if (onlinepk != null)
                                     {
-                                        PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].updateversion = onlinepk.updateversion;
-                                        package.updateversion = onlinepk.version;
-                                        line = $"Package {packageName}: {packageVersion} found with version {onlinepk.updateversion}";
+                                        PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].Updateversion = onlinepk.Updateversion;
+                                        package.Updateversion = onlinepk.Version;
+                                        line = $"Package {packageName}: {packageVersion} found with Version {onlinepk.Updateversion}";
                                     }
                                     else
                                     {
-                                        PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].updateversion = "Not Found";
+                                        PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].Updateversion = "Not Found";
                                         line = $"Package {packageName}: {"Not Found"}";
                                     }
 
@@ -715,7 +715,7 @@ def run_with_timeout(func, args, output_callback, timeout):
                 }
                 string script = @"
 import importlib.metadata
-result = [{'name': pkg.metadata['Name'], 'version': pkg.version} for pkg in importlib.metadata.distributions()]
+result = [{'name': pkg.metadata['Name'], 'Version': pkg.Version} for pkg in importlib.metadata.distributions()]
 result";
 
                 // Execute the script and get the result
@@ -748,25 +748,25 @@ result";
                                 }
 
 
-                                PackageDefinition package = PythonRuntime.CurrentRuntimeConfig.Packagelist.Where(p => p.packagename != null && p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                                PackageDefinition package = PythonRuntime.CurrentRuntimeConfig.Packagelist.Where(p => p.PackageName != null && p.PackageName.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
                                 if (package != null)
                                 {
                                     int idx = PythonRuntime.CurrentRuntimeConfig.Packagelist.IndexOf(package);
                                     if (onlinepk != null)
                                     {
-                                        package.updateversion = onlinepk.version;
+                                        package.Updateversion = onlinepk.Version;
                                     }
-                                    package.installed = true;
-                                    package.buttondisplay = "Installed";
+                                    package.Status =  PackageStatus.Installed;
+                                    package.Buttondisplay = "Status";
 
                                     if (onlinepk != null)
                                     {
-                                        PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].updateversion = onlinepk.updateversion;
-                                        line = $"Package {packageName}: {packageVersion} found with version {onlinepk.updateversion}";
+                                        PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].Updateversion = onlinepk.Updateversion;
+                                        line = $"Package {packageName}: {packageVersion} found with Version {onlinepk.Updateversion}";
                                     }
                                     else
                                     {
-                                        PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].updateversion = "Not Found";
+                                        PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].Updateversion = "Not Found";
                                         line = $"Package {packageName}: {"Not Found"}";
                                     }
 
@@ -777,13 +777,13 @@ result";
                                 else
                                 {
                                     PackageDefinition packagelist = new PackageDefinition();
-                                    packagelist.packagename = packageName;
-                                    packagelist.version = packageVersion;
-                                    packagelist.updateversion = packageVersion;
-                                    packagelist.installed = true;
-                                    packagelist.buttondisplay = "Added";
+                                    packagelist.PackageName = packageName;
+                                    packagelist.Version = packageVersion;
+                                    packagelist.Updateversion = packageVersion;
+                                    packagelist.Status = PackageStatus.Installed;
+                                    packagelist.Buttondisplay = "Added";
                                     PythonRuntime.CurrentRuntimeConfig.Packagelist.Add(packagelist);
-                                    line = $"Added new Package {packagelist}: {packagelist.version}";
+                                    line = $"Added new Package {packagelist}: {packagelist.Version}";
                                     Console.WriteLine(line);
                                     //  runTimeManager.OutputLines.Add(line);
                                     Progress.Report(new PassedArgs() { Messege = line });
@@ -792,27 +792,27 @@ result";
                             }
                             else
                             {
-                                if (PythonRuntime.CurrentRuntimeConfig.Packagelist.Any(p => p.packagename != null && p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)))
+                                if (PythonRuntime.CurrentRuntimeConfig.Packagelist.Any(p => p.PackageName != null && p.PackageName.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)))
                                 {
-                                    PackageDefinition package = PythonRuntime.CurrentRuntimeConfig.Packagelist.Where(p => p.packagename != null && p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                                    PackageDefinition package = PythonRuntime.CurrentRuntimeConfig.Packagelist.Where(p => p.PackageName != null && p.PackageName.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
                                     int idx = PythonRuntime.CurrentRuntimeConfig.Packagelist.IndexOf(package);
-                                    package.version = packageVersion;
-                                    package.updateversion = packageVersion;
-                                    package.installed = true;
-                                    package.buttondisplay = "Installed";
+                                    package.Version = packageVersion;
+                                    package.Updateversion = packageVersion;
+                                    package.Status =  PackageStatus.Installed;
+                                    package.Buttondisplay = "Status";
                                     if (IsInternetAvailabe)
                                     {
                                         onlinepk = PythonRunTimeDiagnostics.CheckIfPackageExistsAsync(packageName).Result;
                                     }
                                     if (onlinepk != null)
                                     {
-                                        PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].updateversion = onlinepk.updateversion;
-                                        package.updateversion = onlinepk.version;
-                                        line = $"Package {packageName}: {packageVersion} found with version {onlinepk.updateversion}";
+                                        PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].Updateversion = onlinepk.Updateversion;
+                                        package.Updateversion = onlinepk.Version;
+                                        line = $"Package {packageName}: {packageVersion} found with Version {onlinepk.Updateversion}";
                                     }
                                     else
                                     {
-                                        PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].updateversion = "Not Found";
+                                        PythonRuntime.CurrentRuntimeConfig.Packagelist[idx].Updateversion = "Not Found";
                                         line = $"Package {packageName}: {"Not Found"}";
                                     }
 
@@ -937,27 +937,27 @@ result";
 
 
 
-                        installedpackage = PythonRuntime.CurrentRuntimeConfig.Packagelist.Where(p => p.packagename.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                        installedpackage = PythonRuntime.CurrentRuntimeConfig.Packagelist.Where(p => p.PackageName.Equals(packageName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
                         idx = PythonRuntime.CurrentRuntimeConfig.Packagelist.IndexOf(installedpackage);
-                        isUpdateAvailable = (new Version(retval.updateversion) > new Version(installedpackage.version));
+                        isUpdateAvailable = (new Version(retval.Updateversion) > new Version(installedpackage.Version));
                     }
 
                     // Print the result
                     if (isUpdateAvailable)
                     {
                         isInstalled = true;
-                        installedpackage.updateversion = retval.updateversion;
-                        installedpackage.buttondisplay = "Update";
+                        installedpackage.Updateversion = retval.Updateversion;
+                        installedpackage.Buttondisplay = "Update";
                         PythonRuntime.CurrentRuntimeConfig.Packagelist[idx] = installedpackage;
-                        //OutputLines.Add($"An update to {packageName} is available ({retval.updateversion}).");
-                        progress.Report(new PassedArgs() { Messege = $"An update to {packageName} is available ({retval.updateversion})" });
-                        Console.WriteLine($"An update to {packageName} is available ({retval.updateversion}).");
+                        //OutputLines.Add($"An update to {packageName} is available ({retval.Updateversion}).");
+                        progress.Report(new PassedArgs() { Messege = $"An update to {packageName} is available ({retval.Updateversion})" });
+                        Console.WriteLine($"An update to {packageName} is available ({retval.Updateversion}).");
                     }
                     else
                     {
                         isInstalled = false;
-                        installedpackage.buttondisplay = "Installed";
-                        installedpackage.updateversion = installedpackage.version;
+                        installedpackage.Buttondisplay = "Status";
+                        installedpackage.Updateversion = installedpackage.Version;
                         progress.Report(new PassedArgs() { Messege = $"No update to {packageName} is available." });
                         Console.WriteLine($"No update to {packageName} is available.");
                     }
@@ -981,7 +981,7 @@ result";
             {
                 Init();
                 // Create a new Python scope
-                // Check if a package is installed and capture output
+                // Check if a package is Status and capture output
                 using (Py.GIL())
                 {
                     //dynamic scope = Py.CreateScope();
@@ -1000,7 +1000,7 @@ result";
                     // Console.WriteLine(output);
 
                     isInstalled = output.Contains(packageName);
-                    string outputmessage = $"Package '{packageName}' is {(isInstalled ? "installed" : "not installed")}";
+                    string outputmessage = $"Package '{packageName}' is {(isInstalled ? "Status" : "not Status")}";
                     Console.WriteLine(outputmessage);
                     // OutputLines.Add(outputmessage);
                     isInstalled = true;
@@ -1157,9 +1157,9 @@ result";
 
                     PackageDefinition packageInfo = new PackageDefinition
                     {
-                        packagename = packageName,
-                        version = latestVersion,
-                        description = description
+                        PackageName = packageName,
+                        Version = latestVersion,
+                        Description = description
                     };
 
                     return packageInfo;

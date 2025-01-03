@@ -8,7 +8,7 @@ namespace Beep.Python.Model
     {
         public string ParameterName { get; set; }
         public MachineLearningAlgorithm Algorithm { get; set; }
-        public string Description { get; set; }  // Added description property
+        public string Description { get; set; }  // Added Description property
         public string Example { get; set; }
     }
 }

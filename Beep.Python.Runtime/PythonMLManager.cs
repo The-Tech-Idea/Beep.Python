@@ -1887,13 +1887,13 @@ if 'train_data' in globals():
 from imblearn.under_sampling import NearMiss
 import pandas as pd
 
-def apply_nearmiss(df, target_column, version=1):
-    nearmiss = NearMiss(version=version)
+def apply_nearmiss(df, target_column, Version=1):
+    nearmiss = NearMiss(Version=Version)
     X_res, y_res = nearmiss.fit_resample(df.drop(columns=[target_column]), df[target_column])
     return pd.concat([X_res, y_res], axis=1)
 
 if 'train_data' in globals():
-    train_data = apply_nearmiss(train_data, '{targetColumn}', version={version})
+    train_data = apply_nearmiss(train_data, '{targetColumn}', Version={version})
 ";
 
             RunPythonScript(script, null);

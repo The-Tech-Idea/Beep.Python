@@ -24,7 +24,7 @@ namespace Beep.Python.Model
         }
         private string _packagetitleValue;
 
-        public string packagetitle
+        public string PackageTitle
         {
             get
             {
@@ -39,7 +39,7 @@ namespace Beep.Python.Model
 
         private string _packagenameValue;
 
-        public string packagename
+        public string PackageName
         {
             get
             {
@@ -54,7 +54,7 @@ namespace Beep.Python.Model
 
         private string _installpathValue;
 
-        public string installpath
+        public string Installpath
         {
             get
             {
@@ -69,7 +69,7 @@ namespace Beep.Python.Model
 
         private string _sourcepathValue;
 
-        public string sourcepath
+        public string Sourcepath
         {
             get
             {
@@ -81,9 +81,9 @@ namespace Beep.Python.Model
                 SetProperty(ref _sourcepathValue, value);
             }
         }
-        private bool _installedValue;
+        private PackageStatus _installedValue;
 
-        public bool installed
+        public PackageStatus Status
         {
             get
             {
@@ -95,9 +95,9 @@ namespace Beep.Python.Model
                 SetProperty(ref _installedValue, value);
             }
         }
-        private string _categoryValue;
+        private PackageCategory _categoryValue;
 
-        public string category
+        public PackageCategory Category
         {
             get
             {
@@ -111,7 +111,7 @@ namespace Beep.Python.Model
         }
         private string _versionValue;
 
-        public string version
+        public string Version
         {
             get
             {
@@ -125,7 +125,7 @@ namespace Beep.Python.Model
         }
         private string _versiondisplayValue;
 
-        public string versiondisplay
+        public string Versiondisplay
         {
             get
             {
@@ -139,7 +139,7 @@ namespace Beep.Python.Model
         }
         private string _updateversionValue;
 
-        public string updateversion
+        public string Updateversion
         {
             get
             {
@@ -151,9 +151,23 @@ namespace Beep.Python.Model
                 SetProperty(ref _updateversionValue, value);
             }
         }
+        private string _image;
+        public string Image
+        {
+            get { return _image; }
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    throw new ArgumentException("Image path cannot be null or empty.");
+                }
+                _image = value;
+            }
+        }
+
         private string _descriptionValue;
 
-        public string description
+        public string Description
         {
             get
             {
@@ -167,7 +181,7 @@ namespace Beep.Python.Model
         }
         private string _dbuttondisplayValue;
 
-        public string buttondisplay
+        public string Buttondisplay
         {
             get
             {
@@ -179,7 +193,8 @@ namespace Beep.Python.Model
                 SetProperty(ref _dbuttondisplayValue, value);
             }
         }
-      
+        public bool IsUpdatable => !string.IsNullOrEmpty(Updateversion) && Updateversion != Version;
+
     }
     public class packageCategoryImages
     {
@@ -192,4 +207,15 @@ namespace Beep.Python.Model
      
         public string category { get; set; }
     }
+    public enum PackageCategory
+    {
+        Utilities,
+        Development,
+        Graphics,
+        DataScience,
+        Other
+    }
+
+   
+
 }

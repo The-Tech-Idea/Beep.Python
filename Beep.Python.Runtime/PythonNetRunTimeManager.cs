@@ -13,6 +13,7 @@ using TheTechIdea.Beep.Addin;
 using TheTechIdea.Beep.Editor;
 using System.Diagnostics;
 using TheTechIdea.Beep.Container.Services;
+using Beep.Python.RuntimeEngine.Services;
 
 namespace Beep.Python.RuntimeEngine
 {
@@ -431,7 +432,7 @@ namespace Beep.Python.RuntimeEngine
         /// <summary>
         /// Determines if a Python runtime is available based on <see cref="PythonConfig"/>.
         /// </summary>
-        /// <returns>True if a runtime is configured and installed; otherwise false.</returns>
+        /// <returns>True if a runtime is configured and Status; otherwise false.</returns>
         private bool GetIsPythonAvailable()
         {
             if (PythonConfig != null)

@@ -1,5 +1,4 @@
 ﻿using Beep.Python.Model;
-using Beep.Python.RuntimeEngine;
 using System.Data;
 using TheTechIdea.Beep.Addin;
 using TheTechIdea.Beep.Vis;
@@ -14,6 +13,7 @@ using TheTechIdea.Beep.DataBase;
 
 using Beep.Python.RuntimeEngine.ViewModels;
 using TheTechIdea.Beep.Container;
+using Beep.Python.RuntimeEngine.Services;
 
 namespace Beep.Python.Winform
 {
@@ -119,7 +119,7 @@ namespace Beep.Python.Winform
             }
             if (PythonRunTimeManager != null)
             {
-                Visutil.ShowWaitForm(new PassedArgs() { Messege = "Refreshing Installed Packages" });
+                Visutil.ShowWaitForm(new PassedArgs() { Messege = "Refreshing Status Packages" });
                 packageManager.RefreshAllPackagesAsync();
                 PythonRunTimeManager.SaveConfig();
                 Visutil.CloseWaitForm();
