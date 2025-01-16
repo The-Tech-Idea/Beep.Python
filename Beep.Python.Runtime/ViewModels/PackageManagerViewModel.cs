@@ -724,7 +724,7 @@ result";
                 if (packages != null)
                 {
                     int j = 1;
-                    int count = 0;// packages.Count;
+                    int count = 0;// Packages.Count;
                     foreach (var pkg in packages)
                     {
                         string packageName = pkg.name;

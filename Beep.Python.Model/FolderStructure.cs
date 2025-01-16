@@ -14,24 +14,24 @@ namespace Beep.Python.Model
     }
     public class FolderStructure
     {
-        public string _foldername { get; set; }
-        public string _folderpath { get; set; }
+        public string Foldername { get; set; }
+        public string Folderpath { get; set; }
 
-        public bool _pythonxexist { get; set; }
-        public string xversion { get; set; }
+        public bool Pythonxexist { get; set; }
+        public string Xversion { get; set; }
 
 
 
-        public string _folder32x { get; set; }
-        public string _folder64x { get; set; }
-        public bool _folder32xexist { get; set; }
-        public bool _folder64xexist { get; set; }
-        public bool _python32xexist { get; set; }
-        public bool _python64xexist { get; set; }
-        public string _folder32xversion { get; set; }
-        public string _folder64xversion { get; set; }
-        public string _folder32xversiondisplay { get; set; }
-        public string _folder64xversiondisplay { get; set; }
+        public string Folder32x { get; set; }
+        public string Folder64x { get; set; }
+        public bool Folder32xexist { get; set; }
+        public bool Folder64xexist { get; set; }
+        public bool Python32xexist { get; set; }
+        public bool Python64xexist { get; set; }
+        public string Folder32xversion { get; set; }
+        public string Folder64xversion { get; set; }
+        public string Folder32xversiondisplay { get; set; }
+        public string Folder64xversiondisplay { get; set; }
 
       
         public FolderStructure() { }

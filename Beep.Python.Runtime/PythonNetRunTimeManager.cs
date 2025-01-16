@@ -311,7 +311,7 @@ namespace Beep.Python.RuntimeEngine
             }
 
             string pythonScriptPath = Path.Combine(pythonBinPath, "Scripts"); // Common for Windows venv
-            string pythonPackagePath = Path.Combine(pythonBinPath, "Lib\\site-packages");
+            string pythonPackagePath = Path.Combine(pythonBinPath, "Lib\\site-Packages");
 
             if (CurrentRuntimeConfig != null && CurrentRuntimeConfig.IsPythonInstalled)
             {
@@ -505,13 +505,13 @@ namespace Beep.Python.RuntimeEngine
         }
 
         /// <summary>
-        /// Initializes Python with a specified home directory and bin type, optionally specifying a site-packages folder.
+        /// Initializes Python with a specified home directory and bin type, optionally specifying a site-Packages folder.
         /// </summary>
         /// <param name="pythonhome">Path to the Python home directory or virtual environment.</param>
         /// <param name="binType">Binary type (32 or 64-bit).</param>
-        /// <param name="libpath">Relative path to the site-packages folder (default "lib\\site-packages").</param>
+        /// <param name="libpath">Relative path to the site-Packages folder (default "lib\\site-Packages").</param>
         /// <returns>True if initialization is successful, otherwise false.</returns>
-        public bool Initialize(string pythonhome, BinType32or64 binType, string libpath = @"lib\site-packages")
+        public bool Initialize(string pythonhome, BinType32or64 binType, string libpath = @"lib\site-Packages")
         {
             pythonpath = DMEditor.GetPythonDataPath();
             configfile = Path.Combine(pythonpath, "cpython.config");
@@ -615,8 +615,8 @@ namespace Beep.Python.RuntimeEngine
         /// </summary>
         /// <param name="runtimepath">Path to the Python runtime.</param>
         /// <param name="binType">Binary type (32 or 64-bit).</param>
-        /// <param name="libpath">Relative path to the site-packages folder (default is "lib\\site-packages").</param>
-        public void SetRuntimePath(string runtimepath, BinType32or64 binType, string libpath = @"lib\site-packages")
+        /// <param name="libpath">Relative path to the site-Packages folder (default is "lib\\site-Packages").</param>
+        public void SetRuntimePath(string runtimepath, BinType32or64 binType, string libpath = @"lib\site-Packages")
         {
             Initialize(CurrentRuntimeConfig.RuntimePath, binType);
             SaveConfig();

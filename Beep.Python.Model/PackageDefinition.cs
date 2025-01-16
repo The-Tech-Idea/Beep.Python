@@ -209,10 +209,12 @@ namespace Beep.Python.Model
     }
     public enum PackageCategory
     {
+        UI,
         Utilities,
         Development,
         Graphics,
         DataScience,
+        Compute,
         Other
     }
 

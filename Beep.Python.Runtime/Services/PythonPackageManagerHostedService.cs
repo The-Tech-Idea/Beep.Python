@@ -24,7 +24,7 @@ namespace Beep.Python.RuntimeEngine.Services
         {
             try
             {
-                IsReady = _pythonRunTimeManager.Initialize(_pythonRuntimePath, BinType32or64.p395x64, @"lib\site-packages");
+                IsReady = _pythonRunTimeManager.Initialize(_pythonRuntimePath, BinType32or64.p395x64, @"lib\site-Packages");
                 if (!IsReady)
                 {
                     throw new InvalidOperationException("Failed to initialize the Python runtime.");

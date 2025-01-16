@@ -113,13 +113,13 @@ namespace Beep.Python.Winform.Cpython
         {
             string pname;
             string ptitle;
-            string category;
-            string[] packs = PythonManager.PIPManager.packagenames.Split(',');
-            string[] packscategoriesimages = PythonManager.PIPManager.packagecatgoryimages.Split(',');
+            PackageCategory category;
+            string[] packs = PythonManager.PIPManager.PackageNames.Split(',');
+            string[] packscategoriesimages = PythonManager.PIPManager.PackageCatgoryImages.Split(',');
             foreach (string item in packscategoriesimages)
             {
                 string[] imgs = item.Split(';');
-                PythonManager.PIPManager.packageCategorys.Add(new packageCategoryImages { category = imgs[0], image = imgs[1] });
+                PythonManager.PIPManager.PackageCategorys.Add(new packageCategoryImages { category = imgs[0], image = imgs[1] });
 
             }
             foreach (string item in packs)
@@ -130,9 +130,9 @@ namespace Beep.Python.Winform.Cpython
 
                     pname = pc[0];
                     ptitle = pc[1];
-                    category = pc[2];
+                    category = Enum.Parse<PackageCategory>(pc[2]);
 
-                    PythonManager.PIPManager.packages.Add(new PackageDefinition { PackageName = pname, PackageTitle = ptitle, Category = category, Installpath = PythonManager.Packageinstallpath });
+                    PythonManager.PIPManager.Packages.Add(new PackageDefinition { PackageName = pname, PackageTitle = ptitle, Category = category, Installpath = PythonManager.Packageinstallpath });
                 }
                 catch (Exception ex)
                 {
@@ -165,30 +165,30 @@ namespace Beep.Python.Winform.Cpython
 
             //t.Click += InstallPythonNetbutton_Click;
             // ToolStripMenuItem
-            foreach (string item in PythonManager.PIPManager.packages.Select(o => o.Category).Distinct().ToList())
+            foreach (PackageCategory item in PythonManager.PIPManager.Packages.Select(o => o.Category).Distinct().ToList())
             {
                 ToolStripMenuItem o = new ToolStripMenuItem();
                 o.ImageScaling = ToolStripItemImageScaling.SizeToFit;
                 o.DisplayStyle = ToolStripItemDisplayStyle.ImageAndText;
-                o.Text = item;
-                if (PythonManager.PIPManager.packageCategorys.Where(u => u.category.Equals(o.Text, StringComparison.OrdinalIgnoreCase)).Any())
+                o.Text = item.ToString();
+                if (PythonManager.PIPManager.PackageCategorys.Where(u => u.category.Equals(o.Text, StringComparison.OrdinalIgnoreCase)).Any())
                 {
                     switch (item)
                     {
-                        case "Gui":
+                        case  PackageCategory.UI:
 
                             o.Image = iDEManager.resourceManager.GetImage("Beep.Python.Winform.gfx.", "gui.ico");
                             break;
-                        case "Tools":
+                        case  PackageCategory.Utilities:
                             o.Image = iDEManager.resourceManager.GetImage("Beep.Python.Winform.gfx.", "tools.ico");
                             break;
-                        case "GFX":
+                        case  PackageCategory.Graphics:
                             o.Image = iDEManager.resourceManager.GetImage("Beep.Python.Winform.gfx.", "gfx.ico");
                             break;
-                        case "ML":
+                        case  PackageCategory.DataScience:
                             o.Image = iDEManager.resourceManager.GetImage("Beep.Python.Winform.gfx.", "ml.ico");
                             break;
-                        case "Compute":
+                        case  PackageCategory.Compute:
                             o.Image = iDEManager.resourceManager.GetImage("Beep.Python.Winform.gfx.", "compute.ico");
                             break;
                         default:
@@ -200,14 +200,14 @@ namespace Beep.Python.Winform.Cpython
                 //        o.Text = item;
 
                 packagesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { o });
-                foreach (PackageDefinition package in PythonManager.PIPManager.packages.Where(p => p.Category == item))
+                foreach (PackageDefinition package in PythonManager.PIPManager.Packages.Where(p => p.Category == item))
                 {
 
 
                     t = o.DropDownItems.Add(package.PackageTitle);
 
 
-                    if (PythonManager.PIPManager.checkifpackageinstalledAsync(package.PackageName))
+                    if (PythonManager.PIPManager.CheckifpackageinstalledAsync(package.PackageName))
                     {
                         t.Image = iDEManager.resourceManager.GetImage("Beep.Python.Winform.gfx.", "linked.ico");
                     }
@@ -225,9 +225,9 @@ namespace Beep.Python.Winform.Cpython
         {
             ToolStripMenuItem i = (ToolStripMenuItem)sender;
             string n = i.Text;
-            string packagename = PythonManager.PIPManager.packages.Where(o => o.PackageTitle.Equals(n, StringComparison.OrdinalIgnoreCase)).Select(o => o.PackageName).FirstOrDefault();
+            string packagename = PythonManager.PIPManager.Packages.Where(o => o.PackageTitle.Equals(n, StringComparison.OrdinalIgnoreCase)).Select(o => o.PackageName).FirstOrDefault();
             PythonManager.ProcessManager.runPythonScriptcommandlineSync($@"pip.exe install {packagename}", $@"{PythonManager.BinPath}\scripts\");
-            //if (checkifpackageinstalled(PackageName))
+            //if (Checkifpackageinstalled(PackageName))
             //{
             //    i.Image = global::AIBuilder.Properties.Resources.verified_account_32px;
             //    MessageBox.Show($"Success Install Package {n}");

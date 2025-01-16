@@ -4,7 +4,7 @@
     {
         string FilenameLoaded { get; set; }
         bool IsConfigLoaded { get; set; }
-        byte[] lasttmpcsvhash { get; set; }
+        byte[] LastTmpcsvhash { get; set; }
         string Tmpcsvfile { get; set; }
 
         void CreatedHashTmp();

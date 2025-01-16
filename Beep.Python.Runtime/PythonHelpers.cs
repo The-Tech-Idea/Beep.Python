@@ -14,7 +14,7 @@ namespace Beep.Python.RuntimeEngine
         public static PyModule _persistentScope { get; set; }
        
 
-        // Helper method to flatten your z array if it's 2D
+        // Helper method to flatten your Z array if it's 2D
         public static double[] FlattenZArray(double[,] z)
         {
             int numRows = z.GetLength(0);

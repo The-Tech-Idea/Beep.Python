@@ -16,14 +16,14 @@ namespace Beep.Python.Model
         Py.GILState GIL();
         BinType32or64 BinType { get; set; }
         IDMEEditor DMEditor { get; set; }
-       // bool listpackages( bool useConda = false, string PackageName = null);
+       
         ObservableCollection<string> OutputLines { get; set; }
         bool IsBusy { get; set; }
         void Stop();
         PyModule PersistentScope { get; set; }
         bool CreateScope();
         PythonConfiguration PythonConfig { get; set; }
-     //   IPackageManagerViewModel PackageManager { get; set; }
+     
         PythonRunTime CurrentRuntimeConfig { get;  }
         string CurrentFileLoaded { get; set; }
         bool IsConfigLoaded { get;  }
@@ -44,7 +44,7 @@ namespace Beep.Python.Model
         bool RunPythonScript(string script, dynamic parameters);
         void CreateLoadConfig();
         void SaveConfig( );
-        void SetRuntimePath(string runtimepath, BinType32or64 binType, string libpath = @"lib\site-packages");
+        void SetRuntimePath(string runtimepath, BinType32or64 binType, string libpath = @"lib\site-Packages");
         IErrorsInfo ShutDown();
         //bool IsRunTimeFound(string path);
     }

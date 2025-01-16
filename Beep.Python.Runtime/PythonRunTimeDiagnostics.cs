@@ -384,7 +384,7 @@ namespace Beep.Python.RuntimeEngine
             config.BinPath = path;
             config.PythonVersion = version;
             config.PythonDll = dllPath;
-            config.Packageinstallpath = Path.Combine(path, "Lib", "site-packages");
+            config.Packageinstallpath = Path.Combine(path, "Lib", "site-Packages");
             config.ScriptPath = Path.Combine(path, "Scripts");
             config.BinType = architecture;
             config.PackageType = GetPackageType(path);
@@ -423,7 +423,7 @@ namespace Beep.Python.RuntimeEngine
             config.BinPath = path;
             config.PythonVersion = version;
             config.PythonDll = dllPath;
-            config.Packageinstallpath = Path.Combine(path, "Lib", "site-packages");
+            config.Packageinstallpath = Path.Combine(path, "Lib", "site-Packages");
             config.ScriptPath = Path.Combine(path, "Scripts");
             config.BinType = architecture;
             config.PackageType = GetPackageType(path);

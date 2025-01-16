@@ -365,7 +365,7 @@ namespace Beep.Python.RuntimeEngine
         {
             using (Py.GIL())
             {
-                string script = $"import nltk\nnltk.download('punkt')\n{dataFrameName}['{columnName}_word_count'] = {dataFrameName}['{columnName}'].apply(lambda x: len(nltk.word_tokenize(x)))";
+                string script = $"import nltk\nnltk.download('punkt')\n{dataFrameName}['{columnName}_word_count'] = {dataFrameName}['{columnName}'].apply(lambda X: len(nltk.word_tokenize(X)))";
                 PersistentScope.Exec(script);
             }
         }
@@ -397,7 +397,7 @@ namespace Beep.Python.RuntimeEngine
         {
             using (Py.GIL())
             {
-                string script = $"import matplotlib.pyplot as plt\n{dataFrameName}.plot(kind='{plotType}', y='{columnName}')\nplt.savefig('plot.png')";
+                string script = $"import matplotlib.pyplot as plt\n{dataFrameName}.plot(kind='{plotType}', Y='{columnName}')\nplt.savefig('plot.png')";
                 PersistentScope.Exec(script);
                 return "plot.png";
             }
@@ -454,7 +454,7 @@ namespace Beep.Python.RuntimeEngine
         {
             using (Py.GIL())
             {
-                string script = $"{dataFrameName}['{columnName}'] = {dataFrameName}['{columnName}'].apply(lambda x: x.{operation})";
+                string script = $"{dataFrameName}['{columnName}'] = {dataFrameName}['{columnName}'].apply(lambda X: X.{operation})";
                 PersistentScope.Exec(script);
             }
         }

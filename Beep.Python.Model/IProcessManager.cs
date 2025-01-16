@@ -5,8 +5,8 @@ namespace Beep.Python.Model
 {
     public interface IProcessManager
     {
-        int numOutputLines { get; set; }
-        List<string> outputdata { get; set; }
+        int NumOutputLines { get; set; }
+        List<string> Outputdata { get; set; }
         Process Process { get; set; }
 
         void RunPIP(string Command, string Commandpath);

@@ -5,13 +5,13 @@ namespace Beep.Python.Model
 {
     public interface IPIPManager
     {
-        List<packageCategoryImages> packageCategorys { get; set; }
-        string packagecatgoryimages { get; }
-        string packagenames { get; }
-        List<PackageDefinition> packages { get; set; }
-        string[] packs { get; set; }
+        List<packageCategoryImages> PackageCategorys { get; set; }
+        string PackageCatgoryImages { get; }
+        string PackageNames { get; }
+        List<PackageDefinition> Packages { get; set; }
+        string[] Packs { get; set; }
 
-        bool checkifpackageinstalledAsync(string packagename);
+        bool CheckifpackageinstalledAsync(string packagename);
         bool InstallPackage(string packagename);
         bool UpdatePackage(string packagename);
         bool InstallPIP();

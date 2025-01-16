@@ -93,7 +93,7 @@ expected_columns = preview_data.columns.tolist()
 missing_values = preview_data.isnull().sum().tolist()
 
 # Check data types (optional)
-data_types = preview_data.dtypes.apply(lambda x: x.name).tolist()
+data_types = preview_data.dtypes.apply(lambda X: X.name).tolist()
 
 # Assign results to the persistent scope
 preview_columns = expected_columns
@@ -549,12 +549,12 @@ def remove_special_characters_from_data(df):
     for col in df.columns:
         if df[col].dtype == 'object':  # Checking if the column is of string type
             # Apply the regex to each element in the column to remove special characters
-          df[col] = df[col].apply(lambda x: re.sub(r""[^a-zA-Z0-9_]+"", '', str(x)))
+          df[col] = df[col].apply(lambda X: re.sub(r""[^a-zA-Z0-9_]+"", '', str(X)))
     return df
 
 # Function to fix column names (remove spaces and special characters)
 def fix_column_names(df):
-    return df.rename(columns=lambda x: x.strip().replace(' ', '').replace('/', '').replace('-', ''))
+    return df.rename(columns=lambda X: X.strip().replace(' ', '').replace('/', '').replace('-', ''))
 
 # Load the dataset
 data = pd.read_csv('{formattedFilePath}', encoding='cp1252')
@@ -958,7 +958,7 @@ def remove_special_characters_from_data(df):
     for col in df.columns:
         if df[col].dtype == 'object':  # Checking if the column is of string type
             # Apply the regex to each element in the column to remove special characters
-          df[col] = df[col].apply(lambda x: re.sub(r""[^a-zA-Z0-9_]+"", '', str(x)))
+          df[col] = df[col].apply(lambda X: re.sub(r""[^a-zA-Z0-9_]+"", '', str(X)))
     return df
 
 # Apply the function to the DataFrame
@@ -1191,7 +1191,7 @@ for feature in date_features:
 
 # Or convert to timestamp
 for feature in date_features:
-    data[feature + '_timestamp'] = data[feature].apply(lambda x: x.timestamp() if pd.notnull(x) else None)
+    data[feature + '_timestamp'] = data[feature].apply(lambda X: X.timestamp() if pd.notnull(X) else None)
 
 # Optionally, drop the original date columns
 data.drop(columns=date_features, inplace=True)
@@ -1910,9 +1910,9 @@ from imblearn.ensemble import BalancedRandomForestClassifier
 
 def apply_balanced_random_forest(df, target_column, n_estimators=100):
     X = pd.get_dummies(df.drop(columns=[target_column]))
-    y = df[target_column]
+    Y = df[target_column]
     model = BalancedRandomForestClassifier(n_estimators=n_estimators, random_state=42)
-    model.fit(X, y)
+    model.fit(X, Y)
     return model
 
 if 'train_data' in globals():
@@ -1935,15 +1935,15 @@ if 'train_data' in globals():
 from sklearn.utils.class_weight import compute_class_weight
 
 X = pd.get_dummies(train_data[{features}])
-y = train_data[{labelColumn}]
+Y = train_data[{labelColumn}]
 
 # Compute class weights
-class_weights = compute_class_weight('balanced', classes=np.unique(y), y=y)
-class_weight_dict = dict(zip(np.unique(y), class_weights))
+class_weights = compute_class_weight('balanced', classes=np.unique(Y), Y=Y)
+class_weight_dict = dict(zip(np.unique(Y), class_weights))
 
 # Include class weights in the model parameters
 model = {algorithmName}({paramsDict}, class_weight=class_weight_dict)
-model.fit(X, y)
+model.fit(X, Y)
 
 # Store the model
 models['{modelId}'] = model
@@ -2008,10 +2008,10 @@ from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 stopwords = list(ENGLISH_STOP_WORDS)
 
 if '{columnName}' in train_data.columns:
-    train_data['{columnName}'] = train_data['{columnName}'].apply(lambda x: ' '.join([word for word in str(x).split() if word not in stopwords]))
+    train_data['{columnName}'] = train_data['{columnName}'].apply(lambda X: ' '.join([word for word in str(X).split() if word not in stopwords]))
 
 if 'test_data' in globals() and '{columnName}' in test_data.columns:
-    test_data['{columnName}'] = test_data['{columnName}'].apply(lambda x: ' '.join([word for word in str(x).split() if word not in stopwords]))
+    test_data['{columnName}'] = test_data['{columnName}'].apply(lambda X: ' '.join([word for word in str(X).split() if word not in stopwords]))
 ";
 
             RunPythonScript(script, null);
@@ -2030,10 +2030,10 @@ stemmer = PorterStemmer()
 
 # Apply stemming to text
 if '{columnName}' in train_data.columns:
-    train_data['{columnName}'] = train_data['{columnName}'].apply(lambda x: ' '.join([stemmer.stem(word) for word in str(x).split()]))
+    train_data['{columnName}'] = train_data['{columnName}'].apply(lambda X: ' '.join([stemmer.stem(word) for word in str(X).split()]))
 
 if 'test_data' in globals() and '{columnName}' in test_data.columns:
-    test_data['{columnName}'] = test_data['{columnName}'].apply(lambda x: ' '.join([stemmer.stem(word) for word in str(x).split()]))
+    test_data['{columnName}'] = test_data['{columnName}'].apply(lambda X: ' '.join([stemmer.stem(word) for word in str(X).split()]))
 ";
 
             RunPythonScript(script, null);
@@ -2052,10 +2052,10 @@ lemmatizer = WordNetLemmatizer()
 
 # Apply lemmatization to text
 if '{columnName}' in train_data.columns:
-    train_data['{columnName}'] = train_data['{columnName}'].apply(lambda x: ' '.join([lemmatizer.lemmatize(word) for word in str(x).split()]))
+    train_data['{columnName}'] = train_data['{columnName}'].apply(lambda X: ' '.join([lemmatizer.lemmatize(word) for word in str(X).split()]))
 
 if 'test_data' in globals() and '{columnName}' in test_data.columns:
-    test_data['{columnName}'] = test_data['{columnName}'].apply(lambda x: ' '.join([lemmatizer.lemmatize(word) for word in str(x).split()]))
+    test_data['{columnName}'] = test_data['{columnName}'].apply(lambda X: ' '.join([lemmatizer.lemmatize(word) for word in str(X).split()]))
 ";
 
             RunPythonScript(script, null);
@@ -2072,10 +2072,10 @@ from nltk.tokenize import word_tokenize
 
 # Apply tokenization to text
 if '{columnName}' in train_data.columns:
-    train_data['{columnName}'] = train_data['{columnName}'].apply(lambda x: word_tokenize(str(x)))
+    train_data['{columnName}'] = train_data['{columnName}'].apply(lambda X: word_tokenize(str(X)))
 
 if 'test_data' in globals() and '{columnName}' in test_data.columns:
-    test_data['{columnName}'] = test_data['{columnName}'].apply(lambda x: word_tokenize(str(x)))
+    test_data['{columnName}'] = test_data['{columnName}'].apply(lambda X: word_tokenize(str(X)))
 ";
 
             RunPythonScript(script, null);
@@ -2560,7 +2560,7 @@ from sklearn.model_selection import cross_val_score
 model = models['{modelId}']
 
 # Perform cross-validation
-scores = cross_val_score(model, X, y, cv={numFolds}, scoring='accuracy')
+scores = cross_val_score(model, X, Y, cv={numFolds}, scoring='accuracy')
 
 # Calculate the average and standard deviation of the cross-validation scores
 avg_score = scores.mean()
@@ -2791,11 +2791,11 @@ features = [{featureListPython}] if {featureListPython} != 'None' else data.colu
 
 # Separate the label
 X = data[features]
-y = data['{labelColumn}']
+Y = data['{labelColumn}']
 
 # Apply LDA to the selected features
 lda = LDA(n_components={nComponents})
-lda_components = lda.fit_transform(X, y)
+lda_components = lda.fit_transform(X, Y)
 
 # Create a DataFrame for the LDA components
 lda_df = pd.DataFrame(data=lda_components, columns=['LD' + str(i + 1) for i in range(lda_components.shape[1])])
@@ -2865,10 +2865,10 @@ from imblearn.over_sampling import RandomOverSampler
 import pandas as pd
 
 ros = RandomOverSampler()
-X, y = ros.fit_resample(data.drop(columns=['{labelColumn}']), data['{labelColumn}'])
+X, Y = ros.fit_resample(data.drop(columns=['{labelColumn}']), data['{labelColumn}'])
 
 # Combine the resampled features and labels back into a DataFrame
-data = pd.concat([pd.DataFrame(X), pd.Series(y, name='{labelColumn}')], axis=1)
+data = pd.concat([pd.DataFrame(X), pd.Series(Y, name='{labelColumn}')], axis=1)
 
 globals()['data'] = data
 ";
@@ -2887,10 +2887,10 @@ from imblearn.under_sampling import RandomUnderSampler
 import pandas as pd
 
 rus = RandomUnderSampler()
-X, y = rus.fit_resample(data.drop(columns=['{labelColumn}']), data['{labelColumn}'])
+X, Y = rus.fit_resample(data.drop(columns=['{labelColumn}']), data['{labelColumn}'])
 
 # Combine the resampled features and labels back into a DataFrame
-data = pd.concat([pd.DataFrame(X), pd.Series(y, name='{labelColumn}')], axis=1)
+data = pd.concat([pd.DataFrame(X), pd.Series(Y, name='{labelColumn}')], axis=1)
 
 globals()['data'] = data
 ";
@@ -2909,10 +2909,10 @@ from imblearn.over_sampling import SMOTE
 import pandas as pd
 
 smote = SMOTE()
-X, y = smote.fit_resample(data.drop(columns=['{labelColumn}']), data['{labelColumn}'])
+X, Y = smote.fit_resample(data.drop(columns=['{labelColumn}']), data['{labelColumn}'])
 
 # Combine the resampled features and labels back into a DataFrame
-data = pd.concat([pd.DataFrame(X), pd.Series(y, name='{labelColumn}')], axis=1)
+data = pd.concat([pd.DataFrame(X), pd.Series(Y, name='{labelColumn}')], axis=1)
 
 globals()['data'] = data
 ";
@@ -3080,7 +3080,7 @@ plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
-plt.title('Receiver operating characteristic')
+plt.Title('Receiver operating characteristic')
 plt.legend(loc='lower right')
 plt.show()";
             return RunPythonScript(script, null);
@@ -3123,14 +3123,14 @@ import numpy as np
 # Assuming model is a scikit-learn estimator
 model = models['{modelId}']
 
-# Ensure X and y are defined (assumes they are already available in the Python scope)
+# Ensure X and Y are defined (assumes they are already available in the Python scope)
 X = pd.get_dummies(train_data[features])
 X.fillna(X.mean(), inplace=True)  # Simple mean imputation for missing values
 
-y = train_data[label_column].fillna(train_data[label_column].mean())  # Impute missing labels
+Y = train_data[label_column].fillna(train_data[label_column].mean())  # Impute missing labels
 
 # Generate learning curve
-train_sizes, train_scores, test_scores = learning_curve(model, X, y, cv=5, n_jobs=-1, train_sizes=np.linspace(0.1, 1.0, 10))
+train_sizes, train_scores, test_scores = learning_curve(model, X, Y, cv=5, n_jobs=-1, train_sizes=np.linspace(0.1, 1.0, 10))
 
 # Calculate mean and std for train and test scores
 train_scores_mean = np.mean(train_scores, axis=1)
@@ -3145,7 +3145,7 @@ plt.fill_between(train_sizes, test_scores_mean - test_scores_std, test_scores_me
 plt.plot(train_sizes, train_scores_mean, 'o-', color='r', label='Training score')
 plt.plot(train_sizes, test_scores_mean, 'o-', color='g', label='Cross-validation score')
 
-plt.title('Learning Curve')
+plt.Title('Learning Curve')
 plt.xlabel('Training Examples')
 plt.ylabel('Score')
 plt.legend(loc='best')
@@ -3181,7 +3181,7 @@ if hasattr(model, 'feature_importances_'):
     top_features = min(len(importances), X.shape[1])
 
     plt.figure()
-    plt.title('Feature Importance')
+    plt.Title('Feature Importance')
     plt.bar(range(top_features), importances[indices][:top_features], align='center')
     plt.xticks(range(top_features), [features[i] for i in indices[:top_features]], rotation=90)
     plt.xlim([-1, top_features])
@@ -3215,7 +3215,7 @@ plt.figure()
 plt.plot(recall, precision, color='b', lw=2, label='Precision-Recall curve')
 plt.xlabel('Recall')
 plt.ylabel('Precision')
-plt.title('Precision-Recall Curve (AP={0:0.2f})'.format(average_precision))
+plt.Title('Precision-Recall Curve (AP={0:0.2f})'.format(average_precision))
 plt.legend(loc='lower left')
 plt.savefig('{formattedFilePath}')
 # plt.show()
@@ -3242,7 +3242,7 @@ cm = confusion_matrix(y_test, predictions)
 sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
 plt.xlabel('Predicted')
 plt.ylabel('True')
-plt.title('Confusion Matrix')
+plt.Title('Confusion Matrix')
 plt.savefig('{formattedFilePath}')
 # plt.show()
 ";
@@ -3272,7 +3272,7 @@ plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
-plt.title('Receiver Operating Characteristic')
+plt.Title('Receiver Operating Characteristic')
 plt.legend(loc='lower right')
 plt.savefig('{formattedFilePath}')
 # plt.show()
@@ -3309,7 +3309,7 @@ plt.savefig('{formattedFilePath}')
             string htmlContent = $@"
 <html>
 <head>
-    <title>Model Evaluation Report</title>
+    <Title>Model Evaluation Report</Title>
 </head>
 <body>
     <h1>Model Evaluation Report</h1>";

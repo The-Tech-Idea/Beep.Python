@@ -133,10 +133,10 @@ namespace Beep.Python.Winform
             InitializeComponent();
             init();
             // this.RuntimecheckBox.
-            // this.Folder32checkBox1.Checked = PythonRunTimeDiagnostics.FolderExist(fs._folderpath, BinType32or64.p395x32);
-            // this.Folder64checkBox2.Checked = PythonRunTimeDiagnostics.FolderExist(fs._folderpath, BinType32or64.p395x64);
-            // this.Python32checkBox3.Checked = PythonRunTimeDiagnostics.IsPythonInstalled(fs._folderpath, BinType32or64.p395x32);
-            //this.Python64checkBox4.Checked = PythonRunTimeDiagnostics.IsPythonInstalled(fs._folderpath, BinType32or64.p395x64);
+            // this.Folder32checkBox1.Checked = PythonRunTimeDiagnostics.FolderExist(fs.Folderpath, BinType32or64.p395x32);
+            // this.Folder64checkBox2.Checked = PythonRunTimeDiagnostics.FolderExist(fs.Folderpath, BinType32or64.p395x64);
+            // this.Python32checkBox3.Checked = PythonRunTimeDiagnostics.IsPythonInstalled(fs.Folderpath, BinType32or64.p395x32);
+            //this.Python64checkBox4.Checked = PythonRunTimeDiagnostics.IsPythonInstalled(fs.Folderpath, BinType32or64.p395x64);
         }
 
         private void Cancelbutton_Click(object sender, EventArgs e)
@@ -170,7 +170,7 @@ namespace Beep.Python.Winform
             //    return;
             //}
             //  FolderStructure fs = (FolderStructure)dataGridView1.SelectedRows[0].DataBoundItem;
-            //  validateFolder(fs._folderpath);
+            //  validateFolder(fs.Folderpath);
         }
 
         private void SetFolderbutton_Click(object sender, EventArgs e)
@@ -215,11 +215,11 @@ namespace Beep.Python.Winform
             //}
             //FolderStructure fs = (FolderStructure)dataGridView1.SelectedRows[0].DataBoundItem;
 
-            //this.RuntimecheckBox.Checked = PythonRunTimeDiagnostics.IsFoldersExist(fs._folderpath);
-            //this.Folder32checkBox1.Checked = PythonRunTimeDiagnostics.FolderExist(fs._folderpath, BinType32or64.p395x32);
-            //this.Folder64checkBox2.Checked = PythonRunTimeDiagnostics.FolderExist(fs._folderpath, BinType32or64.p395x64);
-            //this.Python32checkBox3.Checked = PythonRunTimeDiagnostics.IsPythonInstalled(fs._folderpath, BinType32or64.p395x32);
-            //this.Python64checkBox4.Checked = PythonRunTimeDiagnostics.IsPythonInstalled(fs._folderpath, BinType32or64.p395x64);
+            //this.RuntimecheckBox.Checked = PythonRunTimeDiagnostics.IsFoldersExist(fs.Folderpath);
+            //this.Folder32checkBox1.Checked = PythonRunTimeDiagnostics.FolderExist(fs.Folderpath, BinType32or64.p395x32);
+            //this.Folder64checkBox2.Checked = PythonRunTimeDiagnostics.FolderExist(fs.Folderpath, BinType32or64.p395x64);
+            //this.Python32checkBox3.Checked = PythonRunTimeDiagnostics.IsPythonInstalled(fs.Folderpath, BinType32or64.p395x32);
+            //this.Python64checkBox4.Checked = PythonRunTimeDiagnostics.IsPythonInstalled(fs.Folderpath, BinType32or64.p395x64);
         }
 
         private void Browserbutton_Click(object sender, EventArgs e)

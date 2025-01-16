@@ -25,8 +25,6 @@
 	  <Compile Remove="ViewModels\AIAlgorithimsViewModel.cs" />
 	  <Compile Remove="ViewModels\AICompViewModel.cs" />
 	  <Compile Remove="ViewModels\AITrainingViewModel.cs" />
-	  <Compile Remove="ViewModels\PackageManagerViewModel.cs" />
-	  <Compile Remove="ViewModels\PythonBaseViewModel.cs" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="..\..\InstallationScripts\LogoGFx\128\SimpleODM.png">
@@ -46,8 +44,5 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\Beep.Python.Model\Beep.Python.Model.csproj" />
 	  <ProjectReference Include="..\Beep.Python.Runtime\Beep.Python.Runtime.PythonNet.csproj" />
-	</ItemGroup>
-	<ItemGroup>
-	  <Folder Include="ViewModels\" />
 	</ItemGroup>
 </Project>

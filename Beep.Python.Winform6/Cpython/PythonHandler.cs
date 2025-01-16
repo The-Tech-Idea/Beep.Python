@@ -67,7 +67,7 @@ namespace AIBuilder.Cpython
                 aifolder = DMEEditor.ConfigEditor.Config.Folders.Where(c => c.FolderFilesType == FolderFileTypes.Scripts && c.FolderPath.Contains("AI")).FirstOrDefault().FolderPath;
             }
             tmpcsvfile = lookfortmopcsv();
-            packageinstallpath = Path.Combine(binpath, @"Lib\site-packages");
+            packageinstallpath = Path.Combine(binpath, @"Lib\site-Packages");
             lasttmpcsvhash = GetFileHash(tmpcsvfile);
             SetupEnvVariables();
         }
@@ -104,7 +104,7 @@ namespace AIBuilder.Cpython
         {
             string pname;
             string ptitle;
-            string category;
+            PackageCategory category;
             string[] packs = packagenames.Split(',');
             string[] packscategoriesimages = packagecatgoryimages.Split(',');
             foreach (string item in packscategoriesimages)
@@ -121,8 +121,8 @@ namespace AIBuilder.Cpython
 
                     pname = pc[0];
                     ptitle = pc[1];
-                    category = pc[2];
-                    
+                    category = (PackageCategory)Enum.Parse(typeof(PackageCategory), pc[2]);
+
                     packages.Add(new PackageDefinition { PackageName = pname, PackageTitle = ptitle, Category = category, Installpath = packageinstallpath });
                 }
                 catch (Exception ex)
@@ -155,30 +155,30 @@ namespace AIBuilder.Cpython
 
             //t.Click += InstallPythonNetbutton_Click;
             // ToolStripMenuItem
-            foreach (string item in packages.Select(o=>o.Category).Distinct().ToList())
+            foreach (PackageCategory item in packages.Select(o=>o.Category).Distinct().ToList())
             {
                 ToolStripMenuItem o = new ToolStripMenuItem();
                 o.ImageScaling = ToolStripItemImageScaling.SizeToFit;
                 o.DisplayStyle = ToolStripItemDisplayStyle.ImageAndText;
-                o.Text=item;
+                o.Text=item.ToString();
                 if (packageCategorys.Where(u=>u.category.Equals(o.Text, StringComparison.OrdinalIgnoreCase)).Any())
                 {
                     switch (item)
                     {
-                        case "Gui":
+                        case  PackageCategory.UI:
                             
                             o.Image = resourceManager.GetImage("TheTechIdea.Beep.AIBuilder.gfx.", "gui.ico");
                             break;
-                        case "Tools":
+                        case  PackageCategory.Utilities:
                             o.Image = resourceManager.GetImage("TheTechIdea.Beep.AIBuilder.gfx.", "tools.ico");
                             break;
-                        case "GFX":
+                        case  PackageCategory.Graphics:
                             o.Image = resourceManager.GetImage("TheTechIdea.Beep.AIBuilder.gfx.", "gfx.ico");
                             break;
-                        case "ML":
+                        case  PackageCategory.DataScience:
                             o.Image = resourceManager.GetImage("TheTechIdea.Beep.AIBuilder.gfx.", "ml.ico");
                             break;
-                        case "Compute":
+                        case  PackageCategory.Compute:
                             o.Image = resourceManager.GetImage("TheTechIdea.Beep.AIBuilder.gfx.", "compute.ico");
                             break;
                         default:
@@ -197,7 +197,7 @@ namespace AIBuilder.Cpython
                     t = o.DropDownItems.Add(package.PackageTitle);
 
 
-                    if (checkifpackageinstalled(package.PackageName))
+                    if (Checkifpackageinstalled(package.PackageName))
                     {
                         t.Image = resourceManager.GetImage("TheTechIdea.Beep.AIBuilder.gfx.", "linked.ico");
                     }
@@ -211,7 +211,7 @@ namespace AIBuilder.Cpython
             }
            
         }
-        public bool checkifpackageinstalled(string packagename)
+        public bool Checkifpackageinstalled(string packagename)
         {
             if (packagename.Contains("-"))
             {
@@ -235,7 +235,7 @@ namespace AIBuilder.Cpython
             string n = i.Text;
             string packagename = packages.Where(o => o.PackageTitle.Equals(n, StringComparison.OrdinalIgnoreCase)).Select(o => o.PackageName).FirstOrDefault();
             runPythonScriptscommandlineAsync($@"pip.exe install {packagename}", $@"{binpath}\scripts\");
-            //if (checkifpackageinstalled(PackageName))
+            //if (Checkifpackageinstalled(PackageName))
             //{
             //    i.Image = global::AIBuilder.Properties.Resources.verified_account_32px;
             //    MessageBox.Show($"Success Install Package {n}");
@@ -408,7 +408,7 @@ namespace AIBuilder.Cpython
                 outputdata.Append(Environment.NewLine + $"[{numOutputLines}] - {e.Data}");
                 //this.OutputtextBox.BeginInvoke(new Action(() => {
                 //    this.OutputtextBox.AppendText(Environment.NewLine +
-                //    $"[{numOutputLines}] - {e.Data}");
+                //    $"[{NumOutputLines}] - {e.Data}");
                 //}));
 
                 DMEEditor.AddLogMessage("Python Module", $"Error in Python Module {e.Data}", DateTime.Now, numOutputLines, null, Errors.Failed);

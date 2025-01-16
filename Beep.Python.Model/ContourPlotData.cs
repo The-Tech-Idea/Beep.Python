@@ -6,14 +6,14 @@ namespace Beep.Python.Model
 {
     public class ContourPlotData
     {
-        public double[] x { get; set; }
-        public double[] y { get; set; }
-        public double[] z { get; set; }
-        public string picfile { get; set; }
-        public string xLabel { get; set; }
-        public string yLabel { get; set; }
-        public string title { get; set; }
-        public string zfield { get; set; }
-        public List<Tuple<double, double, string>> pointTitles { get; set; } = new List<Tuple<double, double, string>>();
+        public double[] X { get; set; }
+        public double[] Y { get; set; }
+        public double[] Z { get; set; }
+        public string Picfile { get; set; }
+        public string XLabel { get; set; }
+        public string YLabel { get; set; }
+        public string Title { get; set; }
+        public string Zfield { get; set; }
+        public List<Tuple<double, double, string>> PointTitles { get; set; } = new List<Tuple<double, double, string>>();
     }
 }

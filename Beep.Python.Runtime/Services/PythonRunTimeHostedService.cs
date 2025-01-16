@@ -23,7 +23,7 @@ namespace Beep.Python.RuntimeEngine.Services
         public Task StartAsync(CancellationToken cancellationToken)
         {
             // Perform initialization logic here to ensure it runs after the application starts
-            IsReady = _pythonRunTimeManager.Initialize(_pythonRuntimePath, BinType32or64.p395x64, @"lib\site-packages");
+            IsReady = _pythonRunTimeManager.Initialize(_pythonRuntimePath, BinType32or64.p395x64, @"lib\site-Packages");
 
             return Task.CompletedTask;
         }

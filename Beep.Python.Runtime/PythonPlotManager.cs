@@ -122,7 +122,7 @@ namespace Beep.Python.RuntimeEngine
                         plt.boxplot(x);
                         break;
                     //case ChartType.Heatmap:
-                    //    plt.imshow(y, cmap: "viridis", extent: [x[0], x[x.Length - 1], y[0], y[y.Length - 1]]);
+                    //    plt.imshow(Y, cmap: "viridis", extent: [X[0], X[X.Length - 1], Y[0], Y[Y.Length - 1]]);
 
                     //    plt.colorbar();
                     //    break;
@@ -136,16 +136,16 @@ namespace Beep.Python.RuntimeEngine
                         plt.boxenplot(x);
                         break;
                     //case ChartType.HexbinPlot:
-                    //    plt.hexbin(x, y, gridsize: 30, cmap: "Blues");
+                    //    plt.hexbin(X, Y, gridsize: 30, cmap: "Blues");
                     //    break;
                     //case ChartType.ContourPlot:
-                    //    plt.contour(x, y, cmap: "viridis");
+                    //    plt.contour(X, Y, cmap: "viridis");
                     //    plt.colorbar();
                     //    break;
                     //case ChartType.Scatter3DPlot:
                     //    dynamic mplot3d = Py.Import("mpl_toolkits.mplot3d");
                     //    dynamic ax = plt.gca(projection: "3d");
-                    //    ax.scatter(x, y, z);
+                    //    ax.scatter(X, Y, Z);
                     //    break;
                     // Add more chart types as needed
                     default:
@@ -172,7 +172,7 @@ namespace Beep.Python.RuntimeEngine
             {
                 dynamic plt = Py.Import("matplotlib.pyplot");
 
-                // Create a grid of x and y values using NumPy
+                // Create a grid of X and Y values using NumPy
                 dynamic np = Py.Import("numpy");
                 // Create a new figure with specified size and DPI
                 plt.figure(figsize: np.array(new double[] { 800, 600 }), dpi: 100);
@@ -189,7 +189,7 @@ namespace Beep.Python.RuntimeEngine
                 // Add labels to the contour lines
                 plt.clabel(contour, inline: true, fontsize: 8);
 
-                // Add titles at specific x, y points
+                // Add titles at specific X, Y points
                 foreach (var pointTitle in pointTitles)
                 {
                     double pointX = pointTitle.Item1;
@@ -216,18 +216,18 @@ namespace Beep.Python.RuntimeEngine
             // Serialize the data to JSON
             //string jsonData = JsonConvert.SerializeObject(new
             //{
-            //    x = data.x,
-            //    y = data.y,
-            //    z = data.z
+            //    X = data.X,
+            //    Y = data.Y,
+            //    Z = data.Z
             //});
             //   string jsonData = JsonConvert.SerializeObject(data);
-            string modifiedFilePath = data.picfile.Replace("\\", "/");
+            string modifiedFilePath = data.Picfile.Replace("\\", "/");
 
             string jsonData = JsonConvert.SerializeObject(new
             {
-                x = data.x,
-                y = data.y,
-                z = data.z,
+                x = data.X,
+                y = data.Y,
+                z = data.Z,
                 picfile = modifiedFilePath // Ensure this is included if the file path is part of the JSON data
             });
             // Python script with placeholders for data
@@ -243,12 +243,12 @@ jsonData = '''{jsonData}'''
 
 # Deserialize JSON data to Python objects
 data = json.loads(jsonData)
-x = np.array(data['x'])
-y = np.array(data['y'])
-z = np.array(data['z']) # Assuming z is 2D and needs reshaping
+X = np.array(data['X'])
+Y = np.array(data['Y'])
+Z = np.array(data['Z']) # Assuming Z is 2D and needs reshaping
 
-X, Y = np.meshgrid(x, y)
-Z = ma.masked_where(z <= 0, z)
+X, Y = np.meshgrid(X, Y)
+Z = ma.masked_where(Z <= 0, Z)
 
 fig, ax = plt.subplots(figsize=(100,60))
 cs = ax.contourf(X, Y, Z,levels =10, cmap=cm.PuBu_r)
@@ -270,18 +270,18 @@ plt.close()
             // Serialize the data to JSON
             //string jsonData = JsonConvert.SerializeObject(new
             //{
-            //    x = data.x,
-            //    y = data.y,
-            //    z = data.z
+            //    X = data.X,
+            //    Y = data.Y,
+            //    Z = data.Z
             //});
             //   string jsonData = JsonConvert.SerializeObject(data);
-            string modifiedFilePath = data.picfile.Replace("\\", "/");
+            string modifiedFilePath = data.Picfile.Replace("\\", "/");
 
             string jsonData = JsonConvert.SerializeObject(new
             {
-                x = data.x,
-                y = data.y,
-                z = data.z,
+                x = data.X,
+                y = data.Y,
+                z = data.Z,
                 picfile = modifiedFilePath // Ensure this is included if the file path is part of the JSON data
             });
             // Python script with placeholders for data
@@ -300,9 +300,9 @@ jsonData = '''{jsonData}'''
 
 # Deserialize JSON data to Python objects
 data = json.loads(jsonData)
-x = np.array(data['x'])
-y = np.array(data['y'])
-z = np.array(data['z']) # Assuming z is 2D and needs reshaping
+X = np.array(data['X'])
+Y = np.array(data['Y'])
+Z = np.array(data['Z']) # Assuming Z is 2D and needs reshaping
 
 
 fig, (ax1, ax2) = plt.subplots(nrows=2)
@@ -314,8 +314,8 @@ fig, (ax1, ax2) = plt.subplots(nrows=2)
 # via interpolation on a grid.
 
 # Calculate the bounds of your data
-x_min, x_max = np.min(x), np.max(x)
-y_min, y_max = np.min(y), np.max(y)
+x_min, x_max = np.min(X), np.max(X)
+y_min, y_max = np.min(Y), np.max(Y)
 
 # Optionally, expand the bounds a little to ensure the grid covers all points
 margin_x = (x_max - x_min) * 0.05  # 5% of the range, adjust as necessary
@@ -325,22 +325,22 @@ margin_y = (y_max - y_min) * 0.05
 xi = np.linspace(x_min - margin_x, x_max + margin_x, num=100)  # Adjust num for grid resolution
 yi = np.linspace(y_min - margin_y, y_max + margin_y, num=100)
 
-# Linearly interpolate the data (x, y) on a grid defined by (xi, yi).
-triang = tri.Triangulation(x, y)
-interpolator = tri.LinearTriInterpolator(triang, z)
+# Linearly interpolate the data (X, Y) on a grid defined by (xi, yi).
+triang = tri.Triangulation(X, Y)
+interpolator = tri.LinearTriInterpolator(triang, Z)
 Xi, Yi = np.meshgrid(xi, yi)
 zi = interpolator(Xi, Yi)
 
 # Note that scipy.interpolate provides means to interpolate data on a grid
 # as well. The following would be an alternative to the four lines above:
 # from scipy.interpolate import griddata
-# zi = griddata((x, y), z, (xi[None, :], yi[:, None]), method='linear')
+# zi = griddata((X, Y), Z, (xi[None, :], yi[:, None]), method='linear')
 
 ax1.contour(xi, yi, zi, levels=14, linewidths=0.5, colors='k')
 cntr1 = ax1.contourf(xi, yi, zi, levels=14, cmap=""RdBu_r"")
 
 fig.colorbar(cntr1, ax=ax1)
-ax1.plot(x, y, 'ko', ms=3)
+ax1.plot(X, Y, 'ko', ms=3)
 ax1.set(xlim=(-2, 2), ylim=(-2, 2))
 ax1.set_title('grid and contour (%d points, %d grid points)' %
               (npts, ngridx * ngridy))
@@ -351,11 +351,11 @@ ax1.set_title('grid and contour (%d points, %d grid points)' %
 # Directly supply the unordered, irregularly spaced coordinates
 # to tricontour.
 
-ax2.tricontour(x, y, z, levels=14, linewidths=0.5, colors='k')
-cntr2 = ax2.tricontourf(x, y, z, levels=14, cmap=""RdBu_r"")
+ax2.tricontour(X, Y, Z, levels=14, linewidths=0.5, colors='k')
+cntr2 = ax2.tricontourf(X, Y, Z, levels=14, cmap=""RdBu_r"")
 
 fig.colorbar(cntr2, ax=ax2)
-ax2.plot(x, y, 'ko', ms=3)
+ax2.plot(X, Y, 'ko', ms=3)
 ax2.set(xlim=(-2, 2), ylim=(-2, 2))
 ax2.set_title('tricontour (%d points)' % npts)
 
@@ -392,9 +392,9 @@ plt.close()
                     //PyObject pyPerson = person.ToPython();
 
                     // Convert your C# arrays to NumPy arrays
-                    dynamic x_np = np.array(data.x);
-                    dynamic y_np = np.array(data.y);
-                    dynamic z_np = np.array(data.z).flatten(); // Assuming FlattenZArray correctly flattens your 2D z array to 1D
+                    dynamic x_np = np.array(data.X);
+                    dynamic y_np = np.array(data.Y);
+                    dynamic z_np = np.array(data.Z).flatten(); // Assuming FlattenZArray correctly flattens your 2D Z array to 1D
 
                     // Define vmin and vmax for the color scale, especially important for logarithmic scaling
                     double vmin = np.min(z_np);
@@ -415,8 +415,8 @@ plt.close()
                     dynamic norm = useLogScale ? colors.LogNorm(vmin = vmin, vmax = vmax) : null;
 
                     // Check for invalid values to ensure plotting can proceed
-                    bool hasInvalidValues = data.x.Any(double.IsNaN) || data.y.Any(double.IsNaN) || z_np.any(np.isnan) ||
-                                            data.x.Any(double.IsInfinity) || data.y.Any(double.IsInfinity) || z_np.any(np.isinf);
+                    bool hasInvalidValues = data.X.Any(double.IsNaN) || data.Y.Any(double.IsNaN) || z_np.any(np.isnan) ||
+                                            data.X.Any(double.IsInfinity) || data.Y.Any(double.IsInfinity) || z_np.any(np.isinf);
                     if (hasInvalidValues)
                     {
                         Console.WriteLine("Arrays contain NaN or Infinite values.");
@@ -434,16 +434,16 @@ plt.close()
                         plt.contourf(x_np, y_np, z_np, levels = levels);
                     }
 
-                    plt.xlabel(data.xLabel);
-                    plt.ylabel(data.yLabel);
-                    plt.title(data.title);
+                    plt.xlabel(data.XLabel);
+                    plt.ylabel(data.YLabel);
+                    plt.title(data.Title);
                     plt.colorbar();
 
                     // Optionally add labels to the contour lines
                     // plt.clabel(contour, inline=True, fontsize=8); // Uncomment if you wish to add labels to the lines
 
-                    // Add titles at specific x, y points
-                    foreach (var pointTitle in data.pointTitles)
+                    // Add titles at specific X, Y points
+                    foreach (var pointTitle in data.PointTitles)
                     {
                         double pointX = pointTitle.Item1;
                         double pointY = pointTitle.Item2;
@@ -452,7 +452,7 @@ plt.close()
                     }
 
                     // Save the plot
-                    plt.savefig(data.picfile);
+                    plt.savefig(data.Picfile);
 
                     // Close the figure to free up memory
                     plt.close();
@@ -474,7 +474,7 @@ plt.close()
 
             // Generate the 2D array for Z values
             var zData = GenerateZDataForPlotly(data, rows, cols);
-            string modifiedFilePath = data.picfile.Replace("\\", "/");
+            string modifiedFilePath = data.Picfile.Replace("\\", "/");
             // Serialize the Z data to JSON
             string zJson = SerializeZDataForPlotly(zData);
 
@@ -491,10 +491,10 @@ z_data = json.loads(z_json)
 
 # Create the contour plot with Plotly
 fig = go.Figure()
-fig.add_trace(go.Contour(z=z, showscale=False, connectgaps=True))
-fig.update_layout(title: '{data.title}',
-                  xaxis_title: '{data.xLabel}',
-                  yaxis_title: '{data.yLabel}')
+fig.add_trace(go.Contour(Z=Z, showscale=False, connectgaps=True))
+fig.update_layout(Title: '{data.Title}',
+                  xaxis_title: '{data.XLabel}',
+                  yaxis_title: '{data.YLabel}')
 fig.write_image(r'{modifiedFilePath}')
 ";
 
@@ -533,9 +533,9 @@ fig.write_image(r'{modifiedFilePath}')
 
                     // Convert your C# arrays to NumPy arrays
                    
-                    dynamic x_np = np.array(data.x);
-                    dynamic y_np = np.array(data.y);
-                    dynamic z_np = np.array(data.z); // Assuming FlattenZArray correctly flattens your 2D z array to 1D
+                    dynamic x_np = np.array(data.X);
+                    dynamic y_np = np.array(data.Y);
+                    dynamic z_np = np.array(data.Z); // Assuming FlattenZArray correctly flattens your 2D Z array to 1D
 
                     // Create a new figure
                     dynamic fig = go.Figure();
@@ -548,15 +548,15 @@ fig.write_image(r'{modifiedFilePath}')
                     ));
                     // Set layout properties
                     fig.update_layout(
-                        title: data.title,
-                        xaxis_title: data.xLabel,
-                        yaxis_title: data.yLabel,
+                        title: data.Title,
+                        xaxis_title: data.XLabel,
+                        yaxis_title: data.YLabel,
                         width: 1000, // Set the width of the figure (in pixels)
                         height: 800  // Set the height of the figure (in pixels)
                     );
 
                     // Save the plot
-                    fig.write_image(data.picfile);
+                    fig.write_image(data.Picfile);
 
                     // Close the figure to free up memory
                    // fig.close();
@@ -579,16 +579,16 @@ fig.write_image(r'{modifiedFilePath}')
             // Create a new 2D array for Z values, initializing all to null
             var z = new double?[rows, cols];
 
-            // Assuming data.z is a 1D array of length rows*cols
+            // Assuming data.Z is a 1D array of length rows*cols
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
                 {
                     int index = i * cols + j;
-                    if (index < data.z.Length)
+                    if (index < data.Z.Length)
                     {
-                        // Assign the value from data.z to the 2D array
-                        z[i, j] = data.z[index];
+                        // Assign the value from data.Z to the 2D array
+                        z[i, j] = data.Z[index];
                     }
                 }
             }
