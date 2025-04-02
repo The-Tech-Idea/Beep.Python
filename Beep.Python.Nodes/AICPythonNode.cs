@@ -27,6 +27,7 @@ namespace AI
         public string EntityGuidID { get; set; }
         public string MiscStringID { get; set; }
         public bool Visible { get; set; } = true;
+        public string MenuID { get; set; }
 
         public AICPythonNode()
         {
@@ -75,7 +76,7 @@ namespace AI
         public ITree TreeEditor { get; set; }
         public List<string> BranchActions { get; set; }
         public object TreeStrucure { get; set; }
-        public IVisManager Visutil { get; set; }
+        public IAppManager Visutil { get; set; }
         public int MiscID { get; set; }
         public string ObjectType { get; set; } = "Beep";
         public AddinTreeStructure AddinTreeStructure { get; set; }

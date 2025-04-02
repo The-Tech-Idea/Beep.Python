@@ -14,6 +14,8 @@ using TheTechIdea.Beep.DriversConfigurations;
 using TheTechIdea.Beep.Editor;
 using TheTechIdea.Beep.Vis.Modules;
 using TheTechIdea.Beep.DataBase;
+using System.Reflection;
+using TheTechIdea.Beep.Container.Services;
 
 
 namespace Beep.Python.Winform
@@ -33,7 +35,7 @@ namespace Beep.Python.Winform
         public DataSet Dset { get; set; }
         public IErrorsInfo ErrorObject { get; set; }
         public IDMLogger Logger { get; set; }
-        public IDMEEditor DMEEditor { get; set; }
+        public IDMEEditor Editor { get; set; }
         public EntityStructure EntityStructure { get; set; }
         public string EntityName { get; set; }
         public IPassedArgs Passedarg { get; set; }
@@ -41,7 +43,7 @@ namespace Beep.Python.Winform
        // public IPIPManager pIPManager { get; set; }
 
      //   public IDEManager iDEManager { get; set; }
-        public IVisManager Visutil { get; set; }
+        public IAppManager Visutil { get; set; }
 
 
        IBranch RootAppBranch;
@@ -56,20 +58,17 @@ namespace Beep.Python.Winform
         IProgress<PassedArgs> progress;
         CancellationToken token;
        // frm_PythonFolderManagement pythonFolderManagement;
-        public void Run(IPassedArgs Passedarg)
-        {
-
-        }
+      
 
         public void SetConfig(IDMEEditor pbl, IDMLogger plogger, IUtil putil, string[] args, IPassedArgs e, IErrorsInfo per)
         {
             Passedarg = e;
             Logger = plogger;
             ErrorObject = per;
-            DMEEditor = pbl;
+            Editor = pbl;
             //Python = new PythonHandler(pbl,TextArea,OutputtextBox, griddatasource);
 
-            Visutil = (IVisManager)e.Objects.Where(c => c.Name == "VISUTIL").FirstOrDefault().obj;
+            Visutil = (IAppManager)e.Objects.Where(c => c.Name == "VISUTIL").FirstOrDefault().obj;
 
             if (e.Objects.Where(c => c.Name == "Branch").Any())
             {
@@ -79,7 +78,7 @@ namespace Beep.Python.Winform
             {
                 RootAppBranch = (IBranch)e.Objects.Where(c => c.Name == "RootAppBranch").FirstOrDefault().obj;
             }
-            if (DMEEditor.Passedarguments.Objects.Where(c => c.Name == "RunTime").Any())
+            if (Editor.Passedarguments.Objects.Where(c => c.Name == "RunTime").Any())
             {
                 PythonRuntime = (PythonRunTime)e.Objects.Where(c => c.Name == "RunTime").FirstOrDefault().obj;
 
@@ -100,14 +99,13 @@ namespace Beep.Python.Winform
             {
                 PythonConfig = new PythonConfiguration();
             }
-            Setup(DMEEditor, PythonConfig);
+            Setup(Editor, PythonConfig);
             
         }
      
         public PythonRunTime PythonRuntime { get; set; } = new PythonRunTime();
         public PythonConfiguration PythonConfig { get; set; } = new PythonConfiguration();
-        public string GuidID { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
+      
         private void init()
         {
             runtimesBindingSource = new BindingSource();
@@ -124,7 +122,7 @@ namespace Beep.Python.Winform
         private void BrowseOfflinebutton_Click(object sender, EventArgs e)
         {
             string pathtoffolder = string.Empty;
-            pathtoffolder= Visutil.Controlmanager.SelectFolderDialog();
+            pathtoffolder= Visutil.DialogManager.SelectFolderDialog();
             this.packageOfflinepathTextBox.Text = pathtoffolder;
         }
 
@@ -132,6 +130,7 @@ namespace Beep.Python.Winform
         {
             InitializeComponent();
             init();
+            Details.AddinName = "Python Folder List";
             // this.RuntimecheckBox.
             // this.Folder32checkBox1.Checked = PythonRunTimeDiagnostics.FolderExist(fs.Folderpath, BinType32or64.p395x32);
             // this.Folder64checkBox2.Checked = PythonRunTimeDiagnostics.FolderExist(fs.Folderpath, BinType32or64.p395x64);
@@ -142,22 +141,22 @@ namespace Beep.Python.Winform
         private void Cancelbutton_Click(object sender, EventArgs e)
         {
             PythonRuntime = new PythonRunTime();
-            if (DMEEditor.Passedarguments.Objects.Where(c => c.Name == "RunTime").Any())
+            if (Editor.Passedarguments.Objects.Where(c => c.Name == "RunTime").Any())
             {
-                DMEEditor.Passedarguments.Objects.RemoveAt(DMEEditor.Passedarguments.Objects.FindIndex(c => c.Name == "RunTime"));
+                Editor.Passedarguments.Objects.RemoveAt(Editor.Passedarguments.Objects.FindIndex(c => c.Name == "RunTime"));
 
             }
 
            
 
-            if (DMEEditor.Passedarguments.Objects.Where(c => c.Name == "PythonConfiguration").Any())
+            if (Editor.Passedarguments.Objects.Where(c => c.Name == "PythonConfiguration").Any())
             {
-                DMEEditor.Passedarguments.Objects.RemoveAt(DMEEditor.Passedarguments.Objects.FindIndex(c => c.Name == "PythonConfiguration"));
+                Editor.Passedarguments.Objects.RemoveAt(Editor.Passedarguments.Objects.FindIndex(c => c.Name == "PythonConfiguration"));
 
             }
 
-            DMEEditor.ErrorObject.Flag= Errors.Failed;
-            DMEEditor.ErrorObject.Message = "User Cancelled";
+            Editor.ErrorObject.Flag= Errors.Failed;
+            Editor.ErrorObject.Message = "User Cancelled";
             this.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.Close();
         }
@@ -181,22 +180,22 @@ namespace Beep.Python.Winform
                 PythonRuntime = (PythonRunTime)runtimesBindingSource.Current;
                 int idx = PythonConfig.Runtimes.FindIndex(c => c.BinPath.Equals(PythonRuntime.BinPath, StringComparison.InvariantCultureIgnoreCase));
                 PythonConfig.RunTimeIndex = idx;
-                if (DMEEditor.Passedarguments.Objects.Where(c => c.Name == "RunTime").Any())
+                if (Editor.Passedarguments.Objects.Where(c => c.Name == "RunTime").Any())
                 {
-                    DMEEditor.Passedarguments.Objects.RemoveAt(DMEEditor.Passedarguments.Objects.FindIndex(c => c.Name == "RunTime"));
+                    Editor.Passedarguments.Objects.RemoveAt(Editor.Passedarguments.Objects.FindIndex(c => c.Name == "RunTime"));
 
                 }
 
-                DMEEditor.Passedarguments.Objects.Add(new ObjectItem() { Name = "RunTime", obj = PythonRuntime });
+                Editor.Passedarguments.Objects.Add(new ObjectItem() { Name = "RunTime", obj = PythonRuntime });
               
-                if (DMEEditor.Passedarguments.Objects.Where(c => c.Name == "PythonConfiguration").Any())
+                if (Editor.Passedarguments.Objects.Where(c => c.Name == "PythonConfiguration").Any())
                 {
-                    DMEEditor.Passedarguments.Objects.RemoveAt(DMEEditor.Passedarguments.Objects.FindIndex(c => c.Name == "PythonConfiguration"));
+                    Editor.Passedarguments.Objects.RemoveAt(Editor.Passedarguments.Objects.FindIndex(c => c.Name == "PythonConfiguration"));
 
                 }
-                DMEEditor.Passedarguments.Objects.Add(new ObjectItem() { Name = "PythonConfiguration", obj = PythonConfig });
-                DMEEditor.ErrorObject.Flag = Errors.Ok;
-                DMEEditor.ErrorObject.Message = "PythonRuntime Selected";
+                Editor.Passedarguments.Objects.Add(new ObjectItem() { Name = "PythonConfiguration", obj = PythonConfig });
+                Editor.ErrorObject.Flag = Errors.Ok;
+                Editor.ErrorObject.Message = "PythonRuntime Selected";
 
                 this.DialogResult = System.Windows.Forms.DialogResult.OK;
                 this.Close();
@@ -245,7 +244,7 @@ namespace Beep.Python.Winform
 
         public void Setup(IDMEEditor dMEEditor, PythonConfiguration pythonConfig)
         {
-            DMEEditor = dMEEditor;
+            Editor = dMEEditor;
             PythonConfig = pythonConfig;
             pythonConfigurationBindingSource.DataSource = pythonConfig;
             runtimesBindingSource.DataSource = PythonConfig.Runtimes;
@@ -301,7 +300,7 @@ namespace Beep.Python.Winform
             }
             else
             {
-                Visutil.Controlmanager.ShowAlert("Beep", "Could Not Find any Python Runtime at this folder", "warning.ico");
+                Visutil.DialogManager.ShowAlert("Beep", "Could Not Find any Python Runtime at this folder", "warning.ico");
             }
             //string[] subdirectoryEntries = Directory.GetDirectories(dirpath);
             ////------------ check sub directotories
@@ -372,9 +371,144 @@ namespace Beep.Python.Winform
             dataGridView1.DataSource = runtimesBindingSource;
         }
 
-        public void Run(params object[] args)
+       
+        #region "IDM_Addin Implementation"
+        private readonly IBeepService? beepService;
+
+        protected EnumBeepThemes _themeEnum = EnumBeepThemes.DefaultTheme;
+        protected BeepTheme _currentTheme = BeepThemesManager.DefaultTheme;
+        [Browsable(true)]
+        public EnumBeepThemes Theme
         {
-            throw new NotImplementedException();
+            get => _themeEnum;
+            set
+            {
+                _themeEnum = value;
+                _currentTheme = BeepThemesManager.GetTheme(value);
+                //      this.ApplyTheme();
+                ApplyTheme();
+            }
         }
+        private void BeepThemesManager_ThemeChanged(object? sender, ThemeChangeEventsArgs e)
+        {
+            Theme = e.NewTheme;
+        }
+
+        public AddinDetails Details { get; set; }
+        public Dependencies Dependencies { get; set; }
+        public string GuidID { get; set; }
+
+        public event EventHandler OnStart;
+        public event EventHandler OnStop;
+        public event EventHandler<ErrorEventArgs> OnError;
+
+
+        public virtual void Configure(Dictionary<string, object> settings)
+        {
+
+        }
+
+        public virtual void Dispose()
+        {
+
+        }
+
+        public virtual string GetErrorDetails()
+        {
+            // if error occured return the error details
+            // create error messege sring 
+            string errormessage = "";
+            if (Editor.ErrorObject != null)
+            {
+                if (Editor.ErrorObject.Errors.Count > 0)
+                {
+                    foreach (var item in Editor.ErrorObject.Errors)
+                    {
+                        errormessage += item.Message + "\n";
+                    }
+                }
+            }
+
+            return errormessage;
+        }
+
+        public virtual void Initialize()
+        {
+
+        }
+
+        public virtual void OnNavigatedTo(Dictionary<string, object> parameters)
+        {
+            if (Theme != BeepThemesManager.CurrentTheme) { Theme = BeepThemesManager.CurrentTheme; }
+        }
+
+        public virtual void Resume()
+        {
+
+        }
+
+        public virtual void Run(IPassedArgs pPassedarg)
+        {
+
+        }
+
+        public virtual void Run(params object[] args)
+        {
+
+        }
+
+        public virtual Task<IErrorsInfo> RunAsync(IPassedArgs pPassedarg)
+        {
+            try
+            {
+
+            }
+            catch (Exception ex)
+            {
+                string methodName = MethodBase.GetCurrentMethod().Name; // Retrieves "PrintGrid"
+                Editor.AddLogMessage("Beep", $"in {methodName} Error : {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
+            }
+            return Task.FromResult(Editor.ErrorObject);
+        }
+
+        public virtual Task<IErrorsInfo> RunAsync(params object[] args)
+        {
+            try
+            {
+
+            }
+            catch (Exception ex)
+            {
+                string methodName = MethodBase.GetCurrentMethod().Name; // Retrieves "PrintGrid"
+                Editor.AddLogMessage("Beep", $"in {methodName} Error : {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
+            }
+            return Task.FromResult(Editor.ErrorObject);
+        }
+
+        public virtual void SetError(string message)
+        {
+
+        }
+
+        public virtual void Suspend()
+        {
+
+        }
+        public void ApplyTheme()
+        {
+            foreach (Control item in this.Controls)
+            {
+                // check if item is a usercontrol
+                if (item is IBeepUIComponent)
+                {
+                    // apply theme to usercontrol
+                    ((IBeepUIComponent)item).Theme = Theme;
+                    // ((IBeepUIComponent)item).ApplyTheme();
+
+                }
+            }
+
+        }
+        #endregion "IDM_Addin Implementation"
     }
 }

@@ -1,5 +1,4 @@
 ﻿
-using TheTechIdea.Beep.Winform.Controls.Basic;
 using TheTechIdea.Beep.Vis;
 using TheTechIdea.Beep.Addin;
 
@@ -18,6 +17,8 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using System.Collections;
 using Beep.Python.RuntimeEngine.Services;
+using TheTechIdea.Beep.Winform.Default.Views.Template;
+using TheTechIdea.Beep;
 
 
 
@@ -26,7 +27,7 @@ using Beep.Python.RuntimeEngine.Services;
 namespace Beep.Python.Winform.JupyterNoteBook
 {
     [AddinAttribute(Caption = "Jupyter NoteBook", Name = "uc_JupyterNoteBook", misc = "AI", addinType = AddinType.Control)]
-    public partial class uc_JupyterNoteBook : uc_Addin
+    public partial class uc_JupyterNoteBook : TemplateUserControl
     {
         bool IsJupyterRunning = false;
 
@@ -39,32 +40,32 @@ namespace Beep.Python.Winform.JupyterNoteBook
         {
             try
             {
-                Visutil.PasstoWaitForm(new PassedArgs() { Messege = "Opening Jupyter ..." });
+                appManager.PasstoWaitForm(new PassedArgs() { Messege = "Opening Jupyter ..." });
               
                
                 webView21.Source = new Uri("http://localhost:8888"); // No token needed
             }
             catch (Exception ex)
             {
-                DMEEditor.AddLogMessage("Beep", $"Error in Creating Jupyter Notebook {ex.Message}", DateTime.Now, -1, "", Errors.Failed);
+                Editor.AddLogMessage("Beep", $"Error in Creating Jupyter Notebook {ex.Message}", DateTime.Now, -1, "", Errors.Failed);
             }
         }
         IBeepService beepService;
         IPythonRunTimeManager pythonRunTimeManager;
-        public override void SetConfig(IDMEEditor pDMEEditor, IDMLogger plogger, IUtil putil, string[] args, IPassedArgs e, IErrorsInfo per)
+        public  void SetConfig(IDMEEditor pDMEEditor, IDMLogger plogger, IUtil putil, string[] args, IPassedArgs e, IErrorsInfo per)
         {
-            base.SetConfig(pDMEEditor, plogger, putil, args, e, per);
-            beepService = DMEEditor.GetBeepService();
-            pythonRunTimeManager = DMEEditor.GetPythonRunTimeManager();
+           
+            beepService = Editor.GetBeepService();
+            pythonRunTimeManager = Editor.GetPythonRunTimeManager();
             Progress<PassedArgs> progress = new Progress<PassedArgs>();
             CancellationToken token = new CancellationToken();
-            Visutil.ShowWaitForm(new PassedArgs() { Messege = "Starting Jupyter Notebook" });
-            Visutil.PasstoWaitForm(new PassedArgs() { Messege = "Starting Jupyter Notebook" });
+            appManager.ShowWaitForm(new PassedArgs() { Messege = "Starting Jupyter Notebook" });
+            appManager.PasstoWaitForm(new PassedArgs() { Messege = "Starting Jupyter Notebook" });
             progress.ProgressChanged += (s, args) =>
             {
                 if (args.Messege != null)
                 {
-                    Visutil.PasstoWaitForm(new PassedArgs() { Messege = args.Messege });
+                    appManager.PasstoWaitForm(new PassedArgs() { Messege = args.Messege });
                 }
             };
 
@@ -74,18 +75,18 @@ namespace Beep.Python.Winform.JupyterNoteBook
             t.Wait();
             if (IsJupyterRunning)
             {
-                DMEEditor.AddLogMessage("Beep", "Jupyter is Running", DateTime.Now, -1, "", Errors.Ok);
-                Visutil.PasstoWaitForm(new PassedArgs() { Messege="Jupyter is Running" });
+                Editor.AddLogMessage("Beep", "Jupyter is Running", DateTime.Now, -1, "", Errors.Ok);
+                appManager.PasstoWaitForm(new PassedArgs() { Messege="Jupyter is Running" });
                 InitializeWebView();
             }
             else
             {
-                Visutil.PasstoWaitForm(new PassedArgs() { Messege = "Jupyter is not Running" });
-                DMEEditor.AddLogMessage("Beep", "Jupyter is not Running", DateTime.Now, -1, "", Errors.Failed);
+                appManager.PasstoWaitForm(new PassedArgs() { Messege = "Jupyter is not Running" });
+                Editor.AddLogMessage("Beep", "Jupyter is not Running", DateTime.Now, -1, "", Errors.Failed);
             }
-            Visutil.PasstoWaitForm(new PassedArgs() { Messege = "Ended Jupyter Notebook init." });
-            DMEEditor.AddLogMessage("Beep", "Ended Jupyter Notebook init.", DateTime.Now, -1, "", Errors.Ok);
-            Visutil.CloseWaitForm();
+            appManager.PasstoWaitForm(new PassedArgs() { Messege = "Ended Jupyter Notebook init." });
+            Editor.AddLogMessage("Beep", "Ended Jupyter Notebook init.", DateTime.Now, -1, "", Errors.Ok);
+            appManager.CloseWaitForm();
         }
         public bool CreateJupyterNotebookConfig()
         {
@@ -130,14 +131,14 @@ c.NotebookApp.ip = 'localhost'
             if (!File.Exists(pythonPath))
             {
                 Console.WriteLine("Python executable is not found in the specified Python environment.");
-                DMEEditor.AddLogMessage("Beep", "Python executable is not found in the specified Python environment.", DateTime.Now, -1, "", Errors.Failed);
+                Editor.AddLogMessage("Beep", "Python executable is not found in the specified Python environment.", DateTime.Now, -1, "", Errors.Failed);
                 return;
             }
 
             if (!File.Exists(jupyterPath))
             {
                 Console.WriteLine("Jupyter Notebook executable is not found in the specified Python environment.");
-                DMEEditor.AddLogMessage("Beep", "Jupyter Notebook executable is not found in the specified Python environment.", DateTime.Now, -1, "", Errors.Failed);
+                Editor.AddLogMessage("Beep", "Jupyter Notebook executable is not found in the specified Python environment.", DateTime.Now, -1, "", Errors.Failed);
                 return;
             }
 
@@ -161,12 +162,12 @@ c.NotebookApp.ip = 'localhost'
                 }
 
                 Console.WriteLine("Batch file created successfully.");
-                DMEEditor.AddLogMessage("Beep", "Batch file created successfully.", DateTime.Now, -1, "", Errors.Ok);
+                Editor.AddLogMessage("Beep", "Batch file created successfully.", DateTime.Now, -1, "", Errors.Ok);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"An error occurred while creating the batch file: {ex.Message}");
-                DMEEditor.AddLogMessage("Beep", $"An error occurred while creating the batch file: {ex.Message}", DateTime.Now, -1, "", Errors.Failed);
+                Editor.AddLogMessage("Beep", $"An error occurred while creating the batch file: {ex.Message}", DateTime.Now, -1, "", Errors.Failed);
                 return;
             }
 
@@ -189,7 +190,7 @@ c.NotebookApp.ip = 'localhost'
                     if (args.Data != null)
                     {
                         Console.WriteLine(args.Data);
-                        DMEEditor.AddLogMessage("Beep", $"STDOUT: {args.Data}", DateTime.Now, -1, "", Errors.Ok);
+                            Editor.AddLogMessage("Beep", $"STDOUT: {args.Data}", DateTime.Now, -1, "", Errors.Ok);
 
                         // Detect the URL of the running Jupyter Notebook server
                         if (args.Data.Contains("http://localhost:"))
@@ -209,7 +210,7 @@ c.NotebookApp.ip = 'localhost'
                 {
                     if (args.Data != null)
                     {
-                        DMEEditor.AddLogMessage("Beep", $"STDERR: {args.Data}", DateTime.Now, -1, "", Errors.Failed);
+                        Editor.AddLogMessage("Beep", $"STDERR: {args.Data}", DateTime.Now, -1, "", Errors.Failed);
                         Console.WriteLine($"ERROR: {args.Data}");
                     }
                 };
@@ -219,18 +220,18 @@ c.NotebookApp.ip = 'localhost'
                     if (!IsJupyterRunning)
                     {
                         Console.WriteLine("Jupyter Notebook process exited unexpectedly.");
-                        DMEEditor.AddLogMessage("Beep", "Jupyter Notebook process exited unexpectedly.", DateTime.Now, -1, "", Errors.Failed);
+                        Editor.AddLogMessage("Beep", "Jupyter Notebook process exited unexpectedly.", DateTime.Now, -1, "", Errors.Failed);
                         tcs.SetResult(null);
                     }
                     else
                     {
                         Console.WriteLine("Jupyter Notebook process exited.");
-                        DMEEditor.AddLogMessage("Beep", "Jupyter Notebook process exited.", DateTime.Now, -1, "", Errors.Ok);
+                        Editor.AddLogMessage("Beep", "Jupyter Notebook process exited.", DateTime.Now, -1, "", Errors.Ok);
                     }
                 };
 
                 Console.WriteLine("Starting the Jupyter Notebook process...");
-                DMEEditor.AddLogMessage("Beep", "Starting the Jupyter Notebook process...", DateTime.Now, -1, "", Errors.Ok);
+                Editor.AddLogMessage("Beep", "Starting the Jupyter Notebook process...", DateTime.Now, -1, "", Errors.Ok);
 
                 try
                 {
@@ -244,25 +245,25 @@ c.NotebookApp.ip = 'localhost'
                     if (!string.IsNullOrEmpty(jupyterUrl))
                     {
                         Console.WriteLine("Jupyter Notebook is running at: " + jupyterUrl);
-                        DMEEditor.AddLogMessage("Beep", "Jupyter Notebook is running at: " + jupyterUrl, DateTime.Now, -1, "", Errors.Ok);
+                        Editor.AddLogMessage("Beep", "Jupyter Notebook is running at: " + jupyterUrl, DateTime.Now, -1, "", Errors.Ok);
 
                        IsJupyterRunning = true;
                     }
                     else
                     {
                         IsJupyterRunning = false;
-                        DMEEditor.AddLogMessage("Beep", "Jupyter Notebook failed to start.", DateTime.Now, -1, "", Errors.Failed);
+                        Editor.AddLogMessage("Beep", "Jupyter Notebook failed to start.", DateTime.Now, -1, "", Errors.Failed);
                     }
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Failed to start process: {ex.Message}");
-                    DMEEditor.AddLogMessage("Beep", $"Failed to start process: {ex.Message}", DateTime.Now, -1, "", Errors.Failed);
+                    Editor.AddLogMessage("Beep", $"Failed to start process: {ex.Message}", DateTime.Now, -1, "", Errors.Failed);
                     tcs.SetResult(null);
                 }
 
                 Console.WriteLine("Process task completed.");
-                DMEEditor.AddLogMessage("Beep", "Process task completed.", DateTime.Now, -1, "", Errors.Ok);
+                Editor.AddLogMessage("Beep", "Process task completed.", DateTime.Now, -1, "", Errors.Ok);
             }
         }
 
@@ -333,7 +334,7 @@ c.NotebookApp.ip = 'localhost'
                     if (args.Data != null)
                     {
                         Console.WriteLine(args.Data);
-                        DMEEditor.AddLogMessage("Beep", args.Data, DateTime.Now, -1, "", Errors.Ok);
+                        Editor.AddLogMessage("Beep", args.Data, DateTime.Now, -1, "", Errors.Ok);
                         if (args.Data.Contains("http://localhost:8888/"))
                         {
                             IsJupyterRunning = true;
@@ -345,7 +346,7 @@ c.NotebookApp.ip = 'localhost'
                 {
                     if (args.Data != null)
                     {
-                        DMEEditor.AddLogMessage("Beep", args.Data, DateTime.Now, -1, "", Errors.Failed);
+                        Editor.AddLogMessage("Beep", args.Data, DateTime.Now, -1, "", Errors.Failed);
                         Console.WriteLine($"ERROR: {args.Data}");
                     }
                 };
@@ -355,7 +356,7 @@ c.NotebookApp.ip = 'localhost'
                     if (!IsJupyterRunning)
                     {
                         Console.WriteLine("Jupyter Notebook process exited unexpectedly.");
-                        DMEEditor.AddLogMessage("Beep", "Jupyter Notebook process exited unexpectedly." ,DateTime.Now, -1, "", Errors.Failed);
+                        Editor.AddLogMessage("Beep", "Jupyter Notebook process exited unexpectedly." ,DateTime.Now, -1, "", Errors.Failed);
                         tcs.SetResult(false);
                     }
                 };

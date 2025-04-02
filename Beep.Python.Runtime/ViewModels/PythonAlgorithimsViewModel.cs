@@ -95,7 +95,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         public void CreateAlgorathims(string algorithim,double DataClassid)
         {
             CurrentAlgorithim = new PythonAlgorithm() { ALGORITHM = algorithim, DATACLASS_ID = DataClassid };
-            Unitofwork.Create(CurrentAlgorithim);
+            Unitofwork.Add(CurrentAlgorithim);
            
         }
         public void Get()

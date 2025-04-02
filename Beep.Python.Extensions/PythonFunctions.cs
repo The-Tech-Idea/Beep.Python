@@ -26,14 +26,14 @@ namespace Beep.Python.Extensions
         public IDMEEditor DMEEditor { get; set; }
         public IPassedArgs Passedargs { get; set; }
 
-        private FunctionandExtensionsHelpers ExtensionsHelpers;
+        private IFunctionandExtensionsHelpers ExtensionsHelpers;
 
 
-        public PythonFunctions(IDMEEditor pdMEEditor, IVisManager pvisManager, ITree ptreeControl)
+        public PythonFunctions(IDMEEditor pdMEEditor, IAppManager pvisManager, ITree ptreeControl)
         {
             DMEEditor = pdMEEditor;
             
-            ExtensionsHelpers = new FunctionandExtensionsHelpers(DMEEditor, pvisManager, ptreeControl, DMEEditor.GetPythonRunTimeManager());
+            ExtensionsHelpers = ptreeControl.ExtensionsHelpers;
 
         }
         [CommandAttribute(Caption = "Python Manager", Name = "PythonManager", Click = true, iconimage = "pythonnewproject.png", ObjectType = "Beep", PointType = EnumPointType.Global, Showin = ShowinType.Menu)]
@@ -44,12 +44,12 @@ namespace Beep.Python.Extensions
             {
 
                 ExtensionsHelpers.GetValues(Passedarguments);
-                if(ExtensionsHelpers.pbr!=null)
+                if(ExtensionsHelpers.CurrentBranch!=null)
                 {
-                  if(ExtensionsHelpers.pbr.BranchType== EnumPointType.Entity)
+                  if(ExtensionsHelpers.CurrentBranch.BranchType== EnumPointType.Entity)
                   {
-                        Passedarguments.DatasourceName= ExtensionsHelpers.pbr.DataSourceName;
-                        Passedarguments.CurrentEntity= ExtensionsHelpers.pbr.BranchText;
+                        Passedarguments.DatasourceName= ExtensionsHelpers.CurrentBranch.DataSourceName;
+                        Passedarguments.CurrentEntity= ExtensionsHelpers.CurrentBranch.BranchText;
                         Passedarguments.EventType = "CREATEAI";
                         ExtensionsHelpers.Vismanager.ShowPage("uc_pythonmanager", (PassedArgs)Passedarguments, DisplayType.InControl);
                   }    

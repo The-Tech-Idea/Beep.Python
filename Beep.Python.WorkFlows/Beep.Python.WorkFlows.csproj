@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	  <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+	  <TargetFrameworks>net8.0</TargetFrameworks>
 	  <ImplicitUsings>enable</ImplicitUsings>
 	  <LangVersion>Latest</LangVersion>
 	  <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -21,7 +21,7 @@
 		<Copy SourceFiles="$(OutputPath)$(PackageId).$(PackageVersion).nupkg" DestinationFolder="..\..\..\LocalNugetFiles" />
 	</Target>
   <ItemGroup>
-    <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="2.0.27" />
+    <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="2.0.39" />
   </ItemGroup>
 
   <ItemGroup>

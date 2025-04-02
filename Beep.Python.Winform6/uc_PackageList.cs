@@ -12,15 +12,15 @@ using TheTechIdea.Beep.DriversConfigurations;
 using TheTechIdea.Beep.Editor;
 using TheTechIdea.Beep.Vis.Modules;
 
-using TheTechIdea.Beep.Winform.Controls.Basic;
 using Beep.Python.RuntimeEngine.Services;
+using TheTechIdea.Beep.Winform.Default.Views.Template;
 
 
 
 namespace Beep.Python.Winform
 {
     [AddinAttribute(Caption = "Python Package List", Name = "uc_PackageList", misc = "AI", addinType = AddinType.Control)]
-    public partial class uc_PackageList : uc_Addin
+    public partial class uc_PackageList : TemplateUserControl
     {
      
         public string AddinName { get; set; } = "Python Package List";
@@ -52,25 +52,20 @@ namespace Beep.Python.Winform
         Progress<PassedArgs> progress;
         CancellationToken token;
         PythonBaseViewModel pythonBaseViewModel;
-        public void Run(IPassedArgs Passedarg)
-        {
+        
 
-        }
-
-        public override void SetConfig(IDMEEditor pbl, IDMLogger plogger, IUtil putil, string[] args, IPassedArgs e, IErrorsInfo per)
+        public  void SetConfig(IDMEEditor pbl, IDMLogger plogger, IUtil putil, string[] args, IPassedArgs e, IErrorsInfo per)
         {
-            base.SetConfig(pbl, plogger, putil, args, e, per);
-            Passedarg = e;
-            Logger = plogger;
-            ErrorObject = per;
+            
+           
           
-            PythonRunTimeManager = DMEEditor.GetPythonRunTimeManager();
-            Pythonpackagemanager = DMEEditor.GetPythonPackageManager();
+            PythonRunTimeManager = Editor.GetPythonRunTimeManager();
+            Pythonpackagemanager = Editor.GetPythonPackageManager();
             pythonBaseViewModel = (PythonBaseViewModel)Pythonpackagemanager;
           //  PythonRunTimeManager.PackageManager = Pythonpackagemanager;
 
 
-            Visutil = (IVisManager)e.Objects.Where(c => c.Name == "VISUTIL").FirstOrDefault().obj;
+            appManager = (IAppManager)e.Objects.Where(c => c.Name == "appManager").FirstOrDefault().obj;
 
             if (e.Objects.Where(c => c.Name == "Branch").Any())
             {
@@ -118,14 +113,14 @@ namespace Beep.Python.Winform
                 //progressBar1.CustomText = percent.ParameterInt1 + " out of " + percent.ParameterInt2;
                 toolStripProgressBar1.Maximum= Pythonpackagemanager.Packages.Count;
                 toolStripProgressBar1.Value = percent.ParameterInt1;
-                //if (Visutil.IsShowingWaitForm)
+                //if (appManager.IsShowingWaitForm)
                 //{
-                //    Visutil.ShowWaitForm(new PassedArgs() { Messege = percent.Messege });
+                //    appManager.ShowWaitForm(new PassedArgs() { Messege = percent.Messege });
                 //}
-                //Visutil.PasstoWaitForm(new PassedArgs() { Messege = percent.Messege });
+                //appManager.PasstoWaitForm(new PassedArgs() { Messege = percent.Messege });
                 MessageLabel.Text= percent.Messege;
                 RefreshUI();
-                //if (percent.EventType == "Update" && DMEEditor.ErrorObject.Flag == Errors.Failed)
+                //if (percent.EventType == "Update" && Editor.ErrorObject.Flag == Errors.Failed)
                 //{
                 //    update(percent.Messege);
                 //}
@@ -321,7 +316,7 @@ namespace Beep.Python.Winform
                 return;
             this.progress = progress;
             this.token = token;
-            DMEEditor = dMEEditor;
+           
             PythonRunTimeManager = pythonRunTimeManager;
             if (PythonRunTimeManager.CurrentRuntimeConfig.Packagelist.Count == 0)
             {
@@ -353,17 +348,17 @@ namespace Beep.Python.Winform
 
             try
             {
-                // Visutil.ShowWaitForm(new PassedArgs() { Messege = "Refreshing Status Packages" });
+                // appManager.ShowWaitForm(new PassedArgs() { Messege = "Refreshing Status Packages" });
                 Pythonpackagemanager.RefreshAllPackagesAsync();
                 RefreshUI();
                 return true;
-                // Visutil.CloseWaitForm();
+                // appManager.CloseWaitForm();
             }
             catch (Exception ex)
             {
               
                 return retval;
-                // Visutil.CloseWaitForm();
+                // appManager.CloseWaitForm();
             }
 
         }
