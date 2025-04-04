@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using TheTechIdea.Beep.Winform.Controls.Basic;
+
 using TheTechIdea.Beep.Vis;
 using TheTechIdea.Beep.Addin;
 
@@ -22,24 +22,26 @@ using TheTechIdea.Beep.Container;
 using TheTechIdea.Beep.Container.Services;
 using Beep.Python.Model;
 using Beep.Python.RuntimeEngine.Services;
+using TheTechIdea.Beep.Winform.Default.Views.Template;
 
 namespace Beep.Python.Winform
 {
     [AddinAttribute(Caption = "Python Machine Learning", Name = "uc_RunPythonTraining", misc = "AI", addinType = AddinType.Control)]
-    public partial class uc_RunPythonTraining : uc_Addin
+    public partial class uc_RunPythonTraining : TemplateUserControl
     {
-        public uc_RunPythonTraining()
+        public uc_RunPythonTraining(IBeepService service) : base(service)
         {
             InitializeComponent();
-            AddinName = "Python Machine Learning";
+
+        Details.AddinName = "Python Machine Learning";
         }
-        IBeepService beepService;
+      
         IPythonRunTimeManager pythonRunTimeManager;
-        public override void SetConfig(IDMEEditor pDMEEditor, IDMLogger plogger, IUtil putil, string[] args, IPassedArgs e, IErrorsInfo per)
+        public  void SetConfig(IDMEEditor pDMEEditor, IDMLogger plogger, IUtil putil, string[] args, IPassedArgs e, IErrorsInfo per)
         {
-            base.SetConfig(pDMEEditor, plogger, putil, args, e, per);
-            beepService = DMEEditor.GetBeepService();
-            pythonRunTimeManager = DMEEditor.GetPythonRunTimeManager();
+           
+        
+            pythonRunTimeManager = Editor.GetPythonRunTimeManager();
         }
     }
 }

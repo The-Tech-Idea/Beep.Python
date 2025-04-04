@@ -1,4 +1,8 @@
-﻿namespace Beep.Python.Winform
+﻿
+
+using TheTechIdea.Beep.Winform.Controls.Grid;
+
+namespace Beep.Python.Winform
 {
     partial class uc_PackageManagerView
     {
@@ -37,7 +41,7 @@
             toolStripProgressBar1 = new ToolStripProgressBar();
             toolStripStatusLabel2 = new ToolStripStatusLabel();
             MessageLabel = new ToolStripStatusLabel();
-            beepGrid1 = new TheTechIdea.Beep.Winform.Controls.Grid.BeepGrid();
+            beepGrid1 = new BeepGrid();
             bindingSource1 = new BindingSource(components);
             toolStripButton1 = new ToolStripButton();
             tableLayoutPanel1.SuspendLayout();
@@ -125,48 +129,34 @@
             // 
             // beepGrid1
             // 
-            beepGrid1.AddinName = null;
+          
             beepGrid1.AllowDrop = true;
             beepGrid1.AllowUserToAddRows = true;
             beepGrid1.AllowUserToDeleteRows = true;
             beepGrid1.bindingSource = bindingSource1;
             beepGrid1.BorderStyle = BorderStyle.FixedSingle;
             beepGrid1.DataSource = bindingSource1;
-            beepGrid1.DefaultCreate = true;
-            beepGrid1.Description = null;
-            beepGrid1.DestConnection = null;
-            beepGrid1.DllName = null;
-            beepGrid1.DllPath = null;
+           
             beepGrid1.DMEEditor = null;
             beepGrid1.Dock = DockStyle.Fill;
-            beepGrid1.Dset = null;
-            beepGrid1.EntityName = null;
+         
             beepGrid1.EntityStructure = null;
-            beepGrid1.ErrorObject = null;
+          
             beepGrid1.Location = new Point(5, 68);
-            beepGrid1.Logger = null;
+         
             beepGrid1.Margin = new Padding(5, 3, 5, 3);
             beepGrid1.Name = "beepGrid1";
-            beepGrid1.NameSpace = null;
-            beepGrid1.ObjectName = null;
-            beepGrid1.ObjectType = "UserControl";
-            beepGrid1.ParentBranch = null;
-            beepGrid1.ParentName = null;
-            beepGrid1.Passedarg = null;
-            beepGrid1.pbr = null;
+          
             beepGrid1.ReadOnly = false;
-            beepGrid1.RootBranch = null;
+           
             beepGrid1.ShowFilterPanel = false;
             beepGrid1.ShowTotalsPanel = false;
             beepGrid1.Size = new Size(820, 710);
-            beepGrid1.SourceConnection = null;
+          
             beepGrid1.TabIndex = 3;
-            beepGrid1.Tree = null;
-            beepGrid1.util = null;
+          
             beepGrid1.VerifyDelete = true;
-            beepGrid1.ViewRootBranch = null;
-            beepGrid1.Visutil = null;
-            beepGrid1.Load += beepGrid1_Load;
+         
             // 
             // bindingSource1
             // 
@@ -208,7 +198,7 @@
         private ToolStripStatusLabel MessageLabel;
         private ToolStrip toolStrip1;
         private Label label1;
-        private TheTechIdea.Beep.Winform.Controls.Grid.BeepGrid beepGrid1;
+        private BeepGrid beepGrid1;
         private BindingSource bindingSource1;
         private ToolStripButton toolStripButton1;
     }
