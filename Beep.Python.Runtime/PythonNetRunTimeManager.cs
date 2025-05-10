@@ -14,6 +14,7 @@ using TheTechIdea.Beep.Editor;
 using System.Diagnostics;
 using TheTechIdea.Beep.Container.Services;
 using Beep.Python.RuntimeEngine.Services;
+using Beep.Python.RuntimeEngine.Helpers;
 
 namespace Beep.Python.RuntimeEngine
 {
@@ -22,7 +23,18 @@ namespace Beep.Python.RuntimeEngine
     /// and script execution.
     /// </summary>
     public class PythonNetRunTimeManager : IDisposable, IPythonRunTimeManager
-    {
+    { 
+        
+        // Existing properties...
+        public PythonSessionInfo CurrentSession { get; private set; }
+
+        public List<PythonSessionInfo> Sessions { get; set; } = new();
+        public PythonVirtualEnvironment CurrentVirtualEnvironment { get; set; }
+
+        public List<PythonVirtualEnvironment> ManagedVirtualEnvironments { get; private set; } = new();
+        // Dictionary to hold all active scopes, keyed by session or environment ID
+        private readonly Dictionary<string, PyModule> SessionScopes = new();
+
         /// <summary>
         /// Initializes a new instance of <see cref="PythonNetRunTimeManager"/> with a specified <see cref="IBeepService"/>.
         /// </summary>
@@ -84,7 +96,71 @@ namespace Beep.Python.RuntimeEngine
                 }
             }
         }
+        #region "Scope Management"
+        public PyModule GetScope(PythonSessionInfo session)
+        {
+            if (session == null || !SessionScopes.ContainsKey(session.SessionId))
+                return null;
 
+            return SessionScopes[session.SessionId];
+        }
+
+        public bool HasScope(PythonSessionInfo session)
+        {
+            return session != null && SessionScopes.ContainsKey(session.SessionId);
+        }
+
+        public bool CreateScope(PythonSessionInfo session, PythonVirtualEnvironment venv)
+        {
+            if (session == null || venv == null)
+                return false;
+
+            if (SessionScopes.ContainsKey(session.SessionId))
+                return false;
+
+            using (Py.GIL()) // Always acquire GIL when creating or using scopes
+            {
+                var scope = Py.CreateScope();
+                SessionScopes[session.SessionId] = scope;
+
+                // Inject session and environment metadata into the Python scope
+                string setContext = $@"
+import os
+import sys
+
+os.environ['VIRTUAL_ENV'] = r'{venv.Path}'
+sys.prefix = r'{venv.Path}'
+sys.exec_prefix = r'{venv.Path}'
+
+username = '{session.Username ?? "unknown"}'
+session_id = '{session.SessionId}'
+venv_name = '{venv.Name}'
+";
+                scope.Exec(setContext);
+            }
+
+            return true;
+        }
+
+
+        public void ClearScope(string sessionId)
+        {
+            if (SessionScopes.TryGetValue(sessionId, out var scope))
+            {
+                scope.Dispose();
+                SessionScopes.Remove(sessionId);
+            }
+        }
+
+        public void ClearAll()
+        {
+            foreach (var scope in SessionScopes.Values)
+            {
+                scope.Dispose();
+            }
+            SessionScopes.Clear();
+        }
+        #endregion "Scope Management"
         /// <summary>
         /// Gets or sets the persistent Python scope (module) that remains loaded across script executions.
         /// </summary>
@@ -190,103 +266,103 @@ namespace Beep.Python.RuntimeEngine
         {
             string userEnvPath = Path.Combine(envBasePath, username);
 
+            var env = new PythonVirtualEnvironment
+            {
+                Name = username,
+                Path = userEnvPath,
+                PythonVersion = CurrentRuntimeConfig?.PythonVersion ?? "Unknown",
+                BaseInterpreterPath = CurrentRuntimeConfig?.BinPath
+            };
+
             if (!Directory.Exists(userEnvPath))
             {
-                // Create the virtual environment if it does not exist
-                bool creationSuccess = CreateVirtualEnvironment(userEnvPath);
+                bool creationSuccess = CreateVirtualEnvironmentFromDefinition(env);
                 if (!creationSuccess)
                 {
                     return false;
                 }
             }
+            else
+            {
+                // If directory exists, make sure it's tracked
+                if (!ManagedVirtualEnvironments.Any(e => e.Path == userEnvPath))
+                {
+                    ManagedVirtualEnvironments.Add(env);
+                }
+            }
 
-            // Initialize using the newly created or existing env
             return Initialize(userEnvPath);
         }
 
+
+
         /// <summary>
-        /// Creates a virtual environment by invoking a Python command line ("python -m venv &lt;envPath&gt;").
+        /// Creates a virtual environment using the current runtime config and the provided virtual environment definition.
         /// </summary>
-        /// <param name="envPath">Path where the new virtual environment will be created.</param>
+        /// <param name="env">The virtual environment metadata (name, path, etc.).</param>
         /// <returns>True if successful; otherwise false.</returns>
-        public bool CreateVirtualEnvironmentFromCommand(string envPath)
+        public bool CreateVirtualEnvironmentFromDefinition(PythonVirtualEnvironment env)
         {
-            if (Directory.Exists(envPath))
+            if (env == null || string.IsNullOrWhiteSpace(env.Path))
             {
-                Console.WriteLine("Virtual environment already exists.");
-                return true; // No need to create if it already exists
+                ReportProgress("Invalid environment definition.", Errors.Failed);
+                return false;
+            }
+
+            if (CurrentRuntimeConfig == null || string.IsNullOrWhiteSpace(CurrentRuntimeConfig.BinPath))
+            {
+                ReportProgress("No active Python runtime is set.", Errors.Failed);
+                return false;
+            }
+
+            if (Directory.Exists(env.Path))
+            {
+                ReportProgress($"Virtual environment already exists at {env.Path}", Errors.Ok);
+                return true;
             }
 
             try
             {
-                // Command to create virtual environment
+                string pythonExe = Path.Combine(CurrentRuntimeConfig.BinPath, "python.exe");
+
                 var process = new Process()
                 {
                     StartInfo = new ProcessStartInfo
                     {
-                        FileName = "python", // Ensure this points to the global/system Python executable
-                        Arguments = $"-m venv {envPath}",
+                        FileName = pythonExe,
+                        Arguments = $"-m venv \"{env.Path}\"",
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
                         CreateNoWindow = true
                     }
                 };
+
                 process.Start();
                 string output = process.StandardOutput.ReadToEnd();
-                string err = process.StandardError.ReadToEnd();
+                string error = process.StandardError.ReadToEnd();
                 process.WaitForExit();
 
                 if (process.ExitCode == 0)
                 {
-                    Console.WriteLine($"Virtual environment created at: {envPath}");
+                    ReportProgress($"Virtual environment created at: {env.Path}", Errors.Ok);
+
+                    // Register environment with metadata
+                    env.BaseInterpreterPath = CurrentRuntimeConfig.BinPath;
+                    env.PythonVersion = CurrentRuntimeConfig.PythonVersion;
+
+                    ManagedVirtualEnvironments.Add(env);
                     return true;
                 }
                 else
                 {
-                    Console.WriteLine($"Failed to create virtual environment: {err}");
+                    ReportProgress($"Error creating virtual environment: {error}", Errors.Failed);
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exception occurred: {ex.Message}");
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Creates a virtual environment using Python's built-in "venv" module (via Python.NET).
-        /// </summary>
-        /// <param name="envPath">Path where the new virtual environment will be created.</param>
-        /// <returns>True if successful; otherwise false.</returns>
-        public bool CreateVirtualEnvironment(string envPath)
-        {
-            if (Directory.Exists(envPath))
-            {
-                Console.WriteLine("Virtual environment already exists.");
-                return false;
-            }
-
-            try
-            {
-                // Ensure the directory exists
-                Directory.CreateDirectory(envPath);
-
-                // Acquire the Python Global Interpreter Lock
-                using (Py.GIL())
-                {
-                    dynamic venv = Py.Import("venv");
-                    // Create the virtual environment
-                    venv.create(envPath, with_pip: true);
-                }
-
-                Console.WriteLine($"Virtual environment created at: {envPath}");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Failed to create virtual environment: {ex.Message}");
+                ReportProgress($"Exception: {ex.Message}", Errors.Failed);
                 return false;
             }
         }
@@ -369,15 +445,118 @@ namespace Beep.Python.RuntimeEngine
             IsBusy = false;
             return false;
         }
+        /// <summary>
+        /// Initializes the Python environment using the provided PythonVirtualEnvironment definition.
+        /// </summary>
+        /// <param name="venv">The virtual environment to initialize.</param>
+        /// <returns>True if initialized successfully; otherwise false.</returns>
+        public bool Initialize(PythonVirtualEnvironment venv)
+        {
+            if (IsBusy) return false;
+            IsBusy = true;
+
+            if (venv == null || string.IsNullOrWhiteSpace(venv.Path))
+            {
+                ReportProgress("Invalid virtual environment provided.", Errors.Failed);
+                IsBusy = false;
+                return false;
+            }
+            CurrentSession = new PythonSessionInfo();
+            venv.AddSession(CurrentSession);
+            CurrentVirtualEnvironment = venv;
+
+            string pythonBinPath = venv.Path;
+            string pythonExe = Path.Combine(pythonBinPath, "Scripts", "python.exe");
+            if (!File.Exists(pythonExe))
+            {
+                ReportProgress($"python.exe not found in virtual environment at {pythonExe}", Errors.Failed);
+                IsBusy = false;
+                return false;
+            }
+
+            string pythonScriptPath = Path.Combine(pythonBinPath, "Scripts");
+            string pythonPackagePath = Path.Combine(pythonBinPath, "Lib", "site-packages");
+
+            try
+            {
+                if (!PythonEngine.IsInitialized)
+                {
+                    PythonRunTimeDiagnostics.SetAiFolderPath(DMEditor);
+
+                    Environment.SetEnvironmentVariable("PATH", $"{pythonBinPath};{pythonScriptPath};" + Environment.GetEnvironmentVariable("PATH"), EnvironmentVariableTarget.Process);
+                    Environment.SetEnvironmentVariable("PYTHONNET_RUNTIME", pythonBinPath, EnvironmentVariableTarget.Process);
+                    Environment.SetEnvironmentVariable("PYTHONNET_PYTHON_RUNTIME", pythonBinPath, EnvironmentVariableTarget.Process);
+                    Environment.SetEnvironmentVariable("PYTHONHOME", pythonBinPath, EnvironmentVariableTarget.Process);
+                    Environment.SetEnvironmentVariable("PYTHONPATH", $"{pythonPackagePath};", EnvironmentVariableTarget.Process);
+
+                    ReportProgress("Initializing Python engine...");
+
+                    // Auto-detect DLL if needed
+                    string pythonDll = null;
+                    if (!string.IsNullOrWhiteSpace(venv.PythonVersion))
+                    {
+                        var versionDigits = venv.PythonVersion.Replace(".", "");
+                        var expectedDll = Path.Combine(pythonBinPath, $"python{versionDigits}.dll");
+                        if (File.Exists(expectedDll))
+                        {
+                            pythonDll = expectedDll;
+                        }
+                    }
+
+                    if (pythonDll == null)
+                    {
+                        var dllCandidates = Directory.GetFiles(pythonBinPath, "python*.dll");
+                        pythonDll = dllCandidates.OrderByDescending(f => f).FirstOrDefault();
+                    }
+
+                    if (string.IsNullOrEmpty(pythonDll) || !File.Exists(pythonDll))
+                    {
+                        ReportProgress("Python DLL not found in the virtual environment.", Errors.Failed);
+                        return false;
+                    }
+
+                    Runtime.PythonDLL = pythonDll;
+                    PythonEngine.PythonHome = pythonBinPath;
+                    PythonEngine.Initialize();
+
+                    ReportProgress("Python engine initialized.");
+                    _IsInitialized = true;
+                    CurrentSession.WasSuccessful = true;
+                    CurrentSession.EndedAt = DateTime.Now;
+
+                    return true;
+                }
+                else
+                {
+                    CurrentSession.WasSuccessful = true;
+                    CurrentSession.EndedAt = DateTime.Now;
+
+                    ReportProgress("Python engine already initialized.", Errors.Ok);
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                CurrentSession.WasSuccessful = false;
+                CurrentSession.Notes = ex.Message;
+                CurrentSession.EndedAt = DateTime.Now;
+
+                ReportProgress($"Initialization error: {ex.Message}", Errors.Failed);
+                return false;
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
 
         /// <summary>
-        /// Shuts down the Python engine, disposing of any persistent scope if it exists.
+        /// Shuts down the Python engine, disposing of any persistent scope and clearing active environment state.
         /// </summary>
         /// <returns>An <see cref="IErrorsInfo"/> indicating success or failure.</returns>
         public IErrorsInfo ShutDown()
         {
-            ErrorsInfo er = new ErrorsInfo();
-            er.Flag = Errors.Ok;
+            var er = new ErrorsInfo { Flag = Errors.Ok };
             if (IsBusy) return er;
             IsBusy = true;
 
@@ -385,23 +564,61 @@ namespace Beep.Python.RuntimeEngine
             {
                 if (PersistentScope != null)
                 {
-                    PyModule a = (PyModule)PersistentScope;
-                    a.Dispose();
+                    PersistentScope.Dispose();
+                    PersistentScope = null;
                 }
 
-                PythonEngine.Shutdown();
+                if (PythonEngine.IsInitialized)
+                {
+                    PythonEngine.Shutdown();
+                }
+
                 _IsInitialized = false;
+
+                // ✅ Finalize session tracking
+                if (CurrentSession != null)
+                {
+                    CurrentSession.EndedAt = DateTime.Now;
+                    CurrentSession.Notes = "Session ended via shutdown.";
+                }
+
+                ReportProgress("Python engine shut down.", Errors.Ok);
             }
             catch (Exception ex)
             {
                 er.Ex = ex;
                 er.Flag = Errors.Failed;
                 er.Message = ex.Message;
+                ReportProgress($"Shutdown error: {ex.Message}", Errors.Failed);
+            }
+            finally
+            {
+                IsBusy = false;
+                CurrentVirtualEnvironment = null;
+                CurrentSession = null;
             }
 
-            IsBusy = false;
             return er;
         }
+
+        /// <summary>
+        /// Shuts down the current Python engine and reinitializes it with a new virtual environment.
+        /// </summary>
+        /// <param name="venv">The new virtual environment to initialize.</param>
+        /// <returns>True if successful; otherwise false.</returns>
+        public bool RestartWithEnvironment(PythonVirtualEnvironment venv)
+        {
+            var result = ShutDown();
+            if (result.Flag != Errors.Ok)
+            {
+                ReportProgress("Failed to shut down current Python instance.", Errors.Failed);
+                return false;
+            }
+
+            CurrentVirtualEnvironment = venv;
+            return Initialize(venv);
+        }
+
 
         #endregion
 
@@ -679,6 +896,105 @@ namespace Beep.Python.RuntimeEngine
         #endregion
 
         #region "Python Run Code"
+        public async Task<string> RunPythonForUserAsync(PythonSessionInfo session, string username, string code, IProgress<PassedArgs> progress = null)
+        {
+            if (session == null)
+            {
+                ReportProgress("Session object is required.", Errors.Failed);
+                return null;
+            }
+
+            // 🔍 Try to find an existing venv by session.VirtualEnvironmentId
+            var venv = ManagedVirtualEnvironments.FirstOrDefault(v =>
+                v.ID.Equals(session.VirtualEnvironmentId, StringComparison.OrdinalIgnoreCase));
+
+            // 🔁 Fallback: Try to find by username if not linked by ID
+            if (venv == null)
+            {
+                venv = ManagedVirtualEnvironments.FirstOrDefault(v =>
+                    v.Name.Equals(username, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (venv == null)
+            {
+                ReportProgress($"No virtual environment found for user '{username}' or session.", Errors.Failed);
+                session.Notes = "Virtual environment not found.";
+                session.WasSuccessful = false;
+                session.EndedAt = DateTime.Now;
+                return null;
+            }
+
+            // ✅ Track session info
+            session.StartedAt = DateTime.Now;
+            session.Username = username;
+            session.VirtualEnvironmentId = venv.ID;
+
+            venv.AddSession(session);
+            Sessions.Add(session);
+
+            // Set current environment/session
+            CurrentSession = session;
+            CurrentVirtualEnvironment = venv;
+
+            // 🔧 Initialize engine
+            if (!Initialize(venv))
+            {
+                session.Notes = "Environment initialization failed.";
+                session.WasSuccessful = false;
+                session.EndedAt = DateTime.Now;
+                return null;
+            }
+
+            try
+            {
+                string output = await RunPythonCodeAndGetOutput(progress ?? DMEditor.progress, code);
+                session.Notes = "Execution succeeded.";
+                session.WasSuccessful = true;
+                session.EndedAt = DateTime.Now;
+                return output;
+            }
+            catch (Exception ex)
+            {
+                session.Notes = $"Execution failed: {ex.Message}";
+                session.WasSuccessful = false;
+                session.EndedAt = DateTime.Now;
+                ReportProgress(session.Notes, Errors.Failed);
+                return null;
+            }
+        }
+
+        public async Task<string> RunPythonForUserAsync(string envBasePath, string username, string code, IProgress<PassedArgs> progress = null)
+        {
+            string userEnvPath = Path.Combine(envBasePath, username);
+
+            var venv = new PythonVirtualEnvironment
+            {
+                Name = username,
+                Path = userEnvPath
+            };
+
+            // Create or initialize the environment
+            if (!Directory.Exists(userEnvPath))
+            {
+                if (!CreateVirtualEnvironmentFromDefinition(venv))
+                {
+                    ReportProgress($"Failed to create virtual environment for user {username}", Errors.Failed);
+                    return null;
+                }
+            }
+
+            // Initialize the engine in the user's venv
+            if (!Initialize(venv))
+            {
+                ReportProgress($"Failed to initialize virtual environment for {username}", Errors.Failed);
+                return null;
+            }
+
+            // Run the code and return output
+            var result = await RunPythonCodeAndGetOutput(progress ?? DMEditor.progress, code);
+            return result;
+        }
+
 
         /// <summary>
         /// Runs a Python script within the persistent scope with optional parameters.

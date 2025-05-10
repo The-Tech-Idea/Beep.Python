@@ -31,10 +31,15 @@ namespace Beep.Python.Winform.JupyterNoteBook
     {
         bool IsJupyterRunning = false;
 
-        public uc_JupyterNoteBook()
+        public uc_JupyterNoteBook(IBeepService beepService):base(beepService)
         {
             InitializeComponent();
+            this.beepService = beepService;
+           
+            pythonRunTimeManager = Editor.GetPythonRunTimeManager();
+            appManager.PasstoWaitForm(new PassedArgs() { Messege = "Initializing Jupyter Notebook" });
         }
+       
 
         private void InitializeWebView()
         {
@@ -55,7 +60,7 @@ namespace Beep.Python.Winform.JupyterNoteBook
         public  void SetConfig(IDMEEditor pDMEEditor, IDMLogger plogger, IUtil putil, string[] args, IPassedArgs e, IErrorsInfo per)
         {
            
-            beepService = Editor.GetBeepService();
+         
             pythonRunTimeManager = Editor.GetPythonRunTimeManager();
             Progress<PassedArgs> progress = new Progress<PassedArgs>();
             CancellationToken token = new CancellationToken();

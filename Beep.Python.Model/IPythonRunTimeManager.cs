@@ -33,9 +33,10 @@ namespace Beep.Python.Model
          bool PickConfig(string path);
          bool PickConfig(PythonRunTime cfg);
         bool InitializeForUser(string envBasePath, string username);
-        bool CreateVirtualEnvironment(string envPath);
-        bool CreateVirtualEnvironmentFromCommand(string envPath);
+        bool RestartWithEnvironment(PythonVirtualEnvironment venv);
+        bool CreateVirtualEnvironmentFromDefinition(PythonVirtualEnvironment env);
         bool Initialize(string virtualEnvPath = null);
+        bool Initialize(PythonVirtualEnvironment venv);
         bool Initialize(string pythonhome,  BinType32or64 binType, string libpath);
         Task<IErrorsInfo> RunCode(string code, IProgress<PassedArgs> progress, CancellationToken token);
         Task<dynamic> RunCommand(string command, IProgress<PassedArgs> progress, CancellationToken token);

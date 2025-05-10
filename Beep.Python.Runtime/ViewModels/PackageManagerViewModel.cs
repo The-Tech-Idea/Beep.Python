@@ -18,6 +18,7 @@ using System.Linq;
 using System.Net.Http;
 using CommunityToolkit.Mvvm.ComponentModel;
 using TheTechIdea.Beep.Container.Services;
+using Beep.Python.RuntimeEngine.Helpers;
 
 namespace Beep.Python.RuntimeEngine.ViewModels
 {

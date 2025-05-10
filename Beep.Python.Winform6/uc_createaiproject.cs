@@ -36,7 +36,7 @@ namespace Beep.Python.Winform
         {
            
             pythonRunTimeManager = pDMEEditor.GetPythonRunTimeManager();
-            pythonAIProjectViewModel = new PythonAIProjectViewModel(pDMEEditor.GetBeepService(), pythonRunTimeManager);
+            pythonAIProjectViewModel = new PythonAIProjectViewModel(beepService, pythonRunTimeManager);
             pythonAIProjectViewModel.initialize();
            
             pythonAIProjectViewModel.Progress = new Progress<PassedArgs>();
