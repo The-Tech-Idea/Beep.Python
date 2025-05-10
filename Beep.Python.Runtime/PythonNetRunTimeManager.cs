@@ -23,39 +23,12 @@ namespace Beep.Python.RuntimeEngine
     /// and script execution.
     /// </summary>
     public class PythonNetRunTimeManager : IDisposable, IPythonRunTimeManager
-    { 
-        
-        // Existing properties...
-        public PythonSessionInfo CurrentSession { get; private set; }
-
-        public List<PythonSessionInfo> Sessions { get; set; } = new();
-        public PythonVirtualEnvironment CurrentVirtualEnvironment { get; set; }
-
-        public List<PythonVirtualEnvironment> ManagedVirtualEnvironments { get; private set; } = new();
-        // Dictionary to hold all active scopes, keyed by session or environment ID
-        private readonly Dictionary<string, PyModule> SessionScopes = new();
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="PythonNetRunTimeManager"/> with a specified <see cref="IBeepService"/>.
-        /// </summary>
-        /// <param name="beepService">Service used for logging, configuration, and editor access.</param>
-        public PythonNetRunTimeManager(IBeepService beepService)
-        {
-            _beepService = beepService;
-            DMEditor = beepService.DMEEditor;
-            JsonLoader = DMEditor.ConfigEditor.JsonLoader;
-
-            PythonRunTimeDiagnostics.SetFolderNames("x32", "x64");
-        }
+    {
+        #region "Fields"
 
         private bool _IsInitialized = false;
         private bool disposedValue;
         private readonly IBeepService _beepService;
-
-        private string pythonpath;
-        private string configfile;
-        private volatile bool _shouldStop = false;
-
         /// <summary>
         /// Gets the current <see cref="IProgress{PassedArgs}"/> object for reporting progress.
         /// </summary>
@@ -66,19 +39,23 @@ namespace Beep.Python.RuntimeEngine
         /// </summary>
         public CancellationToken Token { get; set; }
 
-        /// <summary>
-        /// Provides a GIL (Global Interpreter Lock) context. Throws an exception if Python is not initialized.
-        /// </summary>
-        /// <returns>A <see cref="Py.GILState"/> object that manages Python GIL acquisition and release.</returns>
-        public Py.GILState GIL()
-        {
-            if (!IsInitialized)
-            {
-                throw new InvalidOperationException("Python runtime is not initialized.");
-            }
-            return Py.GIL();
-        }
+        private string pythonpath;
+        private string configfile;
+        private volatile bool _shouldStop = false;
+        #endregion "Fields"
+        #region "Properties"
+        #region "Session and Environment"
+        public PythonSessionInfo CurrentSession { get; private set; }
 
+        public List<PythonSessionInfo> Sessions { get; set; } = new();
+        public PythonVirtualEnvironment CurrentVirtualEnvironment { get; set; }
+
+        public List<PythonVirtualEnvironment> ManagedVirtualEnvironments { get; private set; } = new();
+        // Dictionary to hold all active scopes, keyed by session or environment ID
+        private readonly Dictionary<string, PyModule> SessionScopes = new();
+
+        #endregion "Session and Environment"
+        #region "Status and Configuration"
         /// <summary>
         /// Gets the current Python runtime configuration from <see cref="PythonConfig"/> using <see cref="PythonConfiguration.RunTimeIndex"/>.
         /// </summary>
@@ -96,95 +73,7 @@ namespace Beep.Python.RuntimeEngine
                 }
             }
         }
-        #region "Scope Management"
-        public PyModule GetScope(PythonSessionInfo session)
-        {
-            if (session == null || !SessionScopes.ContainsKey(session.SessionId))
-                return null;
-
-            return SessionScopes[session.SessionId];
-        }
-
-        public bool HasScope(PythonSessionInfo session)
-        {
-            return session != null && SessionScopes.ContainsKey(session.SessionId);
-        }
-
-        public bool CreateScope(PythonSessionInfo session, PythonVirtualEnvironment venv)
-        {
-            if (session == null || venv == null)
-                return false;
-
-            if (SessionScopes.ContainsKey(session.SessionId))
-                return false;
-
-            using (Py.GIL()) // Always acquire GIL when creating or using scopes
-            {
-                var scope = Py.CreateScope();
-                SessionScopes[session.SessionId] = scope;
-
-                // Inject session and environment metadata into the Python scope
-                string setContext = $@"
-import os
-import sys
-
-os.environ['VIRTUAL_ENV'] = r'{venv.Path}'
-sys.prefix = r'{venv.Path}'
-sys.exec_prefix = r'{venv.Path}'
-
-username = '{session.Username ?? "unknown"}'
-session_id = '{session.SessionId}'
-venv_name = '{venv.Name}'
-";
-                scope.Exec(setContext);
-            }
-
-            return true;
-        }
-
-
-        public void ClearScope(string sessionId)
-        {
-            if (SessionScopes.TryGetValue(sessionId, out var scope))
-            {
-                scope.Dispose();
-                SessionScopes.Remove(sessionId);
-            }
-        }
-
-        public void ClearAll()
-        {
-            foreach (var scope in SessionScopes.Values)
-            {
-                scope.Dispose();
-            }
-            SessionScopes.Clear();
-        }
-        #endregion "Scope Management"
-        /// <summary>
-        /// Gets or sets the persistent Python scope (module) that remains loaded across script executions.
-        /// </summary>
-        public PyModule PersistentScope { get; set; }
-
-        /// <summary>
-        /// Creates a new persistent Python scope if one doesn't already exist.
-        /// </summary>
-        /// <returns>
-        /// True if a new scope was created; false if a scope already exists.
-        /// </returns>
-        public bool CreateScope()
-        {
-            if (PersistentScope == null)
-            {
-                PersistentScope = Py.CreateScope();
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
+   
         /// <summary>
         /// Indicates whether Python is fully initialized and ready to execute code.
         /// </summary>
@@ -253,6 +142,129 @@ venv_name = '{venv.Name}'
         /// Gets or sets the binary type (32 or 64-bit).
         /// </summary>
         public BinType32or64 BinType { get; set; } = BinType32or64.p395x32;
+        #endregion "Status and Configuration"
+        #endregion "Properties"
+        #region "Constructors"
+        /// <summary>
+        /// Initializes a new instance of <see cref="PythonNetRunTimeManager"/> with a specified <see cref="IBeepService"/>.
+        /// </summary>
+        /// <param name="beepService">Service used for logging, configuration, and editor access.</param>
+        public PythonNetRunTimeManager(IBeepService beepService)
+        {
+            _beepService = beepService;
+            DMEditor = beepService.DMEEditor;
+            JsonLoader = DMEditor.ConfigEditor.JsonLoader;
+
+            PythonRunTimeDiagnostics.SetFolderNames("x32", "x64");
+        }
+
+
+
+        /// <summary>
+        /// Provides a GIL (Global Interpreter Lock) context. Throws an exception if Python is not initialized.
+        /// </summary>
+        /// <returns>A <see cref="Py.GILState"/> object that manages Python GIL acquisition and release.</returns>
+        public Py.GILState GIL()
+        {
+            if (!IsInitialized)
+            {
+                throw new InvalidOperationException("Python runtime is not initialized.");
+            }
+            return Py.GIL();
+        }
+
+
+        #endregion "Constructors"
+
+        #region "Scope Management"
+        /// <summary>
+        /// Gets or sets the persistent Python scope (module) that remains loaded across script executions.
+        /// </summary>
+        public PyModule PersistentScope { get; set; }
+
+        /// <summary>
+        /// Creates a new persistent Python scope if one doesn't already exist.
+        /// </summary>
+        /// <returns>
+        /// True if a new scope was created; false if a scope already exists.
+        /// </returns>
+        public bool CreateScope()
+        {
+            if (PersistentScope == null)
+            {
+                PersistentScope = Py.CreateScope();
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public PyModule GetScope(PythonSessionInfo session)
+        {
+            if (session == null || !SessionScopes.ContainsKey(session.SessionId))
+                return null;
+
+            return SessionScopes[session.SessionId];
+        }
+
+        public bool HasScope(PythonSessionInfo session)
+        {
+            return session != null && SessionScopes.ContainsKey(session.SessionId);
+        }
+
+        public bool CreateScope(PythonSessionInfo session, PythonVirtualEnvironment venv)
+        {
+            if (session == null || venv == null)
+                return false;
+
+            if (SessionScopes.ContainsKey(session.SessionId))
+                return false;
+
+            using (Py.GIL()) // Always acquire GIL when creating or using scopes
+            {
+                var scope = Py.CreateScope();
+                SessionScopes[session.SessionId] = scope;
+
+                // Inject session and environment metadata into the Python scope
+                string setContext = $@"
+import os
+import sys
+
+os.environ['VIRTUAL_ENV'] = r'{venv.Path}'
+sys.prefix = r'{venv.Path}'
+sys.exec_prefix = r'{venv.Path}'
+
+username = '{session.Username ?? "unknown"}'
+session_id = '{session.SessionId}'
+venv_name = '{venv.Name}'
+";
+                scope.Exec(setContext);
+            }
+
+            return true;
+        }
+
+
+        public void ClearScope(string sessionId)
+        {
+            if (SessionScopes.TryGetValue(sessionId, out var scope))
+            {
+                scope.Dispose();
+                SessionScopes.Remove(sessionId);
+            }
+        }
+
+        public void ClearAll()
+        {
+            foreach (var scope in SessionScopes.Values)
+            {
+                scope.Dispose();
+            }
+            SessionScopes.Clear();
+        }
+        #endregion "Scope Management"
+
 
         #region "Initialization and Shutdown"
 
