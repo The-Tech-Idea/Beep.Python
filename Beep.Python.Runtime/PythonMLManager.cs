@@ -112,7 +112,7 @@ preview_data_types = data_types
         {
             using (Py.GIL()) // Acquire the Python Global Interpreter Lock
             {
-                dynamic pyColumns = PythonRuntime.PersistentScope.Get("preview_columns");
+                dynamic pyColumns = PythonRuntime.CurrentPersistentScope.Get("preview_columns");
                 if (pyColumns == null) return new string[0];
 
                 // Convert the Python list to a C# string array
@@ -130,7 +130,7 @@ preview_data_types = data_types
         {
             using (Py.GIL()) // Acquire the Python Global Interpreter Lock
             {
-                dynamic pyMissingValues = PythonRuntime.PersistentScope.Get("preview_missing_values");
+                dynamic pyMissingValues = PythonRuntime.CurrentPersistentScope.Get("preview_missing_values");
                 if (pyMissingValues == null) return new int[0];
 
                 // Convert the Python list to a C# int array
@@ -147,7 +147,7 @@ preview_data_types = data_types
         {
             using (Py.GIL()) // Acquire the Python Global Interpreter Lock
             {
-                dynamic pyDataTypes = PythonRuntime.PersistentScope.Get("preview_data_types");
+                dynamic pyDataTypes = PythonRuntime.CurrentPersistentScope.Get("preview_data_types");
                 if (pyDataTypes == null) return new string[0];
 
                 // Convert the Python list to a C# string array
@@ -903,7 +903,7 @@ except Exception as e:
             // Check for this case and handle accordingly
             using (Py.GIL())
             {
-                dynamic pyModelId = PythonRuntime.PersistentScope.Get("model_id");
+                dynamic pyModelId = PythonRuntime.CurrentPersistentScope.Get("model_id");
                 if (pyModelId == null || pyModelId.ToString() == "None")
                 {
                     return null; // or handle the error as per your application's needs
@@ -1234,7 +1234,7 @@ categorical_features = dtypes[dtypes == 'object'].index.tolist()
         {
             using (Py.GIL()) // Acquire the Python Global Interpreter Lock
             {
-                dynamic pyCategoricalFeatures = PythonRuntime.PersistentScope.Get("categorical_features");
+                dynamic pyCategoricalFeatures = PythonRuntime.CurrentPersistentScope.Get("categorical_features");
                 if (pyCategoricalFeatures == null) return new string[0];
 
                 // Convert the Python list to a C# string array
@@ -1299,7 +1299,7 @@ if 'date_features' not in globals():
         {
             using (Py.GIL()) // Acquire the Python Global Interpreter Lock
             {
-                dynamic pyDateFeatures = PythonRuntime.PersistentScope.Get("date_features");
+                dynamic pyDateFeatures = PythonRuntime.CurrentPersistentScope.Get("date_features");
                 if (pyDateFeatures == null) return new string[0];
 
                 // Convert the Python list to a C# string array
@@ -2583,7 +2583,7 @@ globals()['std_cross_val_score'] = std_score
         {
             using (Py.GIL())
             {
-                dynamic pyScore = PythonRuntime.PersistentScope.Get("avg_cross_val_score");
+                dynamic pyScore = PythonRuntime.CurrentPersistentScope.Get("avg_cross_val_score");
                 return pyScore.As<double>();
             }
         }
@@ -2591,7 +2591,7 @@ globals()['std_cross_val_score'] = std_score
         {
             using (Py.GIL())
             {
-                dynamic pyScore = PythonRuntime.PersistentScope.Get("std_cross_val_score");
+                dynamic pyScore = PythonRuntime.CurrentPersistentScope.Get("std_cross_val_score");
                 return pyScore.As<double>();
             }
         }
@@ -2931,7 +2931,7 @@ globals()['data'] = data
             using (Py.GIL()) // Acquire the Python Global Interpreter Lock
             {
                 // Retrieve the 'predictions' variable from the persistent Python scope
-                dynamic predictions = PythonRuntime.PersistentScope.Get("predictions");
+                dynamic predictions = PythonRuntime.CurrentPersistentScope.Get("predictions");
 
                 // Convert the Python 'predictions' object to a C# object, if necessary
                 // Conversion depends on the expected format of 'predictions'
@@ -2948,7 +2948,7 @@ globals()['data'] = data
             // This might involve fetching the variable's value from the Python scope
             using (Py.GIL())
             {
-                dynamic pyScore = PythonRuntime.PersistentScope.Get("score");
+                dynamic pyScore = PythonRuntime.CurrentPersistentScope.Get("score");
                 return pyScore.As<double>(); // Convert the Python score to a C# double
             }
         }
@@ -2962,7 +2962,7 @@ globals()['data'] = data
             // This might involve fetching the variable's value from the Python scope
             using (Py.GIL())
             {
-                dynamic pyScore = PythonRuntime.PersistentScope.Get("accuracy");
+                dynamic pyScore = PythonRuntime.CurrentPersistentScope.Get("accuracy");
                 return pyScore.As<double>(); // Convert the Python score to a C# double
             }
         }
@@ -2976,7 +2976,7 @@ globals()['data'] = data
             // This might involve fetching the variable's value from the Python scope
             using (Py.GIL())
             {
-                dynamic pyMSE = PythonRuntime.PersistentScope.Get("mse");
+                dynamic pyMSE = PythonRuntime.CurrentPersistentScope.Get("mse");
                 return pyMSE.As<double>(); // Convert the Python MSE to a C# double
             }
         }
@@ -2990,7 +2990,7 @@ globals()['data'] = data
             // This might involve fetching the variable's value from the Python scope
             using (Py.GIL())
             {
-                dynamic pyRMSE = PythonRuntime.PersistentScope.Get("rmse");
+                dynamic pyRMSE = PythonRuntime.CurrentPersistentScope.Get("rmse");
                 return pyRMSE.As<double>(); // Convert the Python RMSE to a C# double
             }
         }
@@ -3004,7 +3004,7 @@ globals()['data'] = data
             // This might involve fetching the variable's value from the Python scope
             using (Py.GIL())
             {
-                dynamic pyMAE = PythonRuntime.PersistentScope.Get("mae");
+                dynamic pyMAE = PythonRuntime.CurrentPersistentScope.Get("mae");
                 return pyMAE.As<double>(); // Convert the Python MAE to a C# double
             }
         }
@@ -3029,7 +3029,7 @@ globals()['data'] = data
         {
             using (Py.GIL()) // Acquire the Python Global Interpreter Lock features
             {
-                dynamic pyFeatures = PythonRuntime.PersistentScope.Get("features");
+                dynamic pyFeatures = PythonRuntime.CurrentPersistentScope.Get("features");
                 if (pyFeatures == null) return new string[0];
 
                 // Convert the Python list to a C# string array
@@ -3045,7 +3045,7 @@ globals()['data'] = data
         {
             using (Py.GIL()) // Acquire the Python Global Interpreter Lock
             {
-                dynamic pyFeatures = PythonRuntime.PersistentScope.Get("predict_features");
+                dynamic pyFeatures = PythonRuntime.CurrentPersistentScope.Get("predict_features");
                 if (pyFeatures == null) return new string[0];
 
                 // Convert the Python list to a C# string array
@@ -3376,7 +3376,7 @@ globals()['is_classification'] = is_classification
 
             using (Py.GIL())
             {
-                dynamic isClassification = PythonRuntime.PersistentScope.Get("is_classification");
+                dynamic isClassification = PythonRuntime.CurrentPersistentScope.Get("is_classification");
                 return isClassification.As<bool>();
             }
         }
@@ -3401,7 +3401,7 @@ globals()['is_regression'] = is_regression
 
             using (Py.GIL())
             {
-                dynamic isRegression = PythonRuntime.PersistentScope.Get("is_regression");
+                dynamic isRegression = PythonRuntime.CurrentPersistentScope.Get("is_regression");
                 return isRegression.As<bool>();
             }
         }
@@ -3426,7 +3426,7 @@ globals()['supports_feature_importance'] = supports_feature_importance
 
             using (Py.GIL())
             {
-                dynamic supportsFeatureImportance = PythonRuntime.PersistentScope.Get("supports_feature_importance");
+                dynamic supportsFeatureImportance = PythonRuntime.CurrentPersistentScope.Get("supports_feature_importance");
                 return supportsFeatureImportance.As<bool>();
             }
         }

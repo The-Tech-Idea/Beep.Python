@@ -1,11 +1,9 @@
 ﻿using Python.Runtime;
 using System;
 using System.Collections.ObjectModel;
-using TheTechIdea.Beep.Logger;
-using TheTechIdea.Beep.Utilities;
+
 using TheTechIdea.Beep.ConfigUtil;
 using TheTechIdea.Beep.Addin;
-using TheTechIdea.Beep.DriversConfigurations;
 using TheTechIdea.Beep.Editor;
 
 
@@ -13,6 +11,13 @@ namespace Beep.Python.Model
 {
     public interface IPythonRunTimeManager:IDisposable
     {
+         PythonSessionInfo CurrentSession { get;  }
+
+         List<PythonSessionInfo> Sessions { get; set; }
+         PythonVirtualEnvironment CurrentVirtualEnvironment { get; set; }
+
+         List<PythonVirtualEnvironment> ManagedVirtualEnvironments { get; }
+      
         Py.GILState GIL();
         BinType32or64 BinType { get; set; }
         IDMEEditor DMEditor { get; set; }
@@ -20,7 +25,7 @@ namespace Beep.Python.Model
         ObservableCollection<string> OutputLines { get; set; }
         bool IsBusy { get; set; }
         void Stop();
-        PyModule PersistentScope { get; set; }
+        PyModule CurrentPersistentScope { get; set; }
         bool CreateScope();
         PythonConfiguration PythonConfig { get; set; }
      
@@ -47,6 +52,6 @@ namespace Beep.Python.Model
         void SaveConfig( );
         void SetRuntimePath(string runtimepath, BinType32or64 binType, string libpath = @"lib\site-Packages");
         IErrorsInfo ShutDown();
-        //bool IsRunTimeFound(string path);
+       
     }
 }

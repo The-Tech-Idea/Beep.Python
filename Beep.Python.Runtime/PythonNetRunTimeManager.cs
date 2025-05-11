@@ -180,7 +180,7 @@ namespace Beep.Python.RuntimeEngine
         /// <summary>
         /// Gets or sets the persistent Python scope (module) that remains loaded across script executions.
         /// </summary>
-        public PyModule PersistentScope { get; set; }
+        public PyModule CurrentPersistentScope { get; set; }
 
         /// <summary>
         /// Creates a new persistent Python scope if one doesn't already exist.
@@ -190,9 +190,9 @@ namespace Beep.Python.RuntimeEngine
         /// </returns>
         public bool CreateScope()
         {
-            if (PersistentScope == null)
+            if (CurrentPersistentScope == null)
             {
-                PersistentScope = Py.CreateScope();
+                CurrentPersistentScope = Py.CreateScope();
                 return true;
             }
             else
@@ -264,8 +264,6 @@ venv_name = '{venv.Name}'
             SessionScopes.Clear();
         }
         #endregion "Scope Management"
-
-
         #region "Initialization and Shutdown"
 
         /// <summary>
@@ -574,10 +572,10 @@ venv_name = '{venv.Name}'
 
             try
             {
-                if (PersistentScope != null)
+                if (CurrentPersistentScope != null)
                 {
-                    PersistentScope.Dispose();
-                    PersistentScope = null;
+                    CurrentPersistentScope.Dispose();
+                    CurrentPersistentScope = null;
                 }
 
                 if (PythonEngine.IsInitialized)
@@ -633,7 +631,6 @@ venv_name = '{venv.Name}'
 
 
         #endregion
-
         #region "Configuration Methods"
 
         /// <summary>
@@ -1026,9 +1023,9 @@ venv_name = '{venv.Name}'
             {
                 if (parameters != null)
                 {
-                    PersistentScope.Set(nameof(parameters), parameters);
+                    CurrentPersistentScope.Set(nameof(parameters), parameters);
                 }
-                PersistentScope.Exec(script);
+                CurrentPersistentScope.Exec(script);
                 retval = true;
             }
             catch (Exception ex)
@@ -1197,17 +1194,17 @@ def capture_output(code, globals_dict, output_handler, should_stop):
                 };
                 Func<bool> ShouldStop = () => _shouldStop;
 
-                PersistentScope.Set("output_handler", OutputHandler);
-                PersistentScope.Set("should_stop", ShouldStop);
-                PersistentScope.Exec(wrappedPythonCode);
+                CurrentPersistentScope.Set("output_handler", OutputHandler);
+                CurrentPersistentScope.Set("should_stop", ShouldStop);
+                CurrentPersistentScope.Exec(wrappedPythonCode);
 
-                PyObject captureOutputFunc = PersistentScope.GetAttr("capture_output");
+                PyObject captureOutputFunc = CurrentPersistentScope.GetAttr("capture_output");
                 Dictionary<string, object> globalsDict = new Dictionary<string, object>();
 
                 using (PyObject pyCode = new PyString(code))
                 using (PyObject pyGlobalsDict = globalsDict.ToPython())
-                using (PyObject pyOutputHandler = PersistentScope.Get("output_handler"))
-                using (PyObject pyShouldStop = PersistentScope.Get("should_stop"))
+                using (PyObject pyOutputHandler = CurrentPersistentScope.Get("output_handler"))
+                using (PyObject pyShouldStop = CurrentPersistentScope.Get("should_stop"))
                 {
                     captureOutputFunc.Invoke(pyCode, pyGlobalsDict, pyOutputHandler, pyShouldStop);
                 }

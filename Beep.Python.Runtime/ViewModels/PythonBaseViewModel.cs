@@ -99,13 +99,13 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             {
                 return retval;
             }
-            if (PythonRuntime.PersistentScope == null && PythonRuntime.IsInitialized)
+            if (PythonRuntime.CurrentPersistentScope == null && PythonRuntime.IsInitialized)
             {
                 using (Py.GIL())
                 {
-                    PythonRuntime.PersistentScope = Py.CreateScope("__main__");
-                    PythonRuntime.PersistentScope.Exec("models = {}");  // Initialize the models dictionary
-                    persistentScope = PythonRuntime.PersistentScope;
+                    PythonRuntime.CurrentPersistentScope = Py.CreateScope("__main__");
+                    PythonRuntime.CurrentPersistentScope.Exec("models = {}");  // Initialize the models dictionary
+                    persistentScope = PythonRuntime.CurrentPersistentScope;
                     retval = true;
                 }
                 retval = true;
@@ -122,7 +122,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             }
             //using (var gil = PythonRuntime.GIL()) // Acquire the Python Global Interpreter Lock
             //{
-            //    PersistentScope.Exec(script); // Execute the script in the persistent scope
+            //    CurrentPersistentScope.Exec(script); // Execute the script in the persistent scope
             //                                   // Handle outputs if needed
 
             //    // If needed, return results or handle outputs
@@ -133,12 +133,12 @@ namespace Beep.Python.RuntimeEngine.ViewModels
                 {
                     if (parameters != null)
                     {
-                        PythonRuntime.PersistentScope.Set(nameof(parameters), parameters);
+                        PythonRuntime.CurrentPersistentScope.Set(nameof(parameters), parameters);
                     }
-                     PythonRuntime.PersistentScope.Exec(script);
+                     PythonRuntime.CurrentPersistentScope.Exec(script);
                     retval = true;
                 }
-    //          await  Task.Run(()=> PythonRuntime.PersistentScope.Exec(script));
+    //          await  Task.Run(()=> PythonRuntime.CurrentPersistentScope.Exec(script));
                 retval = true;
             }
             catch (Exception ex)
@@ -187,10 +187,10 @@ def capture_output(code, globals_dict):
                         progress.Report(new PassedArgs() { Messege = line });
                         Console.WriteLine(line);
                     };
-                    PythonRuntime.PersistentScope.Set(nameof(OutputHandler), OutputHandler);
+                    PythonRuntime.CurrentPersistentScope.Set(nameof(OutputHandler), OutputHandler);
 
-                    await Task.Run(() => PythonRuntime.PersistentScope.Exec(wrappedPythonCode));
-                    PyObject captureOutputFunc = PythonRuntime.PersistentScope.GetAttr("capture_output");
+                    await Task.Run(() => PythonRuntime.CurrentPersistentScope.Exec(wrappedPythonCode));
+                    PyObject captureOutputFunc = PythonRuntime.CurrentPersistentScope.GetAttr("capture_output");
                     Dictionary<string, object> globalsDict = new Dictionary<string, object>();
 
                     PyObject pyCode = code.ToPython();
@@ -223,9 +223,9 @@ def capture_output(code, globals_dict):
 
             //using (var gil = PythonRuntime.GIL()) // Acquire the Python Global Interpreter Lock
             //{
-            //    result = PersistentScope.Exec(script); // Execute the script in the persistent scope
+            //    result = CurrentPersistentScope.Exec(script); // Execute the script in the persistent scope
             //}
-            result= PythonRuntime.PersistentScope.Exec(script);
+            result= PythonRuntime.CurrentPersistentScope.Exec(script);
             return result;
         }
         protected virtual void Dispose(bool disposing)

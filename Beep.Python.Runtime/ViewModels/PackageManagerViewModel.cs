@@ -283,7 +283,7 @@ def run_with_timeout(func, args, output_callback, timeout):
 
             //    using (Py.GIL())
             //   
-            PyModule scope = PythonRuntime.PersistentScope;
+            PyModule scope = PythonRuntime.CurrentPersistentScope;
                 
                     PyObject globalsDict = scope.GetAttr("__dict__");
 
@@ -995,8 +995,8 @@ result";
 
                  //   PythonEngine.Exec(code, scope);
                  //string output = scope.get("__builtins__").get("print")?.ToString();
-                    await Task.Run(()=> PythonRuntime.PersistentScope.Exec(code));
-                    dynamic scope = PythonRuntime.PersistentScope;
+                    await Task.Run(()=> PythonRuntime.CurrentPersistentScope.Exec(code));
+                    dynamic scope = PythonRuntime.CurrentPersistentScope;
                     string output = scope.get("__builtins__").get("print")?.ToString();
                     // Console.WriteLine(output);
 
