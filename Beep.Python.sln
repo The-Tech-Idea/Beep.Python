@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beep.Python.WorflowSteps", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beep.Python.WorkFlows", "Beep.Python.WorkFlows\Beep.Python.WorkFlows.csproj", "{164CA58E-4E91-46FF-A65E-11D01B3027AE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beep.Python.Runtime.Winform", "Beep.Python.Runtime.Winform\Beep.Python.Runtime.Winform.csproj", "{B65F2D59-FAB2-4A2F-AEA8-31F29248BFC4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +93,14 @@ Global
 		{164CA58E-4E91-46FF-A65E-11D01B3027AE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{164CA58E-4E91-46FF-A65E-11D01B3027AE}.Release|x64.ActiveCfg = Release|Any CPU
 		{164CA58E-4E91-46FF-A65E-11D01B3027AE}.Release|x64.Build.0 = Release|Any CPU
+		{B65F2D59-FAB2-4A2F-AEA8-31F29248BFC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B65F2D59-FAB2-4A2F-AEA8-31F29248BFC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B65F2D59-FAB2-4A2F-AEA8-31F29248BFC4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B65F2D59-FAB2-4A2F-AEA8-31F29248BFC4}.Debug|x64.Build.0 = Debug|Any CPU
+		{B65F2D59-FAB2-4A2F-AEA8-31F29248BFC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B65F2D59-FAB2-4A2F-AEA8-31F29248BFC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B65F2D59-FAB2-4A2F-AEA8-31F29248BFC4}.Release|x64.ActiveCfg = Release|Any CPU
+		{B65F2D59-FAB2-4A2F-AEA8-31F29248BFC4}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
