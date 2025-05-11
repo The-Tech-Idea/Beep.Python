@@ -4,11 +4,8 @@ namespace Beep.Python.Model
 {
     public class PackageDefinition : Entity
     {
-        public PackageDefinition()
-        {
-            _IDValue=Guid.NewGuid().ToString();
-        }
-        private string _IDValue;
+      
+        private string _IDValue = Guid.NewGuid().ToString();
 
         public string ID
         {
@@ -193,8 +190,35 @@ namespace Beep.Python.Model
                 SetProperty(ref _dbuttondisplayValue, value);
             }
         }
-        public bool IsUpdatable => !string.IsNullOrEmpty(Updateversion) && Updateversion != Version;
+        private bool _isupdatableValue => !string.IsNullOrEmpty(Updateversion) && Updateversion != Version;
+        public bool IsUpdatable
+        {
+            get
+            {
+                return _isupdatableValue;
+            }
+          
+        }
 
+    }
+    /// <summary>
+    /// Result class for package operations to provide detailed feedback
+    /// </summary>
+    public class PackageOperationResult
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; }
+        public string Details { get; set; }
+        public string PackageName { get; set; }
+        public string CommandExecuted { get; set; }
+        public DateTime Timestamp { get; set; } = DateTime.Now;
+
+        public PackageOperationResult(bool success, string message, string packageName = null)
+        {
+            Success = success;
+            Message = message;
+            PackageName = packageName;
+        }
     }
     public class packageCategoryImages
     {

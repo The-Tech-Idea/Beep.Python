@@ -2,10 +2,13 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TheTechIdea.Beep.ConfigUtil;
+using TheTechIdea.Beep.Editor;
 
 namespace Beep.Python.RuntimeEngine
 {
@@ -77,6 +80,8 @@ namespace Beep.Python.RuntimeEngine
             string json = File.ReadAllText(filePath);
             return JsonConvert.DeserializeObject<PythonEnvironmentManager>(json);
         }
+    
+
     }
 
 }

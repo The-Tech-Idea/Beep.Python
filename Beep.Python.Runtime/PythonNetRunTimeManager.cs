@@ -15,6 +15,7 @@ using System.Diagnostics;
 using TheTechIdea.Beep.Container.Services;
 using Beep.Python.RuntimeEngine.Services;
 using Beep.Python.RuntimeEngine.Helpers;
+using Newtonsoft.Json;
 
 namespace Beep.Python.RuntimeEngine
 {
@@ -47,10 +48,10 @@ namespace Beep.Python.RuntimeEngine
         #region "Session and Environment"
         public PythonSessionInfo CurrentSession { get; private set; }
 
-        public List<PythonSessionInfo> Sessions { get; set; } = new();
+        public ObservableBindingList<PythonSessionInfo> Sessions { get; set; } = new();
         public PythonVirtualEnvironment CurrentVirtualEnvironment { get; set; }
 
-        public List<PythonVirtualEnvironment> ManagedVirtualEnvironments { get; private set; } = new();
+        public ObservableBindingList<PythonVirtualEnvironment> ManagedVirtualEnvironments { get;  set; } = new();
         // Dictionary to hold all active scopes, keyed by session or environment ID
         private readonly Dictionary<string, PyModule> SessionScopes = new();
 
@@ -460,6 +461,11 @@ venv_name = '{venv.Name}'
         /// </summary>
         /// <param name="venv">The virtual environment to initialize.</param>
         /// <returns>True if initialized successfully; otherwise false.</returns>
+        /// <summary>
+        /// Initializes the Python environment using the provided PythonVirtualEnvironment definition.
+        /// </summary>
+        /// <param name="venv">The virtual environment to initialize.</param>
+        /// <returns>True if initialized successfully; otherwise false.</returns>
         public bool Initialize(PythonVirtualEnvironment venv)
         {
             if (IsBusy) return false;
@@ -471,8 +477,25 @@ venv_name = '{venv.Name}'
                 IsBusy = false;
                 return false;
             }
-            CurrentSession = new PythonSessionInfo();
-            venv.AddSession(CurrentSession);
+
+            // Create a new session if none exists
+            if (CurrentSession == null)
+            {
+                CurrentSession = new PythonSessionInfo();
+            }
+
+            // Check if the session already exists in the venv's Sessions collection
+            if (!venv.Sessions.Any(s => s.SessionId == CurrentSession.SessionId))
+            {
+                venv.AddSession(CurrentSession);
+            }
+
+            // Check if the session already exists in the global Sessions collection
+            if (!Sessions.Any(s => s.SessionId == CurrentSession.SessionId))
+            {
+                Sessions.Add(CurrentSession);
+            }
+
             CurrentVirtualEnvironment = venv;
 
             string pythonBinPath = venv.Path;
@@ -559,6 +582,9 @@ venv_name = '{venv.Name}'
                 IsBusy = false;
             }
         }
+
+        /// <summary>
+        /// Runs Python code with 
 
         /// <summary>
         /// Shuts down the Python engine, disposing of any persistent scope and clearing active environment state.
@@ -938,8 +964,17 @@ venv_name = '{venv.Name}'
             session.Username = username;
             session.VirtualEnvironmentId = venv.ID;
 
-            venv.AddSession(session);
-            Sessions.Add(session);
+            // Check if the session already exists in the virtual environment's Sessions collection
+            if (!venv.Sessions.Any(s => s.SessionId == session.SessionId))
+            {
+                venv.AddSession(session);
+            }
+
+            // Check if the session already exists in the global Sessions collection
+            if (!Sessions.Any(s => s.SessionId == session.SessionId))
+            {
+                Sessions.Add(session);
+            }
 
             // Set current environment/session
             CurrentSession = session;
@@ -972,38 +1007,216 @@ venv_name = '{venv.Name}'
             }
         }
 
-        public async Task<string> RunPythonForUserAsync(string envBasePath, string username, string code, IProgress<PassedArgs> progress = null)
+        /// <summary>
+        /// Runs a command line in Python (e.g., pip install) by spawning a subprocess and capturing its output.
+        /// </summary>
+        /// <param name="progress">A progress reporter to relay output messages.</param>
+        /// <param name="commandString">The command arguments to pass (e.g., "install requests").</param>
+        /// <param name="useConda">If true, conda is used instead of pip.</param>
+        /// <param name="session">The session to use for execution. If null, uses the current session.</param>
+        /// <param name="environment">The environment to use. If null, determined from session or current environment.</param>
+        /// <returns>The collected output as a single string.</returns>
+        public async Task<string> RunPythonCommandLineAsync(
+            IProgress<PassedArgs> progress,
+            string commandString,
+            bool useConda = false,
+            PythonSessionInfo session = null,
+            PythonVirtualEnvironment environment = null)
         {
-            string userEnvPath = Path.Combine(envBasePath, username);
+            // Use provided session or current session
+            session = session ?? CurrentSession;
 
-            var venv = new PythonVirtualEnvironment
+            // Use provided environment or find from session
+            if (environment == null && session != null)
             {
-                Name = username,
-                Path = userEnvPath
-            };
-
-            // Create or initialize the environment
-            if (!Directory.Exists(userEnvPath))
-            {
-                if (!CreateVirtualEnvironmentFromDefinition(venv))
-                {
-                    ReportProgress($"Failed to create virtual environment for user {username}", Errors.Failed);
-                    return null;
-                }
+                environment = ManagedVirtualEnvironments.FirstOrDefault(v =>
+                    v.ID.Equals(session?.VirtualEnvironmentId, StringComparison.OrdinalIgnoreCase));
             }
 
-            // Initialize the engine in the user's venv
-            if (!Initialize(venv))
+            // Fall back to current environment if still null
+            environment = environment ?? CurrentVirtualEnvironment;
+
+            if (environment == null)
             {
-                ReportProgress($"Failed to initialize virtual environment for {username}", Errors.Failed);
+                ReportProgress("No virtual environment specified or available for command execution.", Errors.Failed);
                 return null;
             }
 
-            // Run the code and return output
-            var result = await RunPythonCodeAndGetOutput(progress ?? DMEditor.progress, code);
-            return result;
-        }
+            // Ensure the session is properly tracked
+            if (session != null)
+            {
+                if (!Sessions.Any(s => s.SessionId == session.SessionId))
+                {
+                    Sessions.Add(session);
+                }
 
+                if (!environment.Sessions.Any(s => s.SessionId == session.SessionId))
+                {
+                    environment.AddSession(session);
+                }
+
+                // Update current session and environment
+                CurrentSession = session;
+                CurrentVirtualEnvironment = environment;
+            }
+
+            // Get the proper environment paths
+            string customPath = environment.Path;
+            string scriptPath = Path.Combine(environment.Path, "Scripts");
+            string modifiedFilePath = $"{customPath};{scriptPath}".Replace("\\", "\\\\");
+
+            string output = "";
+            string command = "";
+            string wrappedPythonCode = $@"
+import os
+import subprocess
+import threading
+import queue
+
+def set_custom_path(custom_path):
+    # Modify the PATH environment variable
+    os.environ[""PATH""] = '{modifiedFilePath}' + os.pathsep + os.environ[""PATH""]
+
+def run_pip_and_capture_output(args, output_callback):
+    def enqueue_output(stream, queue):
+        for line in iter(stream.readline, b''):
+            queue.put(line.decode('utf-8').strip())
+        stream.close()
+
+    process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    stdout_queue = queue.Queue()
+    stderr_queue = queue.Queue()
+
+    stdout_thread = threading.Thread(target=enqueue_output, args=(process.stdout, stdout_queue))
+    stderr_thread = threading.Thread(target=enqueue_output, args=(process.stderr, stderr_queue))
+
+    stdout_thread.start()
+    stderr_thread.start()
+
+    while process.poll() is None or not stdout_queue.empty() or not stderr_queue.empty():
+        while not stdout_queue.empty():
+            line = stdout_queue.get_nowait()
+            output_callback(line)
+
+        while not stderr_queue.empty():
+            line = stderr_queue.get_nowait()
+            output_callback(line)
+
+    stdout_thread.join()
+    stderr_thread.join()
+    process.communicate()
+
+def run_with_timeout(func, args, output_callback, timeout):
+    try:
+        func(args, output_callback)
+    except Exception as e:
+        output_callback(str(e))
+";
+
+            using (Py.GIL())
+            {
+                // Determine the scope to use
+                PyModule scope = null;
+                if (session != null)
+                {
+                    scope = GetScope(session);
+                    if (scope == null && environment != null)
+                    {
+                        CreateScope(session, environment);
+                        scope = GetScope(session);
+                    }
+                }
+
+                // Fall back to a new temporary scope if needed
+                if (scope == null)
+                {
+                    scope = Py.CreateScope();
+                }
+
+                PyObject globalsDict = scope.GetAttr("__dict__");
+
+                scope.Exec(wrappedPythonCode);
+
+                // Set the custom_path from C# and call set_custom_path function in Python
+                PyObject setCustomPathFunc = scope.GetAttr("set_custom_path");
+                setCustomPathFunc.Invoke(modifiedFilePath.ToPython());
+
+                PyObject captureOutputFunc = scope.GetAttr("run_pip_and_capture_output");
+
+                if (useConda)
+                {
+                    command = $" {commandString}"; // conda usage example
+                }
+                else
+                {
+                    command = $" {commandString}"; // pip / python.exe usage example
+                }
+
+                progress.Report(new PassedArgs() { Messege = $"Running {command}" });
+                PyObject pyArgs = new PyList();
+                pyArgs.InvokeMethod("extend", command.Split(' ').ToPython());
+
+                // Prepare an output channel
+                Channel<string> outputChannel = Channel.CreateUnbounded<string>();
+                PyObject outputCallback = PyObject.FromManagedObject((Action<string>)(s =>
+                {
+                    outputChannel.Writer.TryWrite(s);
+                }));
+                globalsDict.SetItem("output_callback", outputCallback);
+
+                // Run the Python code with a timeout
+                int timeoutInSeconds = 120; // Adjust as needed
+                PyObject runWithTimeoutFunc = scope.GetAttr("run_with_timeout");
+                Task pythonTask = Task.Run(() => runWithTimeoutFunc.Invoke(captureOutputFunc, pyArgs, outputCallback, timeoutInSeconds.ToPython()));
+
+                var outputList = new List<string>();
+
+                // Asynchronous method to read from the channel
+                async Task ReadFromChannelAsync()
+                {
+                    while (await outputChannel.Reader.WaitToReadAsync())
+                    {
+                        if (outputChannel.Reader.TryRead(out var line))
+                        {
+                            outputList.Add(line);
+                            progress.Report(new PassedArgs() { Messege = line });
+                            Console.WriteLine(line);
+                        }
+                    }
+                }
+
+                // Start reading output lines
+                Task readOutputTask = ReadFromChannelAsync();
+
+                // Wait for the Python task to complete
+                await pythonTask;
+                outputChannel.Writer.Complete();
+
+                // Wait for the readOutputTask to finish
+                await readOutputTask;
+
+                output = string.Join("\n", outputList);
+            }
+
+            if (output.Length > 0)
+            {
+                progress.Report(new PassedArgs() { Messege = $"Finished {command}" });
+            }
+            else
+            {
+                progress.Report(new PassedArgs() { Messege = $"Finished {command} with error" });
+            }
+
+            // Update session status
+            if (session != null)
+            {
+                session.Notes = $"Executed command: {commandString}";
+                // Don't end the session here, just update the notes
+            }
+
+            return output;
+        }
 
         /// <summary>
         /// Runs a Python script within the persistent scope with optional parameters.
@@ -1057,11 +1270,12 @@ venv_name = '{venv.Name}'
         /// <summary>
         /// Runs a Python file asynchronously, given a file path, and reports progress to a <see cref="IProgress{PassedArgs}"/>.
         /// </summary>
+        /// <param name="session">The session context to execute within.</param>
         /// <param name="file">Path to the Python file.</param>
         /// <param name="progress">Progress reporter for logging and feedback.</param>
         /// <param name="token">Cancellation token to stop execution (if supported).</param>
         /// <returns>An <see cref="IErrorsInfo"/> indicating success or failure.</returns>
-        public async Task<IErrorsInfo> RunFile(string file, IProgress<PassedArgs> progress, CancellationToken token)
+        public async Task<IErrorsInfo> RunFile(PythonSessionInfo session, string file, IProgress<PassedArgs> progress, CancellationToken token)
         {
             DMEditor.ErrorObject.Flag = Errors.Ok;
             if (IsBusy) return DMEditor.ErrorObject;
@@ -1069,8 +1283,42 @@ venv_name = '{venv.Name}'
 
             try
             {
+                // Use the provided session or fall back to current session if null
+                if (session != null)
+                {
+                    // Find the environment associated with this session
+                    var venv = ManagedVirtualEnvironments.FirstOrDefault(v =>
+                        v.ID.Equals(session.VirtualEnvironmentId, StringComparison.OrdinalIgnoreCase));
+
+                    if (venv != null)
+                    {
+                        // Check if the session should be tracked in collections
+                        if (!venv.Sessions.Any(s => s.SessionId == session.SessionId))
+                        {
+                            venv.AddSession(session);
+                        }
+
+                        if (!Sessions.Any(s => s.SessionId == session.SessionId))
+                        {
+                            Sessions.Add(session);
+                        }
+
+                        // Set as current session/environment
+                        CurrentSession = session;
+                        CurrentVirtualEnvironment = venv;
+
+                        // Ensure environment is initialized
+                        if (!Initialize(venv))
+                        {
+                            ReportProgress("Failed to initialize environment for file execution.", Errors.Failed);
+                            IsBusy = false;
+                            return DMEditor.ErrorObject;
+                        }
+                    }
+                }
+
                 string code = $"{PythonRunTimeDiagnostics.GetPythonExe(CurrentRuntimeConfig.BinPath)} {file}";
-                await RunPythonCodeAndGetOutput(progress, code);
+                await RunPythonCodeAndGetOutput(progress, code, session);
                 IsBusy = false;
             }
             catch (Exception ex)
@@ -1081,15 +1329,15 @@ venv_name = '{venv.Name}'
             IsBusy = false;
             return DMEditor.ErrorObject;
         }
-
         /// <summary>
         /// Runs arbitrary Python code asynchronously, reporting progress and allowing cancellation.
         /// </summary>
+        /// <param name="session">The session context to execute within.</param>
         /// <param name="code">Python code as a string.</param>
         /// <param name="progress">Progress reporter for logging and feedback.</param>
         /// <param name="token">Cancellation token to stop execution (if supported).</param>
         /// <returns>An <see cref="IErrorsInfo"/> indicating success or failure.</returns>
-        public async Task<IErrorsInfo> RunCode(string code, IProgress<PassedArgs> progress, CancellationToken token)
+        public async Task<IErrorsInfo> RunCode(PythonSessionInfo session, string code, IProgress<PassedArgs> progress, CancellationToken token)
         {
             DMEditor.ErrorObject.Flag = Errors.Ok;
             if (IsBusy) return DMEditor.ErrorObject;
@@ -1097,7 +1345,42 @@ venv_name = '{venv.Name}'
 
             try
             {
-                await RunPythonCodeAndGetOutput(progress, code);
+                // Use the provided session or fall back to current session if null
+                if (session != null)
+                {
+                    // Find the environment associated with this session
+                    var venv = ManagedVirtualEnvironments.FirstOrDefault(v =>
+                        v.ID.Equals(session.VirtualEnvironmentId, StringComparison.OrdinalIgnoreCase));
+
+                    if (venv != null)
+                    {
+                        // Check if the session should be tracked in collections
+                        if (!venv.Sessions.Any(s => s.SessionId == session.SessionId))
+                        {
+                            venv.AddSession(session);
+                        }
+
+                        if (!Sessions.Any(s => s.SessionId == session.SessionId))
+                        {
+                            Sessions.Add(session);
+                        }
+
+                        // Set as current session/environment
+                        CurrentSession = session;
+                        CurrentVirtualEnvironment = venv;
+
+                        // Ensure environment is initialized
+                        if (!Initialize(venv))
+                        {
+                            ReportProgress("Failed to initialize environment for code execution.", Errors.Failed);
+                            IsBusy = false;
+                            return DMEditor.ErrorObject;
+                        }
+                    }
+                }
+
+                // Execute code with session-specific scope if available
+                await RunPythonCodeAndGetOutput(progress, code, session);
                 IsBusy = false;
             }
             catch (Exception ex)
@@ -1107,24 +1390,17 @@ venv_name = '{venv.Name}'
             }
             IsBusy = false;
             return DMEditor.ErrorObject;
-        }
-
-        /// <summary>
-        /// Signals the runtime manager to attempt stopping any ongoing Python code execution.
-        /// </summary>
-        public void Stop()
-        {
-            _shouldStop = true;
         }
 
         /// <summary>
         /// Runs a Python command (string) asynchronously, with progress reporting and cancellation.
         /// </summary>
+        /// <param name="session">The session context to execute within.</param>
         /// <param name="command">The command string to execute.</param>
         /// <param name="progress">A progress reporter for message feedback.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>A dynamic object containing the result of the execution, if any.</returns>
-        public async Task<dynamic> RunCommand(string command, IProgress<PassedArgs> progress, CancellationToken token)
+        public async Task<dynamic> RunCommand(PythonSessionInfo session, string command, IProgress<PassedArgs> progress, CancellationToken token)
         {
             PyObject pyObject = null;
             DMEditor.ErrorObject.Flag = Errors.Ok;
@@ -1133,7 +1409,42 @@ venv_name = '{venv.Name}'
 
             try
             {
-                await RunPythonCodeAndGetOutput(progress, command);
+                // Use the provided session or fall back to current session if null
+                if (session != null)
+                {
+                    // Find the environment associated with this session
+                    var venv = ManagedVirtualEnvironments.FirstOrDefault(v =>
+                        v.ID.Equals(session.VirtualEnvironmentId, StringComparison.OrdinalIgnoreCase));
+
+                    if (venv != null)
+                    {
+                        // Check if the session should be tracked in collections
+                        if (!venv.Sessions.Any(s => s.SessionId == session.SessionId))
+                        {
+                            venv.AddSession(session);
+                        }
+
+                        if (!Sessions.Any(s => s.SessionId == session.SessionId))
+                        {
+                            Sessions.Add(session);
+                        }
+
+                        // Set as current session/environment
+                        CurrentSession = session;
+                        CurrentVirtualEnvironment = venv;
+
+                        // Ensure environment is initialized
+                        if (!Initialize(venv))
+                        {
+                            ReportProgress("Failed to initialize environment for command execution.", Errors.Failed);
+                            IsBusy = false;
+                            return null;
+                        }
+                    }
+                }
+
+                // Execute command with session-specific scope if available
+                await RunPythonCodeAndGetOutput(progress, command, session);
                 IsBusy = false;
             }
             catch (Exception ex)
@@ -1150,8 +1461,9 @@ venv_name = '{venv.Name}'
         /// </summary>
         /// <param name="progress">Progress reporter for output lines.</param>
         /// <param name="code">Python code as a string.</param>
+        /// <param name="session">The session in which to execute the code. If null, uses the persistent scope.</param>
         /// <returns>The collected output as a single string.</returns>
-        public async Task<string> RunPythonCodeAndGetOutput(IProgress<PassedArgs> progress, string code)
+        public async Task<string> RunPythonCodeAndGetOutput(IProgress<PassedArgs> progress, string code, PythonSessionInfo session = null)
         {
             string wrappedPythonCode = @"
 import sys
@@ -1182,11 +1494,41 @@ def capture_output(code, globals_dict, output_handler, should_stop):
     finally:
         sys.stdout = original_stdout
 ";
-            bool isImage = false;
             string output = "";
+            PyModule scope = null;
 
             try
             {
+                // Determine which scope to use based on the session
+                if (session != null)
+                {
+                    // Try to get the session's scope if it exists
+                    scope = GetScope(session);
+
+                    // If no scope exists for the session, create one if we have an environment
+                    if (scope == null)
+                    {
+                        var venv = ManagedVirtualEnvironments.FirstOrDefault(v =>
+                            v.ID.Equals(session.VirtualEnvironmentId, StringComparison.OrdinalIgnoreCase));
+
+                        if (venv != null)
+                        {
+                            CreateScope(session, venv);
+                            scope = GetScope(session);
+                        }
+                    }
+                }
+
+                // Fall back to persistent scope if we couldn't get a session scope
+                if (scope == null)
+                {
+                    if (CurrentPersistentScope == null)
+                    {
+                        CreateScope();
+                    }
+                    scope = CurrentPersistentScope;
+                }
+
                 Action<string> OutputHandler = line =>
                 {
                     progress.Report(new PassedArgs() { Messege = line });
@@ -1194,17 +1536,17 @@ def capture_output(code, globals_dict, output_handler, should_stop):
                 };
                 Func<bool> ShouldStop = () => _shouldStop;
 
-                CurrentPersistentScope.Set("output_handler", OutputHandler);
-                CurrentPersistentScope.Set("should_stop", ShouldStop);
-                CurrentPersistentScope.Exec(wrappedPythonCode);
+                scope.Set("output_handler", OutputHandler);
+                scope.Set("should_stop", ShouldStop);
+                scope.Exec(wrappedPythonCode);
 
-                PyObject captureOutputFunc = CurrentPersistentScope.GetAttr("capture_output");
+                PyObject captureOutputFunc = scope.GetAttr("capture_output");
                 Dictionary<string, object> globalsDict = new Dictionary<string, object>();
 
                 using (PyObject pyCode = new PyString(code))
                 using (PyObject pyGlobalsDict = globalsDict.ToPython())
-                using (PyObject pyOutputHandler = CurrentPersistentScope.Get("output_handler"))
-                using (PyObject pyShouldStop = CurrentPersistentScope.Get("should_stop"))
+                using (PyObject pyOutputHandler = scope.Get("output_handler"))
+                using (PyObject pyShouldStop = scope.Get("should_stop"))
                 {
                     captureOutputFunc.Invoke(pyCode, pyGlobalsDict, pyOutputHandler, pyShouldStop);
                 }
@@ -1226,7 +1568,6 @@ def capture_output(code, globals_dict, output_handler, should_stop):
             IsBusy = false;
             return output;
         }
-
         #endregion
 
         #region "Utility Methods"
@@ -1448,8 +1789,128 @@ def run_with_timeout(func, args, output_callback, timeout):
         }
 
         #endregion
+        /// <summary>
+        /// Signals the runtime manager to attempt stopping any ongoing Python code execution.
+        /// </summary>
+        public void Stop()
+        {
+            _shouldStop = true;
+        }
+
+        public void SaveEnvironments(string filePath)
+        {
+            var json = JsonConvert.SerializeObject(ManagedVirtualEnvironments, Formatting.Indented);
+            File.WriteAllText(filePath, json);
+        }
+
+        public void LoadEnvironments(string filePath)
+        {
+            if (File.Exists(filePath))
+            {
+                var json = File.ReadAllText(filePath);
+                var list = JsonConvert.DeserializeObject<ObservableBindingList<PythonVirtualEnvironment>>(json);
+                ManagedVirtualEnvironments = list ?? new ObservableBindingList<PythonVirtualEnvironment>();
+            }
+        }
 
         #region "IDisposable Implementation"
+        /// <summary>
+        /// Updates the session management to properly dispose of Python scopes when sessions end or are removed.
+        /// </summary>
+        public void CleanupSession(PythonSessionInfo session)
+        {
+            if (session == null)
+                return;
+
+            // Clean up the session's scope if it exists
+            if (HasScope(session))
+            {
+                ClearScope(session.SessionId);
+            }
+
+            // Check if this was the current session
+            if (CurrentSession != null && CurrentSession.SessionId == session.SessionId)
+            {
+                CurrentSession = null;
+            }
+        }
+
+        /// <summary>
+        /// Overload of ShutDown that allows specifying which session to shut down.
+        /// </summary>
+        public IErrorsInfo ShutDownSession(PythonSessionInfo session)
+        {
+            var er = new ErrorsInfo { Flag = Errors.Ok };
+            if (session == null)
+                return er;
+
+            try
+            {
+                // Mark session as ended
+                session.Status = PythonSessionStatus.Terminated;
+                session.EndedAt = DateTime.Now;
+                session.Notes = "Session explicitly terminated";
+
+                // Clean up the session's scope
+                CleanupSession(session);
+
+                // If this was the current session, we need to handle that
+                if (CurrentSession != null && CurrentSession.SessionId == session.SessionId)
+                {
+                    CurrentSession = null;
+                }
+            }
+            catch (Exception ex)
+            {
+                er.Ex = ex;
+                er.Flag = Errors.Failed;
+                er.Message = ex.Message;
+                ReportProgress($"Session shutdown error: {ex.Message}", Errors.Failed);
+            }
+
+            return er;
+        }
+        /// <summary>
+        /// Performs cleanup of stale sessions and their associated scopes.
+        /// This can be called periodically to prevent memory leaks.
+        /// </summary>
+        public void PerformSessionCleanup(TimeSpan maxAge)
+        {
+            if (IsBusy)
+                return;
+
+            var now = DateTime.Now;
+            var sessionsToCleanup = Sessions
+                .Where(s => s.Status == PythonSessionStatus.Terminated ||
+                          (s.EndedAt.HasValue && (now - s.EndedAt.Value) > maxAge) ||
+                          (!s.EndedAt.HasValue && (now - s.StartedAt) > maxAge))
+                .ToList();
+
+            foreach (var session in sessionsToCleanup)
+            {
+                ReportProgress($"Cleaning up stale session: {session.SessionId}", Errors.Ok);
+                CleanupSession(session);
+
+                // Remove from environment's sessions collection
+                if (!string.IsNullOrEmpty(session.VirtualEnvironmentId))
+                {
+                    var env = ManagedVirtualEnvironments.FirstOrDefault(v =>
+                        v.ID.Equals(session.VirtualEnvironmentId, StringComparison.OrdinalIgnoreCase));
+
+                    if (env != null)
+                    {
+                        var sessionInEnv = env.Sessions.FirstOrDefault(s => s.SessionId == session.SessionId);
+                        if (sessionInEnv != null)
+                        {
+                            env.Sessions.Remove(sessionInEnv);
+                        }
+                    }
+                }
+
+                // Remove from global sessions collection
+                Sessions.Remove(session);
+            }
+        }
 
         /// <summary>
         /// Protected virtual dispose method for freeing resources.
@@ -1461,6 +1922,18 @@ def run_with_timeout(func, args, output_callback, timeout):
             {
                 if (disposing)
                 {
+                    foreach (var session in Sessions.ToList())
+                    {
+                        CleanupSession(session);
+                    }
+
+                    // Clear any persistent scopes
+                    if (CurrentPersistentScope != null)
+                    {
+                        CurrentPersistentScope.Dispose();
+                        CurrentPersistentScope = null;
+                    }
+
                     ShutDown();
                     // Dispose managed objects here if needed.
                 }

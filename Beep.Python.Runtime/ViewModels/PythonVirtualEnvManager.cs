@@ -4,6 +4,7 @@ using Python.Runtime;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using TheTechIdea.Beep.ConfigUtil;
 using TheTechIdea.Beep.Container.Services;
@@ -22,6 +23,9 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         /// <summary>
         /// Initializes a virtual environment for a specific user.
         /// </summary>
+        /// <summary>
+        /// Initializes a virtual environment for a specific user.
+        /// </summary>
         public bool InitializeForUser(string envBasePath, string username)
         {
             string userEnvPath = Path.Combine(envBasePath, username);
@@ -35,7 +39,57 @@ namespace Beep.Python.RuntimeEngine.ViewModels
                 }
             }
 
-            return PythonRuntime.Initialize(userEnvPath);
+            // Look for an existing environment or create a new definition
+            var existingEnv = PythonRuntime.ManagedVirtualEnvironments
+                .FirstOrDefault(e => e.Path.Equals(userEnvPath, StringComparison.OrdinalIgnoreCase));
+
+            if (existingEnv == null)
+            {
+                // Create a new environment definition
+                existingEnv = new PythonVirtualEnvironment
+                {
+                    Name = username,
+                    Path = userEnvPath
+                };
+
+                // Add it to the managed environments
+                if (!PythonRuntime.ManagedVirtualEnvironments.Any(e =>
+                    e.Path.Equals(userEnvPath, StringComparison.OrdinalIgnoreCase)))
+                {
+                    PythonRuntime.ManagedVirtualEnvironments.Add(existingEnv);
+                }
+            }
+
+            // Create a session for this user
+            var session = new PythonSessionInfo
+            {
+                Username = username,
+                VirtualEnvironmentId = existingEnv.ID,
+                StartedAt = DateTime.Now
+            };
+
+            // Associate session with environment
+            if (!existingEnv.Sessions.Any(s => s.SessionId == session.SessionId))
+            {
+                existingEnv.AddSession(session);
+            }
+
+            // Add to global sessions collection
+            if (!PythonRuntime.Sessions.Any(s => s.SessionId == session.SessionId))
+            {
+                PythonRuntime.Sessions.Add(session);
+            }
+
+            // Initialize the Python runtime with the user's environment
+            bool result = PythonRuntime.Initialize(existingEnv);
+
+            // Create a session-specific scope
+            if (result && !PythonRuntime.HasScope(session))
+            {
+                PythonRuntime.CreateScope(session, existingEnv);
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -51,6 +105,31 @@ namespace Beep.Python.RuntimeEngine.ViewModels
 
             try
             {
+                // Create a session for this command
+                var session = new PythonSessionInfo
+                {
+                    SessionName = $"CreateVEnvCommand_{Path.GetFileName(envPath)}",
+                    StartedAt = DateTime.Now
+                };
+
+                // Use current environment or create temporary definition
+                var currentEnv = PythonRuntime.CurrentVirtualEnvironment;
+                if (currentEnv != null)
+                {
+                    session.VirtualEnvironmentId = currentEnv.ID;
+
+                    // Track session
+                    if (!currentEnv.Sessions.Any(s => s.SessionId == session.SessionId))
+                    {
+                        currentEnv.AddSession(session);
+                    }
+
+                    if (!PythonRuntime.Sessions.Any(s => s.SessionId == session.SessionId))
+                    {
+                        PythonRuntime.Sessions.Add(session);
+                    }
+                }
+
                 string pythonExe = PythonRunTimeDiagnostics.GetPythonExe(PythonRuntime.CurrentRuntimeConfig.BinPath);
                 var process = new Process
                 {
@@ -70,13 +149,20 @@ namespace Beep.Python.RuntimeEngine.ViewModels
                 string error = process.StandardError.ReadToEnd();
                 process.WaitForExit();
 
+                // Update session info
+                session.EndedAt = DateTime.Now;
+
                 if (process.ExitCode == 0)
                 {
+                    session.WasSuccessful = true;
+                    session.Notes = $"Created virtual environment at {envPath}";
                     Console.WriteLine($"Virtual environment created at: {envPath}");
                     return true;
                 }
                 else
                 {
+                    session.WasSuccessful = false;
+                    session.Notes = $"Failed: {error}";
                     Console.WriteLine($"Failed to create virtual environment: {error}");
                     return false;
                 }
@@ -88,6 +174,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             }
         }
 
+    
         /// <summary>
         /// Creates a virtual environment using Python's venv module directly.
         /// </summary>
@@ -122,6 +209,9 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         /// <summary>
         /// Creates a virtual environment with enhanced configuration.
         /// </summary>
+        /// <summary>
+        /// Creates a virtual environment with enhanced configuration.
+        /// </summary>
         public bool CreateVirtualEnv(string envPath)
         {
             string pythonCode = $@"
@@ -145,10 +235,48 @@ builder.create(r'{envPath}')
 
             try
             {
+                // Create a new session for this specific operation
+                var session = new PythonSessionInfo
+                {
+                    SessionName = $"CreateVEnv_{Path.GetFileName(envPath)}",
+                    StartedAt = DateTime.Now
+                };
+
+                // Find or create a virtual environment to associate with this session
+                var currentEnv = PythonRuntime.CurrentVirtualEnvironment;
+                if (currentEnv != null)
+                {
+                    session.VirtualEnvironmentId = currentEnv.ID;
+
+                    // Add the session to the environment and the session collection
+                    if (!currentEnv.Sessions.Any(s => s.SessionId == session.SessionId))
+                    {
+                        currentEnv.AddSession(session);
+                    }
+
+                    if (!PythonRuntime.Sessions.Any(s => s.SessionId == session.SessionId))
+                    {
+                        PythonRuntime.Sessions.Add(session);
+                    }
+
+                    // Create a session-specific scope if needed
+                    if (!PythonRuntime.HasScope(session))
+                    {
+                        PythonRuntime.CreateScope(session, currentEnv);
+                    }
+                }
+
                 using (Py.GIL()) // Ensure thread safety with Python GIL
                 {
-                    PythonRuntime.RunCode(pythonCode, Progress, Token);
+                    // Run the code in the session-specific scope
+                    PythonRuntime.RunCode(session, pythonCode, Progress, Token);
+
+                    // Update session status
+                    session.EndedAt = DateTime.Now;
+                    session.Notes = $"Created virtual environment at {envPath}";
+                    session.WasSuccessful = true;
                 }
+
                 Console.WriteLine($"Virtual environment created at: {envPath}");
                 return true;
             }
@@ -163,6 +291,7 @@ builder.create(r'{envPath}')
                 return false;
             }
         }
+
         /// <summary>
         /// Shuts down the Python runtime.
         /// </summary>

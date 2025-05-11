@@ -24,8 +24,9 @@ namespace Beep.Python.RuntimeEngine.ViewModels
 {
     public partial class PackageManagerViewModel : PythonBaseViewModel, IPackageManagerViewModel
     {
-        [ObservableProperty]
-        ObservableBindingList<PackageDefinition> packages;
+
+
+        public  ObservableBindingList<PackageDefinition> Packages { get; set; }
         public UnitofWork<PackageDefinition> UnitofWork { get; set; }
         public PackageManagerViewModel(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager) : base(beepservice, pythonRuntimeManager)
         {
@@ -42,11 +43,11 @@ namespace Beep.Python.RuntimeEngine.ViewModels
                 {
                     if (PythonRuntime.CurrentRuntimeConfig.Packagelist == null)
                     {
-                        PythonRuntime.CurrentRuntimeConfig.Packagelist = new List<PackageDefinition>();
+                        PythonRuntime.CurrentRuntimeConfig.Packagelist = new ObservableBindingList<PackageDefinition>();
                     }
-                    Packages = new ObservableBindingList<PackageDefinition>(PythonRuntime.CurrentRuntimeConfig.Packagelist);
+                    Packages = PythonRuntime.CurrentRuntimeConfig.Packagelist;
                     Editor = PythonRuntime.DMEditor;
-                    UnitofWork = new UnitofWork<PackageDefinition>(Editor, true, new ObservableBindingList<PackageDefinition>(PythonRuntime.CurrentRuntimeConfig.Packagelist), "ID");
+                    UnitofWork = new UnitofWork<PackageDefinition>(Editor, true, PythonRuntime.CurrentRuntimeConfig.Packagelist, "ID");
                     UnitofWork.PostCreate += UnitofWork_PostCreate;
                 }
             }
@@ -66,9 +67,9 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             bool retval = false;
             if (PythonRuntime.CurrentRuntimeConfig.Packagelist == null)
             {
-                PythonRuntime.CurrentRuntimeConfig.Packagelist = new List<PackageDefinition>();
+                PythonRuntime.CurrentRuntimeConfig.Packagelist = new ObservableBindingList<PackageDefinition>();
             }
-            Packages = new ObservableBindingList<PackageDefinition>(PythonRuntime.CurrentRuntimeConfig.Packagelist);
+            Packages = PythonRuntime.CurrentRuntimeConfig.Packagelist;
             return retval;
         }
         public bool InstallPipToolAsync()
@@ -526,7 +527,8 @@ def run_with_timeout(func, args, output_callback, timeout):
                                     }
                                 }
 
-                            Packages = new ObservableBindingList<PackageDefinition>(PythonRuntime.CurrentRuntimeConfig.Packagelist);
+                            Packages = PythonRuntime.CurrentRuntimeConfig.Packagelist;
+
                         }
                             else Console.WriteLine($" empty {packageName}: {packageVersion}");
 
@@ -538,8 +540,8 @@ def run_with_timeout(func, args, output_callback, timeout):
                 if (i == 0)
                 {
                     Progress.Report(new PassedArgs() { Messege = "No Packages Found" });
-                    PythonRuntime.CurrentRuntimeConfig.Packagelist = new List<PackageDefinition>();
-                    Packages=new ObservableBindingList<PackageDefinition>(PythonRuntime.CurrentRuntimeConfig.Packagelist);
+                    PythonRuntime.CurrentRuntimeConfig.Packagelist = new ObservableBindingList<PackageDefinition>();
+                    Packages=PythonRuntime.CurrentRuntimeConfig.Packagelist;
                 }
                 IsBusy = false;
             }
@@ -685,7 +687,7 @@ def run_with_timeout(func, args, output_callback, timeout):
                 if (i == 0)
                 {
                     Progress.Report(new PassedArgs() { Messege = "No Packages Found" });
-                    PythonRuntime.CurrentRuntimeConfig.Packagelist = new List<PackageDefinition>();
+                    PythonRuntime.CurrentRuntimeConfig.Packagelist = new ObservableBindingList<PackageDefinition>();
                 }
                 IsBusy = false;
             }
@@ -850,7 +852,7 @@ result";
                 if (i == 0)
                 {
                     Progress.Report(new PassedArgs() { Messege = "No Packages Found" });
-                    PythonRuntime.CurrentRuntimeConfig.Packagelist = new List<PackageDefinition>();
+                    PythonRuntime.CurrentRuntimeConfig.Packagelist = new ObservableBindingList<PackageDefinition>();
                 }
                 IsBusy = false;
             }

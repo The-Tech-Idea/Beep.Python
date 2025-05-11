@@ -24,11 +24,11 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         [ObservableProperty]
         bool disposedValue;
         [ObservableProperty]
-        CancellationTokenSource tokenSource;
+        public CancellationTokenSource tokenSource;
         [ObservableProperty]
-        CancellationToken token;
+        public CancellationToken token;
         [ObservableProperty]
-        IProgress<PassedArgs> progress;
+        public IProgress<PassedArgs> progress;
         [ObservableProperty]
         IDMEEditor editor;
         [ObservableProperty]
