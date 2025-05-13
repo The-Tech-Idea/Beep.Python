@@ -46,14 +46,14 @@ namespace Beep.Python.RuntimeEngine
         #endregion "Fields"
         #region "Properties"
         #region "Session and Environment"
-        public PythonSessionInfo CurrentSession { get; private set; }
 
+    //    public PythonSessionInfo CurrentSession { get; private set; }
         public ObservableBindingList<PythonSessionInfo> Sessions { get; set; } = new();
-        public PythonVirtualEnvironment CurrentVirtualEnvironment { get; set; }
-
+    //    public PythonVirtualEnvironment CurrentVirtualEnvironment { get; set; }
+     
         public ObservableBindingList<PythonVirtualEnvironment> ManagedVirtualEnvironments { get;  set; } = new();
         // Dictionary to hold all active scopes, keyed by session or environment ID
-        private readonly Dictionary<string, PyModule> SessionScopes = new();
+        public  Dictionary<string, PyModule> SessionScopes { get; } = new();
 
         #endregion "Session and Environment"
         #region "Status and Configuration"
@@ -181,7 +181,7 @@ namespace Beep.Python.RuntimeEngine
         /// <summary>
         /// Gets or sets the persistent Python scope (module) that remains loaded across script executions.
         /// </summary>
-        public PyModule CurrentPersistentScope { get; set; }
+      //  public PyModule CurrentPersistentScope { get; set; }
 
         /// <summary>
         /// Creates a new persistent Python scope if one doesn't already exist.
@@ -189,17 +189,20 @@ namespace Beep.Python.RuntimeEngine
         /// <returns>
         /// True if a new scope was created; false if a scope already exists.
         /// </returns>
-        public bool CreateScope()
+        public bool CreateScope(PythonSessionInfo session)
         {
-            if (CurrentPersistentScope == null)
+
+            if (session.VirtualEnvironmentId!=null)
             {
-                CurrentPersistentScope = Py.CreateScope();
-                return true;
+                var venv = ManagedVirtualEnvironments.FirstOrDefault(e => e.ID == session.VirtualEnvironmentId);
+                if (venv == null)
+                {
+                    ReportProgress("No virtual environment found for the given session information.", Errors.Failed);
+                    return false;
+                }
+                return CreateScope(session, venv);
             }
-            else
-            {
-                return false;
-            }
+            return false;
         }
         public PyModule GetScope(PythonSessionInfo session)
         {
@@ -305,7 +308,26 @@ venv_name = '{venv.Name}'
             return Initialize(userEnvPath);
         }
 
-
+        public bool InitializeForUser(PythonSessionInfo sessionInfo)
+        {
+            if (sessionInfo == null || string.IsNullOrWhiteSpace(sessionInfo.Username))
+            {
+                ReportProgress("Invalid session information provided.", Errors.Failed);
+                return false;
+            }
+            if (sessionInfo.VirtualEnvironmentId == null)
+            {
+                ReportProgress("No virtual environment ID found in session information.", Errors.Failed);
+                return false;
+            }
+            // Get Virtual enviroment form ManagedVirtualEnvironments
+            var env = ManagedVirtualEnvironments.FirstOrDefault(e => e.ID == sessionInfo.VirtualEnvironmentId);
+            if (env == null) {
+                ReportProgress("No virtual environment found for the given session information.", Errors.Failed);
+                return false;
+            }
+            return InitializeForUser(env.Path, sessionInfo.Username);
+        }
 
         /// <summary>
         /// Creates a virtual environment using the current runtime config and the provided virtual environment definition.
@@ -479,24 +501,7 @@ venv_name = '{venv.Name}'
             }
 
             // Create a new session if none exists
-            if (CurrentSession == null)
-            {
-                CurrentSession = new PythonSessionInfo();
-            }
-
-            // Check if the session already exists in the venv's Sessions collection
-            if (!venv.Sessions.Any(s => s.SessionId == CurrentSession.SessionId))
-            {
-                venv.AddSession(CurrentSession);
-            }
-
-            // Check if the session already exists in the global Sessions collection
-            if (!Sessions.Any(s => s.SessionId == CurrentSession.SessionId))
-            {
-                Sessions.Add(CurrentSession);
-            }
-
-            CurrentVirtualEnvironment = venv;
+        
 
             string pythonBinPath = venv.Path;
             string pythonExe = Path.Combine(pythonBinPath, "Scripts", "python.exe");
@@ -554,15 +559,14 @@ venv_name = '{venv.Name}'
 
                     ReportProgress("Python engine initialized.");
                     _IsInitialized = true;
-                    CurrentSession.WasSuccessful = true;
-                    CurrentSession.EndedAt = DateTime.Now;
+               
 
                     return true;
                 }
                 else
                 {
-                    CurrentSession.WasSuccessful = true;
-                    CurrentSession.EndedAt = DateTime.Now;
+                    //CurrentSession.WasSuccessful = true;
+                    //CurrentSession.EndedAt = DateTime.Now;
 
                     ReportProgress("Python engine already initialized.", Errors.Ok);
                     return true;
@@ -570,9 +574,9 @@ venv_name = '{venv.Name}'
             }
             catch (Exception ex)
             {
-                CurrentSession.WasSuccessful = false;
-                CurrentSession.Notes = ex.Message;
-                CurrentSession.EndedAt = DateTime.Now;
+                //CurrentSession.WasSuccessful = false;
+                //CurrentSession.Notes = ex.Message;
+                //CurrentSession.EndedAt = DateTime.Now;
 
                 ReportProgress($"Initialization error: {ex.Message}", Errors.Failed);
                 return false;
@@ -598,11 +602,11 @@ venv_name = '{venv.Name}'
 
             try
             {
-                if (CurrentPersistentScope != null)
+                foreach (var scope in SessionScopes.Values)
                 {
-                    CurrentPersistentScope.Dispose();
-                    CurrentPersistentScope = null;
+                    scope.Dispose();
                 }
+                SessionScopes.Clear();
 
                 if (PythonEngine.IsInitialized)
                 {
@@ -611,12 +615,12 @@ venv_name = '{venv.Name}'
 
                 _IsInitialized = false;
 
-                // ✅ Finalize session tracking
-                if (CurrentSession != null)
-                {
-                    CurrentSession.EndedAt = DateTime.Now;
-                    CurrentSession.Notes = "Session ended via shutdown.";
-                }
+                //// ✅ Finalize session tracking
+                //if (CurrentSession != null)
+                //{
+                //    CurrentSession.EndedAt = DateTime.Now;
+                //    CurrentSession.Notes = "Session ended via shutdown.";
+                //}
 
                 ReportProgress("Python engine shut down.", Errors.Ok);
             }
@@ -630,8 +634,7 @@ venv_name = '{venv.Name}'
             finally
             {
                 IsBusy = false;
-                CurrentVirtualEnvironment = null;
-                CurrentSession = null;
+        
             }
 
             return er;
@@ -651,7 +654,7 @@ venv_name = '{venv.Name}'
                 return false;
             }
 
-            CurrentVirtualEnvironment = venv;
+         
             return Initialize(venv);
         }
 
@@ -977,8 +980,7 @@ venv_name = '{venv.Name}'
             }
 
             // Set current environment/session
-            CurrentSession = session;
-            CurrentVirtualEnvironment = venv;
+      
 
             // 🔧 Initialize engine
             if (!Initialize(venv))
@@ -991,7 +993,7 @@ venv_name = '{venv.Name}'
 
             try
             {
-                string output = await RunPythonCodeAndGetOutput(progress ?? DMEditor.progress, code);
+                string output = await RunPythonCodeAndGetOutput(progress ?? DMEditor.progress, code,session);
                 session.Notes = "Execution succeeded.";
                 session.WasSuccessful = true;
                 session.EndedAt = DateTime.Now;
@@ -1023,9 +1025,7 @@ venv_name = '{venv.Name}'
             PythonSessionInfo session = null,
             PythonVirtualEnvironment environment = null)
         {
-            // Use provided session or current session
-            session = session ?? CurrentSession;
-
+       
             // Use provided environment or find from session
             if (environment == null && session != null)
             {
@@ -1033,9 +1033,7 @@ venv_name = '{venv.Name}'
                     v.ID.Equals(session?.VirtualEnvironmentId, StringComparison.OrdinalIgnoreCase));
             }
 
-            // Fall back to current environment if still null
-            environment = environment ?? CurrentVirtualEnvironment;
-
+          
             if (environment == null)
             {
                 ReportProgress("No virtual environment specified or available for command execution.", Errors.Failed);
@@ -1055,9 +1053,6 @@ venv_name = '{venv.Name}'
                     environment.AddSession(session);
                 }
 
-                // Update current session and environment
-                CurrentSession = session;
-                CurrentVirtualEnvironment = environment;
             }
 
             // Get the proper environment paths
@@ -1224,7 +1219,7 @@ def run_with_timeout(func, args, output_callback, timeout):
         /// <param name="script">Python script code as a string.</param>
         /// <param name="parameters">Optional parameters (dynamic) to be made available in the script's scope.</param>
         /// <returns>True if the script ran successfully, otherwise false.</returns>
-        public virtual bool RunPythonScript(string script, dynamic parameters)
+        public virtual bool RunPythonScript(string script, dynamic parameters,PythonSessionInfo session)
         {
             bool retval = false;
             if (!IsInitialized)
@@ -1234,11 +1229,9 @@ def run_with_timeout(func, args, output_callback, timeout):
 
             try
             {
-                if (parameters != null)
-                {
-                    CurrentPersistentScope.Set(nameof(parameters), parameters);
-                }
-                CurrentPersistentScope.Exec(script);
+
+                SessionScopes[session.SessionId].Set(nameof(parameters), parameters);
+                SessionScopes[session.SessionId].Exec(script);
                 retval = true;
             }
             catch (Exception ex)
@@ -1256,14 +1249,14 @@ def run_with_timeout(func, args, output_callback, timeout):
         /// <param name="script">The Python script code to run.</param>
         /// <param name="parameters">Optional parameters to be passed to the script.</param>
         /// <returns>A dynamic object representing the result of the script execution.</returns>
-        public async Task<dynamic> RunPythonScriptWithResult(string script, dynamic parameters)
+        public async Task<dynamic> RunPythonScriptWithResult(string script, dynamic parameters,PythonSessionInfo session)
         {
             dynamic result = null;
             if (!IsInitialized)
             {
                 return result;
             }
-            result = await RunPythonCodeAndGetOutput(Progress, script);
+            result = await RunPythonCodeAndGetOutput(Progress, script,session);
             return result;
         }
 
@@ -1303,9 +1296,7 @@ def run_with_timeout(func, args, output_callback, timeout):
                             Sessions.Add(session);
                         }
 
-                        // Set as current session/environment
-                        CurrentSession = session;
-                        CurrentVirtualEnvironment = venv;
+                      
 
                         // Ensure environment is initialized
                         if (!Initialize(venv))
@@ -1314,11 +1305,12 @@ def run_with_timeout(func, args, output_callback, timeout):
                             IsBusy = false;
                             return DMEditor.ErrorObject;
                         }
+                        string code = $"{venv.BaseInterpreterPath} {file}";
+                        await RunPythonCodeAndGetOutput(progress, code, session);
                     }
                 }
 
-                string code = $"{PythonRunTimeDiagnostics.GetPythonExe(CurrentRuntimeConfig.BinPath)} {file}";
-                await RunPythonCodeAndGetOutput(progress, code, session);
+               
                 IsBusy = false;
             }
             catch (Exception ex)
@@ -1365,9 +1357,7 @@ def run_with_timeout(func, args, output_callback, timeout):
                             Sessions.Add(session);
                         }
 
-                        // Set as current session/environment
-                        CurrentSession = session;
-                        CurrentVirtualEnvironment = venv;
+                       
 
                         // Ensure environment is initialized
                         if (!Initialize(venv))
@@ -1429,9 +1419,7 @@ def run_with_timeout(func, args, output_callback, timeout):
                             Sessions.Add(session);
                         }
 
-                        // Set as current session/environment
-                        CurrentSession = session;
-                        CurrentVirtualEnvironment = venv;
+                    
 
                         // Ensure environment is initialized
                         if (!Initialize(venv))
@@ -1519,16 +1507,7 @@ def capture_output(code, globals_dict, output_handler, should_stop):
                     }
                 }
 
-                // Fall back to persistent scope if we couldn't get a session scope
-                if (scope == null)
-                {
-                    if (CurrentPersistentScope == null)
-                    {
-                        CreateScope();
-                    }
-                    scope = CurrentPersistentScope;
-                }
-
+            
                 Action<string> OutputHandler = line =>
                 {
                     progress.Report(new PassedArgs() { Messege = line });
@@ -1828,11 +1807,7 @@ def run_with_timeout(func, args, output_callback, timeout):
                 ClearScope(session.SessionId);
             }
 
-            // Check if this was the current session
-            if (CurrentSession != null && CurrentSession.SessionId == session.SessionId)
-            {
-                CurrentSession = null;
-            }
+          
         }
 
         /// <summary>
@@ -1854,11 +1829,7 @@ def run_with_timeout(func, args, output_callback, timeout):
                 // Clean up the session's scope
                 CleanupSession(session);
 
-                // If this was the current session, we need to handle that
-                if (CurrentSession != null && CurrentSession.SessionId == session.SessionId)
-                {
-                    CurrentSession = null;
-                }
+               
             }
             catch (Exception ex)
             {
@@ -1927,13 +1898,7 @@ def run_with_timeout(func, args, output_callback, timeout):
                         CleanupSession(session);
                     }
 
-                    // Clear any persistent scopes
-                    if (CurrentPersistentScope != null)
-                    {
-                        CurrentPersistentScope.Dispose();
-                        CurrentPersistentScope = null;
-                    }
-
+                   
                     ShutDown();
                     // Dispose managed objects here if needed.
                 }

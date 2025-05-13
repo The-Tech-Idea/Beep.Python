@@ -9,7 +9,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
 {
     public class PythonMachineLearningViewModel : PythonBaseViewModel
     {
-        public PythonMachineLearningViewModel(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager) : base(beepservice, pythonRuntimeManager)
+        public PythonMachineLearningViewModel(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager, PythonSessionInfo sessionInfo) : base(beepservice, pythonRuntimeManager, sessionInfo)
         {
             DataSetPath = PythonDatafolder;
             
@@ -65,7 +65,7 @@ except AttributeError:
             
                 try
                 {
-                    PythonRuntime.RunCode(pythonImports + pythonDataPreparation + pythonModelTraining + pythonModelEvaluation,Progress,Token);
+                    PythonRuntime.RunCode(SessionInfo,pythonImports + pythonDataPreparation + pythonModelTraining + pythonModelEvaluation,Progress,Token);
                     Console.WriteLine("Model executed successfully.");
                 }
                 catch (PythonException ex)

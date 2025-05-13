@@ -42,21 +42,24 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         [ObservableProperty]
         List<string> algorithims;
         public readonly IBeepService Beepservice;
+       public PythonSessionInfo SessionInfo;
 
-        
+
         public string GetAlgorithimName(string algorithim)
         {
             return Enum.GetName(typeof(MachineLearningAlgorithm), algorithim);
         }
 
-        public PythonBaseViewModel(IBeepService beepservice,IPythonRunTimeManager pythonRuntimeManager)
+        public PythonBaseViewModel(IBeepService beepservice,IPythonRunTimeManager pythonRuntimeManager,PythonSessionInfo sessionInfo)
         {
             Beepservice=beepservice;
             Editor= beepservice.DMEEditor;
             this.PythonRuntime = pythonRuntimeManager;
+            SessionInfo = sessionInfo;
+
             InitializePythonEnvironment();
-            PythonHelpers._persistentScope = PersistentScope;
-            PythonHelpers._pythonRuntimeManager = pythonRuntimeManager;
+         //   PythonHelpers._persistentScope = PersistentScope;
+          //  PythonHelpers._pythonRuntimeManager = pythonRuntimeManager;
             pythonDatafolder = Editor.GetPythonDataPath();
             ListofAlgorithims = new List<LOVData>();
             foreach (var item in Enum.GetNames(typeof(MachineLearningAlgorithm)))
@@ -99,17 +102,15 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             {
                 return retval;
             }
-            if (PythonRuntime.CurrentPersistentScope == null && PythonRuntime.IsInitialized)
+            if (SessionInfo.WasSuccessful)
             {
-                using (Py.GIL())
-                {
-                    PythonRuntime.CurrentPersistentScope = Py.CreateScope("__main__");
-                    PythonRuntime.CurrentPersistentScope.Exec("models = {}");  // Initialize the models dictionary
-                    persistentScope = PythonRuntime.CurrentPersistentScope;
-                    retval = true;
-                }
-                retval = true;
+                return true;
             }
+            else
+            {
+              retval=  pythonRuntime.InitializeForUser(SessionInfo);
+            }
+            
            
             return retval;
         }
@@ -131,11 +132,9 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             {
                 using (var gil = PythonRuntime.GIL())
                 {
-                    if (parameters != null)
-                    {
-                        PythonRuntime.CurrentPersistentScope.Set(nameof(parameters), parameters);
-                    }
-                     PythonRuntime.CurrentPersistentScope.Exec(script);
+                   
+                    pythonRuntime.SessionScopes[SessionInfo.SessionId].Set(nameof(parameters), parameters);
+                    PythonRuntime.RunPythonForUserAsync(SessionInfo, SessionInfo.Username, script, Progress);
                     retval = true;
                 }
     //          await  Task.Run(()=> PythonRuntime.CurrentPersistentScope.Exec(script));
@@ -151,7 +150,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         
            return retval;
         }
-        public virtual async Task<string> RunPythonCodeAndGetOutput(IProgress<PassedArgs> progress, string code)
+        public virtual async Task<string> RunPythonCodeAndGetOutput(IProgress<PassedArgs> progress, string code, PythonSessionInfo session)
         {
             string wrappedPythonCode = $@"
 import sys
@@ -187,10 +186,10 @@ def capture_output(code, globals_dict):
                         progress.Report(new PassedArgs() { Messege = line });
                         Console.WriteLine(line);
                     };
-                    PythonRuntime.CurrentPersistentScope.Set(nameof(OutputHandler), OutputHandler);
-
-                    await Task.Run(() => PythonRuntime.CurrentPersistentScope.Exec(wrappedPythonCode));
-                    PyObject captureOutputFunc = PythonRuntime.CurrentPersistentScope.GetAttr("capture_output");
+          
+                    pythonRuntime.SessionScopes[session.SessionId].Set(nameof(OutputHandler), OutputHandler);
+                  await Task.Run(() => pythonRuntime.SessionScopes[session.SessionId].Exec(wrappedPythonCode));
+                    PyObject captureOutputFunc = pythonRuntime.SessionScopes[session.SessionId].GetAttr("capture_output");
                     Dictionary<string, object> globalsDict = new Dictionary<string, object>();
 
                     PyObject pyCode = code.ToPython();
@@ -209,7 +208,7 @@ def capture_output(code, globals_dict):
             IsBusy = false;
             return output;
         }
-        public dynamic RunPythonScriptWithResult(string script,dynamic parameters)
+        public dynamic RunPythonScriptWithResult(string script,dynamic parameters,PythonSessionInfo session)
         {
             dynamic result = null;
             if (PythonRuntime == null)
@@ -225,7 +224,7 @@ def capture_output(code, globals_dict):
             //{
             //    result = CurrentPersistentScope.Exec(script); // Execute the script in the persistent scope
             //}
-            result= PythonRuntime.CurrentPersistentScope.Exec(script);
+            result= pythonRuntime.SessionScopes[session.SessionId].Exec(script);
             return result;
         }
         protected virtual void Dispose(bool disposing)

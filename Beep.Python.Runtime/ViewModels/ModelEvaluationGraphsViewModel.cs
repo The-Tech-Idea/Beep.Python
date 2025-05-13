@@ -23,7 +23,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         [ObservableProperty]
         int figureheight = 8;
         IPythonMLManager PythonMLManager { get; set; }
-        public PythonModelEvaluationGraphsViewModel(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager) : base(beepservice, pythonRuntimeManager)
+        public PythonModelEvaluationGraphsViewModel(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager,PythonSessionInfo sessionInfo) : base(beepservice, pythonRuntimeManager, sessionInfo)
         {
             PythonMLManager = Editor.GetPythonMLManager();
 
@@ -36,7 +36,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             try
             {
                 PythonMLManager.ImportPythonModule("matplotlib");
-                PythonRuntime.RunCode(script, Progress, Token);
+                PythonRuntime.RunCode(SessionInfo, script, Progress, Token);
 
             }
             catch (PythonException ex)

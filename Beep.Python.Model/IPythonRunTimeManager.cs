@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using TheTechIdea.Beep.ConfigUtil;
 using TheTechIdea.Beep.Addin;
 using TheTechIdea.Beep.Editor;
+using static System.Collections.Specialized.BitVector32;
 
 namespace Beep.Python.Model
 {
@@ -17,16 +18,17 @@ namespace Beep.Python.Model
     /// </summary>
     public interface IPythonRunTimeManager : IDisposable
     {
+        Dictionary<string, PyModule> SessionScopes { get; }
 
 
         /// <summary>Currently active session.</summary>
-        PythonSessionInfo CurrentSession { get; }
+      //  PythonSessionInfo CurrentSession { get; }
 
         /// <summary>All managed sessions.</summary>
         ObservableBindingList<PythonSessionInfo> Sessions { get; set; }
 
         /// <summary>Currently selected Python virtual environment.</summary>
-        PythonVirtualEnvironment CurrentVirtualEnvironment { get; set; }
+        //PythonVirtualEnvironment CurrentVirtualEnvironment { get; set; }
 
         /// <summary>All known virtual environments.</summary>
         ObservableBindingList<PythonVirtualEnvironment> ManagedVirtualEnvironments { get; }
@@ -44,14 +46,16 @@ namespace Beep.Python.Model
         void Stop();
 
         /// <summary>Persistent module scope across commands.</summary>
-        PyModule CurrentPersistentScope { get; set; }
+      //  PyModule CurrentPersistentScope { get; set; }
 
         /// <summary>Creates a new Python scope for the given session and environment.</summary>
         bool CreateScope(PythonSessionInfo session, PythonVirtualEnvironment environment);
+        bool CreateScope(PythonSessionInfo session);
 
-        PythonConfiguration PythonConfig { get; set; }
-        PythonRunTime CurrentRuntimeConfig { get; }
-        string CurrentFileLoaded { get; set; }
+
+      //  PythonConfiguration PythonConfig { get; set; }
+    //    PythonRunTime CurrentRuntimeConfig { get; }
+   //     string CurrentFileLoaded { get; set; }
         bool IsConfigLoaded { get; }
         bool IsCompilerAvailable { get; }
         bool IsInitialized { get; }
@@ -76,6 +80,7 @@ namespace Beep.Python.Model
         bool PickConfig(string path);
         bool PickConfig(PythonRunTime cfg);
         bool InitializeForUser(string envBasePath, string username);
+        bool InitializeForUser(PythonSessionInfo sessionInfo);
         bool RestartWithEnvironment(PythonVirtualEnvironment venv);
         bool CreateVirtualEnvironmentFromDefinition(PythonVirtualEnvironment env);
         bool Initialize(string virtualEnvPath = null);
@@ -99,9 +104,9 @@ namespace Beep.Python.Model
             PythonSessionInfo session,
             string environmentName,
             string code,
-            IProgress<PassedArgs> progress);
+        IProgress<PassedArgs> progress);
 
-        bool RunPythonScript(string script, dynamic parameters);
+        bool RunPythonScript(string script, dynamic parameters,PythonSessionInfo session);
         void CreateLoadConfig();
         void SaveConfig();
 
