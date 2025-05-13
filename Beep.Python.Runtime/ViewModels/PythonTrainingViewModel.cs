@@ -80,7 +80,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         string[] selectedFeatures;
         IPythonMLManager PythonMLManager;
        
-        public PythonTrainingViewModel(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager) : base(beepservice, pythonRuntimeManager)
+        public PythonTrainingViewModel(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager, PythonSessionInfo sessionInfo) : base(beepservice, pythonRuntimeManager, sessionInfo)
         {
             InitializePythonEnvironment();
           
@@ -96,12 +96,12 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             IsModelEvaluated = false;
             IsModelPredicted = false;
         }
-        public void init()
+        public void init(IPythonMLManager mLManager)
         {
            
             IsInit = true;
             ResetTraining();
-            PythonMLManager = Beepservice.DMEEditor.GetPythonMLManager();
+            PythonMLManager = mLManager;
         }
         public IErrorsInfo Train()
         {

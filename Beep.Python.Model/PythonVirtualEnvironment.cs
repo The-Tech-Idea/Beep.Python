@@ -10,7 +10,7 @@ namespace Beep.Python.Model
    public enum PythonBinary
     {
         Python,
-        Pip,
+       
         Conda
     }
    public enum PythonEnvironmentType
@@ -78,6 +78,20 @@ namespace Beep.Python.Model
             {
                 _path = value;
                 SetProperty(ref _path, value);
+            }
+        }
+        private string _pythonconfigID;
+        public string PythonConfigID
+        {
+            get
+            {
+
+                return _pythonconfigID;
+            }
+            set
+            {
+                _pythonconfigID = value;
+                SetProperty(ref _pythonconfigID, value);
             }
         }
         private string _baseInterpreterPath;
@@ -158,7 +172,46 @@ namespace Beep.Python.Model
                 SetProperty(ref _installedpackages, value);
             }
         }
-
+        private bool _isconfigloaded= false;
+        public bool IsConfigLoaded
+        {
+            get
+            {
+                return _isconfigloaded;
+            }
+            set
+            {
+                _isconfigloaded = value;
+                SetProperty(ref _isconfigloaded, value);
+            }
+        }
+        private bool _iscompileravailable = false;
+        public bool IsCompilerAvailable
+        {
+            get
+            {
+                return _iscompileravailable;
+            }
+            set
+            {
+                _iscompileravailable = value;
+                SetProperty(ref _iscompileravailable, value);
+            }
+        }
+        private bool _isinitialized = false;
+        public bool IsInitialized
+        {
+            get
+            {
+                return _isinitialized;
+            }
+            set
+            {
+                _isinitialized = value;
+                SetProperty(ref _isinitialized, value);
+            }
+        }
+      
         // === New: Session Tracking ===
         private ObservableBindingList<PythonSessionInfo> _sessions = new();
         public ObservableBindingList<PythonSessionInfo> Sessions

@@ -62,7 +62,7 @@ namespace Beep.Python.Winform
             PythonRunTimeManager = Editor.GetPythonRunTimeManager();
             Pythonpackagemanager = Editor.GetPythonPackageManager();
             pythonBaseViewModel = (PythonBaseViewModel)Pythonpackagemanager;
-          //  PythonRunTimeManager.PackageManager = Pythonpackagemanager;
+          //  PythonRunTimeManager.PythonPackageManager = Pythonpackagemanager;
 
 
             appManager = (IAppManager)e.Objects.Where(c => c.Name == "appManager").FirstOrDefault().obj;

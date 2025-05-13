@@ -10,7 +10,7 @@ using TheTechIdea.Beep.Addin;
 using TheTechIdea.Beep.Editor;
 
 using TheTechIdea.Beep.Container.Services;
-using Beep.Python.RuntimeEngine.Services;
+
 
 
 namespace Beep.Python.RuntimeEngine.ViewModels
@@ -42,7 +42,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         [ObservableProperty]
         List<string> algorithims;
         public readonly IBeepService Beepservice;
-       public PythonSessionInfo SessionInfo;
+        public PythonSessionInfo SessionInfo;
 
 
         public string GetAlgorithimName(string algorithim)
@@ -57,10 +57,9 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             this.PythonRuntime = pythonRuntimeManager;
             SessionInfo = sessionInfo;
 
-            InitializePythonEnvironment();
-         //   PythonHelpers._persistentScope = PersistentScope;
-          //  PythonHelpers._pythonRuntimeManager = pythonRuntimeManager;
-            pythonDatafolder = Editor.GetPythonDataPath();
+           
+      
+           // pythonDatafolder = Editor.GetPythonDataPath();
             ListofAlgorithims = new List<LOVData>();
             foreach (var item in Enum.GetNames(typeof(MachineLearningAlgorithm)))
             {
@@ -83,151 +82,15 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         }
         public virtual void ImportPythonModule(string moduleName)
         {
-            if (!IsInitialized)
+            if (SessionInfo==null)
             {
                 return;
             }
             string script = $"import {moduleName}";
-            RunPythonScript(script, null);
+            pythonRuntime.RunPythonScript(script, null,SessionInfo);
         }
-        public bool IsInitialized => PythonRuntime.IsInitialized;
-        public virtual bool InitializePythonEnvironment()
-        {
-            bool retval = false;
-            if (!PythonRuntime.IsInitialized)
-            {
-                PythonRuntime.Initialize();
-            }
-            if (!PythonRuntime.IsInitialized)
-            {
-                return retval;
-            }
-            if (SessionInfo.WasSuccessful)
-            {
-                return true;
-            }
-            else
-            {
-              retval=  pythonRuntime.InitializeForUser(SessionInfo);
-            }
-            
-           
-            return retval;
-        }
-        public virtual  bool RunPythonScript(string script,dynamic parameters)
-        {
-            bool retval = false;
-            if (!IsInitialized)
-            {
-                return retval;
-            }
-            //using (var gil = PythonRuntime.GIL()) // Acquire the Python Global Interpreter Lock
-            //{
-            //    CurrentPersistentScope.Exec(script); // Execute the script in the persistent scope
-            //                                   // Handle outputs if needed
-
-            //    // If needed, return results or handle outputs
-            //}
-            try
-            {
-                using (var gil = PythonRuntime.GIL())
-                {
-                   
-                    pythonRuntime.SessionScopes[SessionInfo.SessionId].Set(nameof(parameters), parameters);
-                    PythonRuntime.RunPythonForUserAsync(SessionInfo, SessionInfo.Username, script, Progress);
-                    retval = true;
-                }
-    //          await  Task.Run(()=> PythonRuntime.CurrentPersistentScope.Exec(script));
-                retval = true;
-            }
-            catch (Exception ex)
-            {
-                Editor.AddLogMessage("Beep", $"Error in running python : {ex.Message}", DateTime.Now, -1, null,     Errors.Failed);
-                Console.WriteLine($"Error executing Python script: {ex.Message}");
-                return false;
-            }
-
-        
-           return retval;
-        }
-        public virtual async Task<string> RunPythonCodeAndGetOutput(IProgress<PassedArgs> progress, string code, PythonSessionInfo session)
-        {
-            string wrappedPythonCode = $@"
-import sys
-import io
-import clr
-
-class CustomStringIO(io.StringIO):
-    def write(self, s):
-        super().write(s)
-        output = self.getvalue()
-        if output.strip():
-            OutputHandler(output.strip())
-            self.truncate(0)  # Clear the internal buffer
-            self.seek(0)  # Reset the buffer pointer
-
-def capture_output(code, globals_dict):
-    original_stdout = sys.stdout
-    sys.stdout = CustomStringIO()
-
-    try:
-        exec(code, dict(globals_dict))
-    finally:
-        sys.stdout = original_stdout
-";
-            bool isImage = false;
-            string output = "";
-
-            //using (var gil = PythonRuntime.GIL())
-            //{
-                    Action<string> OutputHandler = line =>
-                    {
-                        // runTimeManager.OutputLines.Add(line);
-                        progress.Report(new PassedArgs() { Messege = line });
-                        Console.WriteLine(line);
-                    };
-          
-                    pythonRuntime.SessionScopes[session.SessionId].Set(nameof(OutputHandler), OutputHandler);
-                  await Task.Run(() => pythonRuntime.SessionScopes[session.SessionId].Exec(wrappedPythonCode));
-                    PyObject captureOutputFunc = pythonRuntime.SessionScopes[session.SessionId].GetAttr("capture_output");
-                    Dictionary<string, object> globalsDict = new Dictionary<string, object>();
-
-                    PyObject pyCode = code.ToPython();
-                    PyObject pyGlobalsDict = globalsDict.ToPython();
-                    PyObject result = captureOutputFunc.Invoke(pyCode, pyGlobalsDict);
-                    if (result is PyObject pyObj)
-                    {
-                        var pyObjType = pyObj.GetPythonType();
-                        var pyObjTypeName = pyObjType.ToString();
-
-
-                    }
-               
-           // }
-
-            IsBusy = false;
-            return output;
-        }
-        public dynamic RunPythonScriptWithResult(string script,dynamic parameters,PythonSessionInfo session)
-        {
-            dynamic result = null;
-            if (PythonRuntime == null)
-            {
-                return null;
-            }
-            if (!PythonRuntime.IsInitialized)
-            {
-                return result;
-            }
-
-            //using (var gil = PythonRuntime.GIL()) // Acquire the Python Global Interpreter Lock
-            //{
-            //    result = CurrentPersistentScope.Exec(script); // Execute the script in the persistent scope
-            //}
-            result= pythonRuntime.SessionScopes[session.SessionId].Exec(script);
-            return result;
-        }
-        protected virtual void Dispose(bool disposing)
+    
+         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
             {
@@ -242,12 +105,6 @@ def capture_output(code, globals_dict):
             }
         }
 
-        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~PythonBaseViewModel()
-        // {
-        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        //     Dispose(disposing: false);
-        // }
 
         public virtual void Dispose()
         {

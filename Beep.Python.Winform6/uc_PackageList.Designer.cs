@@ -97,7 +97,7 @@
             // packagelistBindingSource
             // 
             packagelistBindingSource.DataMember = "Packages";
-            packagelistBindingSource.DataSource = typeof(RuntimeEngine.ViewModels.PackageManagerViewModel);
+            packagelistBindingSource.DataSource = typeof(RuntimeEngine.ViewModels.PythonPackageManagerViewModel);
             // 
             // bindingNavigatorCountItem
             // 

@@ -25,10 +25,13 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         IPythonMLManager PythonMLManager { get; set; }
         public PythonModelEvaluationGraphsViewModel(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager,PythonSessionInfo sessionInfo) : base(beepservice, pythonRuntimeManager, sessionInfo)
         {
-            PythonMLManager = Editor.GetPythonMLManager();
+           
 
         }
-
+        public void Init(IPythonMLManager mLManager)
+        {
+            PythonMLManager = mLManager;
+        }
         // General method to execute Python script and save the result as an image
         private void ExecuteAndSavePlot(string script, string savePath)
         {

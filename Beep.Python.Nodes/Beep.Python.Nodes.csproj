@@ -25,12 +25,12 @@
 	  <Compile Remove="JupyterNoteBookNode.cs" />
 	</ItemGroup>
 	<ItemGroup>
-	  <None Remove="GFX\jupyter.png" />
-	  <None Remove="GFX\python.png" />
+	  <None Remove="GFX\SVG\pythonroot.svg" />
+	  <None Remove="GFX\SVG\refreshpythonenv.svg" />
 	</ItemGroup>
 	<ItemGroup>
-	  <EmbeddedResource Include="GFX\jupyter.png" />
-	  <EmbeddedResource Include="GFX\python.png" />
+	  <EmbeddedResource Include="GFX\SVG\pythonroot.svg" />
+	  <EmbeddedResource Include="GFX\SVG\refreshpythonenv.svg" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="..\..\InstallationScripts\LogoGFx\128\SimpleODM.png">

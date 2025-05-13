@@ -108,6 +108,8 @@ namespace Beep.Python.Model
                 SetProperty(ref _status, value);
             }
         }
+
+        public Dictionary<string,object> Metadata { get; set; }
     }
 
 }

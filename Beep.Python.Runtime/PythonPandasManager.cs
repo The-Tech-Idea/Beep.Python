@@ -13,7 +13,7 @@ namespace Beep.Python.RuntimeEngine
     public class PythonPandasManager: PythonBaseViewModel
     {
        
-        public PythonPandasManager(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager) : base(beepservice, pythonRuntimeManager)
+        public PythonPandasManager(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager, PythonSessionInfo sessionInfo) : base(beepservice, pythonRuntimeManager, sessionInfo)
         {
             //  pythonRuntimeManager = pythonRuntimeManager;
             InitializePythonEnvironment();

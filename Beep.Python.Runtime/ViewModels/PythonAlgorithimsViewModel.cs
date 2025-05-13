@@ -35,7 +35,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         public ObservableBindingList<PythonAlgorithm> Algorithms => Unitofwork.Units;
         public UnitofWork<PythonAlgorithm> Unitofwork { get; set; }
         public UnitofWork<PythonDataClasses> DataClassUnits;
-        public PythonAlgorithimsViewModel(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager) : base(beepservice, pythonRuntimeManager)
+        public PythonAlgorithimsViewModel(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager, PythonSessionInfo sessionInfo) : base(beepservice, pythonRuntimeManager, sessionInfo)
         {
             Unitofwork = new UnitofWork<PythonAlgorithm>(Editor, "dhubdb", "PythonAlgorithm", "ID");
             DataClassUnits = new UnitofWork<PythonDataClasses>(Editor, "dhubdb", "PythonDataClasses", "ID");

@@ -44,7 +44,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         private bool disposedValue;
 
        
-        public AIAlgorithimParametersViewModel(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager) : base(beepservice, pythonRuntimeManager)
+        public AIAlgorithimParametersViewModel(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager, PythonSessionInfo sessionInfo) : base(beepservice, pythonRuntimeManager, sessionInfo)
         {
             Unitofwork = new UnitofWork<PythonalgorithmParams>(Editor, "dhubdb", "PythonalgorithmParams", "ID");
             Unitofwork.Sequencer = "AI_ALGORTHIMSPARAMS_SEQ";

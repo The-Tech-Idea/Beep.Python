@@ -57,7 +57,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         public IPythonMLManager PythonMLManager { get; set; }
     
 
-        public PythonAIProjectViewModel(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager) : base(beepservice, pythonRuntimeManager)
+        public PythonAIProjectViewModel(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager, PythonSessionInfo sessionInfo) : base(beepservice, pythonRuntimeManager, sessionInfo)
         {
 
             PythonMLManager=Editor.GetPythonMLManager();

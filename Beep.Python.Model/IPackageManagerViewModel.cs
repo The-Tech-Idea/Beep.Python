@@ -7,9 +7,7 @@ namespace Beep.Python.Model
     {
         ObservableBindingList<PackageDefinition> Packages { get; }
         UnitofWork<PackageDefinition> UnitofWork { get; set; }
-        IDMEEditor Editor { get; set; }
-
-        void Init();
+     
         bool InstallNewPackageAsync(string packagename);
         bool InstallPipToolAsync();
         bool RefreshAllPackagesAsync();

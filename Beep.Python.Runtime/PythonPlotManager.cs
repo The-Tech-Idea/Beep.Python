@@ -14,7 +14,7 @@ namespace Beep.Python.RuntimeEngine
     public class PythonPlotManager : PythonBaseViewModel
     {
 
-        public PythonPlotManager(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager) : base(beepservice, pythonRuntimeManager)
+        public PythonPlotManager(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager, PythonSessionInfo sessionInfo) : base(beepservice, pythonRuntimeManager, sessionInfo)
         {
 
             InitializePythonEnvironment();

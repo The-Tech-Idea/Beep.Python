@@ -33,7 +33,7 @@ namespace Beep.Python.RuntimeEngine
 
 
 
-        public PythonMLManager(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager) : base(beepservice, pythonRuntimeManager)
+        public PythonMLManager(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager, PythonSessionInfo sessionInfo) : base(beepservice, pythonRuntimeManager, sessionInfo)
         {
             //  pythonRuntimeManager = pythonRuntimeManager;
 

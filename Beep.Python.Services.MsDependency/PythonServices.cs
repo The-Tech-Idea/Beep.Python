@@ -46,8 +46,8 @@ namespace Beep.Python.RuntimeEngine.Services
         {
             PythonRunTimepath = pythonRuntimePath;
             services.AddSingleton<IPythonRunTimeManager, PythonNetRunTimeManager>();
-            services.AddSingleton<IPythonVirtualEnvViewModel, PythonVirtualEnvViewModel>();
-            services.AddSingleton<IPackageManagerViewModel, PackageManagerViewModel>();
+            services.AddSingleton<IPythonVirtualEnvManager, PythonVirtualEnvManager>();
+            services.AddSingleton<IPackageManagerViewModel, PythonPackageManager>();
             services.AddSingleton<IPythonMLManager, PythonMLManager>();
             services.AddSingleton<IPythonAIProjectViewModel, PythonAIProjectViewModel>();
             services.AddSingleton<IPythonModelEvaluationGraphsViewModel, PythonModelEvaluationGraphsViewModel>();
@@ -82,7 +82,7 @@ namespace Beep.Python.RuntimeEngine.Services
         public static IServiceCollection RegisterPythonPackageManagerService(this IServiceCollection services)
         {
 
-            services.AddSingleton<IPackageManagerViewModel, PackageManagerViewModel>();
+            services.AddSingleton<IPackageManagerViewModel, PythonPackageManager>();
 
             return services;
         }
@@ -103,7 +103,7 @@ namespace Beep.Python.RuntimeEngine.Services
         public static IServiceCollection RegisterPythonVirtualEnvironment(this IServiceCollection services)
         {
 
-            services.AddSingleton<IPythonVirtualEnvViewModel, PythonVirtualEnvViewModel>();
+            services.AddSingleton<IPythonVirtualEnvManager, PythonVirtualEnvManager>();
 
             return services;
         }
@@ -122,11 +122,11 @@ namespace Beep.Python.RuntimeEngine.Services
             return ServiceProvider.GetRequiredService<IPythonRunTimeManager>();
         }
         public static IPackageManagerViewModel GetPythonPackageManager() => GetService<IPackageManagerViewModel>();
-        public static IPythonVirtualEnvViewModel GetPythonVirtualEnv() => GetService<IPythonVirtualEnvViewModel>();
+        public static IPythonVirtualEnvManager GetPythonVirtualEnv() => GetService<IPythonVirtualEnvManager>();
         public static IPythonMLManager GetPythonMLManager() => GetService<IPythonMLManager>();
         public static IPythonAIProjectViewModel GetPythonAIProjectViewModel() => GetService<IPythonAIProjectViewModel>();
         public static IPythonModelEvaluationGraphsViewModel GetPythonModelEvaluationGraphsViewModel() => GetService<IPythonModelEvaluationGraphsViewModel>();
-        public static IPythonVirtualEnvViewModel GetPythonVirtualEnv(this IDMEEditor dmeEditor)
+        public static IPythonVirtualEnvManager GetPythonVirtualEnv(this IDMEEditor dmeEditor)
         {
 
             return GetPythonVirtualEnv();

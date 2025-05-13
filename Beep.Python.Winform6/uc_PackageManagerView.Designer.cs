@@ -161,7 +161,7 @@ namespace Beep.Python.Winform
             // bindingSource1
             // 
             bindingSource1.DataMember = "Packages";
-            bindingSource1.DataSource = typeof(RuntimeEngine.ViewModels.PackageManagerViewModel);
+            bindingSource1.DataSource = typeof(RuntimeEngine.ViewModels.PythonPackageManagerViewModel);
             // 
             // toolStripButton1
             // 
