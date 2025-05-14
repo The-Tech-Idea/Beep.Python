@@ -16,15 +16,14 @@ namespace Beep.Python.Model
     /// </summary>
     public interface IPythonRunTimeManager : IDisposable
     {
+        IPythonCodeExecuteManager ExecuteManager { get; set; }
         IPythonSessionManager SessionManager { get; set; }
         IPythonVirtualEnvManager VirtualEnvmanager { get; set; }
         Dictionary<string, PyModule> SessionScopes { get; }
 
         /// <summary>All known Python runtime configurations.</summary>
-        ObservableBindingList<PythonRunTime> PythonConfigs { get; set; }
+        ObservableBindingList<PythonRunTime> PythonInstallations { get; set; }
 
-        void SaveEnvironments(string filePath);
-        void LoadEnvironments(string filePath);
 
         /// <summary>Acquire the GIL state for thread-safe Python calls.</summary>
         Py.GILState GIL();
@@ -68,59 +67,7 @@ namespace Beep.Python.Model
         /// </summary>
         bool Initialize(PythonRunTime cfg, PythonVirtualEnvironment venv);
 
-        /// <summary>
-        /// Initializes Python with the specified home directory and library path.
-        /// </summary>
-        bool Initialize(string pythonHome, string libPath);
 
-        /// <summary>
-        /// Runs a Python script within a session's scope and returns the result.
-        /// </summary>
-        dynamic RunPythonScriptWithResult(PythonSessionInfo session, string script, Dictionary<string, object> variables);
-
-        /// <summary>
-        /// Runs Python code asynchronously within a session.
-        /// </summary>
-        Task<IErrorsInfo> RunCode(PythonSessionInfo session, string code, IProgress<PassedArgs> progress, CancellationToken token);
-
-        /// <summary>
-        /// Runs a Python command asynchronously within a session.
-        /// </summary>
-        Task<dynamic> RunCommand(PythonSessionInfo session, string command, IProgress<PassedArgs> progress, CancellationToken token);
-
-        /// <summary>
-        /// Runs a Python file asynchronously within a session.
-        /// </summary>
-        Task<IErrorsInfo> RunFile(PythonSessionInfo session, string file, IProgress<PassedArgs> progress, CancellationToken token);
-
-        /// <summary>
-        /// Runs a pip/command-line instruction in the given session/environment.
-        /// </summary>
-        Task<string> RunPythonCommandLineAsync(
-            IProgress<PassedArgs> progress,
-            string commandString,
-            bool useConda,
-            PythonSessionInfo session,
-            PythonVirtualEnvironment environment);
-
-        /// <summary>
-        /// Executes Python code for a specific user and returns stdout.
-        /// </summary>
-        Task<string> RunPythonForUserAsync(
-            PythonSessionInfo session,
-            string environmentName,
-            string code,
-            IProgress<PassedArgs> progress);
-
-        /// <summary>
-        /// Runs Python code and captures output.
-        /// </summary>
-        Task<string> RunPythonCodeAndGetOutput(IProgress<PassedArgs> progress, string code, PythonSessionInfo session = null);
-
-        /// <summary>
-        /// Runs a Python script within a session's scope.
-        /// </summary>
-        bool RunPythonScript(string script, dynamic parameters, PythonSessionInfo session);
 
         /// <summary>
         /// Creates or loads the Python configuration.
@@ -152,24 +99,25 @@ namespace Beep.Python.Model
         /// </summary>
         void PerformSessionCleanup(TimeSpan maxAge);
 
-        #region Concurrency Support
+        /// <summary>
+        /// Set Operating Mode for Python engine.
+        /// <see cref="PythonEngineMode"/>"/>
+        ///     
+        PythonEngineMode EngineMode { get; set; }
 
         /// <summary>
-        /// Executes a Python operation with concurrency control.
-        /// </summary>
-        /// <typeparam name="T">The return type of the operation.</typeparam>
-        /// <param name="session">The session to execute the operation in.</param>
-        /// <param name="operation">The operation to execute.</param>
-        /// <param name="timeout">Optional timeout for the operation.</param>
-        /// <returns>The result of the operation.</returns>
-        Task<T> ExecuteWithConcurrencyControlAsync<T>(PythonSessionInfo session, Func<Task<T>> operation, TimeSpan? timeout = null);
-
-        /// <summary>
-        /// Gets the current load statistics for the Python runtime.
-        /// </summary>
-        /// <returns>Dictionary of load statistics.</returns>
-        Dictionary<string, object> GetRuntimeMetrics();
-
-        #endregion
+        /// Function to refresh the Python environment runtime installed on the system.
+        /// and store the information in the config file. using PythonConfig.json
+        /// PythonConfig Property will be updated with the new information.
+        /// <see cref="PythonRunTime"/> "/>
+        /// 
+        void RefreshPythonInstalltions();
+        PythonSessionInfo CreateEnvironmentForSingleUserMode(PythonRunTime cfg, string envBasePath, string username, string envName);
+        PythonSessionInfo CreateSessionForUser(PythonRunTime cfg, PythonVirtualEnvironment env, string username);
+    }
+    public enum PythonEngineMode
+    {
+        SingleUser,
+        MultiUserWithEnvAndScopeAndSession
     }
 }

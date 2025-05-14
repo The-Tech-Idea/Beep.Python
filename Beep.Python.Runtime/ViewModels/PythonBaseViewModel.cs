@@ -10,6 +10,7 @@ using TheTechIdea.Beep.Addin;
 using TheTechIdea.Beep.Editor;
 
 using TheTechIdea.Beep.Container.Services;
+using Beep.Python.RuntimeEngine.Helpers;
 
 
 
@@ -44,6 +45,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         public readonly IBeepService Beepservice;
         public PythonSessionInfo SessionInfo;
 
+        public ObservableBindingList<PythonRunTime> AvailablePythonInstallations =>pythonRuntime.PythonInstallations;
 
         public string GetAlgorithimName(string algorithim)
         {
@@ -80,6 +82,41 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             }
 
         }
+        public async Task RefreshPythonInstallationsAsync()
+        {
+            IsBusy = true;
+            try
+            {
+                await Task.Run(() => {
+                    PythonRuntime.RefreshPythonInstalltions();
+                });
+
+                // Update any UI properties
+                OnPropertyChanged(nameof(AvailablePythonInstallations));
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+        public async Task<bool> AddCustomPythonInstallation(string path)
+        {
+            var report = await Task.Run(() => PythonEnvironmentDiagnostics.RunFullDiagnostics(path));
+
+            if (report.PythonFound)
+            {
+                var config = PythonRunTimeDiagnostics.GetPythonConfig(path);
+                if (config != null)
+                {
+                    PythonRuntime.PythonInstallations.Add(config);
+                    PythonRuntime.SaveConfig();
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public virtual void ImportPythonModule(string moduleName)
         {
             if (SessionInfo==null)
@@ -87,7 +124,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
                 return;
             }
             string script = $"import {moduleName}";
-            pythonRuntime.RunPythonScript(script, null,SessionInfo);
+            PythonRuntime.ExecuteManager.RunPythonScript(script, null,SessionInfo);
         }
     
          protected virtual void Dispose(bool disposing)

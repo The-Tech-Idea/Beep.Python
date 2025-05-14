@@ -1,5 +1,6 @@
 ﻿using Beep.Python.Model;
 using Beep.Python.RuntimeEngine.Helpers;
+using Newtonsoft.Json;
 using Python.Runtime;
 using System;
 using System.Diagnostics;
@@ -33,7 +34,13 @@ namespace Beep.Python.RuntimeEngine
         /// Creates a virtual environment from an existing environment definition.
         /// </summary>
         public bool CreateVirtualEnvironmentFromDefinition(PythonRunTime cfg, PythonVirtualEnvironment env)
-        {
+        {  // Verify Python installation before creating env
+            var report = PythonEnvironmentDiagnostics.RunFullDiagnostics(cfg.BinPath);
+            if (!report.PythonFound || !report.CanExecuteCode)
+            {
+                // Log error about invalid Python installation
+                return false;
+            }
             if (Directory.Exists(env.Path))
             {
                 Console.WriteLine($"Virtual environment already exists at {env.Path}.");
@@ -413,7 +420,7 @@ namespace Beep.Python.RuntimeEngine
                 try
                 {
                     // Find the configuration for this environment
-                    var config = PythonRuntime.PythonConfigs?.FirstOrDefault(c => c.ID == env.PythonConfigID);
+                    var config = PythonRuntime.PythonInstallations?.FirstOrDefault(c => c.ID == env.PythonConfigID);
                     if (config == null)
                     {
                         Console.WriteLine($"Configuration not found for environment {env.Name}");
@@ -499,7 +506,27 @@ namespace Beep.Python.RuntimeEngine
 
             return er;
         }
+        /// <summary>
+        /// Saves managed environments to a file.
+        /// </summary>
+        public void SaveEnvironments(string filePath)
+        {
+            var json = JsonConvert.SerializeObject(ManagedVirtualEnvironments, Formatting.Indented);
+            File.WriteAllText(filePath, json);
+        }
 
+        /// <summary>
+        /// Loads managed environments from a file.
+        /// </summary>
+        public void LoadEnvironments(string filePath)
+        {
+            if (File.Exists(filePath))
+            {
+                var json = File.ReadAllText(filePath);
+                var list = JsonConvert.DeserializeObject<ObservableBindingList<PythonVirtualEnvironment>>(json);
+                ManagedVirtualEnvironments = list ?? new ObservableBindingList<PythonVirtualEnvironment>();
+            }
+        }
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)

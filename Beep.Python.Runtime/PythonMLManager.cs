@@ -37,7 +37,7 @@ namespace Beep.Python.RuntimeEngine
         {
             //  pythonRuntimeManager = pythonRuntimeManager;
 
-            InitializePythonEnvironment();
+          
             InitializeAlgorithmSupervision();
         }
 

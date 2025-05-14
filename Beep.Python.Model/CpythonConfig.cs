@@ -169,6 +169,16 @@ namespace Beep.Python.Model
                 SetProperty(ref packageDefinitions, value);
             }
         }
+        private PythonBinary pythonBinary = PythonBinary.Python;
+        public PythonBinary Binary
+        {
+            get { return pythonBinary; }
+            set
+            {
+                pythonBinary = value;
+                SetProperty(ref pythonBinary, value);
+            }
+        }
         public string GetSummary()
         {
             return $@"

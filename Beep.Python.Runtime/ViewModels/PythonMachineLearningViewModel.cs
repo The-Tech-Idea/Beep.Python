@@ -65,7 +65,7 @@ except AttributeError:
             
                 try
                 {
-                    PythonRuntime.RunCode(SessionInfo,pythonImports + pythonDataPreparation + pythonModelTraining + pythonModelEvaluation,Progress,Token);
+                    PythonRuntime.ExecuteManager.RunCode(SessionInfo,pythonImports + pythonDataPreparation + pythonModelTraining + pythonModelEvaluation,Progress,Token);
                     Console.WriteLine("Model executed successfully.");
                 }
                 catch (PythonException ex)

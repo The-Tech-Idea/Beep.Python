@@ -17,6 +17,8 @@ namespace Beep.Python.Model
         bool CreateVirtualEnvironmentFromCommand(PythonRunTime config, string envPath);
         bool InitializeForUser(PythonRunTime config, string envBasePath, string username);
         void InitializePythonEnvironment(PythonVirtualEnvironment env);
+        void SaveEnvironments(string filePath);
+        void LoadEnvironments(string filePath);
         IErrorsInfo ShutDown(PythonVirtualEnvironment env);
     }
 }

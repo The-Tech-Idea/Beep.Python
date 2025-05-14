@@ -227,6 +227,48 @@ namespace Beep.Python.Model
             }
         }
 
+        private string _createdby;
+        public string CreatedBy
+        {
+            get
+            {
+                return _createdby;
+            }
+            set
+            {
+                _createdby = value;
+                SetProperty(ref _createdby, value);
+            }
+        }
+        private DateTime  _createdat = DateTime.Now;
+        public DateTime CreatedAt
+        {
+            get
+            {
+                return _createdat;
+            }
+            set
+            {
+                _createdat = value;
+                SetProperty(ref _createdat, value);
+            }
+
+        }
+        private string  _requirementsfile;
+        public string RequirementsFile
+        {
+            get
+            {
+                return _requirementsfile;
+            }
+            set
+            {
+                _requirementsfile = value;
+                SetProperty(ref _requirementsfile, value);
+            }
+        }
+
+      
         public void AddSession(PythonSessionInfo session)
         {
             if (session != null)
