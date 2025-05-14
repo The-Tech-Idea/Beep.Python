@@ -1,4 +1,5 @@
-﻿using TheTechIdea.Beep.Editor;
+﻿using System.Text;
+using TheTechIdea.Beep.Editor;
 
 namespace Beep.Python.Model
 {
@@ -231,17 +232,102 @@ namespace Beep.Python.Model
      
         public string category { get; set; }
     }
-    public enum PackageCategory
+    /// <summary>
+    /// Represents a collection of packages designed for a specific purpose.
+    /// </summary>
+    public class PackageSet : Entity
     {
-        UI,
-        Utilities,
-        Development,
-        Graphics,
-        DataScience,
-        Compute,
-        Other
+        private string _id = Guid.NewGuid().ToString();
+        /// <summary>
+        /// Gets or sets the unique identifier for this package set.
+        /// </summary>
+        public string ID
+        {
+            get { return _id; }
+            set { SetProperty(ref _id, value); }
+        }
+
+        private string _name;
+        /// <summary>
+        /// Gets or sets the display name of the package set.
+        /// </summary>
+        public string Name
+        {
+            get { return _name; }
+            set { SetProperty(ref _name, value); }
+        }
+
+        private string _description;
+        /// <summary>
+        /// Gets or sets the description of what this package set is for.
+        /// </summary>
+        public string Description
+        {
+            get { return _description; }
+            set { SetProperty(ref _description, value); }
+        }
+
+        private PackageCategory _category = PackageCategory.Uncategorized;
+        /// <summary>
+        /// Gets or sets the primary category for this package set.
+        /// </summary>
+        public PackageCategory Category
+        {
+            get { return _category; }
+            set { SetProperty(ref _category, value); }
+        }
+
+        private List<string> _packages = new();
+        /// <summary>
+        /// Gets or sets the list of package names included in this set.
+        /// </summary>
+        public List<string> Packages
+        {
+            get { return _packages; }
+            set { SetProperty(ref _packages, value); }
+        }
+
+        private Dictionary<string, string> _versions = new();
+        /// <summary>
+        /// Gets or sets the version constraints for packages in this set.
+        /// </summary>
+        public Dictionary<string, string> Versions
+        {
+            get { return _versions; }
+            set { SetProperty(ref _versions, value); }
+        }
+
+        /// <summary>
+        /// Creates a requirements file content string from this package set.
+        /// </summary>
+        /// <param name="includeVersions">Whether to include version constraints.</param>
+        /// <returns>Content for a requirements.txt file.</returns>
+        public string ToRequirementsText(bool includeVersions = true)
+        {
+            var sb = new StringBuilder();
+
+            // Add a header comment
+            sb.AppendLine($"# Package set: {Name}");
+            sb.AppendLine($"# Description: {Description}");
+            sb.AppendLine($"# Generated: {DateTime.Now}");
+            sb.AppendLine();
+
+            foreach (var package in Packages)
+            {
+                if (includeVersions && Versions.ContainsKey(package))
+                {
+                    sb.AppendLine($"{package}{Versions[package]}");
+                }
+                else
+                {
+                    sb.AppendLine(package);
+                }
+            }
+
+            return sb.ToString();
+        }
     }
 
-   
+
 
 }

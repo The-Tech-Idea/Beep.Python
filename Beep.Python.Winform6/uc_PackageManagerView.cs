@@ -50,7 +50,7 @@ namespace Beep.Python.Winform
         public string EntityName { get  ; set  ; }
         public IPassedArgs Passedarg { get  ; set  ; }
   
-        IPackageManagerViewModel  packageManager;
+        IPythonPackageManager  packageManager;
         IPythonRunTimeManager PythonRunTimeManager;
         IAppManager Visutil;
         IProgress<PassedArgs> progress;

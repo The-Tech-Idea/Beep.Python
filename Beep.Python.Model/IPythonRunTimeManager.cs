@@ -30,6 +30,7 @@ namespace Beep.Python.Model
         IDMEEditor DMEditor { get; set; }
         ObservableCollection<string> OutputLines { get; set; }
         bool IsBusy { get; set; }
+        bool IsInitialized { get; }
         void Stop();
 
         /// <summary>Creates a new Python scope for the given session and environment.</summary>
@@ -60,15 +61,9 @@ namespace Beep.Python.Model
         /// <summary>
         /// Initializes Python with the specified runtime configuration and optional virtual environment path.
         /// </summary>
-        bool Initialize(PythonRunTime cfg, string virtualEnvPath = null);
+        bool Initialize(PythonRunTime cfg, string virtualEnvPath, PythonEngineMode mode );
 
-        /// <summary>
-        /// Initializes Python with the specified runtime configuration and virtual environment.
-        /// </summary>
-        bool Initialize(PythonRunTime cfg, PythonVirtualEnvironment venv);
-
-
-
+    
         /// <summary>
         /// Creates or loads the Python configuration.
         /// </summary>
@@ -112,7 +107,7 @@ namespace Beep.Python.Model
         /// <see cref="PythonRunTime"/> "/>
         /// 
         void RefreshPythonInstalltions();
-        PythonSessionInfo CreateEnvironmentForSingleUserMode(PythonRunTime cfg, string envBasePath, string username, string envName);
+        PythonSessionInfo CreateSessionForSingleUserMode(PythonRunTime cfg, string envBasePath, string username, string envName);
         PythonSessionInfo CreateSessionForUser(PythonRunTime cfg, PythonVirtualEnvironment env, string username);
     }
     public enum PythonEngineMode

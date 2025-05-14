@@ -254,7 +254,10 @@ namespace Beep.Python.Model
             }
 
         }
-        private string  _requirementsfile;
+        private string _requirementsfile;
+        /// <summary>
+        /// Gets or sets the path to the requirements.txt file associated with this environment.
+        /// </summary>
         public string RequirementsFile
         {
             get
@@ -268,7 +271,40 @@ namespace Beep.Python.Model
             }
         }
 
-      
+        private DateTime _requirementsLastUpdated = DateTime.MinValue;
+        /// <summary>
+        /// Gets or sets the timestamp when the requirements file was last updated.
+        /// </summary>
+        public DateTime RequirementsLastUpdated
+        {
+            get { return _requirementsLastUpdated; }
+            set { SetProperty(ref _requirementsLastUpdated, value); }
+        }
+
+        private bool _autoUpdateRequirements = false;
+        /// <summary>
+        /// Gets or sets whether the requirements file should be automatically updated
+        /// when packages are installed or uninstalled.
+        /// </summary>
+        public bool AutoUpdateRequirements
+        {
+            get { return _autoUpdateRequirements; }
+            set { SetProperty(ref _autoUpdateRequirements, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets additional packages required for this environment beyond
+        /// what's installed, useful for development dependencies.
+        /// </summary>
+        private List<string> _additionalRequirements = new();
+        public List<string> AdditionalRequirements
+        {
+            get { return _additionalRequirements; }
+            set { SetProperty(ref _additionalRequirements, value); }
+        }
+
+
+
         public void AddSession(PythonSessionInfo session)
         {
             if (session != null)

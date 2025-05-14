@@ -1,6 +1,29 @@
 ﻿
 namespace Beep.Python.Model
 {
+    /// <summary>
+    /// Categorizes Python packages by their primary purpose.
+    /// </summary>
+    public enum PackageCategory
+    {
+        Uncategorized,
+        Graphics,
+        MachineLearning,
+        DataScience,
+        WebDevelopment,
+        DevTools,
+        Database,
+        Networking,
+        Security,
+        Testing,
+        Utilities,
+        Scientific,
+        Math,
+        UserInterface,
+        AudioVideo,
+        Documentation,
+        FileProcessing
+    }
     public enum ModelMetric
     {
         Accuracy,

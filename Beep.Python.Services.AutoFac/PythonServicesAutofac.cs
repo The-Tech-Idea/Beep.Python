@@ -77,7 +77,7 @@ namespace Beep.Python.RuntimeEngine.Services
             // Register services as singletons
             builder.RegisterType<PythonNetRunTimeManager>().As<IPythonRunTimeManager>().SingleInstance();
             builder.RegisterType<PythonVirtualEnvManager>().As<IPythonVirtualEnvManager>().SingleInstance();
-            builder.RegisterType<PythonPackageManager>().As<IPackageManagerViewModel>().SingleInstance();
+            builder.RegisterType<PythonPackageManager>().As<IPythonPackageManager>().SingleInstance();
             builder.RegisterType<PythonMLManager>().As<IPythonMLManager>().SingleInstance();
             builder.RegisterType<PythonAIProjectViewModel>().As<IPythonAIProjectViewModel>().SingleInstance();
             builder.RegisterType<PythonModelEvaluationGraphsViewModel>().As<IPythonModelEvaluationGraphsViewModel>().SingleInstance();
@@ -118,7 +118,7 @@ namespace Beep.Python.RuntimeEngine.Services
         /// <returns>The container builder for method chaining.</returns>
         public static ContainerBuilder RegisterPythonPackageManagerService(this ContainerBuilder builder)
         {
-            builder.RegisterType<PythonPackageManager>().As<IPackageManagerViewModel>().SingleInstance();
+            builder.RegisterType<PythonPackageManager>().As<IPythonPackageManager>().SingleInstance();
             return builder;
         }
 
@@ -183,7 +183,7 @@ namespace Beep.Python.RuntimeEngine.Services
         /// Gets the Python package manager instance.
         /// </summary>
         /// <returns>The package manager view model.</returns>
-        public static IPackageManagerViewModel GetPythonPackageManager() => Container.Resolve<IPackageManagerViewModel>();
+        public static IPythonPackageManager GetPythonPackageManager() => Container.Resolve<IPythonPackageManager>();
 
         /// <summary>
         /// Gets the Python virtual environment view model instance.
@@ -264,9 +264,9 @@ namespace Beep.Python.RuntimeEngine.Services
         /// </summary>
         /// <param name="dmeEditor">The DME editor.</param>
         /// <returns>The package manager view model.</returns>
-        public static IPackageManagerViewModel GetPythonPackageManager(this IDMEEditor dmeEditor)
+        public static IPythonPackageManager GetPythonPackageManager(this IDMEEditor dmeEditor)
         {
-            return Container.Resolve<IPackageManagerViewModel>();
+            return Container.Resolve<IPythonPackageManager>();
         }
 
         /// <summary>

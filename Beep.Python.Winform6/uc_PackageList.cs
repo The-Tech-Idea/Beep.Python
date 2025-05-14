@@ -43,7 +43,7 @@ namespace Beep.Python.Winform
 
         private IPythonRunTimeManager PythonRunTimeManager;
      
-        public IPackageManagerViewModel Pythonpackagemanager { get; private set; }
+        public IPythonPackageManager Pythonpackagemanager { get; private set; }
 
         private BindingSource bs = new BindingSource();
 

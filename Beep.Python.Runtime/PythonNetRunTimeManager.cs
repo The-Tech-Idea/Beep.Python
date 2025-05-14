@@ -14,9 +14,6 @@ using TheTechIdea.Beep.Editor;
 using System.Diagnostics;
 using TheTechIdea.Beep.Container.Services;
 using Beep.Python.RuntimeEngine.Helpers;
-using Newtonsoft.Json;
-using Beep.Python.RuntimeEngine.ViewModels;
-using System.Text;
 
 namespace Beep.Python.RuntimeEngine
 {
@@ -233,67 +230,266 @@ venv_name = '{venv.Name}'
         #endregion "Scope Management"
 
         #region "Initialization and Shutdown"
-       
 
         /// <summary>
-        /// Initializes the Python environment using the specified virtual environment path.
+        /// Initializes the Python runtime with appropriate environment based on engine mode.
         /// </summary>
-        public bool Initialize(PythonRunTime config, string virtualEnvPath) 
+        /// <param name="cfg">Python runtime configuration to use</param>
+        /// <param name="virtualEnvPath">Optional path for virtual environment</param>
+        /// <param name="mode">The Python engine mode (SingleUser or MultiUserWithEnvAndScopeAndSession)</param>
+        /// <returns>True if initialization was successful; otherwise false</returns>
+        public bool Initialize(PythonRunTime cfg, string virtualEnvPath, PythonEngineMode mode)
+        {
+            if (cfg == null)
+            {
+                ReportProgress("No Python configuration provided.", Errors.Failed);
+                return false;
+            }
+
+            try
+            {
+                // Set the engine mode for the runtime
+                EngineMode = mode;
+
+                // Determine base environment path
+                string baseEnvPath;
+                if (string.IsNullOrWhiteSpace(virtualEnvPath))
+                {
+                    baseEnvPath = Path.Combine(
+                        DMEditor.ConfigEditor.ConfigPath,
+                        "PythonEnvironments");
+                }
+                else
+                {
+                    baseEnvPath = Path.GetDirectoryName(virtualEnvPath);
+                    if (string.IsNullOrEmpty(baseEnvPath))
+                    {
+                        baseEnvPath = Path.Combine(
+                            DMEditor.ConfigEditor.ConfigPath,
+                            "PythonEnvironments");
+                    }
+                }
+
+                // Ensure the directory exists
+                if (!Directory.Exists(baseEnvPath))
+                {
+                    Directory.CreateDirectory(baseEnvPath);
+                }
+
+                // Determine environment name and path based on mode
+                string envName;
+                PythonVirtualEnvironment env;
+                string username = Environment.UserName;
+
+                // If a specific virtual environment path is provided, use it
+                if (!string.IsNullOrWhiteSpace(virtualEnvPath) && Directory.Exists(virtualEnvPath))
+                {
+                    env = VirtualEnvmanager.GetEnvironmentByPath(virtualEnvPath);
+
+                    if (env == null)
+                    {
+                        ReportProgress($"Creating environment at specified path: {virtualEnvPath}");
+
+                        // Create a new environment definition
+                        env = new PythonVirtualEnvironment
+                        {
+                            Name = Path.GetFileName(virtualEnvPath),
+                            Path = virtualEnvPath,
+                            PythonConfigID = cfg.ID,
+                            BaseInterpreterPath = cfg.RuntimePath ?? cfg.BinPath,
+                            CreatedOn = DateTime.Now,
+                            CreatedBy = username,
+                            EnvironmentType = PythonEnvironmentType.VirtualEnv
+                        };
+
+                        // Try to create if it doesn't exist
+                        if (!Directory.Exists(virtualEnvPath) &&
+                            !VirtualEnvmanager.CreateVirtualEnvironment(cfg, env))
+                        {
+                            ReportProgress($"Failed to create environment at: {virtualEnvPath}", Errors.Failed);
+                            return false;
+                        }
+
+                        // Add to managed environments
+                        VirtualEnvmanager.AddToManagedEnvironments(env);
+                    }
+                }
+                else
+                {
+                    // Create or use mode-specific environment
+                    if (mode == PythonEngineMode.SingleUser)
+                    {
+                        envName = "SingleUser";
+                        string envPath = Path.Combine(baseEnvPath, envName);
+
+                        // Get existing or create new environment
+                        env = VirtualEnvmanager.GetEnvironmentByPath(envPath);
+                        if (env == null)
+                        {
+                            ReportProgress("Creating single-user environment...");
+
+                            // Create a new environment definition for SingleUser mode
+                            env = new PythonVirtualEnvironment
+                            {
+                                Name = envName,
+                                Path = envPath,
+                                PythonConfigID = cfg.ID,
+                                BaseInterpreterPath = cfg.RuntimePath ?? cfg.BinPath,
+                                CreatedOn = DateTime.Now,
+                                CreatedBy = username,
+                                EnvironmentType = PythonEnvironmentType.VirtualEnv
+                            };
+
+                            // Create the virtual environment
+                            if (!VirtualEnvmanager.CreateVirtualEnvironment(cfg, env))
+                            {
+                                ReportProgress("Failed to create single-user environment.", Errors.Failed);
+                                return false;
+                            }
+
+                            // Add to managed environments
+                            VirtualEnvmanager.AddToManagedEnvironments(env);
+                        }
+                    }
+                    else // Multi-user mode
+                    {
+                        envName = "MultiUser";
+                        string envPath = Path.Combine(baseEnvPath, envName);
+
+                        // Get existing or create new environment
+                        env = VirtualEnvmanager.GetEnvironmentByPath(envPath);
+                        if (env == null)
+                        {
+                            ReportProgress("Creating multi-user base environment...");
+
+                            // Create a new environment definition for MultiUser mode
+                            env = new PythonVirtualEnvironment
+                            {
+                                Name = envName,
+                                Path = envPath,
+                                PythonConfigID = cfg.ID,
+                                BaseInterpreterPath = cfg.RuntimePath ?? cfg.BinPath,
+                                CreatedOn = DateTime.Now,
+                                CreatedBy = "system", // For multi-user mode use "system" as creator
+                                EnvironmentType = PythonEnvironmentType.VirtualEnv
+                            };
+
+                            // Create the virtual environment
+                            if (!VirtualEnvmanager.CreateVirtualEnvironment(cfg, env))
+                            {
+                                ReportProgress("Failed to create multi-user environment.", Errors.Failed);
+                                return false;
+                            }
+
+                            // Add to managed environments
+                            VirtualEnvmanager.AddToManagedEnvironments(env);
+                        }
+                    }
+                }
+
+                // Now initialize Python with the appropriate environment
+                if (env == null)
+                {
+                    ReportProgress("Failed to obtain a valid Python environment.", Errors.Failed);
+                    return false;
+                }
+
+                // First initialize the Python engine
+                bool pythonInitialized = InitializePythonEngine(cfg, env);
+                if (!pythonInitialized)
+                {
+                    ReportProgress("Failed to initialize Python engine.", Errors.Failed);
+                    return false;
+                }
+
+                // Now that Python is initialized, create appropriate sessions based on mode
+                PythonSessionInfo session = null;
+
+                if (mode == PythonEngineMode.SingleUser)
+                {
+                    // Create a session for the current user
+                    session = CreateSessionForUser(cfg, env, username);
+                    if (session == null)
+                    {
+                        ReportProgress("Failed to create user session after Python initialization.", Errors.Warning);
+                        // Not a fatal error, Python is still initialized
+                    }
+                }
+                else if (mode == PythonEngineMode.MultiUserWithEnvAndScopeAndSession)
+                {
+                    // Create a system session for multi-user mode
+                    session = CreateSessionForUser(cfg, env, "system");
+                    if (session == null)
+                    {
+                        ReportProgress("Failed to create system session after Python initialization.", Errors.Warning);
+                        // Not a fatal error, Python is still initialized
+                    }
+                }
+
+                // Python is initialized and we attempted to create sessions as needed
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ReportProgress($"Error during initialization: {ex.Message}", Errors.Failed);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Core method for initializing the Python engine with a specific virtual environment.
+        /// This is separated from the environment creation logic.
+        /// </summary>
+        /// <param name="config">Python runtime configuration</param>
+        /// <param name="venv">Virtual environment to initialize with</param>
+        /// <returns>True if initialization was successful; otherwise false</returns>
+        private bool InitializePythonEngine(PythonRunTime config, PythonVirtualEnvironment venv)
         {
             if (IsBusy) return false;
             IsBusy = true;
 
             try
             {
-                // Use the provided virtual environment path or fall back to the config's BinPath
-                if (string.IsNullOrWhiteSpace(virtualEnvPath))
+                // Validate environment
+                if (venv == null || string.IsNullOrWhiteSpace(venv.Path))
                 {
-                    ReportProgress("No virtual environment path provided.", Errors.Failed);
+                    ReportProgress("Invalid virtual environment provided.", Errors.Failed);
                     IsBusy = false;
                     return false;
                 }
 
-                if (!Directory.Exists(virtualEnvPath))
+                if (!Directory.Exists(venv.Path))
                 {
-                    var ret=VirtualEnvmanager.CreateVirtualEnvironment(config, virtualEnvPath);
-                    if (ret)
-                    {
-                        ReportProgress($"Virtual environment created successfully at {virtualEnvPath}", Errors.Ok);
-                    }
-                    else
-                    {
-                        ReportProgress($"Failed to create virtual environment at {virtualEnvPath}", Errors.Failed);
-                        IsBusy = false;
-                        return false;
-                    }
-                   
+                    ReportProgress($"Virtual environment path not found: {venv.Path}", Errors.Failed);
+                    IsBusy = false;
+                    return false;
                 }
 
                 // Determine paths based on platform
-                string pythonBinPath = virtualEnvPath;
+                string pythonBinPath = venv.Path;
                 string pythonScriptPath;
                 string pythonExe;
                 string pythonPackagePath;
 
                 if (Environment.OSVersion.Platform == PlatformID.Win32NT)
                 {
-                    pythonScriptPath = Path.Combine(virtualEnvPath, "Scripts");
-                    pythonExe = Path.Combine(virtualEnvPath, "python.exe");
-                    pythonPackagePath = Path.Combine(virtualEnvPath, "Lib", "site-packages");
+                    pythonScriptPath = Path.Combine(venv.Path, "Scripts");
+                    pythonExe = Path.Combine(venv.Path, "python.exe");
+                    pythonPackagePath = Path.Combine(venv.Path, "Lib", "site-packages");
                 }
                 else
                 {
-                    pythonScriptPath = Path.Combine(virtualEnvPath, "bin");
-                    pythonExe = Path.Combine(virtualEnvPath, "bin", "python");
+                    pythonScriptPath = Path.Combine(venv.Path, "bin");
+                    pythonExe = Path.Combine(venv.Path, "bin", "python");
+
                     // Get Python lib directory
-                    var pythonLibDir = Directory.GetDirectories(Path.Combine(virtualEnvPath, "lib"))
+                    var pythonLibDir = Directory.GetDirectories(Path.Combine(venv.Path, "lib"))
                         .FirstOrDefault(d => d.Contains("python"));
 
                     // Set the site-packages path
                     pythonPackagePath = pythonLibDir != null
                         ? Path.Combine(pythonLibDir, "site-packages")
-                        : Path.Combine(virtualEnvPath, "lib", "python3", "site-packages");
-
+                        : Path.Combine(venv.Path, "lib", "python3", "site-packages");
                 }
 
                 // Verify the Python executable exists in the virtual environment
@@ -304,103 +500,77 @@ venv_name = '{venv.Name}'
                     return false;
                 }
 
-                if (config != null && File.Exists(pythonExe))
+                // Check if Python is already initialized
+                if (PythonEngine.IsInitialized)
                 {
-                    if (!PythonEngine.IsInitialized)
+                    // If already initialized with the same environment, no need to reinitialize
+                    ReportProgress("Python Already Initialized", Errors.Ok);
+                    IsBusy = false;
+                    return true;
+                }
+
+                // Set up the environment variables
+                Environment.SetEnvironmentVariable("VIRTUAL_ENV", venv.Path, EnvironmentVariableTarget.Process);
+                Environment.SetEnvironmentVariable("PATH", $"{pythonBinPath};{pythonScriptPath};" + Environment.GetEnvironmentVariable("PATH"), EnvironmentVariableTarget.Process);
+                Environment.SetEnvironmentVariable("PYTHONNET_RUNTIME", $"{pythonBinPath}", EnvironmentVariableTarget.Process);
+                Environment.SetEnvironmentVariable("PYTHONNET_PYTHON_RUNTIME", $"{pythonBinPath}", EnvironmentVariableTarget.Process);
+                Environment.SetEnvironmentVariable("PYTHONHOME", pythonBinPath, EnvironmentVariableTarget.Process);
+                Environment.SetEnvironmentVariable("PYTHONPATH", $"{pythonPackagePath};", EnvironmentVariableTarget.Process);
+
+                // Initialize Python.NET
+                try
+                {
+                    ReportProgress("Initializing Python engine with virtual environment");
+
+                    // Find the Python DLL
+                    string pythonDll;
+                    if (Environment.OSVersion.Platform == PlatformID.Win32NT)
                     {
-                        // Set up the environment variables
-                        Environment.SetEnvironmentVariable("VIRTUAL_ENV", virtualEnvPath, EnvironmentVariableTarget.Process);
-                        Environment.SetEnvironmentVariable("PATH", $"{pythonBinPath};{pythonScriptPath};" + Environment.GetEnvironmentVariable("PATH"), EnvironmentVariableTarget.Process);
-                        Environment.SetEnvironmentVariable("PYTHONNET_RUNTIME", $"{pythonBinPath}", EnvironmentVariableTarget.Process);
-                        Environment.SetEnvironmentVariable("PYTHONNET_PYTHON_RUNTIME", $"{pythonBinPath}", EnvironmentVariableTarget.Process);
-                        Environment.SetEnvironmentVariable("PYTHONHOME", pythonBinPath, EnvironmentVariableTarget.Process);
-                        Environment.SetEnvironmentVariable("PYTHONPATH", $"{pythonPackagePath};", EnvironmentVariableTarget.Process);
-
-                        try
+                        pythonDll = Path.Combine(pythonBinPath, Path.GetFileName(config.PythonDll));
+                        if (!File.Exists(pythonDll))
                         {
-                            ReportProgress("Initializing Python engine with virtual environment");
-
-                            // Find the Python DLL
-                            string pythonDll;
-                            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-                            {
-                                pythonDll = Path.Combine(pythonBinPath, Path.GetFileName(config.PythonDll));
-                                if (!File.Exists(pythonDll))
-                                {
-                                    pythonDll = config.PythonDll; // Fall back to base interpreter DLL
-                                }
-                            }
-                            else
-                            {
-                                // For Linux/macOS, we need to find the appropriate .so file
-                                var soFiles = Directory.GetFiles(Path.Combine(virtualEnvPath, "lib"), "libpython*.so*", SearchOption.AllDirectories);
-                                pythonDll = soFiles.FirstOrDefault() ?? "";
-                            }
-
-                            if (string.IsNullOrEmpty(pythonDll) || !File.Exists(pythonDll))
-                            {
-                                ReportProgress($"Python DLL not found for virtual environment.", Errors.Failed);
-                                IsBusy = false;
-                                return false;
-                            }
-
-                            // Initialize Python.NET
-                            Runtime.PythonDLL = pythonDll;
-                            PythonEngine.PythonHome = virtualEnvPath;
-                            PythonEngine.Initialize();
-
-                            // After initialization, setup the virtual environment correctly
-                            using (Py.GIL())
-                            {
-                                string activationCode = $@"
-import os
-import sys
-import site
-
-# Set environment variables
-os.environ['VIRTUAL_ENV'] = r'{virtualEnvPath}'
-
-# Ensure virtual environment is properly activated
-if r'{pythonPackagePath}' not in sys.path:
-    sys.path.insert(0, r'{pythonPackagePath}')
-
-sys.prefix = r'{virtualEnvPath}'
-sys.exec_prefix = r'{virtualEnvPath}'
-
-# Print environment details for debugging
-print(f'Python {{sys.version}} on {{sys.platform}}')
-print(f'Virtual Environment: {{os.environ.get(""VIRTUAL_ENV"")}}')
-print(f'sys.prefix: {{sys.prefix}}')
-print(f'sys.path: {{sys.path}}')
-";
-                                var scope = Py.CreateScope();
-                                scope.Exec(activationCode);
-                            }
-
-                            ReportProgress("Virtual environment activated successfully", Errors.Ok);
-                            _IsInitialized = true;
-                            IsBusy = false;
-                            return true;
-                        }
-                        catch (Exception ex)
-                        {
-                            IsBusy = false;
-                            ReportProgress($"Error initializing Python: {ex.Message}", Errors.Failed);
-                            return false;
+                            pythonDll = config.PythonDll; // Fall back to base interpreter DLL
                         }
                     }
                     else
                     {
-                        IsBusy = false;
-                        ReportProgress("Python Already Initialized", Errors.Ok);
-                        return true;
+                        // For Linux/macOS, we need to find the appropriate .so file
+                        var soFiles = Directory.GetFiles(Path.Combine(venv.Path, "lib"), "libpython*.so*", SearchOption.AllDirectories);
+                        pythonDll = soFiles.FirstOrDefault() ?? "";
                     }
+
+                    if (string.IsNullOrEmpty(pythonDll) || !File.Exists(pythonDll))
+                    {
+                        ReportProgress($"Python DLL not found for virtual environment.", Errors.Failed);
+                        IsBusy = false;
+                        return false;
+                    }
+
+                    // Initialize Python.NET
+                    Runtime.PythonDLL = pythonDll;
+                    PythonEngine.PythonHome = venv.Path;
+                    PythonEngine.Initialize();
+
+                    // Use the existing InitializePythonEnvironment method from VirtualEnvManager
+                    // This handles the Python environment setup that was previously done inline
+                    VirtualEnvmanager.InitializePythonEnvironment(venv);
+
+                    ReportProgress("Virtual environment activated successfully", Errors.Ok);
+                    _IsInitialized = true;
+
+                    // If this environment has a requirements file, install required packages
+                    InstallRequirementsIfNeeded(venv);
+
+                    return true;
                 }
-                else
+                catch (Exception ex)
                 {
-                    ReportProgress("No valid Python or virtual environment available", Errors.Failed);
-                    IsBusy = false;
+                    ReportProgress($"Error initializing Python: {ex.Message}", Errors.Failed);
                     return false;
+                }
+                finally
+                {
+                    IsBusy = false;
                 }
             }
             catch (Exception ex)
@@ -412,99 +582,59 @@ print(f'sys.path: {{sys.path}}')
         }
 
         /// <summary>
-        /// Initializes the Python environment using the provided runtime config and virtual environment.
+        /// Installs packages from a requirements file if one is specified for the environment.
         /// </summary>
-        public bool Initialize(PythonRunTime cfg, PythonVirtualEnvironment venv)
+        private void InstallRequirementsIfNeeded(PythonVirtualEnvironment venv)
         {
-            if (venv == null || string.IsNullOrWhiteSpace(venv.Path))
+            if (venv == null || string.IsNullOrEmpty(venv.RequirementsFile) || !File.Exists(venv.RequirementsFile))
             {
-                ReportProgress("Invalid virtual environment provided.", Errors.Failed);
-                return false;
+                return;
             }
 
-            if (!Directory.Exists(venv.Path))
+            ReportProgress($"Installing packages from requirements: {venv.RequirementsFile}");
+
+            // Create a temporary session for requirements installation
+            var tempSession = new PythonSessionInfo
             {
-                // If the environment doesn't exist, try to create it
-                ReportProgress($"Virtual environment does not exist. Attempting to create at {venv.Path}...");
+                SessionName = $"TempSession_{DateTime.Now.Ticks}",
+                VirtualEnvironmentId = venv.ID,
+                Username = "system",
+                StartedAt = DateTime.Now,
+                Status = PythonSessionStatus.Active
+            };
 
-                if (!VirtualEnvmanager.CreateVirtualEnvironmentFromDefinition(cfg, venv))
+            // Add the session to the environment
+            venv.AddSession(tempSession);
+
+            // Execute pip install command
+            if (ExecuteManager != null)
+            {
+                try
                 {
-                    ReportProgress("Failed to create virtual environment.", Errors.Failed);
-                    return false;
+                    var installTask = ExecuteManager.RunPythonCommandLineAsync(
+                        Progress ?? DMEditor?.progress,
+                        $"install -r \"{venv.RequirementsFile}\"",
+                        venv.PythonBinary == PythonBinary.Conda,
+                        tempSession,
+                        venv);
+
+                    installTask.Wait();
+                    var result = installTask.Result;
+
+                    if (result != null && (result.Contains("ERROR:") || result.Contains("Error:")))
+                    {
+                        ReportProgress($"Warning installing packages: {result}", Errors.Warning);
+                    }
+                    else
+                    {
+                        ReportProgress("Package installation completed successfully");
+                    }
                 }
-
-                // Add to managed environments if created successfully and not already there
-                if (!VirtualEnvmanager.ManagedVirtualEnvironments.Any(e => e.ID == venv.ID))
+                catch (Exception ex)
                 {
-                    VirtualEnvmanager.ManagedVirtualEnvironments.Add(venv);
+                    ReportProgress($"Error installing packages: {ex.Message}", Errors.Warning);
                 }
             }
-
-            // Check if requirements file exists and install packages if needed
-            if (!string.IsNullOrEmpty(venv.RequirementsFile) && File.Exists(venv.RequirementsFile))
-            {
-                ReportProgress($"Found requirements file at: {venv.RequirementsFile}");
-
-                // We'll need a temporary initialization to run pip
-                bool tempInitialized = !_IsInitialized;
-                if (tempInitialized)
-                {
-                    // Initialize just to install packages
-                    if (!Initialize(cfg, venv.Path))
-                    {
-                        return false;
-                    }
-                }
-
-                // Create a temporary session for requirements installation
-                var tempSession = new PythonSessionInfo
-                {
-                    SessionName = $"TempSession_{DateTime.Now.Ticks}",
-                    VirtualEnvironmentId = venv.ID,
-                    Username = "system",
-                    StartedAt = DateTime.Now,
-                    Status = PythonSessionStatus.Active
-                };
-
-                // Install requirements
-                ReportProgress("Installing required packages...");
-
-                if (ExecuteManager != null)
-                {
-                    try
-                    {
-                        var installTask = ExecuteManager.RunPythonCommandLineAsync(
-                            Progress ?? DMEditor?.progress,
-                            $"install -r \"{venv.RequirementsFile}\"",
-                            venv.PythonBinary == PythonBinary.Conda,
-                            tempSession,
-                            venv);
-
-                        installTask.Wait();
-                        var result = installTask.Result;
-
-                        if (result != null && (result.Contains("ERROR:") || result.Contains("Error:")))
-                        {
-                            ReportProgress($"Warning installing packages: {result}", Errors.Warning);
-                            // Continue anyway, as some packages might have been installed
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        ReportProgress($"Error installing packages: {ex.Message}", Errors.Warning);
-                        // Continue with initialization anyway
-                    }
-                }
-
-                // If we did a temporary initialization for package installation, shut it down
-                if (tempInitialized)
-                {
-                    ShutDown();
-                }
-            }
-
-            // Now initialize with the virtual environment path
-            return Initialize(cfg, venv.Path);
         }
 
         /// <summary>
@@ -550,10 +680,25 @@ print(f'sys.path: {{sys.path}}')
 
         /// <summary>
         /// Shuts down the current Python engine and reinitializes it with a new virtual environment.
+        /// Maintains the current engine mode during restart.
         /// </summary>
+        /// <param name="venv">The virtual environment to initialize with after restart</param>
+        /// <returns>True if shutdown and reinitialization were successful; otherwise false</returns>
         public bool RestartWithEnvironment(PythonVirtualEnvironment venv)
         {
-            // Delegate to the VirtualEnvManager for environment-specific operations
+            if (venv == null)
+            {
+                ReportProgress("Cannot restart with null environment", Errors.Failed);
+                return false;
+            }
+
+            // Remember the current engine mode
+            var currentMode = this.EngineMode;
+
+            // Log the restart attempt
+            ReportProgress($"Restarting Python engine with environment: {venv.Name}", Errors.Ok);
+
+            // Shut down the current Python instance
             var result = ShutDown();
             if (result.Flag != Errors.Ok)
             {
@@ -569,8 +714,13 @@ print(f'sys.path: {{sys.path}}')
                 return false;
             }
 
-            return Initialize(config, venv);
+            // Update environment usage timestamp
+            VirtualEnvmanager.UpdateEnvironmentUsage(venv.ID);
+
+            // Initialize with the specified environment and current mode
+            return Initialize(config, venv.Path, currentMode);
         }
+
         #endregion
         #region "Create User Environments"
         /// <summary>
@@ -642,165 +792,56 @@ print(f'sys.path: {{sys.path}}')
             }
         }
 
-
         /// <summary>
-        /// Creates a virtual environment for a single user and returns a session connected to it.
+        /// Creates a session for a user with a specific environment.
         /// </summary>
-        /// <param name="cfg">Python runtime configuration</param>
-        /// <param name="envBasePath">Base directory for the environment</param>
-        /// <param name="username">Username for the session</param>
-        /// <param name="envName">Name of the environment (optional, default derived from username)</param>
-        /// <returns>A session connected to the created environment</returns>
-        public PythonSessionInfo CreateEnvironmentForSingleUserMode(PythonRunTime cfg, string envBasePath, string username, string envName = null)
+        /// <param name="cfg">The Python runtime configuration to use.</param>
+        /// <param name="envBasePath">The base path for user environments.</param>
+        /// <param name="username">The username to create the environment for.</param>
+        /// <param name="envName">Optional name for the environment (defaults to username).</param>
+        /// <returns>Session associated with the new environment, or null if creation failed.</returns>
+        public PythonSessionInfo CreateSessionForSingleUserMode(PythonRunTime cfg, string envBasePath,
+                                                                   string username, string envName = null)
         {
-            // If no configuration provided, try to find one
-            if (cfg == null)
-            {
-                // Refresh installations if needed
-                if (PythonInstallations == null || PythonInstallations.Count == 0)
-                {
-                    RefreshPythonInstalltions();
-                }
-
-                // Get the first available installation
-                cfg = PythonInstallations.FirstOrDefault(p => p.IsPythonInstalled);
-
-                if (cfg == null)
-                {
-                    ReportProgress("No Python runtime configuration found on this system", Errors.Failed);
-                    return null;
-                }
-            }
-
-            if (string.IsNullOrWhiteSpace(envBasePath))
-            {
-                // Use default path if not specified
-                envBasePath = Path.Combine(
-                    DMEditor.ConfigEditor.ContainerName,
-                    "PythonEnvironments");
-            }
-
-            // Create environment name if not provided
-            if (string.IsNullOrWhiteSpace(envName))
-            {
-                envName = $"env_{username}_{DateTime.Now.ToString("yyyyMMddHHmmss")}";
-            }
-
-            // Get the full path for the environment
-            string envPath = Path.Combine(envBasePath, envName);
-
-            try
-            {
-                // Create the directory if it doesn't exist
-                if (!Directory.Exists(envBasePath))
-                {
-                    Directory.CreateDirectory(envBasePath);
-                }
-
-                // Create a virtual environment definition
-                var venv = new PythonVirtualEnvironment
-                {
-                    Name = envName,
-                    Path = envPath,
-                    PythonConfigID = cfg.ID,
-                    BaseInterpreterPath = cfg.BinPath,
-                    PythonBinary = PythonBinary.Python, // check if its conda or regualr
-                       
-                    RequirementsFile = Path.Combine(envPath, "requirements.txt"),
-                    CreatedAt = DateTime.Now,
-                    CreatedBy = username
-                };
-
-                // Create the actual environment
-                if (!VirtualEnvmanager.CreateVirtualEnvironmentFromDefinition(cfg, venv))
-                {
-                    ReportProgress($"Failed to create virtual environment at {envPath}", Errors.Failed);
-                    return null;
-                }
-
-                // Add to managed environments if created successfully
-                VirtualEnvmanager.ManagedVirtualEnvironments.Add(venv);
-
-                // Now create a session for this user and environment
-                return CreateSessionForUser(cfg, venv, username);
-            }
-            catch (Exception ex)
-            {
-                ReportProgress($"Error creating environment: {ex.Message}", Errors.Failed);
-                return null;
-            }
+            if (!IsInitialized) return null;
+            // Delegate to VirtualEnvManager
+            return VirtualEnvmanager.CreateEnvironmentForUser(cfg, envBasePath, username, envName);
         }
 
         /// <summary>
-        /// Creates a Python session for a specific user with an existing virtual environment.
+        /// Creates a session for a user with an existing environment.
         /// </summary>
-        /// <param name="cfg">Python runtime configuration</param>
-        /// <param name="env">Virtual environment to use</param>
-        /// <param name="username">Username for the session</param>
-        /// <returns>The created session info</returns>
+        /// <param name="cfg">The Python runtime configuration to use.</param>
+        /// <param name="env">The virtual environment to use.</param>
+        /// <param name="username">The username to create the session for.</param>
+        /// <returns>Session associated with the environment, or null if creation failed.</returns>
         public PythonSessionInfo CreateSessionForUser(PythonRunTime cfg, PythonVirtualEnvironment env, string username)
         {
+            if (!IsInitialized) return null;
             if (env == null)
-            {
-                ReportProgress("No virtual environment provided", Errors.Failed);
-                return null;
-            }
+                throw new ArgumentNullException(nameof(env));
 
             if (string.IsNullOrWhiteSpace(username))
+                throw new ArgumentException("Username cannot be empty", nameof(username));
+
+            // Create a new session
+            var session = new PythonSessionInfo
             {
-                username = Environment.UserName; // Default to current system user
-            }
+                Username = username,
+                VirtualEnvironmentId = env.ID,
+                StartedAt = DateTime.Now,
+                SessionName = $"Session_{username}_{DateTime.Now.Ticks}",
+                Status = PythonSessionStatus.Active
+            };
 
-            try
+            // Initialize the environment for this session
+            if (!VirtualEnvmanager.CreateEnvForUser(cfg, session))
             {
-                // Ensure the python runtime is properly initialized for this environment
-                if (!IsInitialized)
-                {
-                    if (!Initialize(cfg, env))
-                    {
-                        ReportProgress("Failed to initialize Python for the session", Errors.Failed);
-                        return null;
-                    }
-                }
-
-                // Create a new session
-                var session = new PythonSessionInfo
-                {
-                    SessionName = $"Session_{username}_{DateTime.Now.ToString("yyyyMMddHHmmss")}",
-                    Username = username,
-                    VirtualEnvironmentId = env.ID,
-                    StartedAt = DateTime.Now,
-                    Status = PythonSessionStatus.Active,
-                    Metadata = new Dictionary<string, object>
-                    {
-                        ["RuntimeMode"] = EngineMode.ToString(),
-                        ["PythonConfig"] = cfg.ID,
-                        ["EnvironmentPath"] = env.Path
-                    }
-                };
-
-              
-                // Register the session
-                SessionManager.RegisterSession(session);
-
-                // Associate the session with the environment
-                env.AddSession(session);
-
-                // Create a Python scope for this session
-                if (!CreateScope(session, env))
-                {
-                    ReportProgress("Failed to create Python scope for the session", Errors.Failed);
-                    return null;
-                }
-
-                ReportProgress($"Created session {session.SessionId} for user {username}", Errors.Ok);
-                return session;
-            }
-            catch (Exception ex)
-            {
-                ReportProgress($"Error creating session: {ex.Message}", Errors.Failed);
+                // Initialization failed
                 return null;
             }
+
+            return session;
         }
 
         /// <summary>
@@ -854,7 +895,7 @@ print(f'sys.path: {{sys.path}}')
                     DMEditor.ConfigEditor.ContainerName,
                     "PythonEnvironments");
 
-                return CreateEnvironmentForSingleUserMode(runtime, defaultEnvPath, username);
+                return CreateSessionForSingleUserMode(runtime, defaultEnvPath, username);
             }
         }
         #endregion "Create User Environments"

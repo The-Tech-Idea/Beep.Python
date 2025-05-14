@@ -47,7 +47,7 @@ namespace Beep.Python.RuntimeEngine.Services
             PythonRunTimepath = pythonRuntimePath;
             services.AddSingleton<IPythonRunTimeManager, PythonNetRunTimeManager>();
             services.AddSingleton<IPythonVirtualEnvManager, PythonVirtualEnvManager>();
-            services.AddSingleton<IPackageManagerViewModel, PythonPackageManager>();
+            services.AddSingleton<IPythonPackageManager, PythonPackageManager>();
             services.AddSingleton<IPythonMLManager, PythonMLManager>();
             services.AddSingleton<IPythonAIProjectViewModel, PythonAIProjectViewModel>();
             services.AddSingleton<IPythonModelEvaluationGraphsViewModel, PythonModelEvaluationGraphsViewModel>();
@@ -82,7 +82,7 @@ namespace Beep.Python.RuntimeEngine.Services
         public static IServiceCollection RegisterPythonPackageManagerService(this IServiceCollection services)
         {
 
-            services.AddSingleton<IPackageManagerViewModel, PythonPackageManager>();
+            services.AddSingleton<IPythonPackageManager, PythonPackageManager>();
 
             return services;
         }
@@ -121,7 +121,7 @@ namespace Beep.Python.RuntimeEngine.Services
         {
             return ServiceProvider.GetRequiredService<IPythonRunTimeManager>();
         }
-        public static IPackageManagerViewModel GetPythonPackageManager() => GetService<IPackageManagerViewModel>();
+        public static IPythonPackageManager GetPythonPackageManager() => GetService<IPythonPackageManager>();
         public static IPythonVirtualEnvManager GetPythonVirtualEnv() => GetService<IPythonVirtualEnvManager>();
         public static IPythonMLManager GetPythonMLManager() => GetService<IPythonMLManager>();
         public static IPythonAIProjectViewModel GetPythonAIProjectViewModel() => GetService<IPythonAIProjectViewModel>();
@@ -149,9 +149,9 @@ namespace Beep.Python.RuntimeEngine.Services
         {
             return GetService<IPythonRunTimeManager>();
         }
-        public static IPackageManagerViewModel GetPythonPackageManager(this IDMEEditor dmeEditor)
+        public static IPythonPackageManager GetPythonPackageManager(this IDMEEditor dmeEditor)
         {
-            return GetService<IPackageManagerViewModel>();
+            return GetService<IPythonPackageManager>();
         }
         public static IPythonMLManager GetPythonMLManager(this IDMEEditor dmeEditor)
         {
