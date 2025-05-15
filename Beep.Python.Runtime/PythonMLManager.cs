@@ -13,7 +13,7 @@ namespace Beep.Python.RuntimeEngine
     public class PythonMLManager : PythonBaseViewModel, IPythonMLManager, IDisposable
     {
 
-        private bool IsInitialized = true; // Ensure this flag is managed based on actual initialization logic
+      
         private Dictionary<string, bool> algorithmSupervision = new Dictionary<string, bool>();
 
         public bool IsDataLoaded { get; set; } = false;
@@ -32,7 +32,7 @@ namespace Beep.Python.RuntimeEngine
         public string ValidationFilePath { get; set; } = string.Empty;
 
 
-
+        public bool IsInitialized { get; set; } = false;
         public PythonMLManager(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager, PythonSessionInfo sessionInfo) : base(beepservice, pythonRuntimeManager, sessionInfo)
         {
             //  pythonRuntimeManager = pythonRuntimeManager;
@@ -102,7 +102,7 @@ preview_data_types = data_types
 ";
 
             // Execute the Python script
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
 
             // Fetch and return the preview column names
             return FetchPreviewColumnsFromPython();
@@ -112,7 +112,7 @@ preview_data_types = data_types
         {
             using (Py.GIL()) // Acquire the Python Global Interpreter Lock
             {
-                dynamic pyColumns = PythonRuntime.CurrentPersistentScope.Get("preview_columns");
+                dynamic pyColumns = PythonRuntime.SessionScopes[SessionInfo.SessionId].Get("preview_columns");
                 if (pyColumns == null) return new string[0];
 
                 // Convert the Python list to a C# string array
@@ -130,7 +130,7 @@ preview_data_types = data_types
         {
             using (Py.GIL()) // Acquire the Python Global Interpreter Lock
             {
-                dynamic pyMissingValues = PythonRuntime.CurrentPersistentScope.Get("preview_missing_values");
+                dynamic pyMissingValues = PythonRuntime.SessionScopes[SessionInfo.SessionId].Get("preview_missing_values");
                 if (pyMissingValues == null) return new int[0];
 
                 // Convert the Python list to a C# int array
@@ -147,7 +147,7 @@ preview_data_types = data_types
         {
             using (Py.GIL()) // Acquire the Python Global Interpreter Lock
             {
-                dynamic pyDataTypes = PythonRuntime.CurrentPersistentScope.Get("preview_data_types");
+                dynamic pyDataTypes = PythonRuntime.SessionScopes[SessionInfo.SessionId].Get("preview_data_types");
                 if (pyDataTypes == null) return new string[0];
 
                 // Convert the Python list to a C# string array
@@ -192,7 +192,7 @@ globals()['data'] = data if 'data' in globals() else None
 ";
 
             // Execute the Python script
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public string[] LoadData(string filePath, string[] selectedFeatures)
         {
@@ -227,7 +227,7 @@ features = data.columns.tolist()
 globals()['data'] = data
 ";
 
-            if (RunPythonScript(script, null))
+            if (PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo))
             {
                 IsDataLoaded = true;
                 DataFilePath = modifiedFilePath;
@@ -254,7 +254,7 @@ data = pd.read_csv('{modifiedFilePath}')
 features = train_data.columns.tolist()
 ";
 
-            if (RunPythonScript(script, null))
+            if (PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo))
             {
                 IsDataLoaded = true;
                 DataFilePath = modifiedFilePath;
@@ -283,7 +283,7 @@ test_data = pd.read_csv('{formattedFilePath}')
 test_features = test_data.columns.tolist()
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             return FetchTestFeaturesFromPython();
         }
         public string[] LoadPredictionData(string filePath)
@@ -302,7 +302,7 @@ predict_data = pd.read_csv('{formattedFilePath}')
 predict_features = predict_data.columns.tolist()
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             RemoveSpecialCharacters("predict_data");
             return FetchTestFeaturesFromPython();
         }
@@ -400,7 +400,7 @@ globals()['data'] = data
 ";
             //            train_data.to_csv('{trainFilePath}', index = False)
             //test_data.to_csv('{testFilePath}', index = False)
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             return FetchFeaturesFromPython();
         }
         public string[] SplitData(string dataFilePath, float testSize, string trainFilePath, string testFilePath)
@@ -436,7 +436,7 @@ features = data.columns.tolist()
             //            train_data.to_csv('{trainFilePath}', index = False)
             //test_data.to_csv('{testFilePath}', index = False)
 
-            if (RunPythonScript(script, null))
+            if (PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo))
             {
                 IsDataLoaded = true;
                 DataFilePath = formattedFilePath;
@@ -489,7 +489,7 @@ features = data.columns.tolist()
             //            train_data.to_csv('{trainFilePath}', index = False)
             //test_data.to_csv('{testFilePath}', index = False)
 
-            if (RunPythonScript(script, null))
+            if (PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo))
             {
                 IsDataLoaded = true;
                 DataFilePath = formattedFilePath;
@@ -583,7 +583,7 @@ features = train_data.columns.tolist()
 ";
 
 
-            if (RunPythonScript(script, null))
+            if (PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo))
             {
                 IsDataLoaded = true;
             }
@@ -614,7 +614,7 @@ y_test = test_data[label_column].astype(float)  # Ensure y_test is float for reg
 test_encoded = X_test.reindex(columns = X.columns, fill_value=0)
 ";
 
-            RunPythonScript(prepareTestDataScript, null);
+            PythonRuntime.ExecuteManager.RunPythonScript(prepareTestDataScript, null, SessionInfo);
             string script = $@"
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 import numpy as np
@@ -630,7 +630,7 @@ globals()['mae'] = mae
 
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
 
             // Retrieve the scores from the Python script
             double mse = FetchMSEFromPython();
@@ -657,7 +657,7 @@ y_test = test_data[label_column]
 X_test = X_test.reindex(columns=X.columns, fill_value=0)
 ";
 
-            RunPythonScript(prepareTestDataScript, null);
+            PythonRuntime.ExecuteManager.RunPythonScript(prepareTestDataScript, null, SessionInfo);
             string script = $@"
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
@@ -670,7 +670,7 @@ globals()['score'] = score
 globals()['accuracy'] = accuracy
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
 
             // Retrieve the score from the Python script
             return new Tuple<double, double>(FetchScoreFromPython(), FetchAccuracyFromPython());
@@ -692,7 +692,7 @@ X_predict.fillna(X_predict.mean(), inplace=True)  # Simple mean imputation for m
 predictions = model.predict(X_predict)
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
 
             // Retrieve predictions from Python script
             dynamic predictions = FetchPredictionsFromPython(); // Use the method to fetch predictions
@@ -723,7 +723,7 @@ predictions=rounded_predictions
 ";
 
             // Execute the Python script
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
 
             // Retrieve rounded predictions from Python script
             dynamic rounded_predictions = FetchPredictionsFromPython(); // Make sure this method can handle the rounded predictions
@@ -853,7 +853,7 @@ models['{modelId}'] = model
 ";
 
 
-            RunPythonScript(script, null);
+            PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void SaveModel(string modelId, string filePath)
         {
@@ -872,7 +872,7 @@ else:
     print('Model not found.')
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public string LoadModel(string filePath)
         {
@@ -897,13 +897,13 @@ except Exception as e:
     model_id = None
 ";
 
-            RunPythonScript(script, null);
-
+            //RunPythonScript(script, null);
+            PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             // If there was an error in loading the model, model_id will be set to None in Python
             // Check for this case and handle accordingly
             using (Py.GIL())
             {
-                dynamic pyModelId = PythonRuntime.CurrentPersistentScope.Get("model_id");
+                dynamic pyModelId = PythonRuntime.SessionScopes[SessionInfo.SessionId].Get("model_id");
                 if (pyModelId == null || pyModelId.ToString() == "None")
                 {
                     return null; // or handle the error as per your application's needs
@@ -938,7 +938,7 @@ features = chunk.columns.tolist()
 ";
 
             // Execute the Python script
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
 
             // Retrieve the features from Python
             return FetchFeaturesFromPython();
@@ -965,7 +965,7 @@ def remove_special_characters_from_data(df):
 {dataFrameName} = remove_special_characters_from_data({dataFrameName})
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             return true;
         }
         public void AddLabelColumnIfMissing(string testDataFilePath, string labelColumn)
@@ -992,7 +992,7 @@ if '{labelColumn}' not in test_data.columns:
 test_data.to_csv(r'{formattedTestDataFilePath}', index=False)
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void AddLabelColumnIfMissing(string labelColumn)
         {
@@ -1011,7 +1011,7 @@ if '{labelColumn}' not in test_data.columns:
     test_data['{labelColumn}'] = None  # Assign None for missing label column
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void ExportTestResult(string filePath, string iDColumn, string labelColumn)
         {
@@ -1029,7 +1029,7 @@ output = pd.DataFrame({{
 output.to_csv(r'{filePath}', index=False)
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         private void ShuffleData(string[] lines)
         {
@@ -1118,7 +1118,7 @@ if 'predict_data' in globals():
     globals()['predict_data'] = predict_data
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
 
 
@@ -1160,7 +1160,7 @@ if 'test_data' in globals():
     globals()['test_data'] = test_data
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void HandleDateData(string[] dateFeatures)
         {
@@ -1198,7 +1198,7 @@ data.drop(columns=date_features, inplace=True)
 ";
 
             // Execute the Python script
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public string[] GetCategoricalFeatures(string[] selectedFeatures)
         {
@@ -1225,7 +1225,7 @@ categorical_features = dtypes[dtypes == 'object'].index.tolist()
 ";
 
             // Execute the Python script
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
 
             // Fetch and return the categorical features
             return FetchCategoricalFeaturesFromPython();
@@ -1234,7 +1234,7 @@ categorical_features = dtypes[dtypes == 'object'].index.tolist()
         {
             using (Py.GIL()) // Acquire the Python Global Interpreter Lock
             {
-                dynamic pyCategoricalFeatures = PythonRuntime.CurrentPersistentScope.Get("categorical_features");
+                dynamic pyCategoricalFeatures = PythonRuntime.SessionScopes[SessionInfo.SessionId].Get("categorical_features");
                 if (pyCategoricalFeatures == null) return new string[0];
 
                 // Convert the Python list to a C# string array
@@ -1287,7 +1287,7 @@ if 'date_features' not in globals():
 ";
 
             // Execute the Python script
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
 
             // Fetch and return the categorical and date features
             string[] categoricalFeatures = FetchCategoricalFeaturesFromPython();
@@ -1299,7 +1299,7 @@ if 'date_features' not in globals():
         {
             using (Py.GIL()) // Acquire the Python Global Interpreter Lock
             {
-                dynamic pyDateFeatures = PythonRuntime.CurrentPersistentScope.Get("date_features");
+                dynamic pyDateFeatures = PythonRuntime.SessionScopes[SessionInfo.SessionId].Get("date_features");
                 if (pyDateFeatures == null) return new string[0];
 
                 // Convert the Python list to a C# string array
@@ -1333,7 +1333,7 @@ if 'data' in globals():
     data = normalize_data(data, '{norm}')
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void RobustScaleData()
         {
@@ -1357,7 +1357,7 @@ if 'data' in globals():
     data = robust_scale_data(data)
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void MinMaxScaleData(double featureRangeMin = 0.0, double featureRangeMax = 1.0)
         {
@@ -1381,7 +1381,7 @@ if 'data' in globals():
     data = min_max_scale_data(data, feature_range=({featureRangeMin}, {featureRangeMax}))
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void StandardizeData()
         {
@@ -1405,7 +1405,7 @@ if 'data' in globals():
     data = standardize_data(data)
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void DropMissingValues(string axis = "rows")
         {
@@ -1433,7 +1433,7 @@ if 'data' in globals():
     data = drop_missing_values(data, '{axis}')
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void ImputeMissingValuesWithCustomValue(object customValue)
         {
@@ -1458,7 +1458,7 @@ if 'data' in globals():
     data = impute_with_custom_value(data, {customValueStr})
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
 
         public void ImputeMissingValuesWithFill(string method = "ffill")
@@ -1482,7 +1482,7 @@ if 'data' in globals():
     data = fill_missing_values(data, '{method}')
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
 
         public void ImputeMissingValues(string strategy = "mean")
@@ -1513,7 +1513,7 @@ if 'data' in globals():
     data = impute_missing_values(data, '{strategy}')
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void StandardizeData(string[] selectedFeatures = null)
         {
@@ -1550,7 +1550,7 @@ if 'data' in globals():
     data = standardize_data(data, [{selectedFeaturesList}])
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void MinMaxScaleData(double featureRangeMin = 0.0, double featureRangeMax = 1.0, string[] selectedFeatures = null)
         {
@@ -1587,7 +1587,7 @@ if 'data' in globals():
     data = min_max_scale_data(data, feature_range=({featureRangeMin}, {featureRangeMax}), selected_features=[{selectedFeaturesList}])
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void RobustScaleData(string[] selectedFeatures = null)
         {
@@ -1624,7 +1624,7 @@ if 'data' in globals():
     data = robust_scale_data(data, [{selectedFeaturesList}])
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void NormalizeData(string norm = "l2", string[] selectedFeatures = null)
         {
@@ -1661,7 +1661,7 @@ if 'data' in globals():
     data = normalize_data(data, '{norm}', selected_features=[{selectedFeaturesList}])
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
 
         #endregion "Helper Methods"
@@ -1706,7 +1706,7 @@ if 'data' in globals():
     data = generate_polynomial_features(data, [{selectedFeaturesList}], degree={degree}, include_bias={includeBias.ToString().ToLower()}, interaction_only={interactionOnly.ToString().ToLower()})
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void ApplyLogTransformation(string[] selectedFeatures = null)
         {
@@ -1740,7 +1740,7 @@ if 'data' in globals():
     data = apply_log_transformation(data, [{selectedFeaturesList}])
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void ApplyBinning(string[] selectedFeatures, int numberOfBins = 5, bool encodeAsOrdinal = true)
         {
@@ -1771,7 +1771,7 @@ if 'data' in globals():
     data = apply_binning(data, [{selectedFeaturesList}], number_of_bins={numberOfBins}, encode_as_ordinal={encodeAsOrdinal.ToString().ToLower()})
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void ApplyFeatureHashing(string[] selectedFeatures, int nFeatures = 10)
         {
@@ -1803,7 +1803,7 @@ if 'data' in globals():
     data = apply_feature_hashing(data, [{selectedFeaturesList}], n_features={nFeatures})
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
 
 
@@ -1829,7 +1829,7 @@ if 'train_data' in globals():
     train_data = apply_random_oversampling(train_data, '{targetColumn}', sampling_strategy={samplingStrategy})
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
 
         public void ApplyRandomUndersampling(string targetColumn, float samplingStrategy = 0.5f)
@@ -1852,7 +1852,7 @@ if 'train_data' in globals():
     train_data = apply_random_undersampling(train_data, '{targetColumn}', sampling_strategy={samplingStrategy})
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void ApplySMOTE(string targetColumn, float samplingStrategy = 1.0f)
         {
@@ -1874,7 +1874,7 @@ if 'train_data' in globals():
     train_data = apply_smote(train_data, '{targetColumn}', sampling_strategy={samplingStrategy})
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void ApplyNearMiss(string targetColumn, int version = 1)
         {
@@ -1896,7 +1896,7 @@ if 'train_data' in globals():
     train_data = apply_nearmiss(train_data, '{targetColumn}', Version={version})
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void ApplyBalancedRandomForest(string targetColumn, int nEstimators = 100)
         {
@@ -1920,7 +1920,7 @@ if 'train_data' in globals():
     models['BalancedRandomForest_{targetColumn}'] = model
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void AdjustClassWeights(string modelId, string algorithmName, Dictionary<string, object> parameters, string[] featureColumns, string labelColumn)
         {
@@ -1949,7 +1949,7 @@ model.fit(X, Y)
 models['{modelId}'] = model
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
 
 
@@ -1972,7 +1972,7 @@ if 'test_data' in globals() and '{columnName}' in test_data.columns:
     test_data['{columnName}'] = test_data['{columnName}'].str.lower()
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void RemovePunctuation(string columnName)
         {
@@ -1992,7 +1992,7 @@ if 'test_data' in globals() and '{columnName}' in test_data.columns:
     test_data['{columnName}'] = test_data['{columnName}'].str.translate(str.maketrans('', '', string.punctuation))
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void RemoveStopwords(string columnName, string language = "english")
         {
@@ -2014,7 +2014,7 @@ if 'test_data' in globals() and '{columnName}' in test_data.columns:
     test_data['{columnName}'] = test_data['{columnName}'].apply(lambda X: ' '.join([word for word in str(X).split() if word not in stopwords]))
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void ApplyStemming(string columnName)
         {
@@ -2036,7 +2036,7 @@ if 'test_data' in globals() and '{columnName}' in test_data.columns:
     test_data['{columnName}'] = test_data['{columnName}'].apply(lambda X: ' '.join([stemmer.stem(word) for word in str(X).split()]))
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void ApplyLemmatization(string columnName)
         {
@@ -2058,7 +2058,7 @@ if 'test_data' in globals() and '{columnName}' in test_data.columns:
     test_data['{columnName}'] = test_data['{columnName}'].apply(lambda X: ' '.join([lemmatizer.lemmatize(word) for word in str(X).split()]))
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void ApplyTokenization(string columnName)
         {
@@ -2078,7 +2078,7 @@ if 'test_data' in globals() and '{columnName}' in test_data.columns:
     test_data['{columnName}'] = test_data['{columnName}'].apply(lambda X: word_tokenize(str(X)))
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void ApplyTFIDFVectorization(string columnName, int maxFeatures = 1000)
         {
@@ -2104,7 +2104,7 @@ if 'test_data' in globals() and '{columnName}' in test_data.columns:
     test_data = pd.concat([test_data.drop(columns=['{columnName}']), test_data_tfidf], axis=1)
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
 
 
@@ -2136,7 +2136,7 @@ if 'test_data' in globals() and '{columnName}' in test_data.columns:
     test_data['{columnName}_dayofweek'] = pd.to_datetime(test_data['{columnName}']).dt.dayofweek
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void CalculateTimeDifference(string startColumn, string endColumn, string newColumnName)
         {
@@ -2154,7 +2154,7 @@ if 'test_data' in globals() and '{startColumn}' in test_data.columns and '{endCo
     test_data['{newColumnName}'] = (pd.to_datetime(test_data['{endColumn}']) - pd.to_datetime(test_data['{startColumn}'])).dt.total_seconds()
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void HandleCyclicalTimeFeatures(string columnName, string featureType)
         {
@@ -2180,7 +2180,7 @@ if 'test_data' in globals() and '{columnName}' in test_data.columns:
         test_data['{columnName}_cos'] = np.cos(2 * np.pi * test_data['{columnName}'] / max_value)
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void ParseDateColumn(string columnName)
         {
@@ -2198,7 +2198,7 @@ if 'test_data' in globals() and '{columnName}' in test_data.columns:
     test_data['{columnName}'] = pd.to_datetime(test_data['{columnName}'])
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void HandleMissingDates(string columnName, string method = "fill", string fillValue = null)
         {
@@ -2222,7 +2222,7 @@ if 'test_data' in globals() and '{columnName}' in test_data.columns:
         test_data['{columnName}'] = pd.to_datetime(test_data['{columnName}']).interpolate()
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
 
         #endregion "Date/Time Features"
@@ -2254,7 +2254,7 @@ if 'test_data' in globals():
     test_data = test_data.reindex(columns=train_data.columns, fill_value=0)
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void LabelEncode(string[] categoricalFeatures)
         {
@@ -2286,7 +2286,7 @@ for feature in categorical_features:
 globals()['label_encoders'] = label_encoders
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void TargetEncode(string[] categoricalFeatures, string labelColumn)
         {
@@ -2311,7 +2311,7 @@ for feature in categorical_features:
         test_data[feature] = test_data[feature].map(means)
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void BinaryEncode(string[] categoricalFeatures)
         {
@@ -2339,7 +2339,7 @@ if 'test_data' in globals():
 globals()['binary_encoder'] = encoder
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void FrequencyEncode(string[] categoricalFeatures)
         {
@@ -2363,7 +2363,7 @@ for feature in categorical_features:
         test_data[feature] = test_data[feature].map(freq)
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
 
 
@@ -2424,7 +2424,7 @@ for col in columns:
         train_data[col] = permutation(train_data[col], n_segments=int({parameter}))
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
 
         #endregion "Time Series Augmentation"
@@ -2447,7 +2447,7 @@ selected_features = selector.fit_transform(train_data)
 train_data = pd.DataFrame(selected_features, columns=train_data.columns[selector.get_support()])
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void ApplyCorrelationThreshold(double threshold = 0.9)
         {
@@ -2472,7 +2472,7 @@ to_drop = [column for column in upper.columns if any(upper[column] > {threshold}
 train_data = train_data.drop(to_drop, axis=1)
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void ApplyRFE(string modelId, int n_features_to_select = 5)
         {
@@ -2496,7 +2496,7 @@ selected_features = train_data.columns[selector.get_support()]
 train_data = train_data[selected_features]
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void ApplyL1Regularization(double alpha = 0.01)
         {
@@ -2519,7 +2519,7 @@ selected_features = train_data.columns[(lasso.coef_ != 0).ravel()]
 train_data = train_data[selected_features]
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void ApplyTreeBasedFeatureSelection(string modelId)
         {
@@ -2541,7 +2541,7 @@ selected_features = train_data.columns[indices]
 train_data = train_data[selected_features]
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
 
         #endregion "Feature Selection"
@@ -2571,7 +2571,7 @@ globals()['avg_cross_val_score'] = avg_score
 globals()['std_cross_val_score'] = std_score
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
 
             double avgScore = FetchAverageCrossValScoreFromPython();
             double stdScore = FetchStandardDeviationCrossValScoreFromPython();
@@ -2583,7 +2583,7 @@ globals()['std_cross_val_score'] = std_score
         {
             using (Py.GIL())
             {
-                dynamic pyScore = PythonRuntime.CurrentPersistentScope.Get("avg_cross_val_score");
+                dynamic pyScore = PythonRuntime.SessionScopes[SessionInfo.SessionId].Get("avg_cross_val_score");
                 return pyScore.As<double>();
             }
         }
@@ -2591,7 +2591,7 @@ globals()['std_cross_val_score'] = std_score
         {
             using (Py.GIL())
             {
-                dynamic pyScore = PythonRuntime.CurrentPersistentScope.Get("std_cross_val_score");
+                dynamic pyScore = PythonRuntime.SessionScopes[SessionInfo.SessionId].Get("std_cross_val_score");
                 return pyScore.As<double>();
             }
         }
@@ -2613,7 +2613,7 @@ train_data.to_csv('{trainFilePath}', index=False)
 test_data.to_csv('{testFilePath}', index=False)
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         #endregion "Cross-Validation and Stratified Sampling"
         #region "Data Cleaning"
@@ -2645,7 +2645,7 @@ data[features] = imputer.fit_transform(data[features])
 globals()['data'] = data
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void DropDuplicates(string[] featureList = null)
         {
@@ -2668,7 +2668,7 @@ data = data.drop_duplicates(subset=[{featureListPython}] if {featureListPython} 
 globals()['data'] = data
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void StandardizeCategories(string[] featureList = null, Dictionary<string, string> replacements = null)
         {
@@ -2699,7 +2699,7 @@ for feature in features:
 globals()['data'] = data
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
 
         public void RemoveOutliers(string[] featureList = null, double zThreshold = 3.0)
@@ -2728,7 +2728,7 @@ data = data[(z_scores < {zThreshold}).all(axis=1)]
 globals()['data'] = data
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
 
         #endregion "Data Cleaning"
@@ -2768,7 +2768,7 @@ else:
 globals()['data'] = data
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
 
         public void ApplyLDA(string labelColumn, int nComponents = 2, string[] featureList = null)
@@ -2810,7 +2810,7 @@ else:
 globals()['data'] = data
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void ApplyVarianceThreshold(double threshold = 0.0, string[] featureList = null)
         {
@@ -2847,7 +2847,7 @@ else:
 globals()['data'] = data
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
 
 
@@ -2873,7 +2873,7 @@ data = pd.concat([pd.DataFrame(X), pd.Series(Y, name='{labelColumn}')], axis=1)
 globals()['data'] = data
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void RandomUnderSample(string labelColumn)
         {
@@ -2895,7 +2895,7 @@ data = pd.concat([pd.DataFrame(X), pd.Series(Y, name='{labelColumn}')], axis=1)
 globals()['data'] = data
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void ApplySMOTE(string labelColumn)
         {
@@ -2917,7 +2917,7 @@ data = pd.concat([pd.DataFrame(X), pd.Series(Y, name='{labelColumn}')], axis=1)
 globals()['data'] = data
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
 
         #endregion "Data Balancing Techniques"
@@ -2931,7 +2931,7 @@ globals()['data'] = data
             using (Py.GIL()) // Acquire the Python Global Interpreter Lock
             {
                 // Retrieve the 'predictions' variable from the persistent Python scope
-                dynamic predictions = PythonRuntime.CurrentPersistentScope.Get("predictions");
+                dynamic predictions = PythonRuntime.SessionScopes[SessionInfo.SessionId].Get("predictions");
 
                 // Convert the Python 'predictions' object to a C# object, if necessary
                 // Conversion depends on the expected format of 'predictions'
@@ -2948,7 +2948,7 @@ globals()['data'] = data
             // This might involve fetching the variable's value from the Python scope
             using (Py.GIL())
             {
-                dynamic pyScore = PythonRuntime.CurrentPersistentScope.Get("score");
+                dynamic pyScore = PythonRuntime.SessionScopes[SessionInfo.SessionId].Get("score");
                 return pyScore.As<double>(); // Convert the Python score to a C# double
             }
         }
@@ -2962,7 +2962,7 @@ globals()['data'] = data
             // This might involve fetching the variable's value from the Python scope
             using (Py.GIL())
             {
-                dynamic pyScore = PythonRuntime.CurrentPersistentScope.Get("accuracy");
+                dynamic pyScore = PythonRuntime.SessionScopes[SessionInfo.SessionId].Get("accuracy");
                 return pyScore.As<double>(); // Convert the Python score to a C# double
             }
         }
@@ -2976,7 +2976,7 @@ globals()['data'] = data
             // This might involve fetching the variable's value from the Python scope
             using (Py.GIL())
             {
-                dynamic pyMSE = PythonRuntime.CurrentPersistentScope.Get("mse");
+                dynamic pyMSE = PythonRuntime.SessionScopes[SessionInfo.SessionId].Get("mse");
                 return pyMSE.As<double>(); // Convert the Python MSE to a C# double
             }
         }
@@ -2990,7 +2990,7 @@ globals()['data'] = data
             // This might involve fetching the variable's value from the Python scope
             using (Py.GIL())
             {
-                dynamic pyRMSE = PythonRuntime.CurrentPersistentScope.Get("rmse");
+                dynamic pyRMSE = PythonRuntime.SessionScopes[SessionInfo.SessionId].Get("rmse");
                 return pyRMSE.As<double>(); // Convert the Python RMSE to a C# double
             }
         }
@@ -3004,7 +3004,7 @@ globals()['data'] = data
             // This might involve fetching the variable's value from the Python scope
             using (Py.GIL())
             {
-                dynamic pyMAE = PythonRuntime.CurrentPersistentScope.Get("mae");
+                dynamic pyMAE = PythonRuntime.SessionScopes[SessionInfo.SessionId].Get("mae");
                 return pyMAE.As<double>(); // Convert the Python MAE to a C# double
             }
         }
@@ -3029,7 +3029,7 @@ globals()['data'] = data
         {
             using (Py.GIL()) // Acquire the Python Global Interpreter Lock features
             {
-                dynamic pyFeatures = PythonRuntime.CurrentPersistentScope.Get("features");
+                dynamic pyFeatures = PythonRuntime.SessionScopes[SessionInfo.SessionId].Get("features");
                 if (pyFeatures == null) return new string[0];
 
                 // Convert the Python list to a C# string array
@@ -3045,7 +3045,7 @@ globals()['data'] = data
         {
             using (Py.GIL()) // Acquire the Python Global Interpreter Lock
             {
-                dynamic pyFeatures = PythonRuntime.CurrentPersistentScope.Get("predict_features");
+                dynamic pyFeatures = PythonRuntime.SessionScopes[SessionInfo.SessionId].Get("predict_features");
                 if (pyFeatures == null) return new string[0];
 
                 // Convert the Python list to a C# string array
@@ -3083,7 +3083,7 @@ plt.ylabel('True Positive Rate')
 plt.Title('Receiver operating characteristic')
 plt.legend(loc='lower right')
 plt.show()";
-            return RunPythonScript(script, null);
+            return PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public bool CreateConfusionMatrix()
         {
@@ -3103,7 +3103,7 @@ sns.heatmap(cm, annot=True, fmt='d')
 plt.xlabel('Predicted')
 plt.ylabel('True')
 plt.show()";
-            return RunPythonScript(script, null);
+            return PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public bool CreateLearningCurve(string modelId, string imagePath)
         {
@@ -3153,7 +3153,7 @@ plt.grid()
 plt.savefig('{formattedFilePath}')
 # plt.show()
 ";
-            return RunPythonScript(script, null);
+            return PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public bool CreateFeatureImportance(string modelId, string imagePath)
         {
@@ -3191,7 +3191,7 @@ if hasattr(model, 'feature_importances_'):
 else:
    # print('The model does not have feature importances.')
 ";
-            return RunPythonScript(script, null);
+            return PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public bool CreatePrecisionRecallCurve(string modelId, string imagePath)
         {
@@ -3220,7 +3220,7 @@ plt.legend(loc='lower left')
 plt.savefig('{formattedFilePath}')
 # plt.show()
 ";
-            return RunPythonScript(script, null);
+            return PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public bool CreateConfusionMatrix(string modelId, string imagePath)
         {
@@ -3246,7 +3246,7 @@ plt.Title('Confusion Matrix')
 plt.savefig('{formattedFilePath}')
 # plt.show()
 ";
-            return RunPythonScript(script, null);
+            return PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public bool CreateROC(string modelId, string imagePath)
         {
@@ -3277,7 +3277,7 @@ plt.legend(loc='lower right')
 plt.savefig('{formattedFilePath}')
 # plt.show()
 ";
-            return RunPythonScript(script, null);
+            return PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public bool GenerateEvaluationReport(string modelId, string outputHtmlPath)
         {
@@ -3372,11 +3372,11 @@ if '{modelId}' in models:
 globals()['is_classification'] = is_classification
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
 
             using (Py.GIL())
             {
-                dynamic isClassification = PythonRuntime.CurrentPersistentScope.Get("is_classification");
+                dynamic isClassification = PythonRuntime.SessionScopes[SessionInfo.SessionId].Get("is_classification");
                 return isClassification.As<bool>();
             }
         }
@@ -3397,11 +3397,11 @@ if '{modelId}' in models:
 globals()['is_regression'] = is_regression
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
 
             using (Py.GIL())
             {
-                dynamic isRegression = PythonRuntime.CurrentPersistentScope.Get("is_regression");
+                dynamic isRegression = PythonRuntime.SessionScopes[SessionInfo.SessionId].Get("is_regression");
                 return isRegression.As<bool>();
             }
         }
@@ -3422,11 +3422,11 @@ if '{modelId}' in models:
 globals()['supports_feature_importance'] = supports_feature_importance
 ";
 
-            RunPythonScript(script, null);
+           PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
 
             using (Py.GIL())
             {
-                dynamic supportsFeatureImportance = PythonRuntime.CurrentPersistentScope.Get("supports_feature_importance");
+                dynamic supportsFeatureImportance = PythonRuntime.SessionScopes[SessionInfo.SessionId].Get("supports_feature_importance");
                 return supportsFeatureImportance.As<bool>();
             }
         }

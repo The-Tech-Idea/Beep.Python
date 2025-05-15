@@ -45,6 +45,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         public readonly IBeepService Beepservice;
         public PythonSessionInfo SessionInfo;
 
+        public bool IsInitialized { get; private set; } = false;
         public ObservableBindingList<PythonRunTime> AvailablePythonInstallations =>pythonRuntime.PythonInstallations;
 
         public string GetAlgorithimName(string algorithim)

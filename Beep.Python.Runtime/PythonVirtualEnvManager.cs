@@ -120,6 +120,7 @@ namespace Beep.Python.RuntimeEngine
             return _adminSession;
         }
 
+
         /// <summary>
         /// Core method for creating virtual environments that centralizes all creation logic.
         /// All public virtual environment creation methods should use this method.
@@ -130,10 +131,10 @@ namespace Beep.Python.RuntimeEngine
         /// <param name="createdBy">User who created the environment (defaults to "System")</param>
         /// <returns>The created or existing environment, or null if creation failed</returns>
         private PythonVirtualEnvironment CreateVirtualEnvironmentCore(
-            PythonRunTime config,
-            string envPath,
-            string envName = null,
-            string createdBy = "System")
+       PythonRunTime config,
+       string envPath,
+       string envName = null,
+       string createdBy = "System")
         {
             if (config == null)
             {
@@ -179,13 +180,15 @@ namespace Beep.Python.RuntimeEngine
                     BaseInterpreterPath = config.RuntimePath ?? config.BinPath,
                     CreatedOn = DateTime.Now,
                     CreatedBy = createdBy,
-                    EnvironmentType = PythonEnvironmentType.VirtualEnv
+                    EnvironmentType = PythonEnvironmentType.VirtualEnv,
+                    PythonBinary = config.Binary // Set the correct binary type
                 };
 
                 // Get or create the admin session
                 var session = GetAdminSession(env);
+
                 // Associate session with environment
-               
+                // This happens inside GetAdminSession now
 
                 // Add to global sessions collection
                 if (_pythonRuntime.SessionManager != null &&
@@ -218,19 +221,72 @@ namespace Beep.Python.RuntimeEngine
                     return env;
                 }
 
-                // Create the virtual environment using Python's venv module
-                var process = new Process
+                Process process;
+
+                // Create the environment based on its binary type
+                if (config.Binary == PythonBinary.Conda)
                 {
-                    StartInfo = new ProcessStartInfo
+                    // First check if we have the conda path stored in the config
+                    string condaExe = null;
+
+                    // Use the CondaPath property directly if it exists and is valid
+                    if (!string.IsNullOrEmpty(config.CondaPath) && File.Exists(config.CondaPath))
                     {
-                        FileName = pythonExe,
-                        Arguments = $"-m venv \"{envPath}\" --copies --clear",
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        CreateNoWindow = true
+                        condaExe = config.CondaPath;
+                        LogInfo($"Using Conda executable from configuration: {condaExe}");
                     }
-                };
+                    else
+                    {
+                        // Fall back to searching for conda executable
+                        condaExe = FindCondaExecutable(config.BinPath);
+                    }
+
+                    if (string.IsNullOrEmpty(condaExe))
+                    {
+                        LogError("Conda executable not found. Cannot create Conda environment.");
+                        session.EndedAt = DateTime.Now;
+                        session.WasSuccessful = false;
+                        session.Notes = "Failed: Conda executable not found";
+                        return null;
+                    }
+
+                    // For Conda, we want to use 'conda create' with the environment name
+                    // Get only the environment name from the path
+                    string condaEnvName = Path.GetFileName(envPath);
+
+                    // Create environment with conda
+                    process = new Process
+                    {
+                        StartInfo = new ProcessStartInfo
+                        {
+                            FileName = condaExe,
+                            // Create environment with specific Python version if available
+                            Arguments = string.IsNullOrEmpty(config.PythonVersion)
+                                ? $"create -y -p \"{envPath}\" python"
+                                : $"create -y -p \"{envPath}\" python={config.PythonVersion}",
+                            UseShellExecute = false,
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true,
+                            CreateNoWindow = true
+                        }
+                    };
+                }
+                else
+                {
+                    // For standard Python, use venv module as before
+                    process = new Process
+                    {
+                        StartInfo = new ProcessStartInfo
+                        {
+                            FileName = pythonExe,
+                            Arguments = $"-m venv \"{envPath}\" --copies --clear",
+                            UseShellExecute = false,
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true,
+                            CreateNoWindow = true
+                        }
+                    };
+                }
 
                 process.Start();
                 string output = process.StandardOutput.ReadToEnd();
@@ -243,8 +299,8 @@ namespace Beep.Python.RuntimeEngine
                 if (process.ExitCode == 0)
                 {
                     session.WasSuccessful = true;
-                    session.Notes = $"Created virtual environment at {envPath}";
-                    LogInfo($"Virtual environment created at: {envPath}");
+                    session.Notes = $"Created {(config.Binary == PythonBinary.Conda ? "Conda" : "virtual")} environment at {envPath}";
+                    LogInfo($"{(config.Binary == PythonBinary.Conda ? "Conda" : "Virtual")} environment created at: {envPath}");
 
                     // Add environment to managed environments
                     AddToManagedEnvironments(env);
@@ -258,7 +314,7 @@ namespace Beep.Python.RuntimeEngine
                 {
                     session.WasSuccessful = false;
                     session.Notes = $"Failed: {error}";
-                    LogError($"Failed to create virtual environment: {error}");
+                    LogError($"Failed to create {(config.Binary == PythonBinary.Conda ? "Conda" : "virtual")} environment: {error}");
                     return null;
                 }
             }
@@ -267,6 +323,61 @@ namespace Beep.Python.RuntimeEngine
                 LogError($"Error creating virtual environment: {ex.Message}");
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Locates the conda executable based on a Python installation path.
+        /// </summary>
+        /// <param name="pythonPath">Path to the Python installation</param>
+        /// <returns>Path to conda.exe or null if not found</returns>
+        private string FindCondaExecutable(string pythonPath)
+        {
+            // First check in the same directory as python.exe
+            string condaExe = Path.Combine(pythonPath, "conda.exe");
+            if (File.Exists(condaExe))
+                return condaExe;
+
+            // Check in the Scripts directory (common location)
+            string scriptsPath = Path.Combine(pythonPath, "Scripts");
+            condaExe = Path.Combine(scriptsPath, "conda.exe");
+            if (File.Exists(condaExe))
+                return condaExe;
+
+            // Check one level up (anaconda/miniconda structure)
+            string parentDir = Directory.GetParent(pythonPath)?.FullName;
+            if (!string.IsNullOrEmpty(parentDir))
+            {
+                condaExe = Path.Combine(parentDir, "conda.exe");
+                if (File.Exists(condaExe))
+                    return condaExe;
+
+                // Check in parent's Scripts directory
+                string parentScriptsPath = Path.Combine(parentDir, "Scripts");
+                condaExe = Path.Combine(parentScriptsPath, "conda.exe");
+                if (File.Exists(condaExe))
+                    return condaExe;
+            }
+
+            // Try to find conda in PATH
+            var pathDirs = Environment.GetEnvironmentVariable("PATH").Split(Path.PathSeparator);
+            foreach (var dir in pathDirs)
+            {
+                if (string.IsNullOrEmpty(dir)) continue;
+
+                try
+                {
+                    condaExe = Path.Combine(dir, "conda.exe");
+                    if (File.Exists(condaExe))
+                        return condaExe;
+                }
+                catch
+                {
+                    // Skip invalid paths
+                    continue;
+                }
+            }
+
+            return null;
         }
         /// <summary>
         /// Creates a virtual environment with the specified configuration and environment.
@@ -440,7 +551,7 @@ namespace Beep.Python.RuntimeEngine
                     PythonEngineMode mode = DetermineEngineMode(env);
 
                     // Initialize with the appropriate engine mode
-                    _pythonRuntime.Initialize(config, env.Path, mode);
+                    _pythonRuntime.Initialize(config, env.Path,env.Name, mode);
 
                     // Create a session for this initialization if needed
                     if (env.Sessions.Count == 0)
@@ -741,10 +852,15 @@ namespace Beep.Python.RuntimeEngine
         /// Saves managed environments to a file.
         /// </summary>
         /// <param name="filePath">The file path to save to.</param>
-        public void SaveEnvironments(string filePath)
+        public void SaveEnvironments(string filePath=null)
         {
             try
             {
+                if (filePath == null) {
+
+                    filePath = PythonEnvironmentDiagnostics.GetDefaultDataPath();
+                }
+                filePath=Path.Combine(filePath, "ManagedEnvironments.json");
                 var json = JsonConvert.SerializeObject(ManagedVirtualEnvironments, Formatting.Indented);
                 File.WriteAllText(filePath, json);
                 LogInfo($"Environments saved to {filePath}");

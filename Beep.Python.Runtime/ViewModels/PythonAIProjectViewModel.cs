@@ -15,7 +15,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 using TheTechIdea.Beep.Container.Services;
-using Beep.Python.RuntimeEngine.Services;
 
 namespace Beep.Python.RuntimeEngine.ViewModels
 {
@@ -60,7 +59,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         public PythonAIProjectViewModel(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager, PythonSessionInfo sessionInfo) : base(beepservice, pythonRuntimeManager, sessionInfo)
         {
 
-            PythonMLManager=Editor.GetPythonMLManager();
+
 
 
         }
@@ -69,7 +68,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         {
             try
             {
-                InitializePythonEnvironment();
+             
                 PythonMLManager.ImportPythonModule("numpy as np");
                 PythonMLManager.ImportPythonModule("pandas as pd");
                 IsInit = true;

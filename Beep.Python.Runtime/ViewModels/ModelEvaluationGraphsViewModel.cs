@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Beep.Python.Model;
-using Beep.Python.RuntimeEngine.Services;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using Python.Runtime;
 using TheTechIdea.Beep.Container.Services;
@@ -39,7 +39,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             try
             {
                 PythonMLManager.ImportPythonModule("matplotlib");
-                PythonRuntime.RunCode(SessionInfo, script, Progress, Token);
+                PythonRuntime.ExecuteManager.RunPythonCodeAndGetOutput(Progress, script, SessionInfo);
 
             }
             catch (PythonException ex)

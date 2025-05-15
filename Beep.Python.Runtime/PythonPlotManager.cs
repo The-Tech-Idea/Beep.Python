@@ -17,7 +17,7 @@ namespace Beep.Python.RuntimeEngine
         public PythonPlotManager(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager, PythonSessionInfo sessionInfo) : base(beepservice, pythonRuntimeManager, sessionInfo)
         {
 
-            InitializePythonEnvironment();
+           // InitializePythonEnvironment();
         }
         public void CreateSeabornChart(string picfile, double[] data, string xLabel, string yLabel, string title, ChartType chartType)
         {
@@ -257,7 +257,7 @@ plt.savefig(r'{modifiedFilePath}',dpi=300)
 plt.close()
 ";
             // Run the Python script
-            RunPythonScript(script, null);
+            PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void GenerateContourPlotIrregular(ContourPlotData data)
         {
@@ -364,7 +364,7 @@ plt.savefig(r'{modifiedFilePath}',dpi=300)
 plt.close()
 ";
             // Run the Python script
-            RunPythonScript(script, null);
+            PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
         public void CreatePyPlotTriContourPlot(ContourPlotData data, bool useLogScale = true)
         {
@@ -499,7 +499,7 @@ fig.write_image(r'{modifiedFilePath}')
 ";
 
             // Run the Python script
-            RunPythonScript(script, null);
+            PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
 
         public void CreateplotlyContourPlot(ContourPlotData data)

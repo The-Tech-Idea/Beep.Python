@@ -61,7 +61,7 @@ namespace Beep.Python.Model
         /// <summary>
         /// Initializes Python with the specified runtime configuration and optional virtual environment path.
         /// </summary>
-        bool Initialize(PythonRunTime cfg, string virtualEnvPath, PythonEngineMode mode );
+        bool Initialize(PythonRunTime cfg, string virtualEnvPath, string envName, PythonEngineMode mode );
 
     
         /// <summary>

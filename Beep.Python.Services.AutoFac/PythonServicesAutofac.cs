@@ -3,6 +3,7 @@ using Beep.Python.Model;
 using Beep.Python.RuntimeEngine.ViewModels;
 using TheTechIdea.Beep.Editor;
 using System;
+using Beep.Python.RuntimeEngine.PackageManagement;
 
 namespace Beep.Python.RuntimeEngine.Services
 {

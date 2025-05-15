@@ -16,7 +16,7 @@ namespace Beep.Python.RuntimeEngine
         public PythonPandasManager(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager, PythonSessionInfo sessionInfo) : base(beepservice, pythonRuntimeManager, sessionInfo)
         {
             //  pythonRuntimeManager = pythonRuntimeManager;
-            InitializePythonEnvironment();
+            //InitializePythonEnvironment();
         }
         #region "Pandas DataFrame"
         public void CreateDataFrame(string dataFrameName, dynamic data)
@@ -879,7 +879,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.crosstab({index}, {columns})";
-                RunPythonScript(script, null);
+                PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void Cut(string x, int bins)
@@ -887,7 +887,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.cut({x}, {bins})";
-                RunPythonScript(script, null);
+                PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void QCut(string x, int q)
@@ -895,7 +895,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.qcut({x}, {q})";
-                RunPythonScript(script, null);
+                PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void MergeOrdered(string left, string right, string on = null)
@@ -903,7 +903,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.merge_ordered({left}, {right}, on='{on}')";
-                RunPythonScript(script, null);
+                PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void MergeAsof(string left, string right, string on = null)
@@ -911,7 +911,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.merge_asof({left}, {right}, on='{on}')";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void ConcatDataFrames(string[] dataFrames, int axis = 0)
@@ -919,7 +919,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.concat({String.Join(", ", dataFrames)}, axis={axis})";
-                RunPythonScript(script, null);
+                PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void GetDummies(string dataFrameName)
@@ -927,7 +927,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.get_dummies({dataFrameName})";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void FromDummies(string dataFrameName)
@@ -935,7 +935,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.from_dummies({dataFrameName})";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void Factorize(string values)
@@ -943,7 +943,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.factorize({values})";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void UniqueValues(string values)
@@ -951,7 +951,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.unique({values})";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void LReshape(string dataFrameName, Dictionary<string, string[]> groups)
@@ -959,7 +959,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.lreshape({dataFrameName}, {groups})";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void WideToLong(string dataFrameName, string[] stubnames, string i, string j)
@@ -967,7 +967,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.wide_to_long({dataFrameName}, stubnames={String.Join(", ", stubnames)}, i='{i}', j='{j}')";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void DetectMissingValues(string objName)
@@ -975,7 +975,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.isna({objName})"; // or pd.isnull(objName)
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void DetectNonMissingValues(string objName)
@@ -983,7 +983,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.notna({objName})"; // or pd.notnull(objName)
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void ConvertToNumeric(string arg, string errors = "raise")
@@ -991,7 +991,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.to_numeric({arg}, errors='{errors}')";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void ConvertToDatetime(string arg, string errors = "raise")
@@ -999,7 +999,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.to_datetime({arg}, errors='{errors}')";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void ConvertToTimedelta(string arg, string unit = "ns")
@@ -1007,7 +1007,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.to_timedelta({arg}, unit='{unit}')";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void CreateDateRange(string start, string end, int periods, string freq = "D")
@@ -1015,7 +1015,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.date_range(start='{start}', end='{end}', periods={periods}, freq='{freq}')";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void CreateBusinessDateRange(string start, string end, int periods, string freq = "B")
@@ -1023,7 +1023,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.bdate_range(start='{start}', end='{end}', periods={periods}, freq='{freq}')";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void CreatePeriodRange(string start, string end, int periods, string freq = "D")
@@ -1031,7 +1031,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.period_range(start='{start}', end='{end}', periods={periods}, freq='{freq}')";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void CreateTimedeltaRange(string start, string end, int periods, string freq = "D")
@@ -1039,7 +1039,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.timedelta_range(start='{start}', end='{end}', periods={periods}, freq='{freq}')";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void InferFrequency(string indexName)
@@ -1047,7 +1047,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.infer_freq({indexName})";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void CreateIntervalRange(string start, string end, int periods, string freq = "D")
@@ -1055,7 +1055,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.interval_range(start='{start}', end='{end}', periods={periods}, freq='{freq}')";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void EvaluateExpression(string expr)
@@ -1063,7 +1063,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.eval('{expr}')";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void GuessDatetimeFormat(string dtStr)
@@ -1071,7 +1071,7 @@ namespace Beep.Python.RuntimeEngine
             using (Py.GIL())
             {
                 string script = $"pd.tseries.api.guess_datetime_format('{dtStr}')";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
       
@@ -1094,7 +1094,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
             using (Py.GIL())
             {
                 string script = $"{seriesName}.astype('{dtype}')";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void SumSeries(string seriesName)
@@ -1102,7 +1102,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
             using (Py.GIL())
             {
                 string script = $"{seriesName}.sum()";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void MeanSeries(string seriesName)
@@ -1110,7 +1110,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
             using (Py.GIL())
             {
                 string script = $"{seriesName}.mean()";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void DetectMissingValuesSeries(string seriesName)
@@ -1118,7 +1118,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
             using (Py.GIL())
             {
                 string script = $"{seriesName}.isna()"; // or .isnull()
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void SeriesToNumpyArray(string seriesName)
@@ -1126,7 +1126,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
             using (Py.GIL())
             {
                 string script = $"{seriesName}.to_numpy()";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void SeriesIdxMax(string seriesName)
@@ -1134,7 +1134,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
             using (Py.GIL())
             {
                 string script = $"{seriesName}.idxmax()";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void ValueCountsSeries(string seriesName)
@@ -1142,7 +1142,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
             using (Py.GIL())
             {
                 string script = $"{seriesName}.value_counts()";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
 
@@ -1347,7 +1347,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}.count()";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
 
@@ -1357,7 +1357,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}.sum()";
-               RunPythonScript(script, null);
+                PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         // Function to get the mean of values in each column
@@ -1366,7 +1366,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}.mean()";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
 
@@ -1376,7 +1376,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}.max()";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
 
@@ -1386,7 +1386,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}.min()";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
 
@@ -1396,7 +1396,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}.median()";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
 
@@ -1406,7 +1406,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}.var()";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
 
@@ -1416,7 +1416,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}.std()";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void DescribeValues(string dataFrameName)
@@ -1424,7 +1424,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}.describe()";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void MeltDataFrame(string dataFrameName, string idVars = null, string valueVars = null)
@@ -1432,7 +1432,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}.melt(id_vars={idVars}, value_vars={valueVars})";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
         public void PivotDataFrame(string dataFrameName, string columns, string index = null, string values = null)
@@ -1440,7 +1440,7 @@ public dynamic CreateSeries(object data, IList<string> index = null, string dtyp
             using (Py.GIL())
             {
                 string script = $"{dataFrameName}.pivot(index='{index}', columns='{columns}', values='{values}')";
-                RunPythonScript(script, null);
+                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
 

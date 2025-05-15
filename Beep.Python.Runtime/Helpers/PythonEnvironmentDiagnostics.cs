@@ -501,5 +501,39 @@ namespace Beep.Python.RuntimeEngine.Helpers
             }
         }
 
+        public static string GetDefaultDataPath()
+        {
+            string baseDir;
+
+            // Use platform-specific paths
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            {
+                // Windows: Use AppData/Roaming
+                baseDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                baseDir = Path.Combine(baseDir, "Beep");
+            }
+            else if (Environment.OSVersion.Platform == PlatformID.Unix)
+            {
+                // Linux/macOS: Use ~/.beep
+                baseDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                baseDir = Path.Combine(baseDir, ".beep");
+            }
+            else
+            {
+                // Fallback for other platforms
+                baseDir = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "Beep");
+            }
+
+            // Create directory if it doesn't exist
+            if (!Directory.Exists(baseDir))
+            {
+                Directory.CreateDirectory(baseDir);
+            }
+
+            return baseDir;
+        }
+
     }
 }

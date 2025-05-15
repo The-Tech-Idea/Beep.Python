@@ -50,7 +50,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             Unitofwork.Sequencer = "AI_ALGORTHIMSPARAMS_SEQ";
           
             Unitofwork.PostCreate += AlgorithmsParametersunitofWork_PostCreate;
-            aIAlgorithimsViewModel=new PythonAlgorithimsViewModel(beepservice, pythonRuntimeManager);
+            aIAlgorithimsViewModel=new PythonAlgorithimsViewModel(beepservice, pythonRuntimeManager,sessionInfo);
             DataClassUnits = new UnitofWork<PythonDataClasses>(Editor, "dhubdb", "PythonDataClasses", "ID");
          
             aiCompFileDirName = "/AIComp";

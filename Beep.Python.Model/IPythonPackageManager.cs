@@ -37,7 +37,7 @@ namespace Beep.Python.Model
 
         // Methods to work with predefined package sets
         bool InstallPackageSet(string setName);
-        Dictionary<string, List<string>> GetAvailablePackageSets();
+        Dictionary<string, List<PackageDefinition>> GetAvailablePackageSets();
         bool SavePackageSetFromCurrentEnvironment(string setName, string description = "");
     }
 }

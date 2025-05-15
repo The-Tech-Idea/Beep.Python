@@ -276,12 +276,12 @@ namespace Beep.Python.Model
             get { return _category; }
             set { SetProperty(ref _category, value); }
         }
-
-        private List<string> _packages = new();
+        public string Image { get; set; }
+        private List<PackageDefinition> _packages = new();
         /// <summary>
         /// Gets or sets the list of package names included in this set.
         /// </summary>
-        public List<string> Packages
+        public List<PackageDefinition> Packages
         {
             get { return _packages; }
             set { SetProperty(ref _packages, value); }
@@ -305,27 +305,26 @@ namespace Beep.Python.Model
         public string ToRequirementsText(bool includeVersions = true)
         {
             var sb = new StringBuilder();
-
-            // Add a header comment
             sb.AppendLine($"# Package set: {Name}");
             sb.AppendLine($"# Description: {Description}");
             sb.AppendLine($"# Generated: {DateTime.Now}");
             sb.AppendLine();
 
-            foreach (var package in Packages)
+            foreach (var pkg in Packages)
             {
-                if (includeVersions && Versions.ContainsKey(package))
+                if (includeVersions && !string.IsNullOrWhiteSpace(pkg.Version))
                 {
-                    sb.AppendLine($"{package}{Versions[package]}");
+                    sb.AppendLine($"{pkg.PackageName}{pkg.Version}");
                 }
                 else
                 {
-                    sb.AppendLine(package);
+                    sb.AppendLine(pkg.PackageName);
                 }
             }
 
             return sb.ToString();
         }
+
     }
 
 

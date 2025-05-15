@@ -79,6 +79,16 @@ namespace Beep.Python.Model
                 SetProperty(ref _binpath, value);
             }
         }
+        private string _condaPath = string.Empty;
+        public string CondaPath
+        {
+            get { return _condaPath; }
+            set
+            {
+                _condaPath = value;
+                SetProperty(ref _condaPath, value);
+            }
+        }
         private string _packageinstallpath = string.Empty;
         public string Packageinstallpath
         {
@@ -211,7 +221,8 @@ namespace Beep.Python.Model
         Installed,
         NotInstalled,
         UpdateAvailable,
-        UpdateNotAvailable
+        UpdateNotAvailable,
+        Available
     }
     public enum PackageAction
     {

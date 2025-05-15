@@ -1012,23 +1012,61 @@ def process_generator(generator_func, callback):
             PythonSessionInfo session,
             PythonVirtualEnvironment environment)
         {
-            // Build a Python script that will execute the command line operation
+            // Build a Python script that will execute the command line operation with better Conda support
             string wrappedCommand = $@"
 import subprocess
 import sys
+import os
 
 try:
     # Set up the command
     cmd = '{commandString.Replace("'", "\\'")}'
     use_conda = {useConda.ToString().ToLower()}
+    env_path = r'{environment?.Path ?? ""}'
     
-    # Choose the right executable
+    # Get environment variables copy
+    env_vars = os.environ.copy()
+    
+    # Choose the right executable based on environment type
     if use_conda:
-        conda_cmd = 'conda ' + cmd
-        result = subprocess.run(conda_cmd, shell=True, capture_output=True, text=True)
+        # Try to find conda executable
+        conda_exe = 'conda'
+        
+        # On Windows, look for conda.exe in specific locations
+        if sys.platform == 'win32':
+            possible_conda_paths = [
+                os.path.join(env_path, 'conda.exe'),
+                os.path.join(env_path, '..', 'Scripts', 'conda.exe'),
+                os.path.join(env_path, '..', 'condabin', 'conda.exe')
+            ]
+            
+            for path in possible_conda_paths:
+                if os.path.exists(path):
+                    conda_exe = path
+                    break
+                    
+        # Build and execute conda command
+        conda_cmd = f'{{conda_exe}} {{cmd}}'
+        print(f'Executing: {{conda_cmd}}')
+        result = subprocess.run(conda_cmd, shell=True, capture_output=True, text=True, env=env_vars)
     else:
-        pip_cmd = f'{{sys.executable}} -m pip ' + cmd
-        result = subprocess.run(pip_cmd, shell=True, capture_output=True, text=True)
+        # For standard Python environments, use the python executable from the environment
+        python_exe = sys.executable
+        
+        # If we have a specific environment path, try to use that Python executable
+        if env_path and os.path.exists(env_path):
+            if sys.platform == 'win32':
+                python_path = os.path.join(env_path, 'python.exe')
+            else:
+                python_path = os.path.join(env_path, 'bin', 'python')
+                
+            if os.path.exists(python_path):
+                python_exe = python_path
+        
+        # Build and execute pip command
+        pip_cmd = f'{{python_exe}} -m pip {{cmd}}'
+        print(f'Executing: {{pip_cmd}}')
+        result = subprocess.run(pip_cmd, shell=True, capture_output=True, text=True, env=env_vars)
     
     # Capture output    
     output = result.stdout
@@ -1047,7 +1085,6 @@ except Exception as e:
             var (success, output) = await ExecuteCodeAsync(wrappedCommand, session, 600, progress);
             return output;
         }
-
 
         /// <summary>
         /// Executes Python code for a specific user and returns stdout.

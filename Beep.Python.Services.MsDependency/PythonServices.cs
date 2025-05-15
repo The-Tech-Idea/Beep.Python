@@ -6,6 +6,7 @@ using TheTechIdea.Beep.Editor;
 
 using TheTechIdea.Beep.Container;
 using System;
+using Beep.Python.RuntimeEngine.PackageManagement;
 
 namespace Beep.Python.RuntimeEngine.Services
 {

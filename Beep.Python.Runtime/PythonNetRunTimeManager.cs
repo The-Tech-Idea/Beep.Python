@@ -236,9 +236,10 @@ venv_name = '{venv.Name}'
         /// </summary>
         /// <param name="cfg">Python runtime configuration to use</param>
         /// <param name="virtualEnvPath">Optional path for virtual environment</param>
+        /// <param name="envName">Name for the environment (used for both single and multi-user modes)</param>
         /// <param name="mode">The Python engine mode (SingleUser or MultiUserWithEnvAndScopeAndSession)</param>
         /// <returns>True if initialization was successful; otherwise false</returns>
-        public bool Initialize(PythonRunTime cfg, string virtualEnvPath, PythonEngineMode mode)
+        public bool Initialize(PythonRunTime cfg, string virtualEnvPath, string envName, PythonEngineMode mode)
         {
             if (cfg == null)
             {
@@ -255,18 +256,15 @@ venv_name = '{venv.Name}'
                 string baseEnvPath;
                 if (string.IsNullOrWhiteSpace(virtualEnvPath))
                 {
-                    baseEnvPath = Path.Combine(
-                        DMEditor.ConfigEditor.ConfigPath,
-                        "PythonEnvironments");
+                    baseEnvPath = GetPythonEnvironmentsPath();
                 }
                 else
                 {
                     baseEnvPath = Path.GetDirectoryName(virtualEnvPath);
                     if (string.IsNullOrEmpty(baseEnvPath))
                     {
-                        baseEnvPath = Path.Combine(
-                            DMEditor.ConfigEditor.ConfigPath,
-                            "PythonEnvironments");
+                        // If the path is invalid, use the cross-platform default environment path
+                        baseEnvPath = GetPythonEnvironmentsPath();
                     }
                 }
 
@@ -276,8 +274,14 @@ venv_name = '{venv.Name}'
                     Directory.CreateDirectory(baseEnvPath);
                 }
 
-                // Determine environment name and path based on mode
-                string envName;
+                // Set default environment name if not provided
+                if (string.IsNullOrEmpty(envName))
+                {
+                    // Use mode-appropriate default names
+                    envName = mode == PythonEngineMode.SingleUser ? "SingleUser" : "MultiUser";
+                }
+
+                // Determine environment variables
                 PythonVirtualEnvironment env;
                 string username = Environment.UserName;
 
@@ -293,12 +297,13 @@ venv_name = '{venv.Name}'
                         // Create a new environment definition
                         env = new PythonVirtualEnvironment
                         {
-                            Name = Path.GetFileName(virtualEnvPath),
+                            Name = envName,
                             Path = virtualEnvPath,
                             PythonConfigID = cfg.ID,
                             BaseInterpreterPath = cfg.RuntimePath ?? cfg.BinPath,
                             CreatedOn = DateTime.Now,
                             CreatedBy = username,
+                            PythonBinary = cfg.Binary, // Preserve the binary type (Python/Conda)
                             EnvironmentType = PythonEnvironmentType.VirtualEnv
                         };
 
@@ -316,74 +321,38 @@ venv_name = '{venv.Name}'
                 }
                 else
                 {
-                    // Create or use mode-specific environment
-                    if (mode == PythonEngineMode.SingleUser)
+                    // Create or use mode-specific environment with the provided name
+                    string envPath = Path.Combine(baseEnvPath, envName);
+
+                    // Get existing or create new environment
+                    env = VirtualEnvmanager.GetEnvironmentByPath(envPath);
+                    if (env == null)
                     {
-                        envName = "SingleUser";
-                        string envPath = Path.Combine(baseEnvPath, envName);
+                        ReportProgress($"Creating {(mode == PythonEngineMode.SingleUser ? "single-user" : "multi-user")} environment...");
 
-                        // Get existing or create new environment
-                        env = VirtualEnvmanager.GetEnvironmentByPath(envPath);
-                        if (env == null)
+                        // Create a new environment definition
+                        env = new PythonVirtualEnvironment
                         {
-                            ReportProgress("Creating single-user environment...");
+                            Name = envName,
+                            Path = envPath,
+                            PythonConfigID = cfg.ID,
+                            BaseInterpreterPath = cfg.RuntimePath ?? cfg.BinPath,
+                            CreatedOn = DateTime.Now,
+                            // Set creator based on mode
+                            CreatedBy = mode == PythonEngineMode.SingleUser ? username : "system",
+                            PythonBinary = cfg.Binary, // Preserve the binary type (Python/Conda)
+                            EnvironmentType = PythonEnvironmentType.VirtualEnv
+                        };
 
-                            // Create a new environment definition for SingleUser mode
-                            env = new PythonVirtualEnvironment
-                            {
-                                Name = envName,
-                                Path = envPath,
-                                PythonConfigID = cfg.ID,
-                                BaseInterpreterPath = cfg.RuntimePath ?? cfg.BinPath,
-                                CreatedOn = DateTime.Now,
-                                CreatedBy = username,
-                                EnvironmentType = PythonEnvironmentType.VirtualEnv
-                            };
-
-                            // Create the virtual environment
-                            if (!VirtualEnvmanager.CreateVirtualEnvironment(cfg, env))
-                            {
-                                ReportProgress("Failed to create single-user environment.", Errors.Failed);
-                                return false;
-                            }
-
-                            // Add to managed environments
-                            VirtualEnvmanager.AddToManagedEnvironments(env);
-                        }
-                    }
-                    else // Multi-user mode
-                    {
-                        envName = "MultiUser";
-                        string envPath = Path.Combine(baseEnvPath, envName);
-
-                        // Get existing or create new environment
-                        env = VirtualEnvmanager.GetEnvironmentByPath(envPath);
-                        if (env == null)
+                        // Create the virtual environment
+                        if (!VirtualEnvmanager.CreateVirtualEnvironment(cfg, env))
                         {
-                            ReportProgress("Creating multi-user base environment...");
-
-                            // Create a new environment definition for MultiUser mode
-                            env = new PythonVirtualEnvironment
-                            {
-                                Name = envName,
-                                Path = envPath,
-                                PythonConfigID = cfg.ID,
-                                BaseInterpreterPath = cfg.RuntimePath ?? cfg.BinPath,
-                                CreatedOn = DateTime.Now,
-                                CreatedBy = "system", // For multi-user mode use "system" as creator
-                                EnvironmentType = PythonEnvironmentType.VirtualEnv
-                            };
-
-                            // Create the virtual environment
-                            if (!VirtualEnvmanager.CreateVirtualEnvironment(cfg, env))
-                            {
-                                ReportProgress("Failed to create multi-user environment.", Errors.Failed);
-                                return false;
-                            }
-
-                            // Add to managed environments
-                            VirtualEnvmanager.AddToManagedEnvironments(env);
+                            ReportProgress($"Failed to create {(mode == PythonEngineMode.SingleUser ? "single-user" : "multi-user")} environment.", Errors.Failed);
+                            return false;
                         }
+
+                        // Add to managed environments
+                        VirtualEnvmanager.AddToManagedEnvironments(env);
                     }
                 }
 
@@ -435,7 +404,6 @@ venv_name = '{venv.Name}'
                 return false;
             }
         }
-
         /// <summary>
         /// Core method for initializing the Python engine with a specific virtual environment.
         /// This is separated from the environment creation logic.
@@ -465,31 +433,71 @@ venv_name = '{venv.Name}'
                     return false;
                 }
 
-                // Determine paths based on platform
+                // Determine paths based on platform and binary type (Python/Conda)
                 string pythonBinPath = venv.Path;
                 string pythonScriptPath;
                 string pythonExe;
                 string pythonPackagePath;
+                string pythonDll;
 
                 if (Environment.OSVersion.Platform == PlatformID.Win32NT)
                 {
-                    pythonScriptPath = Path.Combine(venv.Path, "Scripts");
-                    pythonExe = Path.Combine(venv.Path, "python.exe");
-                    pythonPackagePath = Path.Combine(venv.Path, "Lib", "site-packages");
+                    if (venv.PythonBinary == PythonBinary.Conda)
+                    {
+                        // Conda environment structure on Windows
+                        pythonScriptPath = venv.Path; // Conda typically has executables in the root directory
+                        pythonExe = Path.Combine(venv.Path, "python.exe");
+                        pythonPackagePath = Path.Combine(venv.Path, "Lib", "site-packages");
+
+                        // Set Conda-specific environment variables
+                        Environment.SetEnvironmentVariable("CONDA_PREFIX", venv.Path, EnvironmentVariableTarget.Process);
+                        Environment.SetEnvironmentVariable("CONDA_DEFAULT_ENV", venv.Name, EnvironmentVariableTarget.Process);
+                    }
+                    else
+                    {
+                        // Standard Python venv structure on Windows
+                        pythonScriptPath = Path.Combine(venv.Path, "Scripts");
+                        pythonExe = Path.Combine(venv.Path, "python.exe");
+                        pythonPackagePath = Path.Combine(venv.Path, "Lib", "site-packages");
+                    }
                 }
                 else
                 {
+                    // Unix-like systems (Linux/macOS)
                     pythonScriptPath = Path.Combine(venv.Path, "bin");
                     pythonExe = Path.Combine(venv.Path, "bin", "python");
 
-                    // Get Python lib directory
-                    var pythonLibDir = Directory.GetDirectories(Path.Combine(venv.Path, "lib"))
-                        .FirstOrDefault(d => d.Contains("python"));
+                    if (venv.PythonBinary == PythonBinary.Conda)
+                    {
+                        // Conda environment structure on Unix
+                        // Get Python version from config for more precise path
+                        string pythonVersion = !string.IsNullOrEmpty(config.PythonVersion)
+                            ? config.PythonVersion.Split(' ')[0]
+                            : "3";
 
-                    // Set the site-packages path
-                    pythonPackagePath = pythonLibDir != null
-                        ? Path.Combine(pythonLibDir, "site-packages")
-                        : Path.Combine(venv.Path, "lib", "python3", "site-packages");
+                        // Try to format version number as major.minor
+                        string versionPrefix = pythonVersion.Contains(".")
+                            ? pythonVersion.Substring(0, pythonVersion.LastIndexOf('.'))
+                            : pythonVersion;
+
+                        pythonPackagePath = Path.Combine(venv.Path, "lib", $"python{versionPrefix}", "site-packages");
+
+                        // Set Conda-specific environment variables
+                        Environment.SetEnvironmentVariable("CONDA_PREFIX", venv.Path, EnvironmentVariableTarget.Process);
+                        Environment.SetEnvironmentVariable("CONDA_DEFAULT_ENV", venv.Name, EnvironmentVariableTarget.Process);
+                    }
+                    else
+                    {
+                        // Standard Python venv structure on Unix
+                        // Get Python lib directory
+                        var pythonLibDir = Directory.GetDirectories(Path.Combine(venv.Path, "lib"))
+                            .FirstOrDefault(d => d.Contains("python"));
+
+                        // Set the site-packages path
+                        pythonPackagePath = pythonLibDir != null
+                            ? Path.Combine(pythonLibDir, "site-packages")
+                            : Path.Combine(venv.Path, "lib", "python3", "site-packages");
+                    }
                 }
 
                 // Verify the Python executable exists in the virtual environment
@@ -511,11 +519,19 @@ venv_name = '{venv.Name}'
 
                 // Set up the environment variables
                 Environment.SetEnvironmentVariable("VIRTUAL_ENV", venv.Path, EnvironmentVariableTarget.Process);
-                Environment.SetEnvironmentVariable("PATH", $"{pythonBinPath};{pythonScriptPath};" + Environment.GetEnvironmentVariable("PATH"), EnvironmentVariableTarget.Process);
+
+                // Use platform-specific path separator for PATH
+                char pathSeparator = Environment.OSVersion.Platform == PlatformID.Win32NT ? ';' : ':';
+                Environment.SetEnvironmentVariable(
+                    "PATH",
+                    $"{pythonBinPath}{pathSeparator}{pythonScriptPath}{pathSeparator}" + Environment.GetEnvironmentVariable("PATH"),
+                    EnvironmentVariableTarget.Process
+                );
+
                 Environment.SetEnvironmentVariable("PYTHONNET_RUNTIME", $"{pythonBinPath}", EnvironmentVariableTarget.Process);
                 Environment.SetEnvironmentVariable("PYTHONNET_PYTHON_RUNTIME", $"{pythonBinPath}", EnvironmentVariableTarget.Process);
                 Environment.SetEnvironmentVariable("PYTHONHOME", pythonBinPath, EnvironmentVariableTarget.Process);
-                Environment.SetEnvironmentVariable("PYTHONPATH", $"{pythonPackagePath};", EnvironmentVariableTarget.Process);
+                Environment.SetEnvironmentVariable("PYTHONPATH", $"{pythonPackagePath}", EnvironmentVariableTarget.Process);
 
                 // Initialize Python.NET
                 try
@@ -523,19 +539,42 @@ venv_name = '{venv.Name}'
                     ReportProgress("Initializing Python engine with virtual environment");
 
                     // Find the Python DLL
-                    string pythonDll;
                     if (Environment.OSVersion.Platform == PlatformID.Win32NT)
                     {
-                        pythonDll = Path.Combine(pythonBinPath, Path.GetFileName(config.PythonDll));
-                        if (!File.Exists(pythonDll))
+                        if (venv.PythonBinary == PythonBinary.Conda)
                         {
-                            pythonDll = config.PythonDll; // Fall back to base interpreter DLL
+                            // Conda on Windows typically places DLLs in different locations
+                            pythonDll = Path.Combine(pythonBinPath, Path.GetFileName(config.PythonDll));
+                            if (!File.Exists(pythonDll))
+                            {
+                                // Try Library/bin directory (common in Conda)
+                                pythonDll = Path.Combine(pythonBinPath, "Library", "bin", Path.GetFileName(config.PythonDll));
+                                if (!File.Exists(pythonDll))
+                                {
+                                    // Fall back to base interpreter DLL as last resort
+                                    pythonDll = config.PythonDll;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // Standard Python venv
+                            pythonDll = Path.Combine(pythonBinPath, Path.GetFileName(config.PythonDll));
+                            if (!File.Exists(pythonDll))
+                            {
+                                pythonDll = config.PythonDll; // Fall back to base interpreter DLL
+                            }
                         }
                     }
                     else
                     {
-                        // For Linux/macOS, we need to find the appropriate .so file
-                        var soFiles = Directory.GetFiles(Path.Combine(venv.Path, "lib"), "libpython*.so*", SearchOption.AllDirectories);
+                        // For Linux/macOS, find the appropriate .so file
+                        var searchPattern = venv.PythonBinary == PythonBinary.Conda
+                            ? "libpython*.so*"  // Conda pattern
+                            : "libpython*.so*"; // Standard pattern (same for now, but could be specialized)
+
+                        // For both Conda and standard Python, search in the lib directory
+                        var soFiles = Directory.GetFiles(Path.Combine(venv.Path, "lib"), searchPattern, SearchOption.AllDirectories);
                         pythonDll = soFiles.FirstOrDefault() ?? "";
                     }
 
@@ -555,7 +594,7 @@ venv_name = '{venv.Name}'
                     // This handles the Python environment setup that was previously done inline
                     VirtualEnvmanager.InitializePythonEnvironment(venv);
 
-                    ReportProgress("Virtual environment activated successfully", Errors.Ok);
+                    ReportProgress($"Virtual environment ({(venv.PythonBinary == PythonBinary.Conda ? "Conda" : "Python")}) activated successfully", Errors.Ok);
                     _IsInitialized = true;
 
                     // If this environment has a requirements file, install required packages
@@ -580,9 +619,9 @@ venv_name = '{venv.Name}'
                 return false;
             }
         }
-
         /// <summary>
         /// Installs packages from a requirements file if one is specified for the environment.
+        /// Uses the admin session for package management operations.
         /// </summary>
         private void InstallRequirementsIfNeeded(PythonVirtualEnvironment venv)
         {
@@ -593,29 +632,27 @@ venv_name = '{venv.Name}'
 
             ReportProgress($"Installing packages from requirements: {venv.RequirementsFile}");
 
-            // Create a temporary session for requirements installation
-            var tempSession = new PythonSessionInfo
-            {
-                SessionName = $"TempSession_{DateTime.Now.Ticks}",
-                VirtualEnvironmentId = venv.ID,
-                Username = "system",
-                StartedAt = DateTime.Now,
-                Status = PythonSessionStatus.Active
-            };
+            // Get the admin session for package management
+            var adminSession = VirtualEnvmanager.GetPackageManagementSession(venv);
 
-            // Add the session to the environment
-            venv.AddSession(tempSession);
+            if (adminSession == null)
+            {
+                ReportProgress("Failed to obtain admin session for package installation.", Errors.Warning);
+                return;
+            }
 
             // Execute pip install command
             if (ExecuteManager != null)
             {
                 try
                 {
+                    ReportProgress($"Using admin session '{adminSession.SessionId}' for package installation");
+
                     var installTask = ExecuteManager.RunPythonCommandLineAsync(
                         Progress ?? DMEditor?.progress,
                         $"install -r \"{venv.RequirementsFile}\"",
                         venv.PythonBinary == PythonBinary.Conda,
-                        tempSession,
+                        adminSession,
                         venv);
 
                     installTask.Wait();
@@ -635,9 +672,11 @@ venv_name = '{venv.Name}'
                     ReportProgress($"Error installing packages: {ex.Message}", Errors.Warning);
                 }
             }
+            else
+            {
+                ReportProgress("ExecuteManager not initialized. Cannot install packages.", Errors.Warning);
+            }
         }
-
-        /// <summary>
         /// Shuts down the Python engine, disposing of any persistent scope and clearing active environment state.
         /// </summary>
         public IErrorsInfo ShutDown()
@@ -718,80 +757,12 @@ venv_name = '{venv.Name}'
             VirtualEnvmanager.UpdateEnvironmentUsage(venv.ID);
 
             // Initialize with the specified environment and current mode
-            return Initialize(config, venv.Path, currentMode);
+            return Initialize(config, venv.Path,venv.Name, currentMode);
         }
 
         #endregion
         #region "Create User Environments"
-        /// <summary>
-        /// Refreshes the list of Python installations available on the system.
-        /// Updates the PythonInstallations property with discovered Python runtimes.
-        /// </summary>
-        /// <summary>
-        /// Refreshes the list of Python installations available on the system.
-        /// Updates the PythonInstallations property with discovered Python runtimes.
-        /// </summary>
-        public void RefreshPythonInstalltions()
-        {
-            try
-            {
-                ReportProgress("Scanning for Python installations...");
-
-                // Use the diagnostics class to find Python installations
-                var diagnosticReports = PythonEnvironmentDiagnostics.LookForPythonInstallations();
-
-                // Clear existing installations or create a new collection if needed
-                if (PythonInstallations == null)
-                    PythonInstallations = new ObservableBindingList<PythonRunTime>();
-
-                // Store existing IDs to avoid duplicates
-                var existingIds = new HashSet<string>(
-                    PythonInstallations.Select(p => p.ID),
-                    StringComparer.OrdinalIgnoreCase);
-
-                // Convert diagnostic reports to PythonRunTime objects
-                foreach (var report in diagnosticReports)
-                {
-                    if (report.PythonFound && !string.IsNullOrEmpty(report.PythonPath))
-                    {
-                        // Get installation directory from Python executable path
-                        string installDir = Path.GetDirectoryName(report.PythonPath);
-
-                        // Create a new runtime configuration
-                        var config = PythonRunTimeDiagnostics.GetPythonConfig(installDir);
-
-                        if (config != null && !existingIds.Contains(config.ID))
-                        {
-                            // Add extra info from the diagnostic report
-                            config.PythonVersion = report.PythonVersion?.Replace("Python ", "").Trim();
-                            config.IsPythonInstalled = true;
-
-                            // Handle Conda environments
-                            if (report.Warnings.Any(w => w.Contains("Conda")))
-                            {
-                                config.Binary = PythonBinary.Conda;
-                            }
-
-                            // Add to our collection
-                            PythonInstallations.Add(config);
-                            existingIds.Add(config.ID);
-
-                            ReportProgress($"Found Python {config.PythonVersion} at {config.BinPath}");
-                        }
-                    }
-                }
-
-                // Save the updated configurations
-                SaveConfig();
-
-                ReportProgress($"Found {diagnosticReports.Count} Python installation(s)", Errors.Ok);
-            }
-            catch (Exception ex)
-            {
-                ReportProgress($"Error refreshing Python installations: {ex.Message}", Errors.Failed);
-            }
-        }
-
+       
         /// <summary>
         /// Creates a session for a user with a specific environment.
         /// </summary>
@@ -957,6 +928,290 @@ venv_name = '{venv.Name}'
         #endregion
 
         #region "Utility Methods"
+        /// <summary>
+        /// Refreshes the list of Python installations available on the system.
+        /// Updates the PythonInstallations property with discovered Python runtimes.
+        /// </summary>
+        public void RefreshPythonInstalltions()
+        {
+            try
+            {
+                ReportProgress("Scanning for Python installations...");
+
+                // Use the diagnostics class to find Python installations
+                var diagnosticReports = PythonEnvironmentDiagnostics.LookForPythonInstallations();
+
+                // Clear existing installations or create a new collection if needed
+                if (PythonInstallations == null)
+                    PythonInstallations = new ObservableBindingList<PythonRunTime>();
+
+                // Store existing IDs to avoid duplicates
+                var existingIds = new HashSet<string>(
+                    PythonInstallations.Select(p => p.ID),
+                    StringComparer.OrdinalIgnoreCase);
+
+                // Convert diagnostic reports to PythonRunTime objects
+                foreach (var report in diagnosticReports)
+                {
+                    if (report.PythonFound && !string.IsNullOrEmpty(report.PythonPath))
+                    {
+                        // Get installation directory from Python executable path
+                        string installDir = Path.GetDirectoryName(report.PythonPath);
+
+                        // Create a new runtime configuration
+                        var config = PythonRunTimeDiagnostics.GetPythonConfig(installDir);
+
+                        if (config != null && !existingIds.Contains(config.ID))
+                        {
+                            // Add extra info from the diagnostic report
+                            config.PythonVersion = report.PythonVersion?.Replace("Python ", "").Trim();
+                            config.IsPythonInstalled = true;
+
+                            // Check for Conda installation
+                            bool isCondaInstallation = report.Warnings.Any(w => w.Contains("Conda"));
+                            if (isCondaInstallation)
+                            {
+                                config.Binary = PythonBinary.Conda;
+
+                                // Search for conda executable in common locations
+                                string[] condaCandidates = GetCondaCandidatePaths(installDir);
+                                string condaPath = condaCandidates.FirstOrDefault(File.Exists);
+
+                                if (!string.IsNullOrEmpty(condaPath))
+                                {
+                                    // Set the CondaPath property directly now that it exists
+                                    config.CondaPath = condaPath;
+                                    ReportProgress($"Found Conda at {condaPath}");
+                                }
+                            }
+                            else
+                            {
+                                config.Binary = PythonBinary.Python;
+                            }
+
+                            // Verify DLL path exists and try to find it if needed
+                            if (!string.IsNullOrEmpty(config.PythonDll) && !File.Exists(config.PythonDll))
+                            {
+                                string foundDll = FindPythonDll(config, installDir);
+                                if (!string.IsNullOrEmpty(foundDll))
+                                {
+                                    config.PythonDll = foundDll;
+                                }
+                            }
+
+                            // Add to our collection
+                            PythonInstallations.Add(config);
+                            existingIds.Add(config.ID);
+
+                            string envType = config.Binary == PythonBinary.Conda ? "Conda" : "Python";
+                            ReportProgress($"Found {envType} {config.PythonVersion} at {config.BinPath}");
+                        }
+                    }
+                }
+
+                // If no installations found, check standard locations
+                if (PythonInstallations.Count == 0)
+                {
+                    ReportProgress("No Python installations found in PATH. Checking standard locations...");
+                    CheckStandardPythonLocations();
+                }
+
+                // Save the updated configurations
+                SaveConfig();
+
+                ReportProgress($"Found {PythonInstallations.Count} Python installation(s)", Errors.Ok);
+            }
+            catch (Exception ex)
+            {
+                ReportProgress($"Error refreshing Python installations: {ex.Message}", Errors.Failed);
+            }
+        }
+
+        /// <summary>
+        /// Checks standard locations for Python installations
+        /// </summary>
+        private void CheckStandardPythonLocations()
+        {
+            string[] standardLocations;
+
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            {
+                // Windows standard locations
+                standardLocations = new[] {
+            @"C:\Python312",
+            @"C:\Python311",
+            @"C:\Python310",
+            @"C:\Program Files\Python312",
+            @"C:\Program Files\Python311",
+            @"C:\Program Files\Python310",
+            // Anaconda/Conda locations
+            @"C:\ProgramData\Anaconda3",
+            @"C:\Users\" + Environment.UserName + @"\Anaconda3",
+            @"C:\Users\" + Environment.UserName + @"\miniconda3"
+        };
+            }
+            else
+            {
+                // Unix/Linux/macOS standard locations
+                string userHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                standardLocations = new[] {
+            "/usr/bin",
+            "/usr/local/bin",
+            "/opt/python3",
+            "/opt/anaconda3",
+            "/opt/miniconda3",
+            Path.Combine(userHome, "anaconda3"),
+            Path.Combine(userHome, "miniconda3")
+        };
+            }
+
+            foreach (string location in standardLocations)
+            {
+                if (Directory.Exists(location))
+                {
+                    string pythonExe = null;
+                    string condaExe = null;
+
+                    // Find executables based on platform
+                    if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+                    {
+                        pythonExe = Path.Combine(location, "python.exe");
+                        condaExe = Path.Combine(location, "Scripts", "conda.exe");
+
+                        if (!File.Exists(condaExe))
+                        {
+                            condaExe = Path.Combine(location, "condabin", "conda.exe");
+                        }
+                    }
+                    else
+                    {
+                        pythonExe = Path.Combine(location, "bin", "python");
+                        condaExe = Path.Combine(location, "bin", "conda");
+                    }
+
+                    if (File.Exists(pythonExe))
+                    {
+                        var config = PythonRunTimeDiagnostics.GetPythonConfig(Path.GetDirectoryName(pythonExe));
+
+                        if (config != null)
+                        {
+                            config.IsPythonInstalled = true;
+                            bool isConda = File.Exists(condaExe);
+
+                            config.Binary = isConda ? PythonBinary.Conda : PythonBinary.Python;
+
+                            if (isConda)
+                            {
+                                // Now directly set the CondaPath property
+                                config.CondaPath = condaExe;
+                                ReportProgress($"Found Conda installation at standard location: {location}");
+                            }
+                            else
+                            {
+                                ReportProgress($"Found Python installation at standard location: {location}");
+                            }
+
+                            // Add to the collection if not a duplicate
+                            if (!PythonInstallations.Any(p => p.ID == config.ID))
+                            {
+                                PythonInstallations.Add(config);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        /// <summary>
+        /// Returns possible locations for the conda executable based on the installation directory.
+        /// </summary>
+        private string[] GetCondaCandidatePaths(string installDir)
+        {
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            {
+                return new[] {
+            Path.Combine(installDir, "conda.exe"),            // Windows - Same dir as python.exe
+            Path.Combine(installDir, "..", "Scripts", "conda.exe"), // Windows - Scripts dir
+            Path.Combine(installDir, "..", "condabin", "conda.exe"), // Windows - condabin 
+            Path.Combine(installDir, "..", "Library", "bin", "conda.exe") // Windows - Library/bin
+        };
+            }
+            else
+            {
+                return new[] {
+            Path.Combine(installDir, "conda"),                // Unix - Same dir
+            Path.Combine(installDir, "..", "bin", "conda"),   // Unix - bin dir
+            "/usr/bin/conda",                                // Unix - system dir
+            "/usr/local/bin/conda"                          // Unix - local dir
+        };
+            }
+        }
+
+        /// <summary>
+        /// Attempts to find the Python DLL in various locations.
+        /// </summary>
+        private string FindPythonDll(PythonRunTime config, string installDir)
+        {
+            string dllName = Path.GetFileName(config.PythonDll);
+
+            if (config.Binary == PythonBinary.Conda)
+            {
+                // Common Conda DLL locations
+                string[] dllCandidates = {
+            Path.Combine(installDir, dllName),
+            Path.Combine(installDir, "Library", "bin", dllName),
+            Path.Combine(Path.GetDirectoryName(installDir), "Library", "bin", dllName)
+        };
+
+                return dllCandidates.FirstOrDefault(File.Exists);
+            }
+            else
+            {
+                // Standard Python DLL locations
+                string[] dllCandidates = {
+            Path.Combine(installDir, dllName),
+            Path.Combine(installDir, "DLLs", dllName)
+        };
+
+                return dllCandidates.FirstOrDefault(File.Exists);
+            }
+        }
+        /// <summary>
+        /// Gets the appropriate path for storing Python environments based on the platform.
+        /// </summary>
+        /// <returns>Platform-specific path for Python environments</returns>
+        public string GetPythonEnvironmentsPath()
+        {
+            string baseDir;
+
+            // Determine the appropriate base directory based on the platform
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            {
+                // On Windows, use Local AppData
+                baseDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            }
+            else if (Environment.OSVersion.Platform == PlatformID.Unix)
+            {
+                // On Linux/macOS, use the home directory with a dot-prefixed directory
+                baseDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                return Path.Combine(baseDir, ".beep", "python_environments");
+            }
+            else
+            {
+                // Fallback for other platforms
+                baseDir = Path.GetTempPath();
+            }
+
+            // Construct the path with organization and application name for better organization
+            string appDataPath = Path.Combine(baseDir, "TheTechIdea", "Beep", "PythonEnvironments");
+
+            // Create the directory if it doesn't exist
+            if (!Directory.Exists(appDataPath))
+            {
+                Directory.CreateDirectory(appDataPath);
+            }
+
+            return appDataPath;
+        }
         /// <summary>
         /// Reports progress messages using Progress if available; otherwise uses DMEditor.
         /// </summary>
