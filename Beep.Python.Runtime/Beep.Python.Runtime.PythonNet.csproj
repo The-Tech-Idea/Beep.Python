@@ -48,6 +48,9 @@
     <ProjectReference Include="..\Beep.Python.Model\Beep.Python.Model.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="EmbedderManagement\" />
+    <Folder Include="VectorDBManagement\" />
+    <Folder Include="UI\" />
     <Folder Include="Tests\" />
   </ItemGroup>
 

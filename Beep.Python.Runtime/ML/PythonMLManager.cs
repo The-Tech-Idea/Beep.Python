@@ -8,7 +8,7 @@ using System.Linq;
 using TheTechIdea.Beep.Container.Services;
 
 
-namespace Beep.Python.RuntimeEngine
+namespace Beep.Python.RuntimeEngine.ML
 {
     public class PythonMLManager : PythonBaseViewModel, IPythonMLManager, IDisposable
     {
@@ -681,7 +681,7 @@ globals()['accuracy'] = accuracy
             {
                 return null;
             }
-            string trainingCols = String.Join(", ", training_columns.Select(col => $"'{col}'"));
+            string trainingCols = string.Join(", ", training_columns.Select(col => $"'{col}'"));
             //   string inputAsString = inputData.ToString(); // Convert inputData to a string representation
             string script = $@"
 X_predict = pd.get_dummies(predict_data[features])
@@ -704,7 +704,7 @@ predictions = model.predict(X_predict)
             {
                 return null;
             }
-            string trainingCols = String.Join(", ", training_columns.Select(col => $"'{col}'"));
+            string trainingCols = string.Join(", ", training_columns.Select(col => $"'{col}'"));
             // Prepare the script to predict and round off the predictions
             string script = $@"
 import numpy as np
@@ -739,7 +739,7 @@ predictions=rounded_predictions
             }
             string algorithmName = Enum.GetName(typeof(MachineLearningAlgorithm), algorithm);
             string features = string.Join(", ", featureColumns.Select(fc => @$"'{fc}'"));
-            string paramsDict = String.Join(", ", parameters.Select(kv => $"{kv.Key}={kv.Value.ToString()}"));
+            string paramsDict = string.Join(", ", parameters.Select(kv => $"{kv.Key}={kv.Value.ToString()}"));
             bool isSupervised = algorithmSupervision[algorithmName];
             string isSupervisedPythonLiteral = isSupervised ? "True" : "False";
             string importStatement;

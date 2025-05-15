@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Beep.Python.RuntimeEngine
+namespace Beep.Python.RuntimeEngine.Helpers
 {
     public static class PythonHelpers
     {

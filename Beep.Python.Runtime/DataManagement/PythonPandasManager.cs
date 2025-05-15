@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using TheTechIdea.Beep.Container.Services;
-namespace Beep.Python.RuntimeEngine
+namespace Beep.Python.RuntimeEngine.DataManagement
 {
     public class PythonPandasManager: PythonBaseViewModel
     {
@@ -918,7 +918,7 @@ namespace Beep.Python.RuntimeEngine
         {
             using (Py.GIL())
             {
-                string script = $"pd.concat({String.Join(", ", dataFrames)}, axis={axis})";
+                string script = $"pd.concat({string.Join(", ", dataFrames)}, axis={axis})";
                 PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }
@@ -966,7 +966,7 @@ namespace Beep.Python.RuntimeEngine
         {
             using (Py.GIL())
             {
-                string script = $"pd.wide_to_long({dataFrameName}, stubnames={String.Join(", ", stubnames)}, i='{i}', j='{j}')";
+                string script = $"pd.wide_to_long({dataFrameName}, stubnames={string.Join(", ", stubnames)}, i='{i}', j='{j}')";
                  PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
             }
         }

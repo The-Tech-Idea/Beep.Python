@@ -4,6 +4,7 @@ using Beep.Python.RuntimeEngine.ViewModels;
 using TheTechIdea.Beep.Editor;
 using System;
 using Beep.Python.RuntimeEngine.PackageManagement;
+using Beep.Python.RuntimeEngine.ML;
 
 namespace Beep.Python.RuntimeEngine.Services
 {

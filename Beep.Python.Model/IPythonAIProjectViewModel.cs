@@ -22,7 +22,7 @@ namespace Beep.Python.Model
         double MaeScore { get; }
         double MseScore { get; }
         ObservableBindingList<PythonProject> Projects { get; }
-        IPythonMLManager PythonMLManager { get; set; }
+      
         double RmseScore { get; }
         UnitofWork<PythonProject> UnitofWork { get; set; }
 

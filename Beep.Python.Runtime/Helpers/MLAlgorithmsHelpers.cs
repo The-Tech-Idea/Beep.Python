@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 
-namespace Beep.Python.RuntimeEngine
+namespace Beep.Python.RuntimeEngine.Helpers
 {
     public static class MLAlgorithmsHelpers
     {
