@@ -216,7 +216,7 @@ namespace Beep.Python.RuntimeEngine.Services
         /// </summary>
         /// <param name="dmeEditor">The DME editor.</param>
         /// <returns>The virtual environment view model.</returns>
-        public static IPythonVirtualEnvManager GetPythonVirtualEnv(this IDMEEditor dmeEditor)
+        public static IPythonVirtualEnvManager GetVirtualEnvManager(this IDMEEditor dmeEditor)
         {
             return GetPythonVirtualEnv();
         }
@@ -226,7 +226,7 @@ namespace Beep.Python.RuntimeEngine.Services
         /// </summary>
         /// <param name="dmeEditor">The DME editor.</param>
         /// <returns>The AI project view model.</returns>
-        public static IPythonAIProjectViewModel GetPythonAIProjectViewModel(this IDMEEditor dmeEditor)
+        public static IPythonAIProjectViewModel GetAIProjectViewModel(this IDMEEditor dmeEditor)
         {
             return GetPythonAIProjectViewModel();
         }
@@ -236,7 +236,7 @@ namespace Beep.Python.RuntimeEngine.Services
         /// </summary>
         /// <param name="dmeEditor">The DME editor.</param>
         /// <returns>The model evaluation graphs view model.</returns>
-        public static IPythonModelEvaluationGraphsViewModel GetPythonModelEvaluationGraphsViewModel(this IDMEEditor dmeEditor)
+        public static IPythonModelEvaluationGraphsViewModel GetModelEvaluationGraphsViewModel(this IDMEEditor dmeEditor)
         {
             return GetPythonModelEvaluationGraphsViewModel();
         }

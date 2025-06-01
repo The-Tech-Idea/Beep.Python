@@ -128,17 +128,17 @@ namespace Beep.Python.RuntimeEngine.Services
         public static IPythonMLManager GetPythonMLManager() => GetService<IPythonMLManager>();
         public static IPythonAIProjectViewModel GetPythonAIProjectViewModel() => GetService<IPythonAIProjectViewModel>();
         public static IPythonModelEvaluationGraphsViewModel GetPythonModelEvaluationGraphsViewModel() => GetService<IPythonModelEvaluationGraphsViewModel>();
-        public static IPythonVirtualEnvManager GetPythonVirtualEnv(this IDMEEditor dmeEditor)
+        public static IPythonVirtualEnvManager GetVirtualEnvManager(this IDMEEditor dmeEditor)
         {
 
             return GetPythonVirtualEnv();
         }
-        public static IPythonAIProjectViewModel GetPythonAIProjectViewModel(this IDMEEditor dmeEditor)
+        public static IPythonAIProjectViewModel GetAIProjectViewModel(this IDMEEditor dmeEditor)
         {
 
             return GetPythonAIProjectViewModel();
         }
-        public static IPythonModelEvaluationGraphsViewModel GetPythonModelEvaluationGraphsViewModel(this IDMEEditor dmeEditor)
+        public static IPythonModelEvaluationGraphsViewModel GetModelEvaluationGraphsViewModel(this IDMEEditor dmeEditor)
         {
 
             return GetPythonModelEvaluationGraphsViewModel();
