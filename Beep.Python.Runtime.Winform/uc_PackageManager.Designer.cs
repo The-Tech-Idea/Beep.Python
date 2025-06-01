@@ -201,7 +201,7 @@
             beepSimpleGrid1.TempBackColor = Color.Empty;
             beepSimpleGrid1.Text = "beepSimpleGrid1";
             beepSimpleGrid1.TextImageRelation = TextImageRelation.ImageAboveText;
-            beepSimpleGrid1.Theme = TheTechIdea.Beep.Vis.Modules.EnumBeepThemes.DefaultTheme;
+            beepSimpleGrid1.Theme ="DefaultTheme";
             beepSimpleGrid1.TitleHeaderImage = "simpleinfoapps.svg";
             beepSimpleGrid1.TitleText = "";
             beepSimpleGrid1.TitleTextFont = new Font("Arial", 16F);
