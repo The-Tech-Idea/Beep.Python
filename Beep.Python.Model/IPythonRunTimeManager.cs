@@ -24,6 +24,7 @@ namespace Beep.Python.Model
         /// <summary>All known Python runtime configurations.</summary>
         ObservableBindingList<PythonRunTime> PythonInstallations { get; set; }
 
+        
 
         /// <summary>Acquire the GIL state for thread-safe Python calls.</summary>
         Py.GILState GIL();
@@ -63,7 +64,8 @@ namespace Beep.Python.Model
         /// </summary>
         bool Initialize(PythonRunTime cfg, string virtualEnvPath, string envName, PythonEngineMode mode );
 
-    
+        PythonRunTime Initialize(string runtimepath);
+        
         /// <summary>
         /// Creates or loads the Python configuration.
         /// </summary>

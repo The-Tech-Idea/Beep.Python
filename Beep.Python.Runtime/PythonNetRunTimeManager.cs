@@ -230,6 +230,173 @@ venv_name = '{venv.Name}'
         #endregion "Scope Management"
 
         #region "Initialization and Shutdown"
+        public PythonRunTime Initialize(string runtimepath)
+        {
+            if (string.IsNullOrEmpty(runtimepath))
+            {
+                ReportProgress("Cannot initialize with null or empty runtime path.", Errors.Failed);
+                return null;
+            }
+
+            try
+            {
+                ReportProgress($"Checking Python installation at: {runtimepath}");
+
+                // First check if it exists in PythonInstallations collection
+                PythonRunTime runtime = PythonInstallations?.FirstOrDefault(p => 
+                    p.BinPath == runtimepath || 
+                    p.RuntimePath == runtimepath);
+                
+                if (runtime != null)
+                {
+                    ReportProgress($"Found existing Python configuration for: {runtimepath}");
+                    return runtime;
+                }
+
+                // If not found in existing installations, run diagnostics
+                var diagnostics = PythonEnvironmentDiagnostics.RunFullDiagnostics(runtimepath);
+                if (diagnostics == null)
+                {
+                    ReportProgress($"Failed to run Python diagnostics on path: {runtimepath}", Errors.Failed);
+                    return null;
+                }
+                
+                // Check if the diagnostics found a valid Python installation
+                if (!diagnostics.PythonFound)
+                {
+                    string errorMessage = diagnostics.Errors.Any() 
+                        ? diagnostics.Errors.First() 
+                        : "Python not found at the specified path";
+                    
+                    ReportProgress($"Invalid Python path: {errorMessage}", Errors.Failed);
+                    return null;
+                }
+
+                // Create a new runtime configuration using the comprehensive method
+                runtime = PythonRunTimeDiagnostics.GetPythonConfig(runtimepath);
+                
+                if (runtime == null)
+                {
+                    ReportProgress($"Failed to create Python runtime configuration for: {runtimepath}", Errors.Failed);
+                    return null;
+                }
+                
+                // Enhance the runtime with additional configuration
+                EnhanceRuntimeConfiguration(runtime, diagnostics);
+
+                // Add to known installations if not already there
+                if (!PythonInstallations.Any(p => p.ID == runtime.ID))
+                {
+                    PythonInstallations.Add(runtime);
+                    SaveConfig(); // Save the updated configuration
+                }
+                
+                ReportProgress($"Successfully initialized Python runtime: {runtime.PythonVersion} at {runtimepath}", Errors.Ok);
+                return runtime;
+            }
+            catch (Exception ex)
+            {
+                ReportProgress($"Error initializing Python runtime: {ex.Message}", Errors.Failed);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Enhances a Python runtime configuration with additional information from diagnostics.
+        /// </summary>
+        private void EnhanceRuntimeConfiguration(PythonRunTime runtime, PythonDiagnosticsReport diagnostics)
+        {
+            if (runtime == null || diagnostics == null)
+                return;
+
+            // Set package type (Conda or standard Python)
+            runtime.PackageType = PythonRunTimeDiagnostics.GetPackageType(runtime.RuntimePath);
+            
+            // Format Python version nicely
+            if (!string.IsNullOrEmpty(diagnostics.PythonVersion))
+            {
+                runtime.PythonVersion = diagnostics.PythonVersion.Replace("Python ", "").Trim();
+            }
+            
+            // Check and set Conda path if applicable
+            string condaExe = PythonRunTimeDiagnostics.IsCondaInstalled(runtime.RuntimePath);
+            if (!string.IsNullOrEmpty(condaExe))
+            {
+                runtime.CondaPath = Path.Combine(runtime.RuntimePath, condaExe);
+                runtime.Binary = PythonBinary.Conda;
+                ReportProgress($"Conda installation detected: {runtime.CondaPath}");
+            }
+            else
+            {
+                runtime.Binary = PythonBinary.Python;
+            }
+            
+            // Try to fix missing or invalid DLL paths
+            if (!string.IsNullOrEmpty(runtime.PythonDll) && !File.Exists(runtime.PythonDll))
+            {
+                string[] candidates;
+                
+                if (runtime.Binary == PythonBinary.Conda)
+                {
+                    // Common Conda DLL locations
+                    candidates = new[] {
+                        Path.Combine(runtime.RuntimePath, Path.GetFileName(runtime.PythonDll)),
+                        Path.Combine(runtime.RuntimePath, "Library", "bin", Path.GetFileName(runtime.PythonDll))
+                    };
+                }
+                else
+                {
+                    // Standard Python DLL locations
+                    candidates = new[] {
+                        Path.Combine(runtime.RuntimePath, Path.GetFileName(runtime.PythonDll)),
+                        Path.Combine(runtime.RuntimePath, "DLLs", Path.GetFileName(runtime.PythonDll))
+                    };
+                }
+                
+                string foundDll = candidates.FirstOrDefault(File.Exists);
+                if (!string.IsNullOrEmpty(foundDll))
+                {
+                    runtime.PythonDll = foundDll;
+                    ReportProgress($"Found Python DLL at: {foundDll}");
+                }
+            }
+            
+            // Set up a default AI folder path if needed
+            if (string.IsNullOrEmpty(runtime.AiFolderpath))
+            {
+                string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                runtime.AiFolderpath = Path.Combine(documentsPath, "AI");
+                
+                // Create the directory if it doesn't exist
+                if (!Directory.Exists(runtime.AiFolderpath))
+                {
+                    Directory.CreateDirectory(runtime.AiFolderpath);
+                }
+            }
+            
+            // Copy installed packages information from diagnostics
+            if (diagnostics.InstalledPackages?.Any() == true)
+            {
+                if (runtime.Packagelist == null)
+                {
+                    runtime.Packagelist = new ObservableBindingList<PackageDefinition>();
+                }
+                
+                foreach (string packageName in diagnostics.InstalledPackages)
+                {
+                    if (!runtime.Packagelist.Any(p => p.PackageName == packageName))
+                    {
+                        runtime.Packagelist.Add(new PackageDefinition
+                        {
+                            PackageName = packageName,
+                            Status = PackageStatus.Installed
+                        });
+                    }
+                }
+                
+                ReportProgress($"Loaded {diagnostics.InstalledPackages.Count} installed packages");
+            }
+        }
 
         /// <summary>
         /// Initializes the Python runtime with appropriate environment based on engine mode.

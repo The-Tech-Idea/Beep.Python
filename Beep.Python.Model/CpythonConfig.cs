@@ -4,10 +4,10 @@ using TheTechIdea.Beep.Editor;
 
 namespace Beep.Python.Model
 {
-    public  class PythonRunTime : Entity
+    public class PythonRunTime : Entity
     {
 
-        public PythonRunTime() { GuidObj = Guid.NewGuid();ID = GuidObj.ToString(); }
+        public PythonRunTime() { GuidObj = Guid.NewGuid(); ID = GuidObj.ToString(); }
 
         private Guid guid = Guid.NewGuid();
         public Guid GuidObj
@@ -47,9 +47,9 @@ namespace Beep.Python.Model
             {
                 _script = value;
                 SetProperty(ref _script, value);
-            }
+            }   
         }
-        private string _scriptPath = string.Empty;  
+        private string _scriptPath = string.Empty;
         public string ScriptPath
         {
             get { return _scriptPath; }
@@ -99,7 +99,7 @@ namespace Beep.Python.Model
                 SetProperty(ref _packageinstallpath, value);
             }
         }
-       private string _aifolderpath = string.Empty;
+        private string _aifolderpath = string.Empty;
         public string AiFolderpath
         {
             get { return _aifolderpath; }
@@ -138,7 +138,7 @@ namespace Beep.Python.Model
                 _pythondll = value;
                 SetProperty(ref _pythondll, value);
             }
-        } 
+        }
         private string _message = "Python is not Status";
         public string Message
         {
@@ -202,12 +202,15 @@ namespace Beep.Python.Model
         Message: {Message}
         ";
         }
+
+       
     }
+
     public enum BinType32or64
     {
         p395x32,
         p395x64,
-        Unknown 
+        Unknown
 
     }
     public enum PackageType

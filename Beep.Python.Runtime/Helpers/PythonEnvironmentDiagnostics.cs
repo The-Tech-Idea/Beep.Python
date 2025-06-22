@@ -534,6 +534,66 @@ namespace Beep.Python.RuntimeEngine.Helpers
 
             return baseDir;
         }
+        public static PythonRunTime GetPythonRunTime(string runtimepath)
+        {
+            // Check for null path first
+            if (string.IsNullOrEmpty(runtimepath))
+            {
+                return null;
+            }
+
+            // Check if Python is installed at the specified path
+            if (PythonRunTimeDiagnostics.IsPythonInstalled(runtimepath))
+            {
+                try
+                {
+                    // Use the more comprehensive method from PythonRunTimeDiagnostics
+                    var runTime = PythonRunTimeDiagnostics.GetPythonConfig(runtimepath);
+
+                    // Set package type
+                    runTime.PackageType = PythonRunTimeDiagnostics.GetPackageType(runtimepath);
+
+                    // Check and set conda path
+                    string condaExe = PythonRunTimeDiagnostics.IsCondaInstalled(runtimepath);
+                    if (!string.IsNullOrEmpty(condaExe))
+                    {
+                        runTime.CondaPath = Path.Combine(runtimepath, condaExe);
+                        runTime.Binary = PythonBinary.Python;  // Assuming this is the appropriate enum value
+                    }
+
+                    // Set AI folder path if needed
+                    if (string.IsNullOrEmpty(runTime.AiFolderpath))
+                    {
+                        string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                        runTime.AiFolderpath = Path.Combine(documentsPath, "AI");
+
+                        // Create the directory if it doesn't exist
+                        if (!Directory.Exists(runTime.AiFolderpath))
+                        {
+                            Directory.CreateDirectory(runTime.AiFolderpath);
+                        }
+                    }
+
+                    return runTime;
+                }
+                catch (Exception ex)
+                {
+                    // Return a basic runtime object if there's an exception
+                    var basicRuntime = new PythonRunTime
+                    {
+                        IsPythonInstalled = true,
+                        RuntimePath = runtimepath,
+                        BinPath = runtimepath,
+                        Packageinstallpath = Path.Combine(runtimepath, "Lib", "site-packages"),
+                        Message = $"Error configuring Python: {ex.Message}"
+                    };
+                    return basicRuntime;
+                }
+            }
+
+            // Python not installed at this path
+            return null;
+        }
 
     }
 }
