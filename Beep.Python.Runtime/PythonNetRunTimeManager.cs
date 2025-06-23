@@ -229,7 +229,7 @@ venv_name = '{venv.Name}'
         }
         #endregion "Scope Management"
 
-        #region "Initialization and Shutdown"
+        #region "Initialiaqzation and Shutdown"
         public PythonRunTime Initialize(string runtimepath)
         {
             if (string.IsNullOrEmpty(runtimepath))
