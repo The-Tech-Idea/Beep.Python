@@ -8,10 +8,8 @@ using System.Collections.ObjectModel;
 using Beep.Python.Model;
 using TheTechIdea.Beep.ConfigUtil;
 using System.Linq;
-using System.Threading.Channels;
 using TheTechIdea.Beep.Addin;
 using TheTechIdea.Beep.Editor;
-using System.Diagnostics;
 using TheTechIdea.Beep.Container.Services;
 using Beep.Python.RuntimeEngine.Helpers;
 

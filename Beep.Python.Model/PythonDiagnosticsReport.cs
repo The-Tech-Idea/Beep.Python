@@ -9,8 +9,10 @@ namespace Beep.Python.Model
     public class PythonDiagnosticsReport
     {
         public bool PythonFound { get; set; }
-        public string PythonPath { get; set; }
+        public string PythonPath { get; set; } //. path to python.exe and not the python.exe file itself
         public string PythonVersion { get; set; }
+        public string PythonExe { get; set; }
+        public bool IsConda { get; set; }
         public bool PipFound { get; set; }
         public List<string> InstalledPackages { get; set; } = new();
         public bool InternetAvailable { get; set; }

@@ -21,53 +21,44 @@ namespace Beep.Python.RuntimeEngine.Helpers
             var reports = new List<PythonDiagnosticsReport>();
             var searchPaths = new List<string>();
 
-            // Standard Python installation locations
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
-                // Windows common paths
-                searchPaths.AddRange(new[]
+                // Dynamically search common parent directories for Python/Conda folders
+                var parentDirs = new[]
                 {
-            @"C:\Python27",
-            @"C:\Python36",
-            @"C:\Python37",
-            @"C:\Python38",
-            @"C:\Python39",
-            @"C:\Python310",
-            @"C:\Python311",
-            @"C:\Python312",
-            @"C:\Program Files\Python27",
-            @"C:\Program Files\Python36",
-            @"C:\Program Files\Python37",
-            @"C:\Program Files\Python38",
-            @"C:\Program Files\Python39",
-            @"C:\Program Files\Python310",
-            @"C:\Program Files\Python311",
-            @"C:\Program Files\Python312",
-            @"C:\Program Files (x86)\Python27",
-            @"C:\Program Files (x86)\Python36",
-            @"C:\Program Files (x86)\Python37",
-            @"C:\Program Files (x86)\Python38",
-            @"C:\Program Files (x86)\Python39",
-            @"C:\Program Files (x86)\Python310",
-            @"C:\Program Files (x86)\Python311",
-            @"C:\Program Files (x86)\Python312",
-            @"C:\Users\" + Environment.UserName + @"\AppData\Local\Programs\Python",
-            @"C:\ProgramData\Anaconda3",
-            @"C:\Users\" + Environment.UserName + @"\Anaconda3",
-            @"C:\Users\" + Environment.UserName + @"\AppData\Local\Continuum\anaconda3",
-            @"C:\Users\" + Environment.UserName + @"\miniconda3",
-            @"C:\Users\" + Environment.UserName + @"\AppData\Local\Continuum\miniconda3",
-            @"C:\ProgramData\Miniconda3"
-        });
-
+                    @"C:\",
+                    @"C:\Program Files\",
+                    @"C:\Program Files (x86)\",
+                    $@"C:\Users\{Environment.UserName}\AppData\Local\Programs\",
+                    $@"C:\Users\{Environment.UserName}",
+                    @"C:\ProgramData\"
+                };
+                foreach (var parent in parentDirs)
+                {
+                    if (Directory.Exists(parent))
+                    {
+                        foreach (var dir in Directory.GetDirectories(parent, "Python*", SearchOption.TopDirectoryOnly))
+                            searchPaths.Add(dir);
+                        foreach (var dir in Directory.GetDirectories(parent, "Anaconda*", SearchOption.TopDirectoryOnly))
+                            searchPaths.Add(dir);
+                        foreach (var dir in Directory.GetDirectories(parent, "Miniconda*", SearchOption.TopDirectoryOnly))
+                            searchPaths.Add(dir);
+                    }
+                }
                 // Search all drives for common Python installation directories
                 foreach (var drive in Directory.GetLogicalDrives())
                 {
-                    searchPaths.Add(Path.Combine(drive, "Python"));
-                    searchPaths.Add(Path.Combine(drive, "ProgramData", "Anaconda3"));
-                    searchPaths.Add(Path.Combine(drive, "ProgramData", "Miniconda3"));
+                    var driveRoot = drive.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+                    if (Directory.Exists(driveRoot))
+                    {
+                        foreach (var dir in Directory.GetDirectories(driveRoot, "Python*", SearchOption.TopDirectoryOnly))
+                            searchPaths.Add(dir);
+                        foreach (var dir in Directory.GetDirectories(driveRoot, "Anaconda*", SearchOption.TopDirectoryOnly))
+                            searchPaths.Add(dir);
+                        foreach (var dir in Directory.GetDirectories(driveRoot, "Miniconda*", SearchOption.TopDirectoryOnly))
+                            searchPaths.Add(dir);
+                    }
                 }
-
                 // Check Windows Registry for Python installations
                 try
                 {
@@ -99,19 +90,28 @@ namespace Beep.Python.RuntimeEngine.Helpers
             }
             else
             {
-                // Linux/macOS common paths
-                searchPaths.AddRange(new[]
+                // Linux/macOS: search common parent directories for Python/Conda folders
+                var userHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                var parentDirs = new[]
                 {
-            "/usr/bin",
-            "/usr/local/bin",
-            "/opt/python",
-            "/opt/anaconda3",
-            "/opt/miniconda3",
-            "/usr/local/anaconda3",
-            "/usr/local/miniconda3",
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "anaconda3"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "miniconda3")
-        });
+                    "/usr/bin",
+                    "/usr/local/bin",
+                    "/opt/",
+                    "/usr/local/",
+                    Path.Combine(userHome),
+                };
+                foreach (var parent in parentDirs)
+                {
+                    if (Directory.Exists(parent))
+                    {
+                        foreach (var dir in Directory.GetDirectories(parent, "python*", SearchOption.TopDirectoryOnly))
+                            searchPaths.Add(dir);
+                        foreach (var dir in Directory.GetDirectories(parent, "anaconda*", SearchOption.TopDirectoryOnly))
+                            searchPaths.Add(dir);
+                        foreach (var dir in Directory.GetDirectories(parent, "miniconda*", SearchOption.TopDirectoryOnly))
+                            searchPaths.Add(dir);
+                    }
+                }
             }
 
             // Collect from PATH environment variable
@@ -126,10 +126,8 @@ namespace Beep.Python.RuntimeEngine.Helpers
             {
                 string exeName = Environment.OSVersion.Platform == PlatformID.Win32NT ? "python.exe" : "python";
                 pythonExePath = Path.Combine(dir, exeName);
-
                 if (!File.Exists(pythonExePath))
                 {
-                    // For Linux/macOS, check if the directory itself is python executable
                     if (Environment.OSVersion.Platform != PlatformID.Win32NT &&
                         dir.EndsWith("/python") && File.Exists(dir))
                     {
@@ -147,11 +145,25 @@ namespace Beep.Python.RuntimeEngine.Helpers
                 if (IsPythonDir(path, out string pythonExe))
                 {
                     var report = RunFullDiagnostics(Path.GetDirectoryName(pythonExe));
-                    if (!reports.Any(r => r.PythonPath == report.PythonPath)) // Avoid duplicates
+                    if (!reports.Any(r => r.PythonPath == report.PythonPath))
                     {
                         reports.Add(report);
                     }
                 }
+                // --- NEW: Recursively search for python.exe in subdirectories ---
+                try
+                {
+                    var pythonExeFiles = Directory.GetFiles(path, "python.exe", SearchOption.AllDirectories);
+                    foreach (var pythonExeFile in pythonExeFiles)
+                    {
+                        var report = RunFullDiagnostics(Path.GetDirectoryName(pythonExeFile));
+                        if (!reports.Any(r => r.PythonPath == report.PythonPath))
+                        {
+                            reports.Add(report);
+                        }
+                    }
+                }
+                catch { /* ignore access errors */ }
             }
 
             // Find Python installations within search directories (but not recursive to avoid slow scanning)
@@ -170,11 +182,25 @@ namespace Beep.Python.RuntimeEngine.Helpers
                             if (IsPythonDir(dir, out string pythonExe))
                             {
                                 var report = RunFullDiagnostics(Path.GetDirectoryName(pythonExe));
-                                if (!reports.Any(r => r.PythonPath == report.PythonPath)) // Avoid duplicates
+                                if (!reports.Any(r => r.PythonPath == report.PythonPath))
                                 {
                                     reports.Add(report);
                                 }
                             }
+                            // --- NEW: Recursively search for python.exe in subdirectories ---
+                            try
+                            {
+                                var pythonExeFiles = Directory.GetFiles(dir, "python.exe", SearchOption.AllDirectories);
+                                foreach (var pythonExeFile in pythonExeFiles)
+                                {
+                                    var report = RunFullDiagnostics(Path.GetDirectoryName(pythonExeFile));
+                                    if (!reports.Any(r => r.PythonPath == report.PythonPath))
+                                    {
+                                        reports.Add(report);
+                                    }
+                                }
+                            }
+                            catch { /* ignore access errors */ }
                         }
                     }
                 }
@@ -188,6 +214,24 @@ namespace Beep.Python.RuntimeEngine.Helpers
             FindCondaEnvironments(reports);
 
             return reports;
+        }
+
+        public static List<PythonRunTime> GetPythonRuntimesInstallations()
+        {
+            List<PythonRunTime> pythonRunTimes = new List<PythonRunTime>();
+            var reports = LookForPythonInstallations();
+            foreach (var report in reports)
+            {
+                if (report.PythonFound && !string.IsNullOrEmpty(report.PythonPath))
+                {
+                    var runTime = GetPythonRunTime(report.PythonPath);
+                    if (runTime != null)
+                    {
+                        pythonRunTimes.Add(runTime);
+                    }
+                }
+            }
+            return pythonRunTimes;
         }
 
         /// <summary>
@@ -267,23 +311,23 @@ namespace Beep.Python.RuntimeEngine.Helpers
             {
                 condaPaths.AddRange(new[]
                 {
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Anaconda3", "Scripts", condaExe),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Miniconda3", "Scripts", condaExe),
-            @"C:\ProgramData\Anaconda3\Scripts\" + condaExe,
-            @"C:\ProgramData\Miniconda3\Scripts\" + condaExe
-        });
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Anaconda3", "Scripts", condaExe),
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Miniconda3", "Scripts", condaExe),
+                    @"C:\ProgramData\Anaconda3\Scripts\" + condaExe,
+                    @"C:\ProgramData\Miniconda3\Scripts\" + condaExe
+                });
             }
             else
             {
                 condaPaths.AddRange(new[]
                 {
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "anaconda3", "bin", "conda"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "miniconda3", "bin", "conda"),
-            "/opt/anaconda3/bin/conda",
-            "/opt/miniconda3/bin/conda",
-            "/usr/local/anaconda3/bin/conda",
-            "/usr/local/miniconda3/bin/conda"
-        });
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "anaconda3", "bin", "conda"),
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "miniconda3", "bin", "conda"),
+                    "/opt/anaconda3/bin/conda",
+                    "/opt/miniconda3/bin/conda",
+                    "/usr/local/anaconda3/bin/conda",
+                    "/usr/local/miniconda3/bin/conda"
+                });
             }
 
             foreach (var path in condaPaths)
@@ -319,10 +363,10 @@ namespace Beep.Python.RuntimeEngine.Helpers
             }
             return installations;
         }
+
         public static PythonDiagnosticsReport RunFullDiagnostics(string pythonPath)
         {
             var report = new PythonDiagnosticsReport();
-
             try
             {
                 string pythonExe = Path.Combine(pythonPath, "python.exe");
@@ -333,24 +377,27 @@ namespace Beep.Python.RuntimeEngine.Helpers
                 }
 
                 report.PythonFound = true;
-                report.PythonPath = pythonExe;
-
+                report.PythonPath = pythonPath; // directory only
+                report.PythonExe = pythonExe;   // full path to python.exe
                 report.PythonVersion = GetPythonVersion(pythonExe);
                 report.PipFound = IsPipAvailable(pythonExe);
                 report.InternetAvailable = CheckInternetConnection();
+                report.Timestamp = DateTime.Now;
+                report.CanExecuteCode = TestPythonExecution(pythonExe);
+
+                // Detect if this is a conda environment
+                string condaMeta = Path.Combine(pythonPath, "conda-meta");
+                report.IsConda = Directory.Exists(condaMeta);
 
                 if (report.PipFound)
                     report.InstalledPackages = GetInstalledPackages(pythonExe);
                 else
                     report.Warnings.Add("pip is not available.");
-
-                report.CanExecuteCode = TestPythonExecution(pythonExe);
             }
             catch (Exception ex)
             {
                 report.Errors.Add("Unexpected error: " + ex.Message);
             }
-
             return report;
         }
 
@@ -452,23 +499,24 @@ namespace Beep.Python.RuntimeEngine.Helpers
                 Console.WriteLine($"Failed to save report: {ex.Message}");
             }
         }
+
         public static void SaveReportAsText(PythonDiagnosticsReport report, string filePath)
         {
             try
             {
                 var lines = new List<string>
-        {
-            "=== Python Environment Diagnostics Report ===",
-            $"Timestamp: {report.Timestamp}",
-            $"Python Found: {report.PythonFound}",
-            $"Python Path: {report.PythonPath}",
-            $"Python Version: {report.PythonVersion}",
-            $"Pip Found: {report.PipFound}",
-            $"Can Execute Code: {report.CanExecuteCode}",
-            $"Internet Available: {report.InternetAvailable}",
-            "",
-            "Installed Packages:"
-        };
+                {
+                    "=== Python Environment Diagnostics Report ===",
+                    $"Timestamp: {report.Timestamp}",
+                    $"Python Found: {report.PythonFound}",
+                    $"Python Path: {report.PythonPath}",
+                    $"Python Version: {report.PythonVersion}",
+                    $"Pip Found: {report.PipFound}",
+                    $"Can Execute Code: {report.CanExecuteCode}",
+                    $"Internet Available: {report.InternetAvailable}",
+                    "",
+                    "Installed Packages:"
+                };
 
                 if (report.InstalledPackages.Any())
                 {
@@ -534,6 +582,7 @@ namespace Beep.Python.RuntimeEngine.Helpers
 
             return baseDir;
         }
+
         public static PythonRunTime GetPythonRunTime(string runtimepath)
         {
             // Check for null path first
@@ -594,6 +643,5 @@ namespace Beep.Python.RuntimeEngine.Helpers
             // Python not installed at this path
             return null;
         }
-
     }
 }

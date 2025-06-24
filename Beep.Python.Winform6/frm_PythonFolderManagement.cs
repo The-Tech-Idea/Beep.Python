@@ -375,24 +375,24 @@ namespace Beep.Python.Winform
         #region "IDM_Addin Implementation"
         private readonly IBeepService? beepService;
 
-        protected EnumBeepThemes _themeEnum = EnumBeepThemes.DefaultTheme;
-        protected BeepTheme _currentTheme = BeepThemesManager.DefaultTheme;
-        [Browsable(true)]
-        public EnumBeepThemes Theme
-        {
-            get => _themeEnum;
-            set
-            {
-                _themeEnum = value;
-                _currentTheme = BeepThemesManager.GetTheme(value);
-                //      this.ApplyTheme();
-                ApplyTheme();
-            }
-        }
-        private void BeepThemesManager_ThemeChanged(object? sender, ThemeChangeEventsArgs e)
-        {
-            Theme = e.NewTheme;
-        }
+        //protected EnumBeepThemes _themeEnum = EnumBeepThemes.DefaultTheme;
+        //protected BeepTheme _currentTheme = BeepThemesManager.DefaultTheme;
+        //[Browsable(true)]
+        //public EnumBeepThemes Theme
+        //{
+        //    get => _themeEnum;
+        //    set
+        //    {
+        //        _themeEnum = value;
+        //        _currentTheme = BeepThemesManager.GetTheme(value);
+        //        //      this.ApplyTheme();
+        //        ApplyTheme();
+        //    }
+        //}
+        //private void BeepThemesManager_ThemeChanged(object? sender, ThemeChangeEventsArgs e)
+        //{
+        //    Theme = e.NewTheme;
+        //}
 
         public AddinDetails Details { get; set; }
         public Dependencies Dependencies { get; set; }
@@ -439,7 +439,7 @@ namespace Beep.Python.Winform
 
         public virtual void OnNavigatedTo(Dictionary<string, object> parameters)
         {
-            if (Theme != BeepThemesManager.CurrentTheme) { Theme = BeepThemesManager.CurrentTheme; }
+           // if (Theme != BeepThemesManager.CurrentTheme) { Theme = BeepThemesManager.CurrentTheme; }
         }
 
         public virtual void Resume()
@@ -502,7 +502,7 @@ namespace Beep.Python.Winform
                 if (item is IBeepUIComponent)
                 {
                     // apply theme to usercontrol
-                    ((IBeepUIComponent)item).Theme = Theme;
+                 //   ((IBeepUIComponent)item).Theme = Theme;
                     // ((IBeepUIComponent)item).ApplyTheme();
 
                 }
