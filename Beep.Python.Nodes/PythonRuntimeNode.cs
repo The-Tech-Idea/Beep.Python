@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Beep.Python.Model;
+using Beep.Python.RuntimeEngine.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -51,6 +53,7 @@ namespace Beep.Python.Nodes
         public string BranchDescription { get ; set ; }
         public string BranchClass { get ; set ; } = "Python Runtime";
 
+        public PythonRunTime PythonRunTime { get; set; } = new PythonRunTime();
         public IBranch CreateCategoryNode(CategoryFolder p)
         {
             throw new NotImplementedException();
@@ -60,7 +63,37 @@ namespace Beep.Python.Nodes
         {
             try
             {
+                if(PythonRunTime.PackageType== PackageType.conda)
+                {
+                    PythonRunTime.VirtualEnvironments = PythonEnvironmentDiagnostics.GetCondaEnvironmentsFromRuntime(PythonRunTime);
+                }
+                else
+                     PythonRunTime.VirtualEnvironments = PythonEnvironmentDiagnostics.GetPythonEnvironmentsFromRuntime(PythonRunTime);
+                foreach (var runtime in PythonRunTime.VirtualEnvironments)
+                {
+                    // Create a new branch for each runtime
+                    // if not already exists
+                    if (runtime == null || string.IsNullOrEmpty(runtime.ID) || string.IsNullOrEmpty(runtime.RuntimePath))
+                        continue;
+                    PythonVirtualEnvNode node = ChildBranchs.FirstOrDefault(n => n is PythonVirtualEnvNode && n.GuidID == runtime.ID) as PythonVirtualEnvNode;
+                    if (node == null)
+                    {
+                        node = new PythonVirtualEnvNode();
+                        node.GuidID = runtime.ID;
+                        node.DMEEditor = DMEEditor;
+                        node.TreeEditor = TreeEditor;
+                        node.ParentBranch = this;
+                        node.ID = TreeEditor.SeqID;
+                        node.PythonRunTime = PythonRunTime;
+                        node.VirtualEnvironment = runtime;
+                        node.BranchText = runtime.RuntimePath;
+                        //   ChildBranchs.Add(node);
 
+                        //  TreeEditor.AddBranchToParentInBranchsOnly(this, node);
+                        TreeEditor.Treebranchhandler.AddBranch(this, node);
+                       
+                    }
+                }
             }
             catch (Exception)
             {

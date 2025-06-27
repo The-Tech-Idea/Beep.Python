@@ -20,6 +20,9 @@ namespace Beep.Python.Model
         public List<string> Warnings { get; set; } = new();
         public List<string> Errors { get; set; } = new();
         public DateTime Timestamp { get; set; } = DateTime.Now;
+     
+        public bool IsVenv { get; set; }
+        public bool IsBaseInstallation => !IsConda && !IsVenv;
     }
 
 }

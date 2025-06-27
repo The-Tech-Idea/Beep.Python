@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Beep.Python.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -50,7 +51,8 @@ namespace Beep.Python.Nodes
         public int ParentBranchID { get ; set ; }
         public string BranchDescription { get ; set ; }
         public string BranchClass { get ; set ; }= "Python Virtual Environment";
-
+        public PythonRunTime PythonRunTime { get; set; } = new PythonRunTime();
+        public PythonRunTime VirtualEnvironment { get; set; } = new PythonRunTime();
         public IBranch CreateCategoryNode(CategoryFolder p)
         {
             throw new NotImplementedException();

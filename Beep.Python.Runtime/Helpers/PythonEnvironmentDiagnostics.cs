@@ -58,123 +58,78 @@ namespace Beep.Python.RuntimeEngine.Helpers
 
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
-                // Dynamically search common parent directories for Python/Conda folders
                 var parentDirs = new[]
                 {
-                    @"C:\",
-                    @"C:\Program Files\",
-                    @"C:\Program Files (x86)\",
-                    $@"C:\Users\{Environment.UserName}\AppData\Local\Programs\",
-                    $@"C:\Users\{Environment.UserName}",
-                    @"C:\ProgramData\"
-                };
+            @"C:\",
+            @"C:\Program Files\",
+            @"C:\Program Files (x86)\",
+            $@"C:\Users\{Environment.UserName}\AppData\Local\Programs\",
+              $@"C:\Users\{Environment.UserName}\AppData\Local\Programs\Python",
+            $@"C:\Users\{Environment.UserName}",
+            @"C:\ProgramData\"
+        };
+
                 foreach (var parent in parentDirs)
                 {
                     if (Directory.Exists(parent))
                     {
-                        foreach (var dir in Directory.GetDirectories(parent, "Python*", SearchOption.TopDirectoryOnly))
-                            searchPaths.Add(dir);
-                        foreach (var dir in Directory.GetDirectories(parent, "Anaconda*", SearchOption.TopDirectoryOnly))
-                            searchPaths.Add(dir);
-                        foreach (var dir in Directory.GetDirectories(parent, "Miniconda*", SearchOption.TopDirectoryOnly))
-                            searchPaths.Add(dir);
+                        AddMatchingDirectories(searchPaths, parent, "Python*", true);
+                        AddMatchingDirectories(searchPaths, parent, "Anaconda*", true);
+                        AddMatchingDirectories(searchPaths, parent, "Miniconda*", true);
                     }
                 }
-                // Search all drives for common Python installation directories
+
+                // Scan all drives for common Python installation directories
                 foreach (var drive in Directory.GetLogicalDrives())
                 {
                     var driveRoot = drive.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
                     if (Directory.Exists(driveRoot))
                     {
-                        foreach (var dir in Directory.GetDirectories(driveRoot, "Python*", SearchOption.TopDirectoryOnly))
-                            searchPaths.Add(dir);
-                        foreach (var dir in Directory.GetDirectories(driveRoot, "Anaconda*", SearchOption.TopDirectoryOnly))
-                            searchPaths.Add(dir);
-                        foreach (var dir in Directory.GetDirectories(driveRoot, "Miniconda*", SearchOption.TopDirectoryOnly))
-                            searchPaths.Add(dir);
+                        AddMatchingDirectories(searchPaths, driveRoot, "Python*", true);
+                        AddMatchingDirectories(searchPaths, driveRoot, "Anaconda*", true);
+                        AddMatchingDirectories(searchPaths, driveRoot, "Miniconda*", true);
                     }
-                }
-                // Check Windows Registry for Python installations
-                try
-                {
-                    using (var baseKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Python\PythonCore"))
-                    {
-                        if (baseKey != null)
-                        {
-                            foreach (var versionName in baseKey.GetSubKeyNames())
-                            {
-                                using (var versionKey = baseKey.OpenSubKey(versionName + @"\InstallPath"))
-                                {
-                                    if (versionKey != null)
-                                    {
-                                        string path = versionKey.GetValue(null) as string;
-                                        if (!string.IsNullOrEmpty(path))
-                                        {
-                                            searchPaths.Add(path);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error accessing registry: {ex.Message}");
                 }
             }
             else
             {
-                // Linux/macOS: search common parent directories for Python/Conda folders
+                // Linux/macOS handling can be added similarly
                 var userHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
                 var parentDirs = new[]
                 {
-                    "/usr/bin",
-                    "/usr/local/bin",
-                    "/opt/",
-                    "/usr/local/",
-                    Path.Combine(userHome),
-                };
+            "/usr/bin",
+            "/usr/local/bin",
+            "/opt/",
+            "/usr/local/",
+            Path.Combine(userHome),
+        };
                 foreach (var parent in parentDirs)
                 {
                     if (Directory.Exists(parent))
                     {
-                        foreach (var dir in Directory.GetDirectories(parent, "python*", SearchOption.TopDirectoryOnly))
-                            searchPaths.Add(dir);
-                        foreach (var dir in Directory.GetDirectories(parent, "anaconda*", SearchOption.TopDirectoryOnly))
-                            searchPaths.Add(dir);
-                        foreach (var dir in Directory.GetDirectories(parent, "miniconda*", SearchOption.TopDirectoryOnly))
-                            searchPaths.Add(dir);
+                        AddMatchingDirectories(searchPaths, parent, "python*", true);
+                        AddMatchingDirectories(searchPaths, parent, "anaconda*", true);
+                        AddMatchingDirectories(searchPaths, parent, "miniconda*", true);
                     }
                 }
             }
 
-            // Collect from PATH environment variable
-            var pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
-            searchPaths.AddRange(pathDirs);
-
-            // Deduplicate search paths
-            searchPaths = searchPaths.Distinct().Where(Directory.Exists).ToList();
+            // Deduplicate and filter out invalid paths and unwanted ones like pkgs, venvs
+            searchPaths = searchPaths
+                .Distinct()
+                .Where(Directory.Exists)
+                .Where(p => !p.Contains(@"\pkgs\") && !IsSubEnvironment(p))
+                .ToList();
 
             // Helper to check if a directory contains a Python installation
             bool IsPythonDir(string dir, out string pythonExePath)
             {
                 string exeName = Environment.OSVersion.Platform == PlatformID.Win32NT ? "python.exe" : "python";
                 pythonExePath = Path.Combine(dir, exeName);
-                if (!File.Exists(pythonExePath))
-                {
-                    if (Environment.OSVersion.Platform != PlatformID.Win32NT &&
-                        dir.EndsWith("/python") && File.Exists(dir))
-                    {
-                        pythonExePath = dir;
-                        return true;
-                    }
-                    return false;
-                }
-                return true;
+                return File.Exists(pythonExePath);
             }
 
-            // Scan directly in the search paths
+            // Run diagnostics on each valid candidate path
             foreach (var path in searchPaths)
             {
                 if (IsPythonDir(path, out string pythonExe))
@@ -185,72 +140,159 @@ namespace Beep.Python.RuntimeEngine.Helpers
                         reports.Add(report);
                     }
                 }
-                // --- NEW: Recursively search for python.exe in subdirectories ---
-                try
+            }
+
+            return reports;
+        }
+        // Helper method to avoid recursion and scan only top-level directories
+        private static void AddMatchingDirectories(List<string> list, string parent, string pattern, bool topOnly = false)
+        {
+            try
+            {
+                var dirs = Directory.GetDirectories(parent, pattern, topOnly ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories);
+                foreach (var dir in dirs)
                 {
-                    var pythonExeFiles = Directory.GetFiles(path, "python.exe", SearchOption.AllDirectories);
-                    foreach (var pythonExeFile in pythonExeFiles)
+                    list.Add(dir);
+                }
+            }
+            catch { /* ignore access errors */ }
+        }
+        // Determine if a path is likely a virtual/conda environment
+        private static bool IsSubEnvironment(string path)
+        {
+            var info = new DirectoryInfo(path);
+
+            // Exclude paths that look like environments (e.g., Scripts/, bin/, lib/)
+            if (info.Parent != null &&
+                (info.Name.Equals("Scripts", StringComparison.OrdinalIgnoreCase) ||
+                 info.Name.Equals("bin", StringComparison.OrdinalIgnoreCase) ||
+                 info.Name.Equals("lib", StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
+
+            // Also exclude paths under known environment roots
+            var envMarkers = new[] { "env_", "venv", ".venv", "conda-env" };
+            return envMarkers.Any(marker => path.IndexOf(marker, StringComparison.OrdinalIgnoreCase) >= 0);
+        }
+        public static List<PythonDiagnosticsReport> GetCondaEnvironmentsFromBase(PythonRunTime baseRuntime)
+        {
+            var reports = new List<PythonDiagnosticsReport>();
+
+            if (baseRuntime == null || !baseRuntime.IsPythonInstalled || string.IsNullOrEmpty(baseRuntime.RuntimePath))
+                return reports;
+
+            string condaExe = FindCondaExecutable();
+            if (string.IsNullOrEmpty(condaExe))
+                return reports;
+
+            try
+            {
+                // Run 'conda env list --json' with the base environment path
+                var output = ExecuteProcess(condaExe, $"--root {baseRuntime.RuntimePath} env list --json");
+                dynamic envInfo = JsonConvert.DeserializeObject(output);
+
+                if (envInfo?.envs != null)
+                {
+                    foreach (string envPath in envInfo.envs)
                     {
-                        var report = RunFullDiagnostics(Path.GetDirectoryName(pythonExeFile));
-                        if (!reports.Any(r => r.PythonPath == report.PythonPath))
+                        // Skip the base environment itself
+                        if (string.Equals(envPath, baseRuntime.RuntimePath, StringComparison.OrdinalIgnoreCase))
+                            continue;
+
+                        string pythonExePath;
+                        if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+                            pythonExePath = Path.Combine(envPath, "python.exe");
+                        else
+                            pythonExePath = Path.Combine(envPath, "bin", "python");
+
+                        if (File.Exists(pythonExePath))
                         {
+                            var report = RunFullDiagnostics(Path.GetDirectoryName(pythonExePath));
+                            report.Warnings.Add("This is a Conda environment.");
                             reports.Add(report);
                         }
                     }
                 }
-                catch { /* ignore access errors */ }
             }
-
-            // Find Python installations within search directories (but not recursive to avoid slow scanning)
-            foreach (var basePath in searchPaths)
+            catch (Exception ex)
             {
-                try
-                {
-                    var subDirs = Directory.GetDirectories(basePath);
-                    foreach (var dir in subDirs)
-                    {
-                        if (Path.GetFileName(dir).StartsWith("Python", StringComparison.OrdinalIgnoreCase) ||
-                            Path.GetFileName(dir).EndsWith("Python", StringComparison.OrdinalIgnoreCase) ||
-                            Path.GetFileName(dir).StartsWith("Anaconda", StringComparison.OrdinalIgnoreCase) ||
-                            Path.GetFileName(dir).StartsWith("Miniconda", StringComparison.OrdinalIgnoreCase))
-                        {
-                            if (IsPythonDir(dir, out string pythonExe))
-                            {
-                                var report = RunFullDiagnostics(Path.GetDirectoryName(pythonExe));
-                                if (!reports.Any(r => r.PythonPath == report.PythonPath))
-                                {
-                                    reports.Add(report);
-                                }
-                            }
-                            // --- NEW: Recursively search for python.exe in subdirectories ---
-                            try
-                            {
-                                var pythonExeFiles = Directory.GetFiles(dir, "python.exe", SearchOption.AllDirectories);
-                                foreach (var pythonExeFile in pythonExeFiles)
-                                {
-                                    var report = RunFullDiagnostics(Path.GetDirectoryName(pythonExeFile));
-                                    if (!reports.Any(r => r.PythonPath == report.PythonPath))
-                                    {
-                                        reports.Add(report);
-                                    }
-                                }
-                            }
-                            catch { /* ignore access errors */ }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error scanning directory {basePath}: {ex.Message}");
-                }
+                Console.WriteLine($"Error fetching Conda environments: {ex.Message}");
             }
-
-            // Look for Conda environments
-            FindCondaEnvironments(reports);
 
             return reports;
         }
+        public static List<PythonDiagnosticsReport> GetPythonEnvironmentsFromBase(PythonRunTime baseRuntime)
+        {
+            var reports = new List<PythonDiagnosticsReport>();
 
+            if (baseRuntime == null || !baseRuntime.IsPythonInstalled || string.IsNullOrEmpty(baseRuntime.RuntimePath))
+                return reports;
+
+            try
+            {
+                string venvDir = Path.Combine(baseRuntime.RuntimePath, "Lib", "venv", "scripts");
+
+                if (Directory.Exists(venvDir))
+                {
+                    foreach (var dir in Directory.GetDirectories(venvDir))
+                    {
+                        string pyvenvCfg = Path.Combine(dir, "pyvenv.cfg");
+                        if (File.Exists(pyvenvCfg))
+                        {
+                            string pythonExePath = Environment.OSVersion.Platform == PlatformID.Win32NT
+                                ? Path.Combine(dir, "Scripts", "python.exe")
+                                : Path.Combine(dir, "bin", "python");
+
+                            if (File.Exists(pythonExePath))
+                            {
+                                var report = RunFullDiagnostics(Path.GetDirectoryName(pythonExePath));
+                                report.Warnings.Add("This is a standard Python venv environment.");
+                                reports.Add(report);
+                            }
+                        }
+                    }
+                }
+
+                // Also scan common project directories for virtual environments
+                var projectDirs = new[]
+                {
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Projects"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Source"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Projects")
+        };
+
+                foreach (var projectDir in projectDirs)
+                {
+                    if (!Directory.Exists(projectDir)) continue;
+
+                    var subDirs = Directory.GetDirectories(projectDir, "*", SearchOption.TopDirectoryOnly);
+                    foreach (var dir in subDirs)
+                    {
+                        string pyvenvCfg = Path.Combine(dir, "pyvenv.cfg");
+                        if (File.Exists(pyvenvCfg))
+                        {
+                            string pythonExePath = Environment.OSVersion.Platform == PlatformID.Win32NT
+                                ? Path.Combine(dir, "Scripts", "python.exe")
+                                : Path.Combine(dir, "bin", "python");
+
+                            if (File.Exists(pythonExePath))
+                            {
+                                var report = RunFullDiagnostics(Path.GetDirectoryName(pythonExePath));
+                                report.Warnings.Add("This is a standard Python venv environment.");
+                                reports.Add(report);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error scanning for Python environments: {ex.Message}");
+            }
+
+            return reports;
+        }
         public static List<PythonRunTime> GetPythonRuntimesInstallations()
         {
             List<PythonRunTime> pythonRunTimes = new List<PythonRunTime>();
@@ -268,7 +310,134 @@ namespace Beep.Python.RuntimeEngine.Helpers
             }
             return pythonRunTimes;
         }
+        public static List<PythonRunTime> GetCondaEnvironmentsFromRuntime(PythonRunTime baseRuntime)
+        {
+            var pythonRuntimes = new List<PythonRunTime>();
 
+            if (baseRuntime == null || !baseRuntime.IsPythonInstalled || string.IsNullOrEmpty(baseRuntime.RuntimePath))
+                return pythonRuntimes;
+
+            string condaExe = FindCondaExecutable();
+            if (string.IsNullOrEmpty(condaExe))
+                return pythonRuntimes;
+
+            try
+            {
+                // Run 'conda env list --json' with the base environment path
+                var output = ExecuteProcess(condaExe, $"--root {baseRuntime.RuntimePath} env list --json");
+                dynamic envInfo = JsonConvert.DeserializeObject(output);
+
+                if (envInfo?.envs != null)
+                {
+                    foreach (string envPath in envInfo.envs)
+                    {
+                        // Skip the base environment itself
+                        if (string.Equals(envPath, baseRuntime.RuntimePath, StringComparison.OrdinalIgnoreCase))
+                            continue;
+
+                        string pythonExePath;
+                        if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+                            pythonExePath = Path.Combine(envPath, "python.exe");
+                        else
+                            pythonExePath = Path.Combine(envPath, "bin", "python");
+
+                        if (File.Exists(pythonExePath))
+                        {
+                            var runTime = GetPythonRunTime(envPath);
+                            if (runTime != null)
+                            {
+                                runTime.Message = "This is a Conda environment.";
+                                pythonRuntimes.Add(runTime);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching Conda environments: {ex.Message}");
+            }
+
+            return pythonRuntimes;
+        }
+        public static List<PythonRunTime> GetPythonEnvironmentsFromRuntime(PythonRunTime baseRuntime)
+        {
+            var pythonRuntimes = new List<PythonRunTime>();
+
+            if (baseRuntime == null || !baseRuntime.IsPythonInstalled || string.IsNullOrEmpty(baseRuntime.RuntimePath))
+                return pythonRuntimes;
+
+            try
+            {
+                // Look for venv environments inside Lib\venv\scripts by default
+                string venvDir = Path.Combine(baseRuntime.RuntimePath, "Lib", "venv", "scripts");
+
+                if (Directory.Exists(venvDir))
+                {
+                    foreach (var dir in Directory.GetDirectories(venvDir))
+                    {
+                        string pyvenvCfg = Path.Combine(dir, "pyvenv.cfg");
+                        if (File.Exists(pyvenvCfg))
+                        {
+                            string pythonExePath = Environment.OSVersion.Platform == PlatformID.Win32NT
+                                ? Path.Combine(dir, "Scripts", "python.exe")
+                                : Path.Combine(dir, "bin", "python");
+
+                            if (File.Exists(pythonExePath))
+                            {
+                                var runTime = GetPythonRunTime(Path.GetDirectoryName(pythonExePath));
+                                if (runTime != null)
+                                {
+                                    runTime.Message = "This is a standard Python venv environment.";
+                                    pythonRuntimes.Add(runTime);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Also scan common project directories for virtual environments
+                var projectDirs = new[]
+                {
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Projects"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Source"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Projects")
+        };
+
+                foreach (var projectDir in projectDirs)
+                {
+                    if (!Directory.Exists(projectDir)) continue;
+
+                    var subDirs = Directory.GetDirectories(projectDir, "*", SearchOption.TopDirectoryOnly);
+                    foreach (var dir in subDirs)
+                    {
+                        string pyvenvCfg = Path.Combine(dir, "pyvenv.cfg");
+                        if (File.Exists(pyvenvCfg))
+                        {
+                            string pythonExePath = Environment.OSVersion.Platform == PlatformID.Win32NT
+                                ? Path.Combine(dir, "Scripts", "python.exe")
+                                : Path.Combine(dir, "bin", "python");
+
+                            if (File.Exists(pythonExePath))
+                            {
+                                var runTime = GetPythonRunTime(Path.GetDirectoryName(pythonExePath));
+                                if (runTime != null)
+                                {
+                                    runTime.Message = "This is a standard Python venv environment.";
+                                    pythonRuntimes.Add(runTime);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error scanning for Python environments: {ex.Message}");
+            }
+
+            return pythonRuntimes;
+        }
         /// <summary>
         /// Finds Conda environments and adds them to the reports list.
         /// </summary>
@@ -476,9 +645,6 @@ namespace Beep.Python.RuntimeEngine.Helpers
                 .Select(line => line.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0])
                 .ToList() ?? new List<string>();
         }
-
-
-
         private static bool CheckInternetConnection()
         {
             try

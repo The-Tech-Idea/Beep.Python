@@ -193,8 +193,8 @@ namespace Beep.Python.Model
                 SetProperty(ref _packageType, value);
             }
         }
-        private ObservableBindingList<PackageDefinition> packageDefinitions = new();
-        public ObservableBindingList<PackageDefinition> Packagelist
+        private List<PackageDefinition> packageDefinitions = new();
+        public List<PackageDefinition> Packagelist
         {
             get { return packageDefinitions; }
             set
@@ -203,6 +203,18 @@ namespace Beep.Python.Model
                 SetProperty(ref packageDefinitions, value);
             }
         }
+
+        private List<PythonRunTime> _envs = new();
+        public List<PythonRunTime> VirtualEnvironments
+        {
+            get { return _envs; }
+            set
+            {
+                _envs = value;
+                SetProperty(ref _envs, value);
+            }
+        }
+
         private PythonBinary pythonBinary = PythonBinary.Pip;
         public PythonBinary Binary
         {

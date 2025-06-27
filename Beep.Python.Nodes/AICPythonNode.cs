@@ -243,14 +243,14 @@ namespace Beep.Python.Nodes
                         node.TreeEditor = TreeEditor;
                         node.ParentBranch = this;
                         node.ID = TreeEditor.SeqID;
-
+                        node.PythonRunTime = runtime;
 
                         node.BranchText= runtime.RuntimePath;
                      //   ChildBranchs.Add(node);
 
                       //  TreeEditor.AddBranchToParentInBranchsOnly(this, node);
                         TreeEditor.Treebranchhandler.AddBranch(this, node);
-
+                        node.CreateChildNodes();
                     }
                 }
 

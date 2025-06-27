@@ -377,7 +377,7 @@ venv_name = '{venv.Name}'
             {
                 if (runtime.Packagelist == null)
                 {
-                    runtime.Packagelist = new ObservableBindingList<PackageDefinition>();
+                    runtime.Packagelist = new List<PackageDefinition>();
                 }
                 
                 foreach (string packageName in diagnostics.InstalledPackages)
