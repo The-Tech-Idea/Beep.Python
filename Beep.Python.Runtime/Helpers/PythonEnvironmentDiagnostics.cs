@@ -679,7 +679,7 @@ namespace Beep.Python.RuntimeEngine.Helpers
                 {
                     // Use the more comprehensive method from PythonRunTimeDiagnostics
                     var runTime = PythonRunTimeDiagnostics.GetPythonConfig(runtimepath);
-
+                    runTime.ID = Guid.NewGuid().ToString();
                     // Set package type
                     runTime.PackageType = PythonRunTimeDiagnostics.GetPackageType(runtimepath);
 

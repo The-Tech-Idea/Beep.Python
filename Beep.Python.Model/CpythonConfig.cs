@@ -59,6 +59,19 @@ namespace Beep.Python.Model
                 SetProperty(ref _scriptPath, value);
             }
         }
+
+        private string _name = string.Empty;
+        public string Name
+        {
+            get { return _name; }
+            set
+            {
+                _name = value;
+                SetProperty(ref _name, value);
+            }
+        }
+
+
         private string _runtimePath = string.Empty;
         public string RuntimePath
         {
