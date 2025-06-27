@@ -9,9 +9,9 @@ namespace Beep.Python.Model
 {
    public enum PythonBinary
     {
-        Python,
-       
-        Conda
+        Pip,
+        Conda,
+        Unknown
     }
    public enum PythonEnvironmentType
     {
@@ -121,7 +121,7 @@ namespace Beep.Python.Model
             }
 
         }
-        private PythonBinary _pythonBinary = PythonBinary.Python;
+        private PythonBinary _pythonBinary = PythonBinary.Pip;
         public PythonBinary PythonBinary
         {
             get

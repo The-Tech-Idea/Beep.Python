@@ -12,6 +12,41 @@ namespace Beep.Python.RuntimeEngine.Helpers
 {
     public static class PythonEnvironmentDiagnostics
     {
+        public static List<PythonRunTime> PythonRunTimes { get; set; } = new List<PythonRunTime>();
+        public static string DefaultReportFileName = "PythonDiagnosticsReport.json";
+        public static string DefaultReportTextFileName = "PythonDiagnosticsReport.txt";
+        public static string DefaultReportFilePath = Path.Combine(GetDefaultDataPath(), DefaultReportFileName);
+        public static string DefaultReportTextFilePath = Path.Combine(GetDefaultDataPath(), DefaultReportTextFileName);
+        public static string DefaultReportFilePathWithTimestamp =>
+            Path.Combine(GetDefaultDataPath(), $"PythonDiagnosticsReport_{DateTime.Now:yyyyMMdd_HHmmss}.json");
+        public static string DefaultReportTextFilePathWithTimestamp =>
+            Path.Combine(GetDefaultDataPath(), $"PythonDiagnosticsReport_{DateTime.Now:yyyyMMdd_HHmmss}.txt");
+        public static List<PythonRunTime> SyncRuntimesWithExisting(List<PythonRunTime> runtimes)
+        {
+            var existingRuntimes = GetPythonRuntimesInstallations();
+            foreach (var runtime in runtimes)
+            {
+                var existingRuntime = existingRuntimes.FirstOrDefault(r => r.RuntimePath == runtime.RuntimePath);
+                if (existingRuntime != null)
+                {
+                    existingRuntime.IsPythonInstalled = runtime.IsPythonInstalled;
+                    existingRuntime.RuntimePath = runtime.RuntimePath;
+                    existingRuntime.PackageType = runtime.PackageType;
+                    existingRuntime.CondaPath = runtime.CondaPath;
+                    existingRuntime.AiFolderpath = runtime.AiFolderpath;
+                    existingRuntime.Binary = runtime.Binary;
+                    existingRuntime.PythonVersion = runtime.PythonVersion;
+                    existingRuntime.PipFound = runtime.PipFound;
+                }
+                else
+                {
+                    // Add new runtime
+                    existingRuntimes.Add(runtime);
+                }
+            }
+            return existingRuntimes;
+        }
+
         /// <summary>
         /// Scans the system for all Python and Conda installations.
         /// </summary>
@@ -377,10 +412,19 @@ namespace Beep.Python.RuntimeEngine.Helpers
                 }
 
                 report.PythonFound = true;
-                report.PythonPath = pythonPath; // directory only
-                report.PythonExe = pythonExe;   // full path to python.exe
-                report.PythonVersion = GetPythonVersion(pythonExe);
-                report.PipFound = IsPipAvailable(pythonExe);
+                report.PythonPath = pythonPath;
+                report.PythonExe = pythonExe;
+
+                // Check for missing DLLs or critical errors
+                string versionOutput = GetPythonVersion(pythonExe);
+                if (versionOutput != null && versionOutput.StartsWith("ERROR:"))
+                {
+                    report.Errors.Add(versionOutput);
+                    return report;
+                }
+                report.PythonVersion = versionOutput;
+
+
                 report.InternetAvailable = CheckInternetConnection();
                 report.Timestamp = DateTime.Now;
                 report.CanExecuteCode = TestPythonExecution(pythonExe);
@@ -388,11 +432,22 @@ namespace Beep.Python.RuntimeEngine.Helpers
                 // Detect if this is a conda environment
                 string condaMeta = Path.Combine(pythonPath, "conda-meta");
                 report.IsConda = Directory.Exists(condaMeta);
-
-                if (report.PipFound)
-                    report.InstalledPackages = GetInstalledPackages(pythonExe);
+                if (report.CanExecuteCode)
+                {
+                    report.PipFound = IsPipAvailable(pythonExe);
+                }
+                if (report.PipFound && report.CanExecuteCode)
+                {
+                    var pkgs = GetInstalledPackages(pythonExe);
+                    if (pkgs != null && pkgs.Count == 1 && pkgs[0].StartsWith("ERROR:"))
+                        report.Warnings.Add(pkgs[0]);
+                    else
+                        report.InstalledPackages = pkgs;
+                }
                 else
+                {
                     report.Warnings.Add("pip is not available.");
+                }
             }
             catch (Exception ex)
             {
@@ -400,7 +455,6 @@ namespace Beep.Python.RuntimeEngine.Helpers
             }
             return report;
         }
-
         private static string GetPythonVersion(string pythonExe)
         {
             var output = ExecuteProcess(pythonExe, "--version");
@@ -423,11 +477,7 @@ namespace Beep.Python.RuntimeEngine.Helpers
                 .ToList() ?? new List<string>();
         }
 
-        private static bool TestPythonExecution(string pythonExe)
-        {
-            var output = ExecuteProcess(pythonExe, "-c \"print('hello test')\"");
-            return output?.Contains("hello test") ?? false;
-        }
+
 
         private static bool CheckInternetConnection()
         {
@@ -460,17 +510,48 @@ namespace Beep.Python.RuntimeEngine.Helpers
                     }
                 };
 
-                process.Start();
+                try
+                {
+                    process.Start();
+                }
+                catch (Exception ex)
+                {
+                    // This will catch missing DLLs and other startup errors
+                    return $"ERROR: Failed to start process: {ex.Message}. This may indicate a missing DLL such as zlib.dll or a corrupted Python installation.";
+                }
+
                 string output = process.StandardOutput.ReadToEnd();
                 string error = process.StandardError.ReadToEnd();
                 process.WaitForExit();
 
+                if (error != null && error.ToLower().Contains("zlib.dll"))
+                {
+                    return "ERROR: Missing DLL detected: zlib.dll. The Python installation may be incomplete or corrupted.";
+                }
+
+                if (string.IsNullOrEmpty(output) && string.IsNullOrEmpty(error) && process.ExitCode != 0)
+                {
+                    return $"ERROR: Process failed to start. Possible missing DLL (e.g., zlib.dll) or corrupted Python installation.";
+                }
+
                 return !string.IsNullOrEmpty(output) ? output : error;
             }
-            catch
+            catch (Exception ex)
             {
-                return null;
+                return $"ERROR: Process execution failed: {ex.Message}";
             }
+        }
+
+        private static bool TestPythonExecution(string pythonExe)
+        {
+            var output = ExecuteProcess(pythonExe, "-c \"print('hello test')\"");
+            // If output is an error, you can log or handle it here
+            if (output != null && output.StartsWith("ERROR:"))
+            {
+                // Optionally, log this error somewhere or pass it up
+                return false;
+            }
+            return output?.Contains("hello test") ?? false;
         }
 
         public static PythonDiagnosticsReport LoadReportFromJson(string filePath)
@@ -607,7 +688,7 @@ namespace Beep.Python.RuntimeEngine.Helpers
                     if (!string.IsNullOrEmpty(condaExe))
                     {
                         runTime.CondaPath = Path.Combine(runtimepath, condaExe);
-                        runTime.Binary = PythonBinary.Python;  // Assuming this is the appropriate enum value
+                        runTime.Binary = PythonBinary.Pip;  // Assuming this is the appropriate enum value
                     }
 
                     // Set AI folder path if needed
@@ -643,5 +724,156 @@ namespace Beep.Python.RuntimeEngine.Helpers
             // Python not installed at this path
             return null;
         }
+
+        // Save and Load PythonRunTimes methods
+        public static void SavePythonRunTimes(List<PythonRunTime> runtimes, string filePath)
+        {
+            try
+            {
+                var json = JsonConvert.SerializeObject(runtimes, Formatting.Indented);
+                File.WriteAllText(filePath, json);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to save Python runtimes: {ex.Message}");
+            }
+        }
+        public static List<PythonRunTime> LoadPythonRunTimes(string filePath)
+        {
+            try
+            {
+                if (File.Exists(filePath))
+                {
+                    string json = File.ReadAllText(filePath);
+                    return JsonConvert.DeserializeObject<List<PythonRunTime>>(json) ?? new List<PythonRunTime>();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to load Python runtimes: {ex.Message}");
+            }
+            return new List<PythonRunTime>();
+        }
+        public static void SavePythonRunTimesToDefaultPath(List<PythonRunTime> runtimes)
+        {
+            SavePythonRunTimes(runtimes, DefaultReportFilePath);
+        }
+        public static List<PythonRunTime> LoadPythonRunTimesFromDefaultPath()
+        {
+            return LoadPythonRunTimes(DefaultReportFilePath);
+
+        }
+        // Load runtimes and sync with existing installations
+        public static List<PythonRunTime> LoadAndSyncPythonRuntimes()
+        {
+            var runtimes = LoadPythonRunTimesFromDefaultPath();
+            return SyncRuntimesWithExisting(runtimes);
+        }
+        // Package Management
+        // Package type detection 
+        public static PythonBinary GetPackageType(string runtimePath)
+        {
+            if (string.IsNullOrEmpty(runtimePath))
+                return PythonBinary.Unknown;
+            // Check for conda environment
+            if (Directory.Exists(Path.Combine(runtimePath, "conda-meta")))
+                return PythonBinary.Conda;
+            // Check for pip environment
+            if (Directory.Exists(Path.Combine(runtimePath, "Lib", "site-packages")))
+                return PythonBinary.Pip;
+            // Default to unknown if no specific package type is detected
+            return PythonBinary.Unknown;
+        }
+        // Get Packages From Runtime in List<string>
+        public static List<string> GetPackagesFromRuntime(PythonRunTime runtime)
+        {
+           
+            if (runtime == null || string.IsNullOrEmpty(runtime.BinPath))
+                return new List<string>();
+            var packages = new List<string>();
+            try
+            {
+                string pythonExe = Path.Combine(runtime.BinPath, "python.exe");
+                if (File.Exists(pythonExe))
+                {
+                    var output = ExecuteProcess(pythonExe, "-m pip list");
+                    if (!string.IsNullOrEmpty(output))
+                    {
+                        packages = output
+                            .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                            .Skip(2) // Skip header lines
+                            .Select(line => line.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0])
+                            .ToList();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting packages: {ex.Message}");
+            }
+            return packages;
+        }
+        // Get Packages From Runtime in List<PackageDefinition>
+        public static List<PackageDefinition> GetPackagesFromRuntimeAsDefinitions(PythonRunTime runtime)
+        {
+            var packages = new List<PackageDefinition>();
+            if (runtime == null || string.IsNullOrEmpty(runtime.BinPath))
+                return packages;
+            try
+            {
+                string pythonExe = Path.Combine(runtime.BinPath, "python.exe");
+                if (File.Exists(pythonExe))
+                {
+                    var output = ExecuteProcess(pythonExe, "-m pip list");
+                    if (!string.IsNullOrEmpty(output))
+                    {
+                        packages = output
+                            .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                            .Skip(2) // Skip header lines
+                            .Select(line =>
+                            {
+                                var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                                return new PackageDefinition
+                                {
+                                    PackageName = parts[0],
+                                    Version = parts.Length > 1 ? parts[1] : "Unknown",
+                                    Status = PackageStatus.Installed
+                                };
+                            })
+                            .ToList();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting packages: {ex.Message}");
+            }
+            return packages;
+        }
+
+        // Generate a package list txt file from the runtime for installation on another system
+        public static void GeneratePackageListFile(PythonRunTime runtime, string filePath)
+        {
+            if (runtime == null || string.IsNullOrEmpty(runtime.BinPath))
+                return;
+            try
+            {
+                var packages = GetPackagesFromRuntimeAsDefinitions(runtime);
+                if (packages.Count > 0)
+                {
+                    var lines = packages.Select(pkg => $"{pkg.PackageName}=={pkg.Version}");
+                    File.WriteAllLines(filePath, lines);
+                }
+                else
+                {
+                    File.WriteAllText(filePath, "No packages found.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error generating package list file: {ex.Message}");
+            }
+        }
+
     }
 }

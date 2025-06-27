@@ -149,6 +149,17 @@ namespace Beep.Python.Model
                 SetProperty(ref _message, value);
             }
         }
+        //PipFound
+        private bool _isPipFound = false;
+        public bool PipFound
+        {
+            get { return _isPipFound; }
+            set
+            {
+                _isPipFound = value;
+                SetProperty(ref _isPipFound, value);
+            }
+        }
         private bool _ispythoninstalled = false;
         public bool IsPythonInstalled
         {
@@ -179,7 +190,7 @@ namespace Beep.Python.Model
                 SetProperty(ref packageDefinitions, value);
             }
         }
-        private PythonBinary pythonBinary = PythonBinary.Python;
+        private PythonBinary pythonBinary = PythonBinary.Pip;
         public PythonBinary Binary
         {
             get { return pythonBinary; }

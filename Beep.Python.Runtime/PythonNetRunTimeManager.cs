@@ -326,7 +326,7 @@ venv_name = '{venv.Name}'
             }
             else
             {
-                runtime.Binary = PythonBinary.Python;
+                runtime.Binary = PythonBinary.Pip;
             }
             
             // Try to fix missing or invalid DLL paths
@@ -1151,7 +1151,7 @@ venv_name = '{venv.Name}'
                             }
                             else
                             {
-                                config.Binary = PythonBinary.Python;
+                                config.Binary = PythonBinary.Pip;
                             }
 
                             // Verify DLL path exists and try to find it if needed
@@ -1263,7 +1263,7 @@ venv_name = '{venv.Name}'
                             config.IsPythonInstalled = true;
                             bool isConda = File.Exists(condaExe);
 
-                            config.Binary = isConda ? PythonBinary.Conda : PythonBinary.Python;
+                            config.Binary = isConda ? PythonBinary.Conda : PythonBinary.Pip;
 
                             if (isConda)
                             {
