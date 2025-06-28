@@ -542,7 +542,6 @@ namespace Beep.Python.RuntimeEngine.Helpers
 
             return null;
         }
-
         public static List<string> GetPythonInstalltions(string basePath)
         {
             var installations = new List<string>();
@@ -567,7 +566,6 @@ namespace Beep.Python.RuntimeEngine.Helpers
             }
             return installations;
         }
-
         public static PythonDiagnosticsReport RunFullDiagnostics(string pythonPath)
         {
             var report = new PythonDiagnosticsReport();
@@ -629,13 +627,11 @@ namespace Beep.Python.RuntimeEngine.Helpers
             var output = ExecuteProcess(pythonExe, "--version");
             return output?.Trim();
         }
-
         private static bool IsPipAvailable(string pythonExe)
         {
             var output = ExecuteProcess(pythonExe, "-m pip --version");
             return !string.IsNullOrEmpty(output) && output.Contains("pip");
         }
-
         private static List<string> GetInstalledPackages(string pythonExe)
         {
             var output = ExecuteProcess(pythonExe, "-m pip list");
@@ -658,7 +654,6 @@ namespace Beep.Python.RuntimeEngine.Helpers
                 return false;
             }
         }
-
         private static string ExecuteProcess(string exePath, string args)
         {
             try
@@ -707,7 +702,6 @@ namespace Beep.Python.RuntimeEngine.Helpers
                 return $"ERROR: Process execution failed: {ex.Message}";
             }
         }
-
         private static bool TestPythonExecution(string pythonExe)
         {
             var output = ExecuteProcess(pythonExe, "-c \"print('hello test')\"");
@@ -719,7 +713,6 @@ namespace Beep.Python.RuntimeEngine.Helpers
             }
             return output?.Contains("hello test") ?? false;
         }
-
         public static PythonDiagnosticsReport LoadReportFromJson(string filePath)
         {
             try
@@ -733,7 +726,6 @@ namespace Beep.Python.RuntimeEngine.Helpers
                 return null;
             }
         }
-
         public static void SaveReportAsJson(PythonDiagnosticsReport report, string filePath)
         {
             try
@@ -746,7 +738,6 @@ namespace Beep.Python.RuntimeEngine.Helpers
                 Console.WriteLine($"Failed to save report: {ex.Message}");
             }
         }
-
         public static void SaveReportAsText(PythonDiagnosticsReport report, string filePath)
         {
             try
@@ -795,7 +786,6 @@ namespace Beep.Python.RuntimeEngine.Helpers
                 Console.WriteLine($"Failed to save text report: {ex.Message}");
             }
         }
-
         public static string GetDefaultDataPath()
         {
             string baseDir;
@@ -829,7 +819,6 @@ namespace Beep.Python.RuntimeEngine.Helpers
 
             return baseDir;
         }
-
         public static PythonRunTime GetPythonRunTime(string runtimepath)
         {
             // Check for null path first
@@ -849,11 +838,31 @@ namespace Beep.Python.RuntimeEngine.Helpers
                     // Set package type
                     runTime.PackageType = PythonRunTimeDiagnostics.GetPackageType(runtimepath);
 
+                    // Set both RuntimePath and BinPath
+                    runTime.RuntimePath = runtimepath;
+                    string pythonExe = System.IO.Path.Combine(runtimepath, "python.exe");
+                    if (System.IO.File.Exists(pythonExe))
+                    {
+                        runTime.BinPath = runtimepath;
+                    }
+                    else
+                    {
+                        // Try common subdirectories
+                        string scriptsPath = System.IO.Path.Combine(runtimepath, "Scripts");
+                        string binPath = System.IO.Path.Combine(runtimepath, "bin");
+                        if (System.IO.File.Exists(System.IO.Path.Combine(scriptsPath, "python.exe")))
+                            runTime.BinPath = scriptsPath;
+                        else if (System.IO.File.Exists(System.IO.Path.Combine(binPath, "python")))
+                            runTime.BinPath = binPath;
+                        else
+                            runTime.BinPath = runtimepath; // fallback
+                    }
+
                     // Check and set conda path
                     string condaExe = PythonRunTimeDiagnostics.IsCondaInstalled(runtimepath);
                     if (!string.IsNullOrEmpty(condaExe))
                     {
-                        runTime.CondaPath = Path.Combine(runtimepath, condaExe);
+                        runTime.CondaPath = System.IO.Path.Combine(runtimepath, condaExe);
                         runTime.Binary = PythonBinary.Pip;  // Assuming this is the appropriate enum value
                     }
 
@@ -861,12 +870,12 @@ namespace Beep.Python.RuntimeEngine.Helpers
                     if (string.IsNullOrEmpty(runTime.AiFolderpath))
                     {
                         string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                        runTime.AiFolderpath = Path.Combine(documentsPath, "AI");
+                        runTime.AiFolderpath = System.IO.Path.Combine(documentsPath, "AI");
 
                         // Create the directory if it doesn't exist
-                        if (!Directory.Exists(runTime.AiFolderpath))
+                        if (!System.IO.Directory.Exists(runTime.AiFolderpath))
                         {
-                            Directory.CreateDirectory(runTime.AiFolderpath);
+                            System.IO.Directory.CreateDirectory(runTime.AiFolderpath);
                         }
                     }
 
@@ -890,7 +899,6 @@ namespace Beep.Python.RuntimeEngine.Helpers
             // Python not installed at this path
             return null;
         }
-
         // Save and Load PythonRunTimes methods
         public static void SavePythonRunTimes(List<PythonRunTime> runtimes, string filePath)
         {
@@ -1016,7 +1024,6 @@ namespace Beep.Python.RuntimeEngine.Helpers
             }
             return packages;
         }
-
         // Generate a package list txt file from the runtime for installation on another system
         public static void GeneratePackageListFile(PythonRunTime runtime, string filePath)
         {
@@ -1040,6 +1047,81 @@ namespace Beep.Python.RuntimeEngine.Helpers
                 Console.WriteLine($"Error generating package list file: {ex.Message}");
             }
         }
+        /// <summary>
+        /// Creates a new Conda environment at the specified path with the given Python version.
+        /// </summary>
+        /// <param name="condaExePath">Path to the conda executable.</param>
+        /// <param name="envPath">Path where the environment should be created.</param>
+        /// <param name="pythonVersion">Optional Python version to use.</param>
+        /// <returns>True if creation was successful, false otherwise.</returns>
+        public static bool CreateCondaEnvironment(string condaExePath, string envPath, string pythonVersion = null)
+        {
+            if (string.IsNullOrEmpty(condaExePath) || string.IsNullOrEmpty(envPath))
+                return false;
+            try
+            {
+                var args = string.IsNullOrEmpty(pythonVersion)
+                    ? $"create -y -p \"{envPath}\" python"
+                    : $"create -y -p \"{envPath}\" python={pythonVersion}";
+                var output = ExecuteProcess(condaExePath, args);
+                return output != null && !output.StartsWith("ERROR:", StringComparison.OrdinalIgnoreCase);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating Conda environment: {ex.Message}");
+                return false;
+            }
+        }
 
+        /// <summary>
+        /// Creates a new Python venv environment at the specified path.
+        /// </summary>
+        /// <param name="pythonExePath">Path to the python executable.</param>
+        /// <param name="envPath">Path where the environment should be created.</param>
+        /// <returns>True if creation was successful, false otherwise.</returns>
+        public static bool CreatePythonVenvEnvironment(string pythonExePath, string envPath)
+        {
+            if (string.IsNullOrEmpty(pythonExePath) || string.IsNullOrEmpty(envPath))
+                return false;
+            try
+            {
+                var args = $"-m venv \"{envPath}\" --copies --clear";
+                var output = ExecuteProcess(pythonExePath, args);
+                return output != null && !output.StartsWith("ERROR:", StringComparison.OrdinalIgnoreCase);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating Python venv environment: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Creates a new Conda environment using a PythonRunTime object for the base installation.
+        /// </summary>
+        /// <param name="baseRuntime">The base Python runtime (must have CondaPath set).</param>
+        /// <param name="envPath">Path where the environment should be created.</param>
+        /// <param name="pythonVersion">Optional Python version to use.</param>
+        /// <returns>True if creation was successful, false otherwise.</returns>
+        public static bool CreateCondaEnvironmentFromRuntime(PythonRunTime baseRuntime, string envPath, string pythonVersion = null)
+        {
+            if (baseRuntime == null || string.IsNullOrEmpty(baseRuntime.CondaPath) || string.IsNullOrEmpty(envPath))
+                return false;
+            return CreateCondaEnvironment(baseRuntime.CondaPath, envPath, pythonVersion);
+        }
+
+        /// <summary>
+        /// Creates a new Python venv environment using a PythonRunTime object for the base installation.
+        /// </summary>
+        /// <param name="baseRuntime">The base Python runtime (must have BinPath set).</param>
+        /// <param name="envPath">Path where the environment should be created.</param>
+        /// <returns>True if creation was successful, false otherwise.</returns>
+        public static bool CreatePythonVenvEnvironmentFromRuntime(PythonRunTime baseRuntime, string envPath)
+        {
+            if (baseRuntime == null || string.IsNullOrEmpty(baseRuntime.BinPath) || string.IsNullOrEmpty(envPath))
+                return false;
+            string pythonExe = System.IO.Path.Combine(baseRuntime.BinPath, "python.exe");
+            return CreatePythonVenvEnvironment(pythonExe, envPath);
+        }
     }
 }

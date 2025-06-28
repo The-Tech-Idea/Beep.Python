@@ -518,6 +518,31 @@ namespace Beep.Python.RuntimeEngine
             return session;
         }
 
+        /// <summary>
+        /// Checks if a virtual environment exists in the system for pip or conda.
+        /// </summary>
+        /// <param name="envName">The name of the environment to check.</param>
+        /// <param name="baseRuntime">The base Python runtime to search from.</param>
+        /// <param name="binary">The type of environment: Pip or Conda.</param>
+        /// <returns>True if the environment exists, otherwise false.</returns>
+        public bool VirtualEnvironmentExists(string envName, PythonRunTime baseRuntime, PythonBinary binary)
+        {
+            if (string.IsNullOrWhiteSpace(envName) || baseRuntime == null)
+                return false;
+
+            if (binary == PythonBinary.Conda)
+            {
+                var condaEnvs = PythonEnvironmentDiagnostics.GetCondaEnvironmentsFromRuntime(baseRuntime);
+                return condaEnvs.Any(e => e.Name.Equals(envName, StringComparison.OrdinalIgnoreCase));
+            }
+            else if (binary == PythonBinary.Pip)
+            {
+                var pipEnvs = PythonEnvironmentDiagnostics.GetPythonEnvironmentsFromRuntime(baseRuntime);
+                return pipEnvs.Any(e => e.Name.Equals(envName, StringComparison.OrdinalIgnoreCase));
+            }
+            return false;
+        }
+
         #endregion
 
         #region Environment Initialization
@@ -583,7 +608,6 @@ namespace Beep.Python.RuntimeEngine
         }
 
         #endregion
-
 
         #region Environment Management
 
