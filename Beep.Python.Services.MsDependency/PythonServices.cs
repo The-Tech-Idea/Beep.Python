@@ -64,7 +64,7 @@ namespace Beep.Python.RuntimeEngine.Services
         {
             try
             {
-                PythonDataPath = ContainerMisc.CreateAppfolder("Python");
+                //PythonDataPath = ContainerMisc.CreateAppfolder("Python");
             }
             catch (Exception ex)
             {

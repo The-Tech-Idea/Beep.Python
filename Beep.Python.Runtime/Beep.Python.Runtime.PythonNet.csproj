@@ -29,28 +29,17 @@
 		</None>
 	</ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="8.3.0" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.5" />
-    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="9.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.5" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="pythonnet" Version="3.0.5" />
-    <PackageReference Include="System.Linq.Expressions" Version="4.3.0" />
-    <PackageReference Include="System.Threading.Channels" Version="9.0.5" />
-    <PackageReference Include="TheTechIdea.Beep.Container" Version="1.0.0.84" />
-    <PackageReference Include="TheTechIdea.Beep.Container.Model" Version="1.0.0.46" />
-    <PackageReference Include="TheTechIdea.Beep.DataManagementEngine" Version="2.0.32" />
-    <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="2.0.65" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Beep.Python.Model\Beep.Python.Model.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="EmbedderManagement\" />
     <Folder Include="VectorDBManagement\" />
     <Folder Include="UI\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="8.0.0" />
+    <PackageReference Include="Beep.Python.Model" Version="1.0.16" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageReference Include="pythonnet" Version="3.0.3" />
+    <PackageReference Include="TheTechIdea.Beep.Container.Model" Version="1.0.0.46" />
+    <PackageReference Include="TheTechIdea.Beep.DataManagementEngine" Version="2.0.6" />
   </ItemGroup>
 
 

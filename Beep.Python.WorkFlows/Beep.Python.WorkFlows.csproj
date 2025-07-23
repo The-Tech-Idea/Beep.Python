@@ -25,7 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Beep.Python.Extensions\Beep.Python.Extensions.csproj" />
     <ProjectReference Include="..\Beep.Python.Runtime\Beep.Python.Runtime.PythonNet.csproj" />
   </ItemGroup>
 	<ItemGroup>

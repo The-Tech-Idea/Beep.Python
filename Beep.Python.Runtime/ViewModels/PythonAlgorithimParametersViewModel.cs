@@ -115,7 +115,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
                     doc.PARAMETERDESCRIPTION = item.Description + $" - example : ({item.Example})";
                     doc.ROW_CREATE_DATE = DateTime.Now;
                   //  doc.ROW_CREATE_BY = DhubConfig.userManager.User.KOCNO;
-                    Unitofwork.Add(doc);
+                    Unitofwork.InsertDoc(doc);
                 }
               
             }
