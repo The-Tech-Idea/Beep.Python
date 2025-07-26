@@ -137,7 +137,7 @@
 	</ItemGroup>
 	
   <ItemGroup>
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2592.51" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3351.48" />
     <PackageReference Include="Scintilla5.NET" Version="6.0.1" />
   </ItemGroup>
 
