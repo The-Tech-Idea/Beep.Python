@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Reference - Beep.Python.Runtime.PythonNet</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb -->
+                <nav class="breadcrumb-nav">
+                    <a href="index.html">Home</a>
+                    <span>?</span>
+                    <span>API Reference</span>
+                </nav>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1>?? API Reference</h1>
+                    <p class="page-subtitle">Complete documentation for all classes, interfaces, and enums in Beep.Python.Runtime.PythonNet</p>
+                </div>
+
+                <!-- Overview -->
+                <section class="section">
+                    <h2>Overview</h2>
+                    <p>
+                        This page provides comprehensive API documentation for all public classes, interfaces, and enums in the 
+                        <strong>Beep.Python.Runtime.PythonNet</strong> library. The architecture is designed around a 
+                        multi-layered approach with dedicated managers for different aspects of Python integration.
+                    </p>
+                </section>
+
+                <!-- Core Architecture -->
+                <section class="section">
+                    <h2>Core Architecture</h2>
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h3>??? Runtime Layer</h3>
+                            <p>Manages Python.NET initialization, environment setup, and session coordination</p>
+                            <ul>
+                                <li><code>PythonNetRunTimeManager</code></li>
+                                <li><code>PythonSessionManager</code></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>? Execution Layer</h3>
+                            <p>Handles code execution, output capture, and error management</p>
+                            <ul>
+                                <li><code>PythonCodeExecuteManager</code></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? Environment Layer</h3>
+                            <p>Manages virtual environments and package installations</p>
+                            <ul>
+                                <li><code>PythonVirtualEnvManager</code></li>
+                                <li><code>PythonPackageManager</code></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? Specialized Managers</h3>
+                            <p>Domain-specific functionality for ML, data analysis, and visualization</p>
+                            <ul>
+                                <li><code>PythonMLManager</code></li>
+                                <li><code>PythonPandasManager</code></li>
+                                <li><code>PythonPlotManager</code></li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Core Classes -->
+                <section class="section">
+                    <h2>Core Classes</h2>
+                    
+                    <h3>PythonNetRunTimeManager</h3>
+                    <div class="api-class-info">
+                        <div class="class-namespace">namespace <strong>Beep.Python.RuntimeEngine</strong></div>
+                        <div class="class-implements">Implements: <code>IDisposable</code>, <code>IPythonRunTimeManager</code></div>
+                        <p>Central orchestrator for Python runtime initialization, environment management, and session coordination.</p>
+                        
+                        <h4>Key Responsibilities:</h4>
+                        <ul>
+                            <li>Python.NET engine initialization and shutdown</li>
+                            <li>Virtual environment integration and management</li>
+                            <li>Session scope creation and lifecycle management</li>
+                            <li>Multi-user session isolation and coordination</li>
+                            <li>Python installation discovery and configuration</li>
+                        </ul>
+                        
+                        <div class="api-reference-link">
+                            <a href="PythonNetRunTimeManager.html" class="btn-beep">View Full Documentation</a>
+                        </div>
+                    </div>
+                    
+                    <h3>PythonSessionManager</h3>
+                    <div class="api-class-info">
+                        <div class="class-namespace">namespace <strong>Beep.Python.RuntimeEngine</strong></div>
+                        <div class="class-implements">Implements: <code>IPythonSessionManager</code>, <code>IDisposable</code></div>
+                        <p>Manages Python sessions for multiple users, providing isolation, concurrency support, and load balancing.</p>
+                        
+                        <h4>Key Responsibilities:</h4>
+                        <ul>
+                            <li>Multi-user session creation and management</li>
+                            <li>Session output capture and buffering</li>
+                            <li>Load balancing across environments</li>
+                            <li>Automatic session cleanup and maintenance</li>
+                            <li>Concurrency control and resource management</li>
+                        </ul>
+                        
+                        <div class="api-reference-link">
+                            <a href="PythonSessionManager.html" class="btn-beep">View Full Documentation</a>
+                        </div>
+                    </div>
+                    
+                    <h3>PythonCodeExecuteManager</h3>
+                    <div class="api-class-info">
+                        <div class="class-namespace">namespace <strong>Beep.Python.RuntimeEngine</strong></div>
+                        <div class="class-implements">Implements: <code>IDisposable</code>, <code>IPythonCodeExecuteManager</code></div>
+                        <p>Advanced code execution engine with async support, output capture, and error handling.</p>
+                        
+                        <h4>Key Responsibilities:</h4>
+                        <ul>
+                            <li>Asynchronous Python code execution with timeout support</li>
+                            <li>Real-time output capture and streaming</li>
+                            <li>Variable exchange between .NET and Python</li>
+                            <li>Batch execution and generator support</li>
+                            <li>Interactive code execution and profiling</li>
+                        </ul>
+                        
+                        <div class="api-reference-link">
+                            <a href="PythonCodeExecuteManager.html" class="btn-beep">View Full Documentation</a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Manager Classes -->
+                <section class="section">
+                    <h2>Manager Classes</h2>
+                    
+                    <h3>PythonVirtualEnvManager</h3>
+                    <div class="api-class-info">
+                        <div class="class-namespace">namespace <strong>Beep.Python.RuntimeEngine</strong></div>
+                        <div class="class-implements">Implements: <code>IPythonVirtualEnvManager</code>, <code>IDisposable</code></div>
+                        <p>Comprehensive virtual environment management for Python runtime integration.</p>
+                        
+                        <h4>Key Features:</h4>
+                        <ul>
+                            <li>Support for both pip-based and conda-based virtual environments</li>
+                            <li>Multi-user environment isolation and session management</li>
+                            <li>Automatic environment detection and validation</li>
+                            <li>Built-in cleanup and resource management</li>
+                        </ul>
+                        
+                        <div class="api-reference-link">
+                            <a href="PythonVirtualEnvManager.html" class="btn-beep">View Full Documentation</a>
+                        </div>
+                    </div>
+                    
+                    <h3>PythonPackageManager</h3>
+                    <div class="api-class-info">
+                        <div class="class-namespace">namespace <strong>Beep.Python.RuntimeEngine.PackageManagement</strong></div>
+                        <div class="class-implements">Implements: <code>IPythonPackageManager</code>, <code>IDisposable</code></div>
+                        <p>Comprehensive Python package management with pip/conda integration and package categorization.</p>
+                        
+                        <h4>Key Features:</h4>
+                        <ul>
+                            <li>Install, upgrade, uninstall packages with progress tracking</li>
+                            <li>Requirements file generation and installation</li>
+                            <li>Automatic package categorization by purpose</li>
+                            <li>Predefined package sets for common development scenarios</li>
+                        </ul>
+                        
+                        <div class="api-reference-link">
+                            <a href="PythonPackageManager.html" class="btn-beep">View Full Documentation</a>
+                        </div>
+                    </div>
+                    
+                    <h3>PythonMLManager</h3>
+                    <div class="api-class-info">
+                        <div class="class-namespace">namespace <strong>Beep.Python.RuntimeEngine.ML</strong></div>
+                        <div class="class-implements">Inherits: <code>PythonBaseViewModel</code></div>
+                        <p>Comprehensive machine learning pipeline management for Python.NET integration.</p>
+                        
+                        <h4>Key Features:</h4>
+                        <ul>
+                            <li>Complete ML pipeline: data loading ? preprocessing ? training ? evaluation</li>
+                            <li>Support for 20+ machine learning algorithms</li>
+                            <li>Advanced data preprocessing and feature engineering</li>
+                            <li>Imbalanced data handling and model evaluation</li>
+                        </li>
+                        
+                        <div class="api-reference-link">
+                            <a href="PythonMLManager.html" class="btn-beep">View Full Documentation</a>
+                        </div>
+                    </div>
+                    
+                    <h3>PythonPandasManager</h3>
+                    <div class="api-class-info">
+                        <div class="class-namespace">namespace <strong>Beep.Python.RuntimeEngine.DataAnalysis</strong></div>
+                        <div class="class-implements">Inherits: <code>PythonBaseViewModel</code></div>
+                        <p>Comprehensive pandas DataFrame management and data manipulation for .NET applications.</p>
+                        
+                        <h4>Key Features:</h4>
+                        <ul>
+                            <li>Complete DataFrame lifecycle management</li>
+                            <li>Advanced data manipulation and analysis operations</li>
+                            <li>Statistical analysis and aggregation functions</li>
+                            <li>Support for multiple file formats (CSV, Excel, JSON, SQL)</li>
+                        </ul>
+                        
+                        <div class="api-reference-link">
+                            <a href="PythonPandasManager.html" class="btn-beep">View Full Documentation</a>
+                        </div>
+                    </div>
+                    
+                    <h3>PythonPlotManager</h3>
+                    <div class="api-class-info">
+                        <div class="class-namespace">namespace <strong>Beep.Python.RuntimeEngine.Visualization</strong></div>
+                        <div class="class-implements">Inherits: <code>PythonBaseViewModel</code></div>
+                        <p>Advanced data visualization and plotting capabilities for Python.NET integration.</p>
+                        
+                        <h4>Key Features:</h4>
+                        <ul>
+                            <li>Support for matplotlib, seaborn, and plotly libraries</li>
+                            <li>Wide range of chart types (line, scatter, bar, contour, 3D, etc.)</li>
+                            <li>Interactive plotting capabilities with plotly integration</li>
+                            <li>High-resolution image export with customizable formats</li>
+                        </ul>
+                        
+                        <div class="api-reference-link">
+                            <a href="PythonPlotManager.html" class="btn-beep">View Full Documentation</a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Core Interfaces -->
+                <section class="section">
+                    <h2>Core Interfaces</h2>
+                    
+                    <div class="interface-grid">
+                        <div class="interface-card">
+                            <h3>IPythonRunTimeManager</h3>
+                            <p>Contract for Python runtime management functionality</p>
+                            <div class="interface-methods">
+                                <h4>Key Methods:</h4>
+                                <ul>
+                                    <li><code>Initialize()</code> - Runtime initialization</li>
+                                    <li><code>ShutDown()</code> - Clean shutdown</li>
+                                    <li><code>CreateScope()</code> - Session scope management</li>
+                                    <li><code>RefreshPythonInstalltions()</code> - Discovery</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="interface-card">
+                            <h3>IPythonSessionManager</h3>
+                            <p>Contract for multi-user session management</p>
+                            <div class="interface-methods">
+                                <h4>Key Methods:</h4>
+                                <ul>
+                                    <li><code>CreateSession()</code> - Session creation</li>
+                                    <li><code>TerminateSession()</code> - Session cleanup</li>
+                                    <li><code>GetSessionOutput()</code> - Output management</li>
+                                    <li><code>PerformSessionCleanup()</code> - Maintenance</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="interface-card">
+                            <h3>IPythonCodeExecuteManager</h3>
+                            <p>Contract for Python code execution functionality</p>
+                            <div class="interface-methods">
+                                <h4>Key Methods:</h4>
+                                <ul>
+                                    <li><code>ExecuteCodeAsync()</code> - Async execution</li>
+                                    <li><code>ExecuteWithVariablesAsync()</code> - Variable passing</li>
+                                    <li><code>ExecuteBatchAsync()</code> - Batch execution</li>
+                                    <li><code>ExecuteGeneratorAsync()</code> - Generator support</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="interface-card">
+                            <h3>IPythonVirtualEnvManager</h3>
+                            <p>Contract for virtual environment management</p>
+                            <div class="interface-methods">
+                                <h4>Key Methods:</h4>
+                                <ul>
+                                    <li><code>CreateVirtualEnvironment()</code> - Environment creation</li>
+                                    <li><code>GetEnvironmentByPath()</code> - Environment lookup</li>
+                                    <li><code>InitializePythonEnvironment()</code> - Initialization</li>
+                                    <li><code>PerformEnvironmentCleanup()</code> - Maintenance</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="interface-card">
+                            <h3>IPythonPackageManager</h3>
+                            <p>Contract for Python package management</p>
+                            <div class="interface-methods">
+                                <h4>Key Methods:</h4>
+                                <ul>
+                                    <li><code>InstallNewPackageAsync()</code> - Package installation</li>
+                                    <li><code>GenerateRequirementsFile()</code> - Requirements management</li>
+                                    <li><code>GetPackagesByCategory()</code> - Categorization</li>
+                                    <li><code>InstallPackageSet()</code> - Bulk operations</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="interface-card">
+                            <h3>IPythonMLManager</h3>
+                            <p>Contract for machine learning operations</p>
+                            <div class="interface-methods">
+                                <h4>Key Methods:</h4>
+                                <ul>
+                                    <li><code>LoadData()</code> - Data loading</li>
+                                    <li><code>TrainModel()</code> - Model training</li>
+                                    <li><code>GetModelClassificationScore()</code> - Evaluation</li>
+                                    <li><code>PredictClassification()</code> - Prediction</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Key Enums -->
+                <section class="section">
+                    <h2>Key Enumerations</h2>
+                    
+                    <div class="enum-grid">
+                        <div class="enum-card">
+                            <h3>PythonEngineMode</h3>
+                            <p>Defines the operational mode of the Python engine</p>
+                            <ul>
+                                <li><code>SingleUser</code> - Single user with one scope</li>
+                                <li><code>MultiUserWithEnvAndScopeAndSession</code> - Multi-user with isolation</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="enum-card">
+                            <h3>PythonBinary</h3>
+                            <p>Specifies the Python distribution type</p>
+                            <ul>
+                                <li><code>Pip</code> - Standard Python with pip</li>
+                                <li><code>Conda</code> - Anaconda/Miniconda distribution</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="enum-card">
+                            <h3>PythonSessionStatus</h3>
+                            <p>Represents the current status of a Python session</p>
+                            <ul>
+                                <li><code>Active</code> - Session is running</li>
+                                <li><code>Terminated</code> - Session has ended</li>
+                                <li><code>Error</code> - Session encountered an error</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="enum-card">
+                            <h3>PythonEnvironmentType</h3>
+                            <p>Defines the type of Python environment</p>
+                            <ul>
+                                <li><code>VirtualEnv</code> - Standard Python virtual environment</li>
+                                <li><code>CondaEnv</code> - Conda environment</li>
+                                <li><code>SystemPython</code> - System-wide Python installation</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="enum-card">
+                            <h3>PackageCategory</h3>
+                            <p>Categorizes Python packages by functionality</p>
+                            <ul>
+                                <li><code>MachineLearning</code> - ML frameworks and tools</li>
+                                <li><code>DataScience</code> - Data analysis libraries</li>
+                                <li><code>WebDevelopment</code> - Web frameworks</li>
+                                <li><code>Visualization</code> - Plotting and charting</li>
+                                <li><code>Development</code> - Development tools</li>
+                                <li><code>Other</code> - Uncategorized packages</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="enum-card">
+                            <h3>MachineLearningAlgorithm</h3>
+                            <p>Supported machine learning algorithms</p>
+                            <ul>
+                                <li><code>LogisticRegression</code> - Classification</li>
+                                <li><code>RandomForestClassifier</code> - Ensemble</li>
+                                <li><code>LinearRegression</code> - Regression</li>
+                                <li><code>KMeans</code> - Clustering</li>
+                                <li>And 16+ more algorithms...</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Data Models -->
+                <section class="section">
+                    <h2>Core Data Models</h2>
+                    
+                    <div class="model-grid">
+                        <div class="model-card">
+                            <h3>PythonRunTime</h3>
+                            <p>Configuration and metadata for a Python installation</p>
+                            <h4>Key Properties:</h4>
+                            <ul>
+                                <li><code>RuntimePath</code> - Python executable path</li>
+                                <li><code>PythonVersion</code> - Version information</li>
+                                <li><code>Binary</code> - Distribution type (Pip/Conda)</li>
+                                <li><code>PythonDll</code> - Python library path</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="model-card">
+                            <h3>PythonSessionInfo</h3>
+                            <p>Information about a Python execution session</p>
+                            <h4>Key Properties:</h4>
+                            <ul>
+                                <li><code>SessionId</code> - Unique session identifier</li>
+                                <li><code>Username</code> - Associated user</li>
+                                <li><code>VirtualEnvironmentId</code> - Environment reference</li>
+                                <li><code>Status</code> - Current session state</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="model-card">
+                            <h3>PythonVirtualEnvironment</h3>
+                            <p>Virtual environment configuration and state</p>
+                            <h4>Key Properties:</h4>
+                            <ul>
+                                <li><code>Name</code> - Environment name</li>
+                                <li><code>Path</code> - Environment directory</li>
+                                <li><code>PythonBinary</code> - Binary type</li>
+                                <li><code>Sessions</code> - Associated sessions</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="model-card">
+                            <h3>PackageDefinition</h3>
+                            <p>Python package information and metadata</p>
+                            <h4>Key Properties:</h4>
+                            <ul>
+                                <li><code>PackageName</code> - Package identifier</li>
+                                <li><code>Version</code> - Installed version</li>
+                                <li><code>Category</code> - Functional category</li>
+                                <li><code>Status</code> - Installation status</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="model-card">
+                            <h3>ContourPlotData</h3>
+                            <p>Data structure for contour plotting operations</p>
+                            <h4>Key Properties:</h4>
+                            <ul>
+                                <li><code>X</code> - X-axis data points</li>
+                                <li><code>Y</code> - Y-axis data points</li>
+                                <li><code>Z</code> - Height/intensity data</li>
+                                <li><code>PointTitles</code> - Point annotations</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="model-card">
+                            <h3>SessionManagerConfiguration</h3>
+                            <p>Configuration for session management behavior</p>
+                            <h4>Key Properties:</h4>
+                            <ul>
+                                <li><code>MaxConcurrentSessions</code> - Concurrency limit</li>
+                                <li><code>SessionMaxAge</code> - Session lifetime</li>
+                                <li><code>EnableLoadBalancing</code> - Load balancing</li>
+                                <li><code>CleanupInterval</code> - Cleanup frequency</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Usage Patterns -->
+                <section class="section">
+                    <h2>Common Usage Patterns</h2>
+                    
+                    <div class="pattern-grid">
+                        <div class="pattern-card">
+                            <h3>?? Basic Runtime Setup</h3>
+                            <pre><code class="language-csharp">// Initialize and configure Python runtime
+var runtimeManager = new PythonNetRunTimeManager(beepService);
+runtimeManager.RefreshPythonInstalltions();
+var pythonRuntime = runtimeManager.PythonInstallations.FirstOrDefault();
+var initialized = runtimeManager.Initialize(pythonRuntime, null, "default-env", PythonEngineMode.SingleUser);</code></pre>
+                        </div>
+                        
+                        <div class="pattern-card">
+                            <h3>? Code Execution</h3>
+                            <pre><code class="language-csharp">// Execute Python code with session isolation
+var session = runtimeManager.GetOrCreateDefaultSession();
+var executeManager = runtimeManager.ExecuteManager;
+var result = await executeManager.ExecuteCodeAsync("print('Hello Python!')", session);</code></pre>
+                        </div>
+                        
+                        <div class="pattern-card">
+                            <h3>?? Environment Management</h3>
+                            <pre><code class="language-csharp">// Create and manage virtual environments
+var envManager = runtimeManager.VirtualEnvmanager;
+var newEnv = new PythonVirtualEnvironment { Name = "ml-env", Path = envPath };
+var created = envManager.CreateVirtualEnvironment(pythonRuntime, newEnv);</code></pre>
+                        </div>
+                        
+                        <div class="pattern-card">
+                            <h3>?? Package Management</h3>
+                            <pre><code class="language-csharp">// Install and manage Python packages
+var packageManager = new PythonPackageManager(beepService, runtimeManager, envManager, environment, session);
+var installed = await packageManager.InstallNewPackageAsync("numpy");</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Framework Compatibility -->
+                <section class="section">
+                    <h2>Framework Compatibility</h2>
+                    <div class="compatibility-grid">
+                        <div class="framework-card">
+                            <h3>.NET 6.0</h3>
+                            <div class="status-badge success">? Fully Supported</div>
+                            <p>Long-term support with cross-platform compatibility</p>
+                        </div>
+                        <div class="framework-card">
+                            <h3>.NET 7.0</h3>
+                            <div class="status-badge success">? Fully Supported</div>
+                            <p>Enhanced performance features and latest language support</p>
+                        </div>
+                        <div class="framework-card">
+                            <h3>.NET 8.0</h3>
+                            <div class="status-badge success">? Fully Supported</div>
+                            <p>Current LTS version with optimal performance and stability</p>
+                        </div>
+                        <div class="framework-card">
+                            <h3>.NET 9.0</h3>
+                            <div class="status-badge success">? Fully Supported</div>
+                            <p>Latest version with cutting-edge features and improvements</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.Runtime.PythonNet Documentation</p>
+                            <p>Supporting .NET 6, 7, 8, and 9 | Python.NET Integration</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="index.html">Home</a>
+                            <a href="getting-started.html">Getting Started</a>
+                            <a href="examples.html">Examples</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="navigation.js"></script>
+    <script>
+        // Page-specific functionality - navigation.js handles the rest
+        console.log('API Reference page loaded');
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-User Sessions - Beep.Python.Runtime.PythonNet</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb -->
+                <nav class="breadcrumb-nav">
+                    <a href="index.html">Home</a>
+                    <span>?</span>
+                    <a href="#">Advanced Topics</a>
+                    <span>?</span>
+                    <span>Multi-User Sessions</span>
+                </nav>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1>?? Multi-User Sessions</h1>
+                    <p class="page-subtitle">Advanced session management for multi-user Python environments with isolation, load balancing, and concurrent execution</p>
+                </div>
+
+                <!-- Table of Contents -->
+                <div class="toc">
+                    <h3>?? Table of Contents</h3>
+                    <ul>
+                        <li><a href="#overview">Overview</a></li>
+                        <li><a href="#architecture">Session Architecture</a></li>
+                        <li><a href="#session-modes">Session Modes</a></li>
+                        <li><a href="#isolation-strategies">Isolation Strategies</a></li>
+                        <li><a href="#load-balancing">Load Balancing</a></li>
+                        <li><a href="#concurrency-management">Concurrency Management</a></li>
+                        <li><a href="#session-lifecycle">Session Lifecycle</a></li>
+                        <li><a href="#monitoring-metrics">Monitoring & Metrics</a></li>
+                        <li><a href="#scaling-strategies">Scaling Strategies</a></li>
+                        <li><a href="#security-considerations">Security Considerations</a></li>
+                    </ul>
+                </div>
+
+                <!-- Overview -->
+                <section class="section" id="overview">
+                    <h2>Overview</h2>
+                    <p>
+                        Multi-user session management enables multiple users to execute Python code simultaneously while maintaining 
+                        complete isolation between their operations. The system provides automatic load balancing, resource management, 
+                        and scaling capabilities for enterprise-grade Python execution environments.
+                    </p>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h3>?? Complete Isolation</h3>
+                            <p>User sessions are completely isolated with separate scopes and variables</p>
+                        </div>
+                        <div class="feature-card">
+                            <h3>?? Load Balancing</h3>
+                            <p>Intelligent distribution of sessions across available environments</p>
+                        </div>
+                        <div class="feature-card">
+                            <h3>?? Concurrent Execution</h3>
+                            <p>Thread-safe concurrent Python code execution for multiple users</p>
+                        </div>
+                        <div class="feature-card">
+                            <h3>?? Resource Management</h3>
+                            <p>Automatic resource allocation and cleanup with usage metrics</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Architecture -->
+                <section class="section" id="architecture">
+                    <h2>Session Architecture</h2>
+                    
+                    <h3>??? System Components</h3>
+                    <div class="class-info">
+                        <h4>Core Components</h4>
+                        <ul>
+                            <li><strong>PythonSessionManager:</strong> Central session coordination and management</li>
+                            <li><strong>PythonSessionInfo:</strong> Individual session metadata and state</li>
+                            <li><strong>PythonVirtualEnvironment:</strong> Isolated execution environments</li>
+                            <li><strong>SessionManagerConfiguration:</strong> System behavior configuration</li>
+                        </ul>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Initializing Multi-User Session Manager</h4>
+                        <pre><code class="language-csharp">// Configure session manager for multi-user scenarios
+var sessionConfig = new SessionManagerConfiguration
+{
+    MaxConcurrentSessions = Environment.ProcessorCount * 4,  // Scale with CPU cores
+    SessionMaxAge = TimeSpan.FromHours(8),                   // 8-hour session limit
+    SessionInactivityTimeout = TimeSpan.FromMinutes(30),     // 30-minute idle timeout
+    CleanupInterval = TimeSpan.FromMinutes(5),               // Clean every 5 minutes
+    EnableLoadBalancing = true,                              // Enable intelligent distribution
+    UnregisterTerminatedSessionsImmediately = false         // Keep for auditing
+};
+
+// Initialize session manager with configuration
+var sessionManager = new PythonSessionManager(
+    beepService, 
+    runtimeManager, 
+    sessionConfig);
+
+// Initialize Python runtime for multi-user mode
+bool initialized = runtimeManager.Initialize(
+    pythonRuntime,
+    null,
+    "multi-user-env",
+    PythonEngineMode.MultiUserWithEnvAndScopeAndSession);
+
+if (initialized)
+{
+    Console.WriteLine("Multi-user Python environment initialized successfully!");
+    Console.WriteLine($"Max concurrent sessions: {sessionConfig.MaxConcurrentSessions}");
+}
+</code></pre>
+                    </div>
+
+                    <h3>?? Session Flow</h3>
+                    <div class="tip">
+                        <strong>Session Lifecycle Flow:</strong>
+                        <ol>
+                            <li><strong>Creation:</strong> User requests new session ? Load balancer selects environment</li>
+                            <li><strong>Initialization:</strong> Python scope created ? Session registered ? Resources allocated</li>
+                            <li><strong>Execution:</strong> Code execution in isolated scope ? Output capture ? Progress tracking</li>
+                            <li><strong>Maintenance:</strong> Periodic cleanup ? Resource monitoring ? Health checks</li>
+                            <li><strong>Termination:</strong> Session ends ? Resources cleaned ? Scope disposed</li>
+                        </ol>
+                    </div>
+                </section>
+
+                <!-- Session Modes -->
+                <section class="section" id="session-modes">
+                    <h2>Session Modes</h2>
+
+                    <h3>?? SingleUser Mode</h3>
+                    <div class="class-info">
+                        <p>Optimized for single-user scenarios with minimal overhead.</p>
+                        <ul>
+                            <li><strong>Isolation Level:</strong> Basic scope isolation</li>
+                            <li><strong>Resource Usage:</strong> Minimal overhead</li>
+                            <li><strong>Concurrency:</strong> Limited to single active session</li>
+                            <li><strong>Best For:</strong> Desktop applications, development environments</li>
+                        </ul>
+                    </div>
+
+                    <h3>?? MultiUserWithEnvAndScopeAndSession Mode</h3>
+                    <div class="class-info">
+                        <p>Full multi-user support with complete isolation and enterprise features.</p>
+                        <ul>
+                            <li><strong>Isolation Level:</strong> Complete environment and scope isolation</li>
+                            <li><strong>Resource Usage:</strong> Higher overhead for isolation</li>
+                            <li><strong>Concurrency:</strong> Full concurrent execution support</li>
+                            <li><strong>Best For:</strong> Web applications, enterprise systems, cloud deployments</li>
+                        </ul>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Creating Sessions for Different Users</h4>
+                        <pre><code class="language-csharp">// Create sessions for multiple users
+var users = new List<string> { "alice", "bob", "charlie", "diana" };
+var userSessions = new Dictionary<string, PythonSessionInfo>();
+
+foreach (string username in users)
+{
+    // Create session with automatic environment selection
+    var session = sessionManager.CreateSession(username, environmentId: null);
+    
+    if (session != null)
+    {
+        userSessions[username] = session;
+        Console.WriteLine($"Created session for {username}: {session.SessionId}");
+        Console.WriteLine($"  Environment: {session.VirtualEnvironmentId}");
+        Console.WriteLine($"  Started: {session.StartedAt}");
+    }
+    else
+    {
+        Console.WriteLine($"Failed to create session for {username} - system at capacity");
+    }
+}
+
+Console.WriteLine($"Total active sessions: {sessionManager.ActiveSessionCount}");
+Console.WriteLine($"Available session slots: {sessionManager.SessionCount}");
+</code></pre>
+                    </div>
+                </section>
+
+                <!-- Isolation Strategies -->
+                <section class="section" id="isolation-strategies">
+                    <h2>Isolation Strategies</h2>
+
+                    <h3>?? Scope-Level Isolation</h3>
+                    <div class="code-example">
+                        <h4>Python Scope Isolation</h4>
+                        <pre><code class="language-csharp">// Demonstrate scope isolation between users
+public async Task DemonstrateIsolation()
+{
+    var aliceSession = sessionManager.CreateSession("alice", null);
+    var bobSession = sessionManager.CreateSession("bob", null);
+    
+    // Alice defines a variable
+    await executeManager.ExecuteCodeAsync(@"
+user_name = 'Alice'
+secret_data = 'Alice private information'
+calculation_result = 42
+", aliceSession);
+
+    // Bob defines variables with same names
+    await executeManager.ExecuteCodeAsync(@"
+user_name = 'Bob'
+secret_data = 'Bob confidential data'
+calculation_result = 84
+", bobSession);
+
+    // Verify isolation - Alice's scope
+    var aliceResult = await executeManager.ExecuteCodeAsync(@"
+print(f'User: {user_name}')
+print(f'Data: {secret_data}')
+print(f'Result: {calculation_result}')
+", aliceSession);
+
+    // Verify isolation - Bob's scope
+    var bobResult = await executeManager.ExecuteCodeAsync(@"
+print(f'User: {user_name}')
+print(f'Data: {secret_data}')
+print(f'Result: {calculation_result}')
+", bobSession);
+
+    Console.WriteLine("Alice's output:");
+    Console.WriteLine(aliceResult.Output);
+    Console.WriteLine("\nBob's output:");
+    Console.WriteLine(bobResult.Output);
+    
+    // Results will show completely different values, proving isolation
+}
+</code></pre>
+                    </div>
+
+                    <h3>?? Environment-Level Isolation</h3>
+                    <div class="code-example">
+                        <h4>Per-User Virtual Environments</h4>
+                        <pre><code class="language-csharp">// Create dedicated environments for specific users
+public async Task SetupUserEnvironments()
+{
+    var importantUsers = new List<string> { "admin", "data-scientist", "ml-engineer" };
+    
+    foreach (string username in importantUsers)
+    {
+        // Create dedicated environment for important users
+        var userEnv = new PythonVirtualEnvironment
+        {
+            Name = $"{username}-dedicated-env",
+            Path = Path.Combine(GetUserEnvironmentsPath(), username),
+            CreatedBy = username,
+            PythonBinary = PythonBinary.Conda,  // Use Conda for data science users
+            EnvironmentType = PythonEnvironmentType.CondaEnv,
+            Metadata = new Dictionary<string, object>
+            {
+                ["UserDedicated"] = true,
+                ["HighPriority"] = true,
+                ["MaxSessions"] = 1  // Exclusive access
+            }
+        };
+
+        bool created = envManager.CreateVirtualEnvironment(pythonRuntime, userEnv);
+        
+        if (created)
+        {
+            envManager.AddToManagedEnvironments(userEnv);
+            
+            // Create session with dedicated environment
+            var session = sessionManager.CreateSession(username, userEnv.ID);
+            
+            Console.WriteLine($"Dedicated environment created for {username}");
+            Console.WriteLine($"  Environment: {userEnv.Name}");
+            Console.WriteLine($"  Session: {session.SessionId}");
+        }
+    }
+}
+</code></pre>
+                    </div>
+                </section>
+
+                <!-- Load Balancing -->
+                <section class="section" id="load-balancing">
+                    <h2>Load Balancing</h2>
+
+                    <h3>?? Automatic Load Distribution</h3>
+                    <div class="code-example">
+                        <h4>Load Balancing in Action</h4>
+                        <pre><code class="language-csharp">// Monitor load balancing decisions
+public void MonitorLoadBalancing()
+{
+    // Create multiple sessions and observe distribution
+    for (int i = 0; i < 10; i++)
+    {
+        string username = $"user-{i + 1}";
+        var session = sessionManager.CreateSession(username, null);
+        
+        if (session != null)
+        {
+            Console.WriteLine($"User {username} assigned to environment: {session.VirtualEnvironmentId}");
+        }
+    }
+    
+    // Get load balancing metrics
+    var metrics = sessionManager.GetMetrics();
+    var loadCounters = (Dictionary<string, int>)metrics["EnvironmentLoadCounters"];
+    
+    Console.WriteLine("\nEnvironment Load Distribution:");
+    foreach (var kvp in loadCounters)
+    {
+        Console.WriteLine($"  Environment {kvp.Key}: {kvp.Value} sessions");
+    }
+    
+    // Display total metrics
+    Console.WriteLine($"\nTotal Sessions: {metrics["TotalSessionCount"]}");
+    Console.WriteLine($"Active Sessions: {metrics["ActiveSessionCount"]}");
+    Console.WriteLine($"Available Slots: {metrics["AvailableConcurrencySlotsCount"]}");
+}
+</code></pre>
+                    </div>
+
+                    <h3>?? Custom Load Balancing Strategies</h3>
+                    <div class="code-example">
+                        <h4>Implementing Custom Load Balancing</h4>
+                        <pre><code class="language-csharp">// Custom load balancing based on user priority
+public class CustomLoadBalancer
+{
+    private readonly PythonSessionManager _sessionManager;
+    private readonly Dictionary<string, int> _userPriorities;
+    
+    public CustomLoadBalancer(PythonSessionManager sessionManager)
+    {
+        _sessionManager = sessionManager;
+        _userPriorities = new Dictionary<string, int>
+        {
+            ["admin"] = 10,           // Highest priority
+            ["data-scientist"] = 8,   // High priority
+            ["developer"] = 5,        // Medium priority
+            ["intern"] = 2            // Low priority
+        };
+    }
+    
+    public PythonSessionInfo CreatePrioritizedSession(string username)
+    {
+        int userPriority = _userPriorities.GetValueOrDefault(username, 1);
+        
+        // High priority users get dedicated environments
+        if (userPriority >= 8)
+        {
+            var dedicatedEnv = FindOrCreateDedicatedEnvironment(username);
+            return _sessionManager.CreateSession(username, dedicatedEnv.ID);
+        }
+        
+        // Medium priority users get load-balanced assignment
+        if (userPriority >= 5)
+        {
+            return _sessionManager.CreateSession(username, null); // Auto load-balance
+        }
+        
+        // Low priority users use shared environment
+        var sharedEnv = GetSharedEnvironment();
+        return _sessionManager.CreateSession(username, sharedEnv.ID);
+    }
+    
+    private PythonVirtualEnvironment FindOrCreateDedicatedEnvironment(string username)
+    {
+        // Implementation for finding or creating dedicated environments
+        var envManager = _sessionManager.VirtualEnvManager;
+        return envManager.ManagedVirtualEnvironments
+            .FirstOrDefault(e => e.CreatedBy == username && 
+                               e.Metadata?.ContainsKey("UserDedicated") == true);
+    }
+    
+    private PythonVirtualEnvironment GetSharedEnvironment()
+    {
+        // Return the shared environment for low-priority users
+        var envManager = _sessionManager.VirtualEnvManager;
+        return envManager.ManagedVirtualEnvironments
+            .FirstOrDefault(e => e.Name.Contains("shared"));
+    }
+}
+</code></pre>
+                    </div>
+                </section>
+
+                <!-- Concurrency Management -->
+                <section class="section" id="concurrency-management">
+                    <h2>Concurrency Management</h2>
+
+                    <h3>?? Thread-Safe Operations</h3>
+                    <div class="code-example">
+                        <h4>Concurrent Code Execution</h4>
+                        <pre><code class="language-csharp">// Execute code for multiple users concurrently
+public async Task DemonstrateConcurrentExecution()
+{
+    // Create sessions for multiple users
+    var sessions = new List<PythonSessionInfo>();
+    for (int i = 0; i < 5; i++)
+    {
+        var session = sessionManager.CreateSession($"concurrent-user-{i}", null);
+        if (session != null) sessions.Add(session);
+    }
+
+    // Define different tasks for each user
+    var tasks = sessions.Select(async (session, index) =>
+    {
+        var code = $@"
+import time
+import random
+
+user_id = {index}
+print(f'User {{user_id}} starting computation...')
+
+# Simulate different workloads
+computation_time = random.randint(1, 5)
+for i in range(computation_time):
+    result = sum(range(1000000))  # CPU-intensive task
+    time.sleep(0.1)  # Simulate I/O
+    print(f'User {{user_id}} - Step {{i+1}}/{{computation_time}} completed')
+
+final_result = user_id * 1000 + computation_time
+print(f'User {{user_id}} final result: {{final_result}}')
+";
+
+        Console.WriteLine($"Starting execution for user {index}...");
+        var result = await executeManager.ExecuteCodeAsync(code, session);
+        Console.WriteLine($"User {index} completed. Success: {result.Success}");
+        
+        return new { UserId = index, Success = result.Success, Output = result.Output };
+    }).ToArray();
+
+    // Wait for all tasks to complete
+    var results = await Task.WhenAll(tasks);
+
+    Console.WriteLine("\n=== Concurrent Execution Results ===");
+    foreach (var result in results)
+    {
+        Console.WriteLine($"User {result.UserId}: {(result.Success ? "?" : "?")}");
+        if (!string.IsNullOrEmpty(result.Output))
+        {
+            Console.WriteLine($"Output:\n{result.Output}\n");
+        }
+    }
+}
+</code></pre>
+                    </div>
+
+                    <h3>?? Resource Limiting and Throttling</h3>
+                    <div class="code-example">
+                        <h4>Implementing Resource Controls</h4>
+                        <pre><code class="language-csharp">// Advanced concurrency control with throttling
+public class ResourceControlledSessionManager
+{
+    private readonly PythonSessionManager _sessionManager;
+    private readonly SemaphoreSlim _executionSemaphore;
+    private readonly Dictionary<string, SemaphoreSlim> _userSemaphores;
+    private readonly Dictionary<string, DateTime> _lastExecutionTime;
+    
+    public ResourceControlledSessionManager(PythonSessionManager sessionManager)
+    {
+        _sessionManager = sessionManager;
+        _executionSemaphore = new SemaphoreSlim(Environment.ProcessorCount, Environment.ProcessorCount);
+        _userSemaphores = new Dictionary<string, SemaphoreSlim>();
+        _lastExecutionTime = new Dictionary<string, DateTime>();
+    }
+    
+    public async Task<(bool Success, string Output)> ExecuteWithThrottling(
+        string code, 
+        PythonSessionInfo session,
+        TimeSpan? minimumInterval = null)
+    {
+        var interval = minimumInterval ?? TimeSpan.FromMilliseconds(100);
+        
+        // Enforce per-user execution throttling
+        if (_lastExecutionTime.ContainsKey(session.Username))
+        {
+            var timeSinceLastExecution = DateTime.Now - _lastExecutionTime[session.Username];
+            if (timeSinceLastExecution < interval)
+            {
+                var waitTime = interval - timeSinceLastExecution;
+                await Task.Delay(waitTime);
+            }
+        }
+        
+        // Get or create user-specific semaphore (max 2 concurrent executions per user)
+        if (!_userSemaphores.ContainsKey(session.Username))
+        {
+            _userSemaphores[session.Username] = new SemaphoreSlim(2, 2);
+        }
+        
+        var userSemaphore = _userSemaphores[session.Username];
+        
+        // Wait for both global and user-specific resources
+        await _executionSemaphore.WaitAsync();
+        await userSemaphore.WaitAsync();
+        
+        try
+        {
+            _lastExecutionTime[session.Username] = DateTime.Now;
+            
+            // Execute the code with timeout
+            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+            var executeManager = _sessionManager.RuntimeManager.ExecuteManager;
+            
+            var result = await executeManager.ExecuteCodeAsync(code, session, 300);
+            
+            return result;
+        }
+        finally
+        {
+            userSemaphore.Release();
+            _executionSemaphore.Release();
+        }
+    }
+    
+    public Dictionary<string, object> GetResourceMetrics()
+    {
+        return new Dictionary<string, object>
+        {
+            ["GlobalSlotsAvailable"] = _executionSemaphore.CurrentCount,
+            ["GlobalSlotsTotal"] = Environment.ProcessorCount,
+            ["ActiveUsers"] = _userSemaphores.Count,
+            ["UserExecutionCounts"] = _userSemaphores.ToDictionary(
+                kvp => kvp.Key, 
+                kvp => 2 - kvp.Value.CurrentCount)
+        };
+    }
+}
+</code></pre>
+                    </div>
+                </section>
+
+                <!-- Session Lifecycle -->
+                <section class="section" id="session-lifecycle">
+                    <h2>Session Lifecycle</h2>
+
+                    <h3>?? Automatic Session Management</h3>
+                    <div class="code-example">
+                        <h4>Session Lifecycle Management</h4>
+                        <pre><code class="language-csharp">// Comprehensive session lifecycle management
+public class SessionLifecycleManager
+{
+    private readonly PythonSessionManager _sessionManager;
+    private readonly Timer _maintenanceTimer;
+    
+    public SessionLifecycleManager(PythonSessionManager sessionManager)
+    {
+        _sessionManager = sessionManager;
+        
+        // Set up periodic maintenance
+        _maintenanceTimer = new Timer(
+            PerformMaintenance, 
+            null, 
+            TimeSpan.FromMinutes(1), 
+            TimeSpan.FromMinutes(1));
+    }
+    
+    private void PerformMaintenance(object state)
+    {
+        try
+        {
+            CleanupInactiveSessions();
+            MonitorSessionHealth();
+            GenerateUsageReport();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Maintenance error: {ex.Message}");
+        }
+    }
+    
+    private void CleanupInactiveSessions()
+    {
+        var inactivityThreshold = TimeSpan.FromMinutes(30);
+        var maxSessionAge = TimeSpan.FromHours(8);
+        
+        _sessionManager.PerformSessionMaintenance(inactivityThreshold, maxSessionAge);
+        
+        var metrics = _sessionManager.GetMetrics();
+        Console.WriteLine($"Session cleanup completed. Active: {metrics["ActiveSessionCount"]}");
+    }
+    
+    private void MonitorSessionHealth()
+    {
+        var sessions = _sessionManager.Sessions.Where(s => s.Status == PythonSessionStatus.Active);
+        
+        foreach (var session in sessions)
+        {
+            // Check session health
+            var lastActivity = GetLastActivityTime(session);
+            var sessionAge = DateTime.Now - session.StartedAt;
+            
+            // Log suspicious sessions
+            if (sessionAge > TimeSpan.FromHours(6))
+            {
+                Console.WriteLine($"Long-running session detected: {session.SessionId} ({session.Username})");
+            }
+            
+            // Check for memory issues
+            if (IsSessionUsingExcessiveMemory(session))
+            {
+                Console.WriteLine($"High memory usage detected: {session.SessionId}");
+                // Could implement automatic session restart here
+            }
+        }
+    }
+    
+    private void GenerateUsageReport()
+    {
+        var metrics = _sessionManager.GetMetrics();
+        var sessionsPerUser = (Dictionary<string, int>)metrics["SessionsPerUser"];
+        
+        Console.WriteLine("=== Session Usage Report ===");
+        Console.WriteLine($"Total Sessions: {metrics["TotalSessionCount"]}");
+        Console.WriteLine($"Active Sessions: {metrics["ActiveSessionCount"]}");
+        Console.WriteLine($"Available Capacity: {metrics["AvailableConcurrencySlotsCount"]}");
+        
+        Console.WriteLine("Top Users:");
+        var topUsers = sessionsPerUser.OrderByDescending(kvp => kvp.Value).Take(5);
+        foreach (var user in topUsers)
+        {
+            Console.WriteLine($"  {user.Key}: {user.Value} sessions");
+        }
+    }
+    
+    private DateTime GetLastActivityTime(PythonSessionInfo session)
+    {
+        if (session.Metadata?.ContainsKey("LastActivity") == true)
+        {
+            return (DateTime)session.Metadata["LastActivity"];
+        }
+        return session.StartedAt;
+    }
+    
+    private bool IsSessionUsingExcessiveMemory(PythonSessionInfo session)
+    {
+        // Implementation would check actual memory usage
+        // This is a placeholder for demonstration
+        return false;
+    }
+}
+</code></pre>
+                    </div>
+                </section>
+
+                <!-- Monitoring & Metrics -->
+                <section class="section" id="monitoring-metrics">
+                    <h2>Monitoring & Metrics</h2>
+
+                    <h3>?? Real-Time Monitoring</h3>
+                    <div class="code-example">
+                        <h4>Comprehensive Session Monitoring</h4>
+                        <pre><code class="language-csharp">// Real-time session monitoring and metrics collection
+public class SessionMonitor
+{
+    private readonly PythonSessionManager _sessionManager;
+    private readonly Timer _metricsTimer;
+    private readonly List<SessionMetrics> _metricsHistory;
+    
+    public SessionMonitor(PythonSessionManager sessionManager)
+    {
+        _sessionManager = sessionManager;
+        _metricsHistory = new List<SessionMetrics>();
+        
+        // Collect metrics every 30 seconds
+        _metricsTimer = new Timer(
+            CollectMetrics, 
+            null, 
+            TimeSpan.Zero, 
+            TimeSpan.FromSeconds(30));
+    }
+    
+    private void CollectMetrics(object state)
+    {
+        var metrics = _sessionManager.GetMetrics();
+        var currentMetrics = new SessionMetrics
+        {
+            Timestamp = DateTime.Now,
+            TotalSessions = (int)metrics["TotalSessionCount"],
+            ActiveSessions = (int)metrics["ActiveSessionCount"],
+            AvailableSlots = (int)metrics["AvailableConcurrencySlotsCount"],
+            EnvironmentDistribution = (Dictionary<string, int>)metrics["EnvironmentLoadCounters"],
+            UserDistribution = (Dictionary<string, int>)metrics["SessionsPerUser"]
+        };
+        
+        _metricsHistory.Add(currentMetrics);
+        
+        // Keep only last hour of metrics
+        var cutoff = DateTime.Now.AddHours(-1);
+        _metricsHistory.RemoveAll(m => m.Timestamp < cutoff);
+        
+        // Log current status
+        LogCurrentStatus(currentMetrics);
+        
+        // Check for alerts
+        CheckAlerts(currentMetrics);
+    }
+    
+    private void LogCurrentStatus(SessionMetrics metrics)
+    {
+        Console.WriteLine($"[{metrics.Timestamp:HH:mm:ss}] " +
+                         $"Sessions: {metrics.ActiveSessions}/{metrics.TotalSessions} " +
+                         $"Available: {metrics.AvailableSlots} " +
+                         $"Users: {metrics.UserDistribution.Count}");
+    }
+    
+    private void CheckAlerts(SessionMetrics metrics)
+    {
+        // High utilization alert
+        var utilizationRate = 1.0 - (double)metrics.AvailableSlots / 
+                             (_sessionManager.SessionCount + metrics.AvailableSlots);
+        
+        if (utilizationRate > 0.85)
+        {
+            Console.WriteLine($"?? HIGH UTILIZATION: {utilizationRate:P1}");
+        }
+        
+        // Uneven distribution alert
+        if (metrics.EnvironmentDistribution.Any())
+        {
+            var maxLoad = metrics.EnvironmentDistribution.Values.Max();
+            var minLoad = metrics.EnvironmentDistribution.Values.Min();
+            
+            if (maxLoad > 0 && (double)maxLoad / minLoad > 2.0)
+            {
+                Console.WriteLine("?? UNEVEN LOAD DISTRIBUTION detected");
+            }
+        }
+        
+        // Long-running session alert
+        var longRunningSessions = _sessionManager.Sessions
+            .Where(s => s.Status == PythonSessionStatus.Active && 
+                       (DateTime.Now - s.StartedAt) > TimeSpan.FromHours(4))
+            .Count();
+            
+        if (longRunningSessions > 0)
+        {
+            Console.WriteLine($"?? {longRunningSessions} LONG-RUNNING SESSIONS detected");
+        }
+    }
+    
+    public SessionAnalytics GenerateAnalytics()
+    {
+        if (!_metricsHistory.Any()) return new SessionAnalytics();
+        
+        return new SessionAnalytics
+        {
+            AverageActiveSessions = _metricsHistory.Average(m => m.ActiveSessions),
+            PeakSessionCount = _metricsHistory.Max(m => m.ActiveSessions),
+            AverageUtilization = _metricsHistory.Average(m => 
+                1.0 - (double)m.AvailableSlots / (m.TotalSessions + m.AvailableSlots)),
+            MostActiveUsers = GetMostActiveUsers(),
+            EnvironmentUsagePattern = GetEnvironmentUsagePattern()
+        };
+    }
+    
+    private Dictionary<string, double> GetMostActiveUsers()
+    {
+        var userActivity = new Dictionary<string, List<int>>();
+        
+        foreach (var metrics in _metricsHistory)
+        {
+            foreach (var user in metrics.UserDistribution)
+            {
+                if (!userActivity.ContainsKey(user.Key))
+                    userActivity[user.Key] = new List<int>();
+                userActivity[user.Key].Add(user.Value);
+            }
+        }
+        
+        return userActivity.ToDictionary(
+            kvp => kvp.Key,
+            kvp => kvp.Value.Average());
+    }
+    
+    private Dictionary<string, double> GetEnvironmentUsagePattern()
+    {
+        var envUsage = new Dictionary<string, List<int>>();
+        
+        foreach (var metrics in _metricsHistory)
+        {
+            foreach (var env in metrics.EnvironmentDistribution)
+            {
+                if (!envUsage.ContainsKey(env.Key))
+                    envUsage[env.Key] = new List<int>();
+                envUsage[env.Key].Add(env.Value);
+            }
+        }
+        
+        return envUsage.ToDictionary(
+            kvp => kvp.Key,
+            kvp => kvp.Value.Average());
+    }
+}
+
+public class SessionMetrics
+{
+    public DateTime Timestamp { get; set; }
+    public int TotalSessions { get; set; }
+    public int ActiveSessions { get; set; }
+    public int AvailableSlots { get; set; }
+    public Dictionary<string, int> EnvironmentDistribution { get; set; }
+    public Dictionary<string, int> UserDistribution { get; set; }
+}
+
+public class SessionAnalytics
+{
+    public double AverageActiveSessions { get; set; }
+    public int PeakSessionCount { get; set; }
+    public double AverageUtilization { get; set; }
+    public Dictionary<string, double> MostActiveUsers { get; set; }
+    public Dictionary<string, double> EnvironmentUsagePattern { get; set; }
+}
+</code></pre>
+                    </div>
+                </section>
+
+                <!-- Scaling Strategies -->
+                <section class="section" id="scaling-strategies">
+                    <h2>Scaling Strategies</h2>
+
+                    <h3>?? Horizontal Scaling</h3>
+                    <div class="success">
+                        <strong>? Scale-Out Strategies:</strong>
+                        <ul>
+                            <li><strong>Environment Pool Expansion:</strong> Add more virtual environments dynamically</li>
+                            <li><strong>Load Balancer Optimization:</strong> Implement sophisticated load distribution</li>
+                            <li><strong>Resource-Based Scaling:</strong> Monitor CPU/memory and scale accordingly</li>
+                            <li><strong>Geographic Distribution:</strong> Deploy across multiple regions for global access</li>
+                        </ul>
+                    </div>
+
+                    <h3>?? Vertical Scaling</h3>
+                    <div class="tip">
+                        <strong>?? Scale-Up Strategies:</strong>
+                        <ul>
+                            <li><strong>Increase Concurrency Limits:</strong> Allow more sessions per environment</li>
+                            <li><strong>Optimize Python Performance:</strong> Use faster Python implementations</li>
+                            <li><strong>Memory Optimization:</strong> Implement memory pooling and garbage collection</li>
+                            <li><strong>CPU Utilization:</strong> Use multi-threading and async execution</li>
+                        </ul>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Auto-Scaling Implementation</h4>
+                        <pre><code class="language-csharp">// Automatic scaling based on demand
+public class AutoScaler
+{
+    private readonly PythonSessionManager _sessionManager;
+    private readonly PythonVirtualEnvManager _envManager;
+    private readonly PythonRunTime _pythonRuntime;
+    
+    public AutoScaler(
+        PythonSessionManager sessionManager,
+        PythonVirtualEnvManager envManager,
+        PythonRunTime pythonRuntime)
+    {
+        _sessionManager = sessionManager;
+        _envManager = envManager;
+        _pythonRuntime = pythonRuntime;
+    }
+    
+    public async Task<bool> ScaleIfNeeded()
+    {
+        var metrics = _sessionManager.GetMetrics();
+        var utilization = CalculateUtilization(metrics);
+        
+        Console.WriteLine($"Current utilization: {utilization:P1}");
+        
+        // Scale up if utilization > 80%
+        if (utilization > 0.80)
+        {
+            return await ScaleUp();
+        }
+        
+        // Scale down if utilization < 30% and we have extra environments
+        if (utilization < 0.30 && _envManager.ManagedVirtualEnvironments.Count > 2)
+        {
+            return await ScaleDown();
+        }
+        
+        return false; // No scaling needed
+    }
+    
+    private async Task<bool> ScaleUp()
+    {
+        Console.WriteLine("?? Scaling up - creating additional environment...");
+        
+        var newEnv = new PythonVirtualEnvironment
+        {
+            Name = $"auto-scaled-env-{DateTime.Now:yyyyMMdd-HHmmss}",
+            Path = GetAutoScaleEnvironmentPath(),
+            PythonConfigID = _pythonRuntime.ID,
+            BaseInterpreterPath = _pythonRuntime.RuntimePath,
+            CreatedBy = "auto-scaler",
+            PythonBinary = PythonBinary.Pip,
+            EnvironmentType = PythonEnvironmentType.VirtualEnv,
+            Metadata = new Dictionary<string, object>
+            {
+                ["AutoScaled"] = true,
+                ["CreatedAt"] = DateTime.Now
+            }
+        };
+        
+        bool created = _envManager.CreateVirtualEnvironment(_pythonRuntime, newEnv);
+        
+        if (created)
+        {
+            _envManager.AddToManagedEnvironments(newEnv);
+            
+            // Install essential packages
+            await InstallEssentialPackages(newEnv);
+            
+            Console.WriteLine($"? Environment {newEnv.Name} created and ready");
+            return true;
+        }
+        
+        Console.WriteLine("? Failed to create scaled environment");
+        return false;
+    }
+    
+    private async Task<bool> ScaleDown()
+    {
+        Console.WriteLine("?? Scaling down - removing excess environment...");
+        
+        // Find auto-scaled environment with no active sessions
+        var candidateEnv = _envManager.ManagedVirtualEnvironments
+            .Where(e => e.Metadata?.ContainsKey("AutoScaled") == true)
+            .Where(e => e.Sessions.Count == 0)
+            .OrderBy(e => e.CreatedOn)
+            .FirstOrDefault();
+        
+        if (candidateEnv != null)
+        {
+            bool removed = _envManager.RemoveVirtualEnvironment(candidateEnv.ID);
+            
+            if (removed)
+            {
+                Console.WriteLine($"? Environment {candidateEnv.Name} removed");
+                return true;
+            }
+        }
+        
+        Console.WriteLine("No suitable environment found for scale-down");
+        return false;
+    }
+    
+    private double CalculateUtilization(Dictionary<string, object> metrics)
+    {
+        var totalSlots = (int)metrics["TotalSessionCount"] + (int)metrics["AvailableConcurrencySlotsCount"];
+        var usedSlots = (int)metrics["ActiveSessionCount"];
+        
+        return totalSlots > 0 ? (double)usedSlots / totalSlots : 0.0;
+    }
+    
+    private string GetAutoScaleEnvironmentPath()
+    {
+        var baseDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "BeepPython", "AutoScaled");
+            
+        if (!Directory.Exists(baseDir))
+            Directory.CreateDirectory(baseDir);
+            
+        return Path.Combine(baseDir, $"env-{DateTime.Now:yyyyMMdd-HHmmss}");
+    }
+    
+    private async Task InstallEssentialPackages(PythonVirtualEnvironment env)
+    {
+        // Install basic packages for auto-scaled environments
+        var essentialPackages = new List<string>
+        {
+            "requests", "numpy", "pandas", "matplotlib"
+        };
+        
+        // Implementation would install packages here
+        Console.WriteLine($"Installing essential packages in {env.Name}...");
+        await Task.Delay(1000); // Simulate installation
+    }
+}
+</code></pre>
+                    </div>
+                </section>
+
+                <!-- Security Considerations -->
+                <section class="section" id="security-considerations">
+                    <h2>Security Considerations</h2>
+
+                    <h3>?? Security Best Practices</h3>
+                    <div class="warning">
+                        <strong>??? Critical Security Measures:</strong>
+                        <ul>
+                            <li><strong>Code Sandboxing:</strong> Restrict access to system resources and files</li>
+                            <li><strong>Resource Limits:</strong> Implement CPU, memory, and execution time limits</li>
+                            <li><strong>Network Isolation:</strong> Limit network access from Python code</li>
+                            <li><strong>Input Validation:</strong> Sanitize all user inputs before execution</li>
+                            <li><strong>Audit Logging:</strong> Log all code executions and user activities</li>
+                        </ul>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Security Implementation Example</h4>
+                        <pre><code class="language-csharp">// Secure session management with restrictions
+public class SecureSessionManager
+{
+    private readonly PythonSessionManager _sessionManager;
+    private readonly HashSet<string> _blockedModules;
+    private readonly Dictionary<string, UserPermissions> _userPermissions;
+    
+    public SecureSessionManager(PythonSessionManager sessionManager)
+    {
+        _sessionManager = sessionManager;
+        _blockedModules = new HashSet<string>
+        {
+            "os", "subprocess", "sys", "importlib", 
+            "eval", "exec", "compile", "__import__"
+        };
+        
+        _userPermissions = new Dictionary<string, UserPermissions>();
+    }
+    
+    public async Task<(bool Success, string Output)> ExecuteSecureCode(
+        string code, 
+        PythonSessionInfo session)
+    {
+        // Validate user permissions
+        if (!ValidateUserPermissions(session.Username, code))
+        {
+            return (false, "Access denied: Insufficient permissions");
+        }
+        
+        // Validate code safety
+        var codeValidation = ValidateCodeSafety(code);
+        if (!codeValidation.IsSafe)
+        {
+            LogSecurityViolation(session.Username, code, codeValidation.Reason);
+            return (false, $"Security violation: {codeValidation.Reason}");
+        }
+        
+        // Wrap code with security restrictions
+        var secureCode = WrapWithSecurityRestrictions(code);
+        
+        try
+        {
+            // Execute with timeout and resource limits
+            var result = await _sessionManager.ExecuteWithConcurrencyControlAsync(
+                session.SessionId,
+                async () =>
+                {
+                    var executeManager = _sessionManager.RuntimeManager.ExecuteManager;
+                    return await executeManager.ExecuteCodeAsync(secureCode, session, 30); // 30 second timeout
+                });
+            
+            if (result)
+            {
+                var output = await _sessionManager.GetSessionOutput(session.SessionId);
+                LogCodeExecution(session.Username, code, true);
+                return (true, output);
+            }
+            else
+            {
+                LogCodeExecution(session.Username, code, false);
+                return (false, "Execution failed");
+            }
+        }
+        catch (Exception ex)
+        {
+            LogSecurityException(session.Username, code, ex);
+            return (false, "Execution error");
+        }
+    }
+    
+    private bool ValidateUserPermissions(string username, string code)
+    {
+        if (!_userPermissions.ContainsKey(username))
+        {
+            // Default permissions for unknown users
+            _userPermissions[username] = new UserPermissions
+            {
+                CanExecuteCode = true,
+                AllowedModules = new HashSet<string> { "math", "random", "datetime" },
+                MaxExecutionTime = TimeSpan.FromSeconds(30),
+                MaxMemoryMB = 100
+            };
+        }
+        
+        var permissions = _userPermissions[username];
+        return permissions.CanExecuteCode;
+    }
+    
+    private (bool IsSafe, string Reason) ValidateCodeSafety(string code)
+    {
+        // Check for blocked imports
+        foreach (var blockedModule in _blockedModules)
+        {
+            if (code.Contains($"import {blockedModule}") || 
+                code.Contains($"from {blockedModule}"))
+            {
+                return (false, $"Blocked module: {blockedModule}");
+            }
+        }
+        
+        // Check for dangerous patterns
+        var dangerousPatterns = new[]
+        {
+            "eval(", "exec(", "__import__", "open(", "file(", 
+            "subprocess", "system(", "popen(", "input("
+        };
+        
+        foreach (var pattern in dangerousPatterns)
+        {
+            if (code.Contains(pattern))
+            {
+                return (false, $"Dangerous pattern: {pattern}");
+            }
+        }
+        
+        return (true, "Code appears safe");
+    }
+    
+    private string WrapWithSecurityRestrictions(string code)
+    {
+        return $@"
+# Security wrapper
+import sys
+import builtins
+
+# Disable dangerous built-ins
+builtins.eval = lambda *args: None
+builtins.exec = lambda *args: None
+builtins.compile = lambda *args: None
+builtins.__import__ = lambda *args: None
+
+# User code starts here
+try:
+{string.Join("\n", code.Split('\n').Select(line => "    " + line))}
+except Exception as e:
+    print(f'Error: {{type(e).__name__}}: {{str(e)}}')
+";
+    }
+    
+    private void LogSecurityViolation(string username, string code, string reason)
+    {
+        Console.WriteLine($"?? SECURITY VIOLATION: User {username} - {reason}");
+        Console.WriteLine($"Code: {code.Substring(0, Math.Min(100, code.Length))}...");
+        
+        // In production, this would log to a security audit system
+    }
+    
+    private void LogCodeExecution(string username, string code, bool success)
+    {
+        Console.WriteLine($"?? EXECUTION LOG: User {username} - {(success ? "SUCCESS" : "FAILED")}");
+        
+        // In production, this would log to an audit system
+    }
+    
+    private void LogSecurityException(string username, string code, Exception ex)
+    {
+        Console.WriteLine($"?? SECURITY EXCEPTION: User {username} - {ex.Message}");
+        
+        // In production, this would log to a security monitoring system
+    }
+}
+
+public class UserPermissions
+{
+    public bool CanExecuteCode { get; set; }
+    public HashSet<string> AllowedModules { get; set; }
+    public TimeSpan MaxExecutionTime { get; set; }
+    public int MaxMemoryMB { get; set; }
+}
+</code></pre>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="package-management.html">
+                        <i class="bi bi-arrow-left"></i> Package Management
+                    </a>
+                    <a href="api-reference.html">
+                        <i class="bi bi-arrow-right"></i> API Reference
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.Runtime.PythonNet Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="index.html">Home</a>
+                            <a href="api-reference.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="navigation.js"></script>
+    <script>
+        // Page-specific functionality - navigation.js handles the rest
+        console.log('Multi-User Sessions documentation loaded');
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

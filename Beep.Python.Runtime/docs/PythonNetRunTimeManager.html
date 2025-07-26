@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PythonNetRunTimeManager - Beep.Python.Runtime.PythonNet</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb -->
+                <nav class="breadcrumb-nav">
+                    <a href="index.html">Home</a>
+                    <span>?</span>
+                    <a href="#">Core Classes</a>
+                    <span>?</span>
+                    <span>Python Runtime Manager</span>
+                </nav>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1>??? PythonNetRunTimeManager</h1>
+                    <p class="page-subtitle">Central orchestrator for Python runtime environments, session management, and execution coordination</p>
+                </div>
+
+                <!-- Class Info -->
+                <div class="class-info">
+                    <div class="class-namespace">namespace <strong>Beep.Python.RuntimeEngine</strong></div>
+                    <p>Manages a Python .NET runtime environment, including initialization, configuration, and script execution.</p>
+                    <div class="class-implements">
+                        Implements: <code>IDisposable</code>, <code>IPythonRunTimeManager</code>
+                    </div>
+                </div>
+
+                <!-- Table of Contents -->
+                <div class="toc">
+                    <h3>?? Table of Contents</h3>
+                    <ul>
+                        <li><a href="#overview">Overview</a></li>
+                        <li><a href="#properties">Properties</a></li>
+                        <li><a href="#methods">Methods</a></li>
+                        <li><a href="#usage-examples">Usage Examples</a></li>
+                        <li><a href="#see-also">See Also</a></li>
+                    </ul>
+                </div>
+
+                <!-- Overview -->
+                <section class="section" id="overview">
+                    <h2>Overview</h2>
+                    <p>
+                        The <code>PythonNetRunTimeManager</code> is the central component of the Python.NET integration framework. 
+                        It handles discovery and initialization of Python installations, management of virtual environments, 
+                        creation and management of isolated Python scopes, and coordination of sessions.
+                    </p>
+                    
+                    <p>
+                        This class provides a comprehensive set of capabilities for managing the lifecycle of Python.NET 
+                        integration, from setup to teardown, with support for both single-user and multi-user scenarios.
+                    </p>
+                </section>
+
+                <!-- Properties -->
+                <section class="section" id="properties">
+                    <h2>Properties</h2>
+                    <ul class="member-list">
+                        <li>
+                            <div class="member-name">IsInitialized</div>
+                            <div class="member-type">bool</div>
+                            <div class="member-desc">Gets a value indicating whether Python is fully initialized and ready to execute code.</div>
+                        </li>
+                        
+                        <li>
+                            <div class="member-name">EngineMode</div>
+                            <div class="member-type">PythonEngineMode</div>
+                            <div class="member-desc">Gets or sets the operational mode (SingleUser or MultiUserWithEnvAndScopeAndSession).</div>
+                        </li>
+                        
+                        <li>
+                            <div class="member-name">IsBusy</div>
+                            <div class="member-type">bool</div>
+                            <div class="member-desc">Indicates whether the runtime manager is currently performing an operation.</div>
+                        </li>
+                        
+                        <li>
+                            <div class="member-name">PythonInstallations</div>
+                            <div class="member-type">ObservableBindingList&lt;PythonRunTime&gt;</div>
+                            <div class="member-desc">Collection of discovered Python installations with their configuration.</div>
+                        </li>
+                        
+                        <li>
+                            <div class="member-name">ExecuteManager</div>
+                            <div class="member-type">IPythonCodeExecuteManager</div>
+                            <div class="member-desc">Gets the associated manager for executing Python code.</div>
+                        </li>
+                        
+                        <li>
+                            <div class="member-name">SessionManager</div>
+                            <div class="member-type">IPythonSessionManager</div>
+                            <div class="member-desc">Gets the associated session manager for handling user sessions.</div>
+                        </li>
+                        
+                        <li>
+                            <div class="member-name">VirtualEnvmanager</div>
+                            <div class="member-type">IPythonVirtualEnvManager</div>
+                            <div class="member-desc">Gets the manager for Python virtual environments.</div>
+                        </li>
+                        
+                        <li>
+                            <div class="member-name">SessionScopes</div>
+                            <div class="member-type">Dictionary&lt;string, PyModule&gt;</div>
+                            <div class="member-desc">Dictionary of Python scopes associated with session IDs.</div>
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- Methods -->
+                <section class="section" id="methods">
+                    <h2>Methods</h2>
+                    
+                    <h3>Initialization and Shutdown</h3>
+                    <ul class="member-list">
+                        <li>
+                            <div class="member-name">Initialize(string runtimepath)</div>
+                            <div class="member-type">PythonRunTime</div>
+                            <div class="member-desc">Checks a Python installation path and returns the corresponding runtime configuration.</div>
+                        </li>
+                        
+                        <li>
+                            <div class="member-name">Initialize(PythonRunTime cfg, string virtualEnvPath, string envName, PythonEngineMode mode)</div>
+                            <div class="member-type">bool</div>
+                            <div class="member-desc">Initializes the Python runtime with appropriate environment based on engine mode.</div>
+                        </li>
+                        
+                        <li>
+                            <div class="member-name">ShutDown()</div>
+                            <div class="member-type">IErrorsInfo</div>
+                            <div class="member-desc">Shuts down the Python engine, disposes of any persistent scope and clears active environment state.</div>
+                        </li>
+                        
+                        <li>
+                            <div class="member-name">RestartWithEnvironment(PythonVirtualEnvironment venv)</div>
+                            <div class="member-type">bool</div>
+                            <div class="member-desc">Shuts down the current Python engine and reinitializes it with a new virtual environment.</div>
+                        </li>
+                        
+                        <li>
+                            <div class="member-name">RefreshPythonInstalltions()</div>
+                            <div class="member-type">void</div>
+                            <div class="member-desc">Refreshes the list of Python installations available on the system.</div>
+                        </li>
+                    </ul>
+                    
+                    <h3>Scope Management</h3>
+                    <ul class="member-list">
+                        <li>
+                            <div class="member-name">CreateScope(PythonSessionInfo session)</div>
+                            <div class="member-type">bool</div>
+                            <div class="member-desc">Creates a new scope for the specified session.</div>
+                        </li>
+                        
+                        <li>
+                            <div class="member-name">CreateScope(PythonSessionInfo session, PythonVirtualEnvironment venv)</div>
+                            <div class="member-type">bool</div>
+                            <div class="member-desc">Creates a new scope for a session within a specific virtual environment.</div>
+                        </li>
+                        
+                        <li>
+                            <div class="member-name">GetScope(PythonSessionInfo session)</div>
+                            <div class="member-type">PyModule</div>
+                            <div class="member-desc">Gets the Python scope associated with a session.</div>
+                        </li>
+                        
+                        <li>
+                            <div class="member-name">HasScope(PythonSessionInfo session)</div>
+                            <div class="member-type">bool</div>
+                            <div class="member-desc">Checks if a session has an associated Python scope.</div>
+                        </li>
+                        
+                        <li>
+                            <div class="member-name">ClearScope(string sessionId)</div>
+                            <div class="member-type">void</div>
+                            <div class="member-desc">Clears a session's scope.</div>
+                        </li>
+                        
+                        <li>
+                            <div class="member-name">ClearAll()</div>
+                            <div class="member-type">void</div>
+                            <div class="member-desc">Clears all scopes.</div>
+                        </li>
+                    </ul>
+                    
+                    <h3>Session Management</h3>
+                    <ul class="member-list">
+                        <li>
+                            <div class="member-name">GetOrCreateDefaultSession()</div>
+                            <div class="member-type">PythonSessionInfo</div>
+                            <div class="member-desc">Gets or creates a single user session for immediate use.</div>
+                        </li>
+                        
+                        <li>
+                            <div class="member-name">CreateSessionForUser(PythonRunTime cfg, PythonVirtualEnvironment env, string username)</div>
+                            <div class="member-type">PythonSessionInfo</div>
+                            <div class="member-desc">Creates a session for a user with an existing environment.</div>
+                        </li>
+                        
+                        <li>
+                            <div class="member-name">CleanupSession(PythonSessionInfo session)</div>
+                            <div class="member-type">void</div>
+                            <div class="member-desc">Updates the session management to properly dispose of Python scopes when sessions end.</div>
+                        </li>
+                    </ul>
+                    
+                    <h3>Other Methods</h3>
+                    <ul class="member-list">
+                        <li>
+                            <div class="member-name">GIL()</div>
+                            <div class="member-type">Py.GILState</div>
+                            <div class="member-desc">Provides a GIL (Global Interpreter Lock) context.</div>
+                        </li>
+                        
+                        <li>
+                            <div class="member-name">Dispose()</div>
+                            <div class="member-type">void</div>
+                            <div class="member-desc">Implements IDisposable to properly release all managed and unmanaged resources.</div>
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- Usage Examples -->
+                <section class="section" id="usage-examples">
+                    <h2>Usage Examples</h2>
+                    
+                    <div class="code-example">
+                        <h3>Basic Initialization and Execution</h3>
+                        <pre><code class="language-csharp">// Create the runtime manager with a BeepService
+var runtimeManager = new PythonNetRunTimeManager(beepService);
+
+// Scan for Python installations
+runtimeManager.RefreshPythonInstalltions();
+
+// Get the first available Python runtime
+var pythonRuntime = runtimeManager.PythonInstallations.FirstOrDefault();
+if (pythonRuntime == null)
+{
+    Console.WriteLine("No Python installations found.");
+    return;
+}
+
+// Initialize in single-user mode
+bool initialized = runtimeManager.Initialize(
+    pythonRuntime,     // The Python runtime to use
+    null,              // No specific virtual environment path
+    "default-env",     // Name for the environment
+    PythonEngineMode.SingleUser);
+
+if (!initialized)
+{
+    Console.WriteLine("Failed to initialize Python runtime.");
+    return;
+}
+
+// Get a session
+var session = runtimeManager.GetOrCreateDefaultSession();
+
+// Execute some Python code
+var executeManager = runtimeManager.ExecuteManager;
+var result = await executeManager.ExecuteCodeAsync(
+    "import sys\nprint(f'Python {sys.version} running from {sys.executable}')",
+    session);
+
+Console.WriteLine(result.Output);
+
+// Clean up when done
+runtimeManager.ShutDown();</code></pre>
+                    </div>
+                    
+                    <div class="code-example">
+                        <h3>Working with Virtual Environments</h3>
+                        <pre><code class="language-csharp">// Create a virtual environment
+var envManager = runtimeManager.VirtualEnvmanager;
+var newEnv = new PythonVirtualEnvironment
+{
+    Name = "data-science-env",
+    BaseInterpreterPath = pythonRuntime.RuntimePath,
+    RequirementsFile = "requirements.txt"
+};
+
+bool created = envManager.CreateVirtualEnvironment(pythonRuntime, newEnv);
+if (!created)
+{
+    Console.WriteLine("Failed to create virtual environment.");
+    return;
+}
+
+// Restart with the new environment
+runtimeManager.RestartWithEnvironment(newEnv);
+
+// Get a session for the current user with the new environment
+var session = runtimeManager.CreateSessionForUser(
+    pythonRuntime, 
+    newEnv, 
+    Environment.UserName);
+
+// Now you can execute code in this environment with installed packages
+var result = await runtimeManager.ExecuteManager.ExecuteCodeAsync(
+    "import numpy as np\nprint(f'NumPy version: {np.__version__}')",
+    session);</code></pre>
+                    </div>
+                </section>
+
+                <!-- See Also -->
+                <section class="section" id="see-also">
+                    <h2>See Also</h2>
+                    <ul>
+                        <li><a href="PythonSessionManager.html">PythonSessionManager</a> - For managing Python sessions</li>
+                        <li><a href="PythonCodeExecuteManager.html">PythonCodeExecuteManager</a> - For executing Python code</li>
+                        <li><a href="virtual-environments.html">Virtual Environments</a> - Advanced virtual environment management</li>
+                    </ul>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="index.html">
+                        <i class="bi bi-arrow-left"></i> Home
+                    </a>
+                    <a href="PythonSessionManager.html">
+                        <i class="bi bi-arrow-right"></i> PythonSessionManager
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.Runtime.PythonNet Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="index.html">Home</a>
+                            <a href="api-reference.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="navigation.js"></script>
+    <script>
+        // Simplified navigation functionality for embedded sidebar
+        document.addEventListener('DOMContentLoaded', function() {
+            setupSubmenuToggles();
+            initializeTheme();
+            setupCodeCopy();
+        });
+
+        // Setup submenu toggle functionality
+        function setupSubmenuToggles() {
+            const submenuItems = document.querySelectorAll('.has-submenu > a');
+            
+            submenuItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const parent = this.parentElement;
+                    parent.classList.toggle('open');
+                });
+            });
+        }
+
+        // Toggle sidebar for mobile
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('open');
+            }
+        }
+
+        // Search functionality
+        function searchDocs(query) {
+            const links = document.querySelectorAll('.nav-menu a');
+            const lowerQuery = query.toLowerCase();
+            
+            links.forEach(link => {
+                const text = link.textContent.toLowerCase();
+                const listItem = link.closest('li');
+                
+                if (text.includes(lowerQuery) || lowerQuery === '') {
+                    listItem.style.display = '';
+                } else {
+                    listItem.style.display = 'none';
+                }
+            });
+        }
+
+        // Theme toggle functionality
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Update theme icon
+            const themeIcon = document.getElementById('theme-icon');
+            if (themeIcon) {
+                themeIcon.className = newTheme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+            }
+        }
+
+        // Initialize theme from localStorage
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            const themeIcon = document.getElementById('theme-icon');
+            if (themeIcon) {
+                themeIcon.className = savedTheme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+            }
+        }
+
+        // Copy code functionality
+        function setupCodeCopy() {
+            const codeBlocks = document.querySelectorAll('pre code');
+            
+            codeBlocks.forEach(block => {
+                const button = document.createElement('button');
+                button.textContent = 'Copy';
+                button.style.cssText = `
+                    position: absolute;
+                    top: 8px;
+                    right: 8px;
+                    background: var(--color-brand-primary);
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    padding: 4px 8px;
+                    font-size: 12px;
+                    cursor: pointer;
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                `;
+                
+                const pre = block.parentElement;
+                pre.style.position = 'relative';
+                pre.appendChild(button);
+                
+                pre.addEventListener('mouseenter', () => {
+                    button.style.opacity = '1';
+                });
+                
+                pre.addEventListener('mouseleave', () => {
+                    button.style.opacity = '0';
+                });
+                
+                button.addEventListener('click', () => {
+                    navigator.clipboard.writeText(block.textContent).then(() => {
+                        button.textContent = 'Copied!';
+                        setTimeout(() => {
+                            button.textContent = 'Copy';
+                        }, 2000);
+                    });
+                });
+            });
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PythonPlotManager - Beep.Python.Runtime.PythonNet</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnected" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1>PythonPlotManager</h1>
+                    <p class="page-subtitle">Advanced data visualization and plotting capabilities for Python.NET integration</p>
+                </div>
+
+                <!-- Class Overview -->
+                <section class="section">
+                    <h2>Overview</h2>
+                    <p>
+                        The <strong>PythonPlotManager</strong> class provides comprehensive data visualization capabilities 
+                        within the Beep.Python.Runtime framework. It integrates matplotlib, seaborn, and plotly to create 
+                        professional-quality charts, plots, and interactive visualizations from .NET applications.
+                    </p>
+                    <div class="note">
+                        <strong>?? Key Features</strong>
+                        <ul>
+                            <li>Support for matplotlib, seaborn, and plotly visualization libraries</li>
+                            <li>Wide range of chart types (line, scatter, bar, contour, 3D, etc.)</li>
+                            <li>Advanced contour plotting for scientific data visualization</li>
+                            <li>Interactive plotting capabilities with plotly integration</li>
+                            <li>High-resolution image export with customizable formats</li>
+                            <li>Statistical plotting and data exploration visualizations</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Constructor -->
+                <section class="section">
+                    <h2>Constructor</h2>
+                    <div class="code-example">
+                        <h3>Initialization</h3>
+                        <pre><code class="language-csharp">public PythonPlotManager(
+    IBeepService beepservice, 
+    IPythonRunTimeManager pythonRuntimeManager, 
+    PythonSessionInfo sessionInfo) : base(beepservice, pythonRuntimeManager, sessionInfo)
+{
+    // Inherits from PythonBaseViewModel
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Chart Types Enum -->
+                <section class="section">
+                    <h2>Supported Chart Types</h2>
+                    <div class="code-example">
+                        <h3>ChartType Enumeration</h3>
+                        <pre><code class="language-csharp">public enum ChartType
+{
+    LinePlot,           // Line charts for trends
+    ScatterPlot,        // Scatter plots for correlation
+    BarChart,           // Bar charts for categorical data
+    BarPlot,            // Seaborn bar plots
+    Histogram,          // Distribution analysis
+    PieChart,           // Proportional data
+    BoxPlot,            // Statistical summaries
+    ViolinPlot,         // Distribution shapes
+    BoxenPlot,          // Enhanced box plots
+    AreaPlot,           // Filled line charts
+    Heatmap,            // Matrix visualizations
+    PairPlot,           // Multi-variable exploration
+    ContourPlot,        // 2D/3D surface visualization
+    HexbinPlot,         // Hexagonal binning
+    Scatter3DPlot       // 3D scatter visualization
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Basic Plotting with matplotlib -->
+                <section class="section">
+                    <h2>Basic Plotting with matplotlib</h2>
+                    
+                    <div class="code-example">
+                        <h3>Creating Standard Charts</h3>
+                        <pre><code class="language-csharp">// Line plot
+double[] x = {1, 2, 3, 4, 5};
+double[] y = {2, 4, 6, 8, 10};
+
+plotManager.CreatePyPlotChart(
+    picfile: @"C:\Charts\line_chart.png",
+    x: x,
+    y: y,
+    title: "Sales Trend",
+    xLabel: "Month",
+    yLabel: "Sales ($)",
+    chartType: ChartType.LinePlot,
+    width: 800,
+    height: 600);
+
+// Scatter plot
+plotManager.CreatePyPlotChart(
+    picfile: @"C:\Charts\scatter.png",
+    x: ages,
+    y: incomes,
+    title: "Age vs Income",
+    xLabel: "Age",
+    yLabel: "Income",
+    chartType: ChartType.ScatterPlot,
+    width: 800,
+    height: 600);
+
+// Bar chart
+plotManager.CreatePyPlotChart(
+    picfile: @"C:\Charts\bar_chart.png",
+    x: categories,
+    y: values,
+    title: "Sales by Category",
+    xLabel: "Category",
+    yLabel: "Sales",
+    chartType: ChartType.BarChart,
+    width: 800,
+    height: 600);</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Statistical Charts</h3>
+                        <pre><code class="language-csharp">// Histogram for distribution analysis
+plotManager.CreatePyPlotChart(
+    picfile: @"C:\Charts\histogram.png",
+    x: dataValues,
+    y: new double[0], // Not used for histograms
+    title: "Data Distribution",
+    xLabel: "Value",
+    yLabel: "Frequency",
+    chartType: ChartType.Histogram,
+    width: 800,
+    height: 600);
+
+// Box plot for statistical summary
+plotManager.CreatePyPlotChart(
+    picfile: @"C:\Charts\boxplot.png",
+    x: quartileData,
+    y: new double[0],
+    title: "Performance Distribution",
+    xLabel: "Metric",
+    yLabel: "Value",
+    chartType: ChartType.BoxPlot,
+    width: 800,
+    height: 600);</code></pre>
+                    </div>
+                </section>
+
+                <!-- Seaborn Statistical Plots -->
+                <section class="section">
+                    <h2>Seaborn Statistical Plots</h2>
+                    
+                    <div class="code-example">
+                        <h3>Creating Seaborn Visualizations</h3>
+                        <pre><code class="language-csharp">// Seaborn bar plot with statistical styling
+plotManager.CreateSeabornChart(
+    picfile: @"C:\Charts\seaborn_bar.png",
+    data: salesData,
+    xLabel: "Region",
+    yLabel: "Revenue",
+    title: "Revenue by Region",
+    chartType: ChartType.BarPlot);
+
+// Violin plot for distribution analysis
+plotManager.CreateSeabornChart(
+    picfile: @"C:\Charts\violin.png",
+    data: performanceScores,
+    xLabel: "Team",
+    yLabel: "Score",
+    title: "Performance Distribution by Team",
+    chartType: ChartType.ViolinPlot);
+
+// Pair plot for multi-variable exploration
+plotManager.CreateSeabornChart(
+    picfile: @"C:\Charts\pairplot.png",
+    data: featureMatrix,
+    xLabel: "",
+    yLabel: "",
+    title: "Feature Correlation Matrix",
+    chartType: ChartType.PairPlot);
+
+// Heatmap for correlation visualization
+plotManager.CreateSeabornChart(
+    picfile: @"C:\Charts\heatmap.png",
+    data: correlationMatrix,
+    xLabel: "Features",
+    yLabel: "Features",
+    title: "Feature Correlation Heatmap",
+    chartType: ChartType.Heatmap);</code></pre>
+                    </div>
+                </section>
+
+                <!-- Advanced Contour Plotting -->
+                <section class="section">
+                    <h2>Advanced Contour Plotting</h2>
+                    
+                    <div class="code-example">
+                        <h3>Contour Plot Data Structure</h3>
+                        <pre><code class="language-csharp">// Define contour plot data
+var contourData = new ContourPlotData
+{
+    X = new double[] {0, 1, 2, 3, 4, 5},
+    Y = new double[] {0, 1, 2, 3, 4, 5},
+    Z = GenerateZMatrix(6, 6), // 2D height data
+    Title = "Temperature Distribution",
+    XLabel = "Longitude",
+    YLabel = "Latitude",
+    Picfile = @"C:\Charts\contour.png",
+    PointTitles = new List<Tuple<double, double, string>>
+    {
+        new Tuple<double, double, string>(2.5, 2.5, "Hot Spot"),
+        new Tuple<double, double, string>(1.0, 4.0, "Cool Zone")
+    }
+};</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Creating Different Contour Plots</h3>
+                        <pre><code class="language-csharp">// Standard contour plot
+plotManager.GenerateContourPlot(contourData);
+
+// Irregular contour plot for scattered data
+plotManager.GenerateContourPlotIrregular(contourData);
+
+// Tri-contour plot with logarithmic scaling
+plotManager.CreatePyPlotTriContourPlot(contourData, useLogScale: true);
+
+// Basic contour with manual point annotations
+double[] x = {0, 1, 2, 3, 4};
+double[] y = {0, 1, 2, 3, 4};
+double[,] z = new double[5, 5]; // Fill with surface data
+
+var pointTitles = new List<Tuple<double, double, string>>
+{
+    new Tuple<double, double, string>(2.0, 2.0, "Peak"),
+    new Tuple<double, double, string>(0.5, 3.5, "Valley")
+};
+
+plotManager.CreatePyPlotContourPlot(
+    picfile: @"C:\Charts\custom_contour.png",
+    x: x,
+    y: y,
+    z: z,
+    xLabel: "X Coordinate",
+    yLabel: "Y Coordinate", 
+    title: "Elevation Map",
+    pointTitles: pointTitles);</code></pre>
+                    </div>
+                </section>
+
+                <!-- Interactive Plotly Visualizations -->
+                <section class="section">
+                    <h2>Interactive Plotly Visualizations</h2>
+                    
+                    <div class="code-example">
+                        <h3>Creating Interactive Plots</h3>
+                        <pre><code class="language-csharp">// Interactive contour plot with plotly
+plotManager.CreateplotlyContourPlot(contourData);
+
+// Interactive contour using script generation
+plotManager.CreateplotlyContourPlotScript(contourData);
+
+// The plotly plots are saved as interactive HTML files
+// that can be opened in web browsers for exploration</code></pre>
+                    </div>
+
+                    <div class="note">
+                        <strong>?? Interactive Features</strong>
+                        <p>Plotly visualizations provide:</p>
+                        <ul>
+                            <li>Zoom and pan capabilities</li>
+                            <li>Hover tooltips with data values</li>
+                            <li>Legend interaction (show/hide series)</li>
+                            <li>Downloadable images in various formats</li>
+                            <li>Responsive design for different screen sizes</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Helper Methods and Utilities -->
+                <section class="section">
+                    <h2>Helper Methods and Utilities</h2>
+                    
+                    <div class="code-example">
+                        <h3>Data Preparation Utilities</h3>
+                        <pre><code class="language-csharp">// Generate 2D data matrix for contour plots
+private double[,] GenerateZMatrix(int rows, int cols)
+{
+    var z = new double[rows, cols];
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < cols; j++)
+        {
+            // Example: Gaussian surface
+            double x = (i - rows/2.0) / (rows/4.0);
+            double y = (j - cols/2.0) / (cols/4.0);
+            z[i, j] = Math.Exp(-(x*x + y*y));
+        }
+    }
+    return z;
+}
+
+// Flatten 2D array for certain plot types
+private double[] FlattenZArray(double[,] z)
+{
+    int width = z.GetLength(0);
+    int height = z.GetLength(1);
+    double[] z1D = new double[width * height];
+    
+    for (int x = 0; x < width; x++)
+    {
+        for (int y = 0; y < height; y++)
+        {
+            z1D[x * height + y] = z[x, y];
+        }
+    }
+    return z1D;
+}
+
+// Serialize data for plotly JSON consumption
+public string SerializeZDataForPlotly(double?[,] zData)
+{
+    var settings = new JsonSerializerSettings
+    {
+        NullValueHandling = NullValueHandling.Include,
+        Converters = new List<JsonConverter> { new StringEnumConverter() }
+    };
+    return JsonConvert.SerializeObject(zData, settings);
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Complete Visualization Example -->
+                <section class="section">
+                    <h2>Complete Visualization Example</h2>
+                    
+                    <div class="code-example">
+                        <h3>Comprehensive Data Visualization Pipeline</h3>
+                        <pre><code class="language-csharp">// Initialize Plot Manager
+var plotManager = new PythonPlotManager(beepService, runtimeManager, sessionInfo);
+
+try
+{
+    // 1. Basic Statistical Plots
+    Console.WriteLine("Creating basic statistical plots...");
+    
+    // Sales trend analysis
+    double[] months = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    double[] sales = {120, 135, 148, 162, 178, 195, 210, 225, 240, 255, 270, 285};
+    
+    plotManager.CreatePyPlotChart(
+        @"C:\Charts\sales_trend.png",
+        months, sales,
+        "Monthly Sales Trend",
+        "Month", "Sales (k$)",
+        ChartType.LinePlot, 1000, 600);
+    
+    // Customer age distribution
+    double[] customerAges = {25, 30, 35, 40, 45, 50, 55, 60, 65, 70};
+    
+    plotManager.CreatePyPlotChart(
+        @"C:\Charts\age_distribution.png",
+        customerAges, new double[0],
+        "Customer Age Distribution",
+        "Age", "Frequency",
+        ChartType.Histogram, 800, 600);
+    
+    // 2. Seaborn Statistical Visualizations
+    Console.WriteLine("Creating seaborn visualizations...");
+    
+    // Performance comparison across teams
+    double[] teamPerformance = {85, 90, 78, 92, 88, 95, 82, 87, 91, 89};
+    
+    plotManager.CreateSeabornChart(
+        @"C:\Charts\team_performance.png",
+        teamPerformance,
+        "Team", "Performance Score",
+        "Team Performance Comparison",
+        ChartType.ViolinPlot);
+    
+    // Regional sales heatmap
+    double[] regionalData = {100, 120, 95, 110, 130, 85, 105, 125, 115, 90};
+    
+    plotManager.CreateSeabornChart(
+        @"C:\Charts\regional_heatmap.png",
+        regionalData,
+        "Region", "Product",
+        "Sales by Region and Product",
+        ChartType.Heatmap);
+    
+    // 3. Advanced Contour Plotting
+    Console.WriteLine("Creating contour plots...");
+    
+    // Temperature distribution across geographical area
+    var temperatureData = new ContourPlotData
+    {
+        X = GenerateLinearRange(-5, 5, 50),
+        Y = GenerateLinearRange(-5, 5, 50),
+        Z = GenerateTemperatureField(50, 50),
+        Title = "Temperature Distribution",
+        XLabel = "Longitude (degrees)",
+        YLabel = "Latitude (degrees)",
+        Picfile = @"C:\Charts\temperature_contour.png",
+        PointTitles = new List<Tuple<double, double, string>>
+        {
+            new Tuple<double, double, string>(0, 0, "City Center"),
+            new Tuple<double, double, string>(2, 3, "Industrial Zone"),
+            new Tuple<double, double, string>(-3, -2, "Rural Area")
+        }
+    };
+    
+    // Create multiple contour visualizations
+    plotManager.GenerateContourPlot(temperatureData);
+    plotManager.GenerateContourPlotIrregular(temperatureData);
+    plotManager.CreatePyPlotTriContourPlot(temperatureData, useLogScale: false);
+    
+    // 4. Interactive Plotly Visualizations
+    Console.WriteLine("Creating interactive plots...");
+    
+    // Interactive elevation map
+    var elevationData = new ContourPlotData
+    {
+        X = GenerateLinearRange(0, 10, 30),
+        Y = GenerateLinearRange(0, 10, 30),
+        Z = GenerateElevationField(30, 30),
+        Title = "Interactive Elevation Map",
+        XLabel = "X Coordinate (km)",
+        YLabel = "Y Coordinate (km)",
+        Picfile = @"C:\Charts\elevation_interactive.html"
+    };
+    
+    plotManager.CreateplotlyContourPlot(elevationData);
+    
+    // 5. Scientific Data Visualization
+    Console.WriteLine("Creating scientific plots...");
+    
+    // Create pressure field visualization
+    var pressureData = new ContourPlotData
+    {
+        X = GenerateLinearRange(-10, 10, 100),
+        Y = GenerateLinearRange(-10, 10, 100),
+        Z = GeneratePressureField(100, 100),
+        Title = "Pressure Field Analysis",
+        XLabel = "X Position (m)",
+        YLabel = "Y Position (m)",
+        Picfile = @"C:\Charts\pressure_field.png"
+    };
+    
+    plotManager.CreatePyPlotTriContourPlot(pressureData, useLogScale: true);
+    
+    // 6. Multi-Variable Analysis
+    Console.WriteLine("Creating multi-variable plots...");
+    
+    // Correlation analysis
+    double[] feature1 = GenerateRandomData(100, 50, 15);
+    double[] feature2 = GenerateRandomData(100, 75, 20);
+    
+    plotManager.CreatePyPlotChart(
+        @"C:\Charts\correlation_analysis.png",
+        feature1, feature2,
+        "Feature Correlation Analysis",
+        "Feature 1", "Feature 2",
+        ChartType.ScatterPlot, 800, 600);
+    
+    // Performance metrics over time
+    double[] timePoints = GenerateLinearRange(0, 24, 25); // 24 hours
+    double[] cpuUsage = GeneratePerformanceData(25, "cpu");
+    double[] memoryUsage = GeneratePerformanceData(25, "memory");
+    
+    // Create separate plots for different metrics
+    plotManager.CreatePyPlotChart(
+        @"C:\Charts\cpu_usage.png",
+        timePoints, cpuUsage,
+        "CPU Usage Over Time",
+        "Time (hours)", "CPU Usage (%)",
+        ChartType.LinePlot, 1200, 400);
+    
+    plotManager.CreatePyPlotChart(
+        @"C:\Charts\memory_usage.png",
+        timePoints, memoryUsage,
+        "Memory Usage Over Time",
+        "Time (hours)", "Memory Usage (%)",
+        ChartType.AreaPlot, 1200, 400);
+    
+    Console.WriteLine("All visualizations created successfully!");
+    Console.WriteLine("Charts saved to C:\\Charts\\");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Visualization error: {ex.Message}");
+}
+
+// Helper methods for data generation
+private double[] GenerateLinearRange(double start, double end, int count)
+{
+    double[] range = new double[count];
+    double step = (end - start) / (count - 1);
+    for (int i = 0; i < count; i++)
+    {
+        range[i] = start + i * step;
+    }
+    return range;
+}
+
+private double[] GenerateTemperatureField(int width, int height)
+{
+    var random = new Random(42); // Fixed seed for reproducible results
+    double[] field = new double[width * height];
+    
+    for (int i = 0; i < width; i++)
+    {
+        for (int j = 0; j < height; j++)
+        {
+            double x = (i - width/2.0) / (width/4.0);
+            double y = (j - height/2.0) / (height/4.0);
+            
+            // Simulate temperature with multiple heat sources
+            double temp = 20 + // Base temperature
+                         10 * Math.Exp(-((x-1)*(x-1) + (y-1)*(y-1))/2) + // Hot spot 1
+                         8 * Math.Exp(-((x+1)*(x+1) + (y+1)*(y+1))/3) +   // Hot spot 2
+                         random.NextDouble() * 3; // Random variation
+            
+            field[i * height + j] = temp;
+        }
+    }
+    return field;
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Best Practices -->
+                <section class="section">
+                    <h2>Best Practices</h2>
+                    
+                    <h3>?? Chart Design</h3>
+                    <ul>
+                        <li><strong>Choose appropriate chart types:</strong> Match visualization to data characteristics</li>
+                        <li><strong>Use clear labels:</strong> Provide descriptive titles and axis labels</li>
+                        <li><strong>Consider color schemes:</strong> Use colorblind-friendly palettes</li>
+                        <li><strong>Optimize resolution:</strong> Set appropriate DPI for intended output</li>
+                    </ul>
+
+                    <h3>?? Visual Aesthetics</h3>
+                    <ul>
+                        <li><strong>Maintain consistency:</strong> Use consistent styling across related charts</li>
+                        <li><strong>Minimize clutter:</strong> Remove unnecessary visual elements</li>
+                        <li><strong>Use white space effectively:</strong> Give charts room to breathe</li>
+                        <li><strong>Consider your audience:</strong> Adapt complexity to viewer expertise</li>
+                    </ul>
+
+                    <h3>? Performance</h3>
+                    <ul>
+                        <li><strong>Optimize data size:</strong> Sample large datasets for visualization</li>
+                        <li><strong>Use appropriate formats:</strong> PNG for detailed plots, SVG for scalable graphics</li>
+                        <li><strong>Cache static plots:</strong> Avoid regenerating unchanged visualizations</li>
+                        <li><strong>Consider interactive alternatives:</strong> Use plotly for exploratory analysis</li>
+                    </ul>
+
+                    <h3>?? Scientific Visualization</h3>
+                    <ul>
+                        <li><strong>Include scale information:</strong> Provide color bars and legends</li>
+                        <li><strong>Document data sources:</strong> Include metadata about data origin</li>
+                        <li><strong>Use logarithmic scales when appropriate:</strong> For wide dynamic ranges</li>
+                        <li><strong>Validate visual accuracy:</strong> Ensure plots accurately represent data</li>
+                    </ul>
+                </section>
+
+                <!-- Chart Type Guide -->
+                <section class="section">
+                    <h2>Chart Type Selection Guide</h2>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h3>?? Trend Analysis</h3>
+                            <p><strong>Line Plot:</strong> Time series data, trends over time</p>
+                            <p><strong>Area Plot:</strong> Cumulative data, filled trends</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? Categorical Data</h3>
+                            <p><strong>Bar Chart:</strong> Comparing categories</p>
+                            <p><strong>Pie Chart:</strong> Proportional relationships</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? Relationships</h3>
+                            <p><strong>Scatter Plot:</strong> Correlation between variables</p>
+                            <p><strong>Hexbin Plot:</strong> Dense scatter data</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? Distributions</h3>
+                            <p><strong>Histogram:</strong> Single variable distribution</p>
+                            <p><strong>Box Plot:</strong> Statistical summaries</p>
+                            <p><strong>Violin Plot:</strong> Distribution shapes</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>??? Spatial Data</h3>
+                            <p><strong>Contour Plot:</strong> 2D/3D surface data</p>
+                            <p><strong>Heatmap:</strong> Matrix visualizations</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? Multi-Variable</h3>
+                            <p><strong>Pair Plot:</strong> Multiple variable relationships</p>
+                            <p><strong>3D Scatter:</strong> Three-dimensional data</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Error Handling -->
+                <section class="section">
+                    <h2>Error Handling</h2>
+                    
+                    <div class="code-example">
+                        <h3>Common Error Scenarios</h3>
+                        <pre><code class="language-csharp">try
+{
+    // Check if plot manager is initialized
+    if (!plotManager.IsInitialized)
+    {
+        Console.WriteLine("Plot manager not initialized");
+        return;
+    }
+    
+    // Validate data before plotting
+    if (xData == null || yData == null)
+    {
+        throw new ArgumentNullException("Plot data cannot be null");
+    }
+    
+    if (xData.Length != yData.Length)
+    {
+        throw new ArgumentException("X and Y data must have same length");
+    }
+    
+    // Check for invalid values
+    if (xData.Any(double.IsNaN) || yData.Any(double.IsNaN))
+    {
+        Console.WriteLine("Warning: Data contains NaN values");
+        // Clean data or handle appropriately
+    }
+    
+    // Create plot with error handling
+    plotManager.CreatePyPlotChart(
+        outputPath, xData, yData, title, xLabel, yLabel, 
+        ChartType.LinePlot, 800, 600);
+        
+    Console.WriteLine("Plot created successfully");
+}
+catch (ArgumentException ex)
+{
+    Console.WriteLine($"Invalid arguments: {ex.Message}");
+}
+catch (FileNotFoundException ex)
+{
+    Console.WriteLine($"Output directory not found: {ex.Message}");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Plotting error: {ex.Message}");
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- See Also -->
+                <section class="section" id="see-also">
+                    <h2>See Also</h2>
+                    <ul>
+                        <li><a href="PythonPandasManager.html">PythonPandasManager</a> - Data manipulation and preparation</li>
+                        <li><a href="PythonMLManager.html">PythonMLManager</a> - Machine learning model visualization</li>
+                        <li><a href="PythonNetRunTimeManager.html">PythonNetRunTimeManager</a> - Runtime management</li>
+                        <li><a href="examples.html">Examples</a> - Complete visualization examples</li>
+                    </ul>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="PythonPandasManager.html">
+                        <i class="bi bi-arrow-left"></i> PythonPandasManager
+                    </a>
+                    <a href="examples.html">
+                        <i class="bi bi-arrow-right"></i> Examples
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.Runtime.PythonNet Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="index.html">Home</a>
+                            <a href="api-reference.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="navigation.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

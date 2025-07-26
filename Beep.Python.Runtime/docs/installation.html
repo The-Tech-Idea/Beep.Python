@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Installation - Beep.Python.Runtime.PythonNet</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb -->
+                <nav class="breadcrumb-nav">
+                    <a href="index.html">Home</a>
+                    <span>?</span>
+                    <a href="#">Getting Started</a>
+                    <span>?</span>
+                    <span>Installation</span>
+                </nav>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1>?? Installation Guide</h1>
+                    <p class="page-subtitle">Complete installation instructions for Beep.Python.Runtime.PythonNet</p>
+                </div>
+
+                <!-- Table of Contents -->
+                <div class="toc">
+                    <h3>?? Table of Contents</h3>
+                    <ul>
+                        <li><a href="#prerequisites">Prerequisites</a></li>
+                        <li><a href="#installing-python">Installing Python</a></li>
+                        <li><a href="#nuget-installation">NuGet Package Installation</a></li>
+                        <li><a href="#dependencies">Required Dependencies</a></li>
+                        <li><a href="#post-installation">Post-Installation Setup</a></li>
+                        <li><a href="#troubleshooting">Troubleshooting</a></li>
+                        <li><a href="#next-steps">Next Steps</a></li>
+                    </ul>
+                </div>
+
+                <!-- Prerequisites -->
+                <section class="section" id="prerequisites">
+                    <h2>Prerequisites</h2>
+                    <ul>
+                        <li>Python 3.8 or higher installed on your system</li>
+                        <li>.NET SDK/Runtime matching your target framework:
+                            <ul>
+                                <li>.NET 6.0</li>
+                                <li>.NET 7.0</li>
+                                <li>.NET 8.0</li>
+                                <li>.NET 9.0</li>
+                            </ul>
+                        </li>
+                        <li>Visual Studio 2022 or later (recommended for development)</li>
+                    </ul>
+                    
+                    <div class="note">
+                        <strong>Note:</strong> Beep.Python.Runtime.PythonNet supports multiple .NET versions (6.0, 7.0, 8.0, and 9.0) 
+                        to provide flexibility for different project requirements.
+                    </div>
+                </section>
+
+                <!-- Installing Python -->
+                <section class="section" id="installing-python">
+                    <h2>Installing Python</h2>
+                    <p>If you don't have Python installed, follow these steps:</p>
+                    
+                    <h3>Windows</h3>
+                    <ol>
+                        <li>Download the latest Python installer from <a href="https://www.python.org/downloads/" target="_blank">python.org</a></li>
+                        <li>Run the installer and make sure to check the "Add Python to PATH" option</li>
+                        <li>Complete the installation with the recommended settings</li>
+                    </ol>
+                    
+                    <div class="code-example">
+                        <h3>Verify Python Installation</h3>
+                        <pre><code class="language-bash">python --version
+pip --version</code></pre>
+                    </div>
+                    
+                    <h3>macOS/Linux</h3>
+                    <ol>
+                        <li>Python is often pre-installed on these systems, but you may need to install a newer version</li>
+                        <li>For macOS, you can use Homebrew: <code>brew install python</code></li>
+                        <li>For Linux, use your distribution's package manager (e.g., <code>apt install python3</code> on Ubuntu)</li>
+                    </ol>
+                </section>
+
+                <!-- NuGet Installation -->
+                <section class="section" id="nuget-installation">
+                    <h2>NuGet Package Installation</h2>
+                    <p>Install the Beep.Python.Runtime.PythonNet package using one of these methods:</p>
+                    
+                    <div class="code-example">
+                        <h3>Using Package Manager Console</h3>
+                        <pre><code class="language-powershell">Install-Package Beep.Python.Runtime.PythonNet</code></pre>
+                    </div>
+                    
+                    <div class="code-example">
+                        <h3>Using .NET CLI</h3>
+                        <pre><code class="language-bash">dotnet add package Beep.Python.Runtime.PythonNet</code></pre>
+                    </div>
+                    
+                    <div class="code-example">
+                        <h3>Manually Editing Project File</h3>
+                        <pre><code class="language-xml">&lt;ItemGroup&gt;
+  &lt;PackageReference Include="Beep.Python.Runtime.PythonNet" Version="1.0.43" /&gt;
+&lt;/ItemGroup&gt;</code></pre>
+                    </div>
+                </section>
+
+                <!-- Dependencies -->
+                <section class="section" id="dependencies">
+                    <h2>Required Dependencies</h2>
+                    <p>The following packages will be automatically installed as dependencies:</p>
+                    <ul>
+                        <li><strong>pythonnet</strong> (v3.0.3) - The core .NET-Python integration library</li>
+                        <li><strong>Autofac</strong> (v8.0.0) - Used for dependency injection</li>
+                        <li><strong>Beep.Python.Model</strong> (v1.0.16) - Data models for Python integration</li>
+                        <li><strong>CommunityToolkit.Mvvm</strong> (v8.2.2) - MVVM infrastructure</li>
+                        <li><strong>TheTechIdea.Beep.Container.Model</strong> (v1.0.0.46) - Container abstractions</li>
+                        <li><strong>TheTechIdea.Beep.DataManagementEngine</strong> (v2.0.6) - Data management components</li>
+                    </ul>
+                </section>
+
+                <!-- Post-Installation Setup -->
+                <section class="section" id="post-installation">
+                    <h2>Post-Installation Setup</h2>
+                    
+                    <h3>Python Environment Configuration</h3>
+                    <p>The library will attempt to detect Python installations automatically, but you can also configure a specific Python environment:</p>
+                    
+                    <div class="code-example">
+                        <h3>Custom Python Environment Setup</h3>
+                        <pre><code class="language-csharp">// Example of custom Python environment setup
+var runtimeManager = new PythonNetRunTimeManager(beepService);
+
+// Specify a custom Python installation path
+var customPython = new PythonRunTime
+{
+    RuntimePath = @"C:\Path\To\Your\Python\python.exe",
+    Name = "Custom Python Environment"
+};
+
+runtimeManager.Initialize(customPython, null, "my-env", PythonEngineMode.SingleUser);</code></pre>
+                    </div>
+                    
+                    <h3>Setting Up Virtual Environments</h3>
+                    <p>For better isolation, you can create a virtual environment:</p>
+                    
+                    <div class="code-example">
+                        <h3>Creating a Virtual Environment</h3>
+                        <pre><code class="language-csharp">// Example of creating a virtual environment
+var pythonRunTime = runtimeManager.PythonInstallations.First();
+var virtualEnvManager = runtimeManager.VirtualEnvmanager;
+
+var myEnv = new PythonVirtualEnvironment
+{
+    Name = "data-science-env",
+    Path = @"C:\Path\To\Virtual\Environments\data-science-env",
+    BaseInterpreterPath = pythonRunTime.RuntimePath
+};
+
+virtualEnvManager.CreateVirtualEnvironment(pythonRunTime, myEnv);</code></pre>
+                    </div>
+                </section>
+
+                <!-- Troubleshooting -->
+                <section class="section" id="troubleshooting">
+                    <h2>Troubleshooting</h2>
+                    
+                    <h3>Common Issues</h3>
+                    <ul>
+                        <li>
+                            <strong>Python Not Found</strong>: Ensure Python is in your PATH environment variable or specify the 
+                            exact path when initializing the runtime.
+                        </li>
+                        <li>
+                            <strong>Python.NET Version Conflicts</strong>: If you experience DLL loading issues, check for multiple 
+                            versions of Python.NET in your project's dependencies.
+                        </li>
+                        <li>
+                            <strong>GIL Deadlocks</strong>: Be careful with accessing Python from multiple threads. Use the 
+                            provided async methods for best results.
+                        </li>
+                    </ul>
+                    
+                    <h3>Diagnosing Python Environment</h3>
+                    <div class="code-example">
+                        <h3>Environment Diagnostic Code</h3>
+                        <pre><code class="language-csharp">// Diagnostic code to check Python environment
+var diagnostics = PythonRunTimeDiagnostics.CheckPythonInstallation(
+    pythonPath: @"C:\Path\To\Python\python.exe");
+
+Console.WriteLine($"Python version: {diagnostics.Version}");
+Console.WriteLine($"Status: {diagnostics.Status}");
+
+if (!diagnostics.IsValid)
+{
+    Console.WriteLine($"Error: {diagnostics.ErrorMessage}");
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Next Steps -->
+                <section class="section" id="next-steps">
+                    <h2>Next Steps</h2>
+                    <p>
+                        After installing Beep.Python.Runtime.PythonNet, you can proceed to the 
+                        <a href="getting-started.html">Getting Started Guide</a> to learn how to use the library.
+                    </p>
+                    
+                    <div class="quick-start">
+                        <h3>?? Quick Navigation</h3>
+                        <div class="quick-start-buttons">
+                            <a href="getting-started.html" class="btn-beep">? Quick Start Tutorial</a>
+                            <a href="PythonNetRunTimeManager.html" class="btn-beep">?? Core Classes</a>
+                            <a href="examples.html" class="btn-beep">?? Examples</a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="index.html">
+                        <i class="bi bi-arrow-left"></i> Home
+                    </a>
+                    <a href="getting-started.html">
+                        <i class="bi bi-arrow-right"></i> Getting Started
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.Runtime.PythonNet Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="index.html">Home</a>
+                            <a href="api-reference.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="navigation.js"></script>
+    <script>
+        // Page-specific functionality - navigation.js handles the rest
+        console.log('Installation page loaded');
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

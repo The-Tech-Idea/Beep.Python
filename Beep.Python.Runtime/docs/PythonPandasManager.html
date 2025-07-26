@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PythonPandasManager - Beep.Python.Runtime.PythonNet</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnected" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1>PythonPandasManager</h1>
+                    <p class="page-subtitle">Comprehensive pandas DataFrame management and data manipulation for .NET applications</p>
+                </div>
+
+                <!-- Class Overview -->
+                <section class="section">
+                    <h2>Overview</h2>
+                    <p>
+                        The <strong>PythonPandasManager</strong> class provides comprehensive pandas DataFrame operations 
+                        and data manipulation capabilities within the Beep.Python.Runtime framework. It offers a .NET-friendly 
+                        interface to the full power of pandas for data analysis, transformation, and processing.
+                    </p>
+                    <div class="note">
+                        <strong>?? Key Features</strong>
+                        <ul>
+                            <li>Complete DataFrame lifecycle management (create, read, transform, write)</li>
+                            <li>Advanced data manipulation and analysis operations</li>
+                            <li>Statistical analysis and aggregation functions</li>
+                            <li>Data cleaning and preprocessing utilities</li>
+                            <li>Support for multiple file formats (CSV, Excel, JSON, SQL)</li>
+                            <li>Memory optimization and performance tuning</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Constructor -->
+                <section class="section">
+                    <h2>Constructor</h2>
+                    <div class="code-example">
+                        <h3>Initialization</h3>
+                        <pre><code class="language-csharp">public PythonPandasManager(
+    IBeepService beepservice, 
+    IPythonRunTimeManager pythonRuntimeManager, 
+    PythonSessionInfo sessionInfo) : base(beepservice, pythonRuntimeManager, sessionInfo)
+{
+    // Inherits from PythonBaseViewModel
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- DataFrame Creation and I/O -->
+                <section class="section">
+                    <h2>DataFrame Creation and I/O</h2>
+                    
+                    <div class="code-example">
+                        <h3>Creating DataFrames</h3>
+                        <pre><code class="language-csharp">// Create DataFrame from data
+pandasManager.CreateDataFrame("df", data);
+
+// Read from various file formats
+pandasManager.ReadCsv("sales_data", @"C:\Data\sales.csv");
+pandasManager.ReadExcel("financial_data", @"C:\Data\reports.xlsx");
+pandasManager.ReadJson("config_data", @"C:\Data\config.json");
+
+// Read from SQL database
+pandasManager.ReadSql(
+    "customer_data", 
+    "SELECT * FROM customers WHERE active = 1", 
+    connectionString);
+
+// Read from web API
+pandasManager.ReadFromWeb("api_data", "https://api.example.com/data.json");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Exporting DataFrames</h3>
+                        <pre><code class="language-csharp">// Export to various formats
+pandasManager.ToCsv("sales_data", @"C:\Output\sales_report.csv");
+pandasManager.ToExcel("financial_data", @"C:\Output\financial_report.xlsx");
+pandasManager.ToJson("processed_data", @"C:\Output\processed.json");
+
+// Generic export with format specification
+pandasManager.ExportDataFrame("data", @"C:\Output\data.parquet", "parquet");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Data Selection and Filtering -->
+                <section class="section">
+                    <h2>Data Selection and Filtering</h2>
+                    
+                    <div class="code-example">
+                        <h3>Column Selection and Filtering</h3>
+                        <pre><code class="language-csharp">// Select specific columns
+string[] columns = {"name", "age", "salary"};
+pandasManager.SelectColumns("employees", "selected_data", columns);
+
+// Filter rows based on conditions
+pandasManager.FilterRows(
+    "employees", 
+    "filtered_employees", 
+    "age > 30 and salary > 50000");
+
+// Advanced filtering with evaluation
+pandasManager.AdvancedFilter(
+    "sales_data", 
+    "high_value_sales", 
+    "'amount > 1000 and region == \"North\"'");
+
+// Query-style filtering
+pandasManager.QueryDataFrame(
+    "products", 
+    "expensive_products", 
+    "price > 100 and category == 'Electronics'");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Sampling and Data Subsets</h3>
+                        <pre><code class="language-csharp">// Random sampling
+pandasManager.SampleDataFrame("large_dataset", "sample_data", fraction: 0.1);
+
+// Sample specific number of rows
+pandasManager.SampleData("dataset", sampleSize: 1000, "sampled_data");
+
+// Sample with replacement
+pandasManager.SampleWithReplacement("dataset", 500, "bootstrap_sample");
+
+// Sample without replacement
+pandasManager.SampleWithoutReplacement("dataset", 300, "clean_sample");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Data Manipulation -->
+                <section class="section">
+                    <h2>Data Manipulation</h2>
+                    
+                    <div class="code-example">
+                        <h3>Column Operations</h3>
+                        <pre><code class="language-csharp">// Add new columns
+pandasManager.AddColumn("df", "total_score", "math_score + science_score");
+
+// Transform columns
+pandasManager.TransformData(
+    "employees", 
+    "age", 
+    "age_category", 
+    "lambda x: 'Young' if x < 30 else 'Senior'");
+
+// Apply functions to columns
+pandasManager.ApplyFunction("sales", "amount", "lambda x: x * 1.1"); // 10% increase
+
+// String operations
+pandasManager.StringOperation("customers", "name", "lower()", "name_lower");
+pandasManager.StringRegexOperation(
+    "emails", 
+    "email", 
+    @"[\w\.-]+@[\w\.-]+", 
+    "extract");
+
+// Drop columns
+pandasManager.DropColumn("df", "unused_column");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Data Type Conversions</h3>
+                        <pre><code class="language-csharp">// Convert data types
+pandasManager.ConvertDataType("sales", "date", "datetime64[ns]");
+pandasManager.ConvertToNumeric("sales_amount", errors: "coerce");
+pandasManager.ConvertToDatetime("transaction_date");
+pandasManager.ConvertToCategorical("df", "category");
+
+// Optimize memory usage
+pandasManager.OptimizeMemory("large_dataset");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Data Cleaning -->
+                <section class="section">
+                    <h2>Data Cleaning</h2>
+                    
+                    <div class="code-example">
+                        <h3>Missing Value Handling</h3>
+                        <pre><code class="language-csharp">// Detect missing values
+string nullSummary = pandasManager.IsNull("dataset");
+
+// Fill missing values
+pandasManager.FillNA("dataset", "cleaned_dataset", value: 0);
+pandasManager.FillMissingValues("dataset", method: "ffill"); // Forward fill
+pandasManager.FillMissingValues("dataset", method: "bfill"); // Backward fill
+
+// Drop missing values
+pandasManager.DropNA("dataset", "clean_dataset");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Duplicate Handling and Data Quality</h3>
+                        <pre><code class="language-csharp">// Remove duplicates
+pandasManager.DropDuplicates("raw_data", "deduplicated_data");
+
+// Detect outliers
+pandasManager.DetectOutliers("sales_data", "amount");
+
+// Data validation
+string validationReport = pandasManager.DataValidation("customer_data");
+
+// Data quality checks
+pandasManager.DataQualityCheck("orders", "amount > 0 and quantity > 0");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Aggregation and Grouping -->
+                <section class="section">
+                    <h2>Aggregation and Grouping</h2>
+                    
+                    <div class="code-example">
+                        <h3>GroupBy Operations</h3>
+                        <pre><code class="language-csharp">// Basic grouping
+pandasManager.GroupBy("sales", "sales_by_region", "region", "sum");
+
+// Advanced grouping with multiple functions
+pandasManager.AggregateData(
+    "orders", 
+    "customer_id", 
+    "mean", 
+    "customer_stats");
+
+// Multiple aggregation functions
+string[] aggFunctions = {"mean", "sum", "count"};
+pandasManager.GroupByAndAggregate(
+    "transactions", 
+    "customer_id", 
+    aggFunctions, 
+    "customer_summary");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Pivot Tables and Cross Tabulation</h3>
+                        <pre><code class="language-csharp">// Create pivot tables
+pandasManager.PivotTable(
+    "sales", 
+    "sales_pivot", 
+    index: "region", 
+    columns: "month", 
+    values: "amount");
+
+// Advanced pivot with aggregation
+pandasManager.PivotTable(
+    "orders", 
+    index: "category", 
+    columns: "quarter", 
+    values: "revenue", 
+    aggregationFunction: "mean", 
+    "revenue_pivot");
+
+// Cross tabulation
+pandasManager.CrossTab("survey", "age_education", "age_group", "education");
+pandasManager.CrossTab("region", "product_category");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Statistical Analysis -->
+                <section class="section">
+                    <h2>Statistical Analysis</h2>
+                    
+                    <div class="code-example">
+                        <h3>Descriptive Statistics</h3>
+                        <pre><code class="language-csharp">// Basic statistics
+string summary = pandasManager.Describe("sales_data");
+string mean = pandasManager.CalculateMean("sales_data", "amount");
+string median = pandasManager.CalculateMedian("sales_data", "amount");
+string mode = pandasManager.CalculateMode("customer_data", "category");
+
+// Variability measures
+string stdDev = pandasManager.StandardDeviation("prices", "price");
+string variance = pandasManager.Variance("scores", "test_score");
+
+// Distribution shape
+string skewness = pandasManager.CalculateSkewness("data", "value");
+string kurtosis = pandasManager.CalculateKurtosis("data", "value");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Correlation and Relationships</h3>
+                        <pre><code class="language-csharp">// Correlation analysis
+string correlation = pandasManager.Correlation("financial_data");
+string pairwiseCorr = pandasManager.CalculateCorrelation(
+    "stocks", 
+    "stock_a", 
+    "stock_b", 
+    method: "pearson");
+
+// Covariance
+string covariance = pandasManager.CalculateCovariance("returns", "stock1", "stock2");
+
+// Frequency analysis
+string frequencies = pandasManager.FrequencyDistribution("survey", "response");
+string valueCounts = pandasManager.ValueCounts("products", "category");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Time Series Operations -->
+                <section class="section">
+                    <h2>Time Series Operations</h2>
+                    
+                    <div class="code-example">
+                        <h3>Time-based Operations</h3>
+                        <pre><code class="language-csharp">// Date/time parsing and conversion
+pandasManager.ConvertToDateTime("transactions", "timestamp");
+pandasManager.ParseDateColumn("events", "event_date");
+
+// Date component extraction
+pandasManager.DatetimeOperation("sales", "date", "year", "year");
+pandasManager.DatetimeOperation("sales", "date", "month", "month");
+pandasManager.DatetimeOperation("sales", "date", "dayofweek", "weekday");
+
+// Resampling and rolling operations
+pandasManager.Resample("daily_sales", "monthly_sales", "M", "sum");
+pandasManager.RollingWindow("stock_prices", "moving_avg", windowSize: 30, "mean");
+pandasManager.RollingAverage("temperatures", "temp", "temp_ma", windowSize: 7);</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Time Series Analysis</h3>
+                        <pre><code class="language-csharp">// Cumulative operations
+pandasManager.CumulativeSum("daily_revenue", "revenue", "cumulative_revenue");
+
+// Create time-based indices
+pandasManager.CreateDateRange("2023-01-01", "2023-12-31", 365, "D");
+pandasManager.CreateBusinessDateRange("2023-01-01", "2023-12-31", 260, "B");
+
+// Handle missing dates
+pandasManager.HandleMissingDates("timeseries", "date", "interpolate");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Data Merging and Joining -->
+                <section class="section">
+                    <h2>Data Merging and Joining</h2>
+                    
+                    <div class="code-example">
+                        <h3>DataFrame Merging</h3>
+                        <pre><code class="language-csharp">// Basic merge operations
+pandasManager.MergeDataFrames("customers", "orders", "merged_data", "customer_id");
+
+// Advanced merges with different join types
+pandasManager.MergeDataFrames(
+    "products", 
+    "inventory", 
+    onKey: "product_id", 
+    how: "left", 
+    "product_inventory");
+
+// Join operations
+pandasManager.JoinDataFrames(
+    "sales", 
+    "regions", 
+    onKey: "region_id", 
+    how: "inner", 
+    "sales_with_regions");
+
+// Concatenation
+string[] dataFrames = {"q1_sales", "q2_sales", "q3_sales", "q4_sales"};
+pandasManager.ConcatDataFrames(dataFrames, "yearly_sales");
+pandasManager.ConcatenateDataFrames(dataFrames, "combined_data", axis: "0");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Advanced Merging with Change Tracking</h3>
+                        <pre><code class="language-csharp">// Merge with difference tracking
+string changeReport = pandasManager.MergeDataFramesWithDifferenceTracking(
+    "previous_data", 
+    "current_data", 
+    "customer_id", 
+    "outer");
+
+// Compare DataFrames
+string differences = pandasManager.CompareDataFrames("df1", "df2");
+string schemaDiff = pandasManager.CompareDataFramesSchema("old_schema", "new_schema");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Advanced Operations -->
+                <section class="section">
+                    <h2>Advanced Operations</h2>
+                    
+                    <div class="code-example">
+                        <h3>Data Reshaping</h3>
+                        <pre><code class="language-csharp">// Melt (wide to long format)
+pandasManager.MeltData(
+    "wide_data", 
+    idVars: "'id', 'name'", 
+    valueVars: "'q1', 'q2', 'q3', 'q4'", 
+    varName: "quarter", 
+    valueName: "sales", 
+    "long_data");
+
+// Pivot (long to wide format)
+pandasManager.PivotData(
+    "long_data", 
+    indexColumn: "name", 
+    columnsColumn: "quarter", 
+    valuesColumn: "sales", 
+    "pivoted_data");
+
+// Wide to long transformation
+string[] stubnames = {"income", "expense"};
+pandasManager.WideToLong("financial", stubnames, "id", "year");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Multi-Index Operations</h3>
+                        <pre><code class="language-csharp">// Create multi-index DataFrames
+string[] indexColumns = {"region", "category"};
+pandasManager.CreateMultiIndexDataFrame("sales_data", indexColumns);
+
+// Reset and manipulate indices
+pandasManager.ResetIndex("hierarchical_data");
+pandasManager.FlattenDataFrame("multi_level_data");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Performance and Memory Management -->
+                <section class="section">
+                    <h2>Performance and Memory Management</h2>
+                    
+                    <div class="code-example">
+                        <h3>Memory Optimization</h3>
+                        <pre><code class="language-csharp">// Optimize memory usage
+pandasManager.OptimizeMemory("large_dataset");
+
+// Convert to categorical for memory efficiency
+pandasManager.ConvertToCategorical("df", "category_column");
+
+// Process data in chunks for large datasets
+pandasManager.ProcessInChunks("huge_dataset", chunkSize: 10000, "process_chunk");
+
+// Memory-efficient data types
+pandasManager.ConvertDataType("integers", "id", "int32");
+pandasManager.ConvertDataType("categories", "status", "category");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Performance Monitoring</h3>
+                        <pre><code class="language-csharp">// Set pandas options for performance
+pandasManager.SetPandasOption("display.max_rows", "100");
+pandasManager.SetPandasOption("mode.chained_assignment", "None");
+
+// Similarity analysis
+string similarity = pandasManager.CosineSimilarity("features", row1Index: 0, row2Index: 1);</code></pre>
+                    </div>
+                </section>
+
+                <!-- Complete Example -->
+                <section class="section">
+                    <h2>Complete Data Analysis Example</h2>
+                    
+                    <div class="code-example">
+                        <h3>End-to-End Data Analysis Pipeline</h3>
+                        <pre><code class="language-csharp">// Initialize Pandas Manager
+var pandasManager = new PythonPandasManager(beepService, runtimeManager, sessionInfo);
+
+try
+{
+    // 1. Data Loading
+    Console.WriteLine("1. Loading data...");
+    pandasManager.ReadCsv("sales_raw", @"C:\Data\sales_data.csv");
+    pandasManager.ReadCsv("customers", @"C:\Data\customer_info.csv");
+    
+    // 2. Data Exploration
+    Console.WriteLine("2. Exploring data...");
+    string salesSummary = pandasManager.Describe("sales_raw");
+    Console.WriteLine($"Sales Summary:\n{salesSummary}");
+    
+    // 3. Data Cleaning
+    Console.WriteLine("3. Cleaning data...");
+    
+    // Handle missing values
+    pandasManager.FillNA("sales_raw", value: 0);
+    pandasManager.DropNA("customers", "customers_clean");
+    
+    // Remove duplicates
+    pandasManager.DropDuplicates("sales_raw", "sales_clean");
+    
+    // Data type conversions
+    pandasManager.ConvertToDateTime("sales_clean", "transaction_date");
+    pandasManager.ConvertToCategorical("sales_clean", "product_category");
+    
+    // 4. Data Transformation
+    Console.WriteLine("4. Transforming data...");
+    
+    // Create new features
+    pandasManager.DatetimeOperation("sales_clean", "transaction_date", "year", "year");
+    pandasManager.DatetimeOperation("sales_clean", "transaction_date", "month", "month");
+    
+    // Calculate derived metrics
+    pandasManager.AddColumn("sales_clean", "revenue", "quantity * unit_price");
+    
+    // 5. Data Merging
+    Console.WriteLine("5. Merging datasets...");
+    pandasManager.MergeDataFrames(
+        "sales_clean", 
+        "customers_clean", 
+        onKey: "customer_id", 
+        how: "left", 
+        "sales_enriched");
+    
+    // 6. Aggregation and Analysis
+    Console.WriteLine("6. Performing analysis...");
+    
+    // Sales by region
+    pandasManager.GroupBy("sales_enriched", "sales_by_region", "region", "sum");
+    
+    // Monthly trends
+    pandasManager.GroupBy("sales_enriched", "monthly_sales", "month", "sum");
+    
+    // Customer segmentation
+    string[] aggFunctions = {"sum", "mean", "count"};
+    pandasManager.GroupByAndAggregate(
+        "sales_enriched", 
+        "customer_id", 
+        aggFunctions, 
+        "customer_analysis");
+    
+    // 7. Statistical Analysis
+    Console.WriteLine("7. Statistical analysis...");
+    
+    string correlation = pandasManager.Correlation("sales_enriched");
+    string revenueStats = pandasManager.CalculateMean("sales_enriched", "revenue");
+    
+    // 8. Time Series Analysis
+    Console.WriteLine("8. Time series analysis...");
+    
+    // Resample to monthly data
+    pandasManager.Resample("sales_enriched", "monthly_trends", "M", "sum");
+    
+    // Calculate moving averages
+    pandasManager.RollingAverage("monthly_trends", "revenue", "revenue_ma", windowSize: 3);
+    
+    // 9. Export Results
+    Console.WriteLine("9. Exporting results...");
+    
+    pandasManager.ToCsv("sales_by_region", @"C:\Output\sales_by_region.csv");
+    pandasManager.ToCsv("customer_analysis", @"C:\Output\customer_analysis.csv");
+    pandasManager.ToExcel("monthly_trends", @"C:\Output\monthly_trends.xlsx");
+    
+    // 10. Generate Summary Report
+    Console.WriteLine("10. Generating summary...");
+    
+    string finalSummary = pandasManager.Describe("sales_enriched");
+    string uniqueCustomers = pandasManager.CountNonNull("customer_analysis", "customer_id");
+    
+    Console.WriteLine($"Analysis completed successfully!");
+    Console.WriteLine($"Unique customers: {uniqueCustomers}");
+    Console.WriteLine($"Final dataset summary:\n{finalSummary}");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Analysis error: {ex.Message}");
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Best Practices -->
+                <section class="section">
+                    <h2>Best Practices</h2>
+                    
+                    <h3>?? Data Management</h3>
+                    <ul>
+                        <li><strong>Use descriptive names:</strong> Name DataFrames clearly to indicate their purpose</li>
+                        <li><strong>Validate data early:</strong> Check data quality immediately after loading</li>
+                        <li><strong>Handle missing values appropriately:</strong> Choose the right strategy for your use case</li>
+                        <li><strong>Optimize data types:</strong> Use appropriate data types to save memory</li>
+                    </ul>
+
+                    <h3>?? Performance</h3>
+                    <ul>
+                        <li><strong>Process in chunks:</strong> Use chunking for large datasets</li>
+                        <li><strong>Use categorical data:</strong> Convert string columns to categorical when appropriate</li>
+                        <li><strong>Optimize memory:</strong> Regularly optimize memory usage for large operations</li>
+                        <li><strong>Monitor performance:</strong> Track memory usage and processing times</li>
+                    </ul>
+
+                    <h3>?? Data Quality</h3>
+                    <ul>
+                        <li><strong>Clean incrementally:</strong> Clean data in logical steps</li>
+                        <li><strong>Document transformations:</strong> Keep track of data transformation steps</li>
+                        <li><strong>Validate assumptions:</strong> Use data quality checks throughout the pipeline</li>
+                        <li><strong>Handle edge cases:</strong> Consider outliers and unusual data patterns</li>
+                    </ul>
+                </section>
+
+                <!-- See Also -->
+                <section class="section" id="see-also">
+                    <h2>See Also</h2>
+                    <ul>
+                        <li><a href="PythonMLManager.html">PythonMLManager</a> - Machine learning operations</li>
+                        <li><a href="PythonPlotManager.html">PythonPlotManager</a> - Data visualization</li>
+                        <li><a href="PythonNetRunTimeManager.html">PythonNetRunTimeManager</a> - Runtime management</li>
+                        <li><a href="examples.html">Examples</a> - Complete data analysis examples</li>
+                    </ul>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="PythonMLManager.html">
+                        <i class="bi bi-arrow-left"></i> PythonMLManager
+                    </a>
+                    <a href="PythonPlotManager.html">
+                        <i class="bi bi-arrow-right"></i> PythonPlotManager
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.Runtime.PythonNet Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="index.html">Home</a>
+                            <a href="api-reference.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="navigation.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

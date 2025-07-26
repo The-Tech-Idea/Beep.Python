@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beep.Python.Runtime.PythonNet - Documentation</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1>Beep.Python.Runtime.PythonNet</h1>
+                    <p class="page-subtitle">Comprehensive .NET library for Python integration with runtime management, session isolation, and code execution</p>
+                </div>
+
+                <!-- Overview -->
+                <section class="section">
+                    <h2>Overview</h2>
+                    <p>
+                        <strong>Beep.Python.Runtime.PythonNet</strong> is a enterprise-grade .NET library that provides 
+                        seamless Python integration for .NET 6, 7, 8, and 9 applications. It offers comprehensive 
+                        Python runtime management, session isolation, code execution, and virtual environment support 
+                        through a robust, thread-safe architecture.
+                    </p>
+                    <p>
+                        Built with scalability and enterprise requirements in mind, the library supports multi-user 
+                        scenarios, async operations, package management, and provides extensive error handling and 
+                        logging capabilities.
+                    </p>
+                </section>
+
+                <!-- Quick Start Section -->
+                <section class="section">
+                    <div class="quick-start">
+                        <h2>?? Quick Start</h2>
+                        <p>Get started with Python.NET integration in just a few minutes</p>
+                        <div class="quick-start-buttons">
+                            <a href="installation.html" class="btn-beep">?? Installation Guide</a>
+                            <a href="getting-started.html" class="btn-beep">? Quick Start Tutorial</a>
+                            <a href="PythonNetRunTimeManager.html" class="btn-beep">?? Core Classes</a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Key Features -->
+                <section class="section">
+                    <h2>Key Features</h2>
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h3>?? Python Runtime Management</h3>
+                            <p>Automatic Python installation detection, initialization, and lifecycle management</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? Session Isolation</h3>
+                            <p>Multi-user session management with isolated Python scopes and variable namespaces</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>? Async Code Execution</h3>
+                            <p>Full async/await support for Python code execution with cancellation and timeout handling</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? Virtual Environment Support</h3>
+                            <p>Create, manage, and use Python virtual environments with package isolation</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? Output Capture</h3>
+                            <p>Real-time capture of Python stdout/stderr streams with progress reporting</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? Package Management</h3>
+                            <p>Install, update, and manage Python packages through pip and conda integration</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Framework Support -->
+                <section class="section">
+                    <h2>.NET Framework Support</h2>
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h3>.NET 6.0</h3>
+                            <p>Full support for .NET 6 LTS with cross-platform compatibility</p>
+                        </div>
+                        <div class="feature-card">
+                            <h3>.NET 7.0</h3>
+                            <p>Enhanced performance features and latest language support</p>
+                        </div>
+                        <div class="feature-card">
+                            <h3>.NET 8.0</h3>
+                            <p>Current LTS version with optimal performance and stability</p>
+                        </div>
+                        <div class="feature-card">
+                            <h3>.NET 9.0</h3>
+                            <p>Latest version with cutting-edge features and improvements</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Installation Example -->
+                <section class="section">
+                    <h2>Installation</h2>
+                    <p>Install the package using your preferred method:</p>
+                    
+                    <div class="code-example">
+                        <h3>Package Manager Console</h3>
+                        <pre><code class="language-powershell">Install-Package Beep.Python.Runtime.PythonNet</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>.NET CLI</h3>
+                        <pre><code class="language-bash">dotnet add package Beep.Python.Runtime.PythonNet</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Package Reference</h3>
+                        <pre><code class="language-xml">&lt;PackageReference Include="Beep.Python.Runtime.PythonNet" Version="1.0.43" /&gt;</code></pre>
+                    </div>
+                </section>
+
+                <!-- Basic Usage Example -->
+                <section class="section">
+                    <h2>Basic Usage</h2>
+                    <p>Here's a simple example to get you started with Python.NET integration:</p>
+                    
+                    <div class="code-example">
+                        <h3>Basic Python Code Execution</h3>
+                        <pre><code class="language-csharp">using Beep.Python.RuntimeEngine;
+using TheTechIdea.Beep.Container.Services;
+
+// Initialize the runtime manager
+var beepService = new BeepService();
+var runtimeManager = new PythonNetRunTimeManager(beepService);
+
+// Scan for Python installations
+runtimeManager.RefreshPythonInstalltions();
+var pythonRuntime = runtimeManager.PythonInstallations.FirstOrDefault();
+
+if (pythonRuntime != null)
+{
+    // Initialize Python engine
+    bool initialized = runtimeManager.Initialize(
+        pythonRuntime, 
+        null, 
+        "default-env", 
+        PythonEngineMode.SingleUser);
+
+    if (initialized)
+    {
+        // Get a session and execute Python code
+        var session = runtimeManager.GetOrCreateDefaultSession();
+        var executeManager = runtimeManager.ExecuteManager;
+
+        var result = await executeManager.ExecuteCodeAsync(
+            @"
+import sys
+import os
+print(f'Python {sys.version} running on {sys.platform}')
+
+# Perform calculations
+numbers = [1, 2, 3, 4, 5]
+result = sum(x * x for x in numbers)
+print(f'Sum of squares: {result}')
+", 
+            session);
+
+        if (result.Success)
+        {
+            Console.WriteLine("Python Output:");
+            Console.WriteLine(result.Output);
+        }
+        else
+        {
+            Console.WriteLine("Execution failed:");
+            Console.WriteLine(result.Output);
+        }
+
+        // Clean up
+        runtimeManager.ShutDown();
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Core Components -->
+                <section class="section">
+                    <h2>Core Components</h2>
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h3>??? PythonNetRunTimeManager</h3>
+                            <p>Central orchestrator for Python runtime initialization, environment management, and session coordination</p>
+                            <a href="PythonNetRunTimeManager.html" class="btn-beep">Learn More</a>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? PythonSessionManager</h3>
+                            <p>Multi-user session management with isolation, concurrency control, and resource optimization</p>
+                            <a href="PythonSessionManager.html" class="btn-beep">Learn More</a>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>? PythonCodeExecuteManager</h3>
+                            <p>Advanced code execution engine with async support, output capture, and error handling</p>
+                            <a href="PythonCodeExecuteManager.html" class="btn-beep">Learn More</a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Advanced Features -->
+                <section class="section">
+                    <h2>Advanced Features</h2>
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h3>?? Variable Exchange</h3>
+                            <p>Seamless data exchange between .NET and Python with automatic type conversion</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? Batch Processing</h3>
+                            <p>Efficient batch execution of Python commands with optimized GIL management</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? Generator Support</h3>
+                            <p>Native support for Python generators and iterators with real-time value processing</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? Performance Profiling</h3>
+                            <p>Built-in execution profiling and performance monitoring capabilities</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? Thread Safety</h3>
+                            <p>Comprehensive thread-safe operations with proper GIL handling and concurrency control</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? Comprehensive Logging</h3>
+                            <p>Detailed logging and error tracking with integration into .NET logging frameworks</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Documentation Sections -->
+                <section class="section">
+                    <h2>Documentation Sections</h2>
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h3>?? Getting Started</h3>
+                            <p>Installation guide, setup instructions, and your first Python integration</p>
+                            <a href="getting-started.html" class="btn-beep">Get Started</a>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>??? Core Classes</h3>
+                            <p>Detailed documentation of the main runtime, session, and execution managers</p>
+                            <a href="PythonNetRunTimeManager.html" class="btn-beep">Core Classes</a>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? Manager Classes</h3>
+                            <p>Specialized managers for virtual environments, packages, ML, and data operations</p>
+                            <a href="PythonVirtualEnvManager.html" class="btn-beep">Manager Classes</a>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? Helper Classes</h3>
+                            <p>Diagnostic utilities, environment detection, and package management helpers</p>
+                            <a href="helper-classes.html" class="btn-beep">Helper Classes</a>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? Advanced Topics</h3>
+                            <p>Virtual environments, multi-user scenarios, and package management</p>
+                            <a href="virtual-environments.html" class="btn-beep">Advanced</a>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? API Reference</h3>
+                            <p>Complete API documentation with method signatures and examples</p>
+                            <a href="api-reference.html" class="btn-beep">API Reference</a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Latest Updates -->
+                <section class="section">
+                    <h2>Latest Updates</h2>
+                    <div class="tip">
+                        <strong>?? December 2024 - v1.0.43</strong>
+                        <p><strong>.NET 9 Support:</strong> Full compatibility with .NET 9 and enhanced performance optimizations</p>
+                    </div>
+                    
+                    <div class="success">
+                        <strong>?? November 2024</strong>
+                        <p><strong>Enhanced Session Management:</strong> Improved multi-user session handling with better resource management</p>
+                    </div>
+                    
+                    <div class="note">
+                        <strong>?? October 2024</strong>
+                        <p><strong>Package Management:</strong> Added comprehensive pip and conda integration for package management</p>
+                    </div>
+                </section>
+
+                <!-- Dependencies -->
+                <section class="section">
+                    <h2>Dependencies</h2>
+                    <p>The library automatically includes the following key dependencies:</p>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h3>Python.NET v3.0.3</h3>
+                            <p>Core Python.NET integration library providing the foundation for Python interoperability</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>Autofac v8.0.0</h3>
+                            <p>Dependency injection container for service management and composition</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>Beep Data Management Engine</h3>
+                            <p>Enterprise data management components and configuration utilities</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>CommunityToolkit.Mvvm</h3>
+                            <p>MVVM infrastructure for building responsive and maintainable applications</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Use Cases -->
+                <section class="section">
+                    <h2>Common Use Cases</h2>
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h3>?? Machine Learning Integration</h3>
+                            <p>Execute Python ML models and data science workflows from .NET applications</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? Data Analysis</h3>
+                            <p>Leverage Python's data analysis libraries (pandas, numpy) in .NET environments</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? Automation Scripts</h3>
+                            <p>Run Python automation and utility scripts as part of .NET workflows</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? Multi-User Applications</h3>
+                            <p>Build web applications with isolated Python execution for different users</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? Scientific Computing</h3>
+                            <p>Integrate Python scientific computing libraries into .NET scientific applications</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>?? ETL Operations</h3>
+                            <p>Use Python for complex data transformation and processing tasks</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.Runtime.PythonNet Documentation</p>
+                            <p>Supporting .NET 6, 7, 8, and 9 | Python.NET Integration</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="getting-started.html">Getting Started</a>
+                            <a href="api-reference.html">API Reference</a>
+                            <a href="https://github.com/The-Tech-Idea/">GitHub</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Enhanced debugging for navigation issues
+        console.log('?? Debug: Starting navigation initialization...');
+        
+        // Check if all required elements exist
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('?? Debug: DOM loaded, checking elements...');
+            
+            const sidebar = document.getElementById('sidebar');
+            console.log('?? Debug: Sidebar element found:', !!sidebar);
+            
+            const mobileToggle = document.querySelector('.mobile-menu-toggle');
+            console.log('?? Debug: Mobile toggle found:', !!mobileToggle);
+            
+            const themeToggle = document.querySelector('.theme-toggle');
+            console.log('?? Debug: Theme toggle found:', !!themeToggle);
+            
+            // Check if Bootstrap Icons are loaded
+            const iconTest = document.createElement('i');
+            iconTest.className = 'bi bi-house';
+            document.body.appendChild(iconTest);
+            const iconStyle = window.getComputedStyle(iconTest);
+            console.log('?? Debug: Bootstrap Icons loaded:', iconStyle.fontFamily.includes('bootstrap-icons'));
+            document.body.removeChild(iconTest);
+            
+            // Check if navigation.js functions are available
+            console.log('?? Debug: toggleSidebar function:', typeof toggleSidebar);
+            console.log('?? Debug: toggleTheme function:', typeof toggleTheme);
+            console.log('?? Debug: searchDocs function:', typeof searchDocs);
+            
+            // Manual navigation load if needed
+            if (sidebar && sidebar.innerHTML.trim() === '<!-- Navigation will be loaded dynamically by navigation.js -->') {
+                console.log('?? Debug: Navigation not loaded, attempting manual load...');
+                
+                // Create a simple fallback navigation
+                sidebar.innerHTML = `
+                    <div class="logo">
+                        <div class="logo-text">
+                            <h2>Beep Python Runtime</h2>
+                            <span class="version">v1.0.43</span>
+                        </div>
+                    </div>
+                    
+                    <div class="search-container">
+                        <input type="text" class="search-input" placeholder="Search documentation..." onkeyup="searchDocs(this.value)">
+                    </div>
+                    
+                    <nav>
+                        <ul class="nav-menu">
+                            <li><a href="index.html" class="active"><i class="bi bi-house"></i> Home</a></li>
+                            <li class="has-submenu">
+                                <a href="#"><i class="bi bi-rocket"></i> Getting Started</a>
+                                <ul class="submenu">
+                                    <li><a href="installation.html">Installation</a></li>
+                                    <li><a href="getting-started.html">Quick Start Tutorial</a></li>
+                                    <li><a href="examples.html">Examples</a></li>
+                                </ul>
+                            </li>
+                            <li class="has-submenu">
+                                <a href="#"><i class="bi bi-layers"></i> Core Classes</a>
+                                <ul class="submenu">
+                                    <li><a href="PythonNetRunTimeManager.html">PythonNetRunTimeManager</a></li>
+                                    <li><a href="PythonSessionManager.html">PythonSessionManager</a></li>
+                                    <li><a href="PythonCodeExecuteManager.html">PythonCodeExecuteManager</a></li>
+                                </ul>
+                            </li>
+                            <li class="has-submenu">
+                                <a href="#"><i class="bi bi-gear"></i> Manager Classes</a>
+                                <ul class="submenu">
+                                    <li><a href="PythonVirtualEnvManager.html">PythonVirtualEnvManager</a></li>
+                                    <li><a href="PythonPackageManager.html">PythonPackageManager</a></li>
+                                    <li><a href="PythonMLManager.html">PythonMLManager</a></li>
+                                    <li><a href="PythonPandasManager.html">PythonPandasManager</a></li>
+                                    <li><a href="PythonPlotManager.html">PythonPlotManager</a></li>
+                                </ul>
+                            </li>
+                            <li class="has-submenu">
+                                <a href="#"><i class="bi bi-tools"></i> Advanced Topics</a>
+                                <ul class="submenu">
+                                    <li><a href="virtual-environments.html">Virtual Environments</a></li>
+                                    <li><a href="multi-user-sessions.html">Multi-User Sessions</a></li>
+                                    <li><a href="package-management.html">Package Management</a></li>
+                                </ul>
+                            </li>
+                            <li><a href="api-reference.html"><i class="bi bi-code-square"></i> API Reference</a></li>
+                        </ul>
+                    </nav>
+                `;
+                
+                console.log('? Debug: Fallback navigation loaded');
+                
+                // Set up submenu toggles manually
+                const submenus = sidebar.querySelectorAll('.has-submenu > a');
+                submenus.forEach(item => {
+                    item.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const parent = this.parentElement;
+                        parent.classList.toggle('open');
+                        console.log('?? Debug: Toggled submenu:', parent);
+                    });
+                });
+                
+                console.log('? Debug: Submenu toggles set up');
+            } else {
+                console.log('? Debug: Navigation already loaded or sidebar not found');
+            }
+        });
+
+        // Global toggle functions with debugging
+        function toggleSidebar() {
+            console.log('?? Debug: toggleSidebar called');
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('open');
+                console.log('? Debug: Sidebar toggled, open:', sidebar.classList.contains('open'));
+            } else {
+                console.log('? Debug: Sidebar not found');
+            }
+        }
+
+        function toggleTheme() {
+            console.log('?? Debug: toggleTheme called');
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const themeIcon = document.getElementById('theme-icon');
+            if (themeIcon) {
+                themeIcon.className = newTheme === 'dark' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+                console.log('? Debug: Theme changed to:', newTheme);
+            } else {
+                console.log('? Debug: Theme icon not found');
+            }
+        }
+
+        function searchDocs(query = '') {
+            console.log('?? Debug: searchDocs called with query:', query);
+            const links = document.querySelectorAll('.nav-menu a');
+            const lowerQuery = query.toLowerCase();
+            
+            let hiddenCount = 0;
+            links.forEach(link => {
+                const text = link.textContent.toLowerCase();
+                const listItem = link.closest('li');
+                
+                if (text.includes(lowerQuery) || lowerQuery === '') {
+                    if (listItem) listItem.style.display = '';
+                } else {
+                    if (listItem) {
+                        listItem.style.display = 'none';
+                        hiddenCount++;
+                    }
+                }
+            });
+            
+            console.log(`? Debug: Search completed, hidden ${hiddenCount} items`);
+        }
+
+        // Page-specific functionality
+        console.log('Beep Python Runtime documentation homepage loaded');
+    </script>
+    <script src="navigation.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PythonMLManager - Beep.Python.Runtime.PythonNet</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnected" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1>PythonMLManager</h1>
+                    <p class="page-subtitle">Comprehensive machine learning pipeline management for Python.NET integration</p>
+                </div>
+
+                <!-- Class Overview -->
+                <section class="section">
+                    <h2>Overview</h2>
+                    <p>
+                        The <strong>PythonMLManager</strong> class provides a comprehensive machine learning pipeline 
+                        management system within the Beep.Python.Runtime framework. It handles the complete ML workflow 
+                        from data loading and preprocessing to model training, evaluation, and deployment.
+                    </p>
+                    <div class="note">
+                        <strong>?? Key Capabilities</strong>
+                        <ul>
+                            <li>Complete ML pipeline: data loading ? preprocessing ? training ? evaluation ? prediction</li>
+                            <li>Support for 20+ machine learning algorithms (classification, regression, clustering)</li>
+                            <li>Advanced data preprocessing and feature engineering</li>
+                            <li>Comprehensive model evaluation and visualization</li>
+                            <li>Automated data validation and quality checks</li>
+                            <li>Imbalanced data handling techniques</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Constructor and Properties -->
+                <section class="section">
+                    <h2>Constructor and Properties</h2>
+                    
+                    <div class="code-example">
+                        <h3>Initialization</h3>
+                        <pre><code class="language-csharp">public PythonMLManager(
+    IBeepService beepservice, 
+    IPythonRunTimeManager pythonRuntimeManager, 
+    PythonSessionInfo sessionInfo) : base(beepservice, pythonRuntimeManager, sessionInfo)
+{
+    InitializeAlgorithmSupervision();
+}</code></pre>
+                    </div>
+
+                    <div class="property-table">
+                        <h4>Key Properties</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Property</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>IsDataLoaded</td>
+                                    <td>bool</td>
+                                    <td>Indicates if training data has been loaded</td>
+                                </tr>
+                                <tr>
+                                    <td>IsModelTrained</td>
+                                    <td>bool</td>
+                                    <td>Indicates if a model has been trained</td>
+                                </tr>
+                                <tr>
+                                    <td>IsDataSplit</td>
+                                    <td>bool</td>
+                                    <td>Indicates if data has been split into train/test sets</td>
+                                </tr>
+                                <tr>
+                                    <td>DataFilePath</td>
+                                    <td>string</td>
+                                    <td>Path to the main dataset file</td>
+                                </tr>
+                                <tr>
+                                    <td>ModelFilePath</td>
+                                    <td>string</td>
+                                    <td>Path where models are saved</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Data Loading and Validation -->
+                <section class="section">
+                    <h2>Data Loading and Validation</h2>
+                    
+                    <div class="code-example">
+                        <h3>Data Validation and Preview</h3>
+                        <pre><code class="language-csharp">// Validate and preview data structure
+string[] columns = mlManager.ValidateAndPreviewData(
+    @"C:\Data\customers.csv", 
+    numRows: 10);
+
+if (columns != null)
+{
+    Console.WriteLine("Dataset columns:");
+    foreach (var column in columns)
+    {
+        Console.WriteLine($"  - {column}");
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Load Training Data</h3>
+                        <pre><code class="language-csharp">// Load data with selected features
+string[] selectedFeatures = {"age", "income", "education", "target"};
+string[] features = mlManager.LoadData(
+    @"C:\Data\customers.csv", 
+    selectedFeatures);
+
+// Load data without feature selection
+string[] allFeatures = mlManager.LoadData(@"C:\Data\customers.csv");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Load Test and Prediction Data</h3>
+                        <pre><code class="language-csharp">// Load test data
+string[] testFeatures = mlManager.LoadTestData(@"C:\Data\test.csv");
+
+// Load prediction data
+string[] predictionFeatures = mlManager.LoadPredictionData(@"C:\Data\predict.csv");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Data Splitting -->
+                <section class="section">
+                    <h2>Data Splitting</h2>
+                    
+                    <div class="code-example">
+                        <h3>Basic Data Splitting</h3>
+                        <pre><code class="language-csharp">// Split data into train/test sets
+string[] features = mlManager.SplitData(
+    testSize: 0.3f,
+    trainFilePath: @"C:\Data\train.csv",
+    testFilePath: @"C:\Data\test.csv");
+
+// Split with validation set
+string[] features = mlManager.SplitData(
+    dataFilePath: @"C:\Data\dataset.csv",
+    testSize: 0.2f,
+    validationSize: 0.1f,
+    trainFilePath: @"C:\Data\train.csv",
+    testFilePath: @"C:\Data\test.csv",
+    validationFilePath: @"C:\Data\validation.csv");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Advanced Data Splitting with Key Preservation</h3>
+                        <pre><code class="language-csharp">// Split data preserving primary key and creating validation set
+string[] features = mlManager.SplitData(
+    dataFilePath: @"C:\Data\dataset.csv",
+    testSize: 0.25f,
+    trainFilePath: @"C:\Data\train.csv",
+    testFilePath: @"C:\Data\test.csv",
+    validationFilePath: @"C:\Data\validation.csv",
+    primaryFeatureKeyID: "customer_id",
+    labelColumn: "target");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Data Preprocessing -->
+                <section class="section">
+                    <h2>Data Preprocessing</h2>
+                    
+                    <div class="code-example">
+                        <h3>Missing Value Handling</h3>
+                        <pre><code class="language-csharp">// Impute missing values with different strategies
+mlManager.ImputeMissingValues(strategy: "mean");     // For numerical data
+mlManager.ImputeMissingValues(strategy: "median");   // For skewed data
+mlManager.ImputeMissingValues(strategy: "mode");     // For categorical data
+
+// Fill with custom value
+mlManager.ImputeMissingValuesWithCustomValue(0);
+
+// Forward/backward fill
+mlManager.ImputeMissingValuesWithFill(method: "ffill");
+
+// Drop missing values
+mlManager.DropMissingValues(axis: "rows");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Data Scaling and Normalization</h3>
+                        <pre><code class="language-csharp">// Standardize features (zero mean, unit variance)
+mlManager.StandardizeData();
+
+// Min-Max scaling
+mlManager.MinMaxScaleData(featureRangeMin: 0.0, featureRangeMax: 1.0);
+
+// Robust scaling (uses median and IQR)
+mlManager.RobustScaleData();
+
+// Normalize data (L2 normalization by default)
+mlManager.NormalizeData(norm: "l2");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Categorical Data Handling</h3>
+                        <pre><code class="language-csharp">// Get categorical features
+string[] selectedFeatures = {"age", "income", "category", "region"};
+string[] categoricalFeatures = mlManager.GetCategoricalFeatures(selectedFeatures);
+
+// One-hot encoding
+mlManager.OneHotEncode(categoricalFeatures);
+
+// Label encoding
+mlManager.LabelEncode(categoricalFeatures);
+
+// Target encoding (for high-cardinality features)
+mlManager.TargetEncode(categoricalFeatures, labelColumn: "target");
+
+// Frequency encoding
+mlManager.FrequencyEncode(categoricalFeatures);</code></pre>
+                    </div>
+                </section>
+
+                <!-- Feature Engineering -->
+                <section class="section">
+                    <h2>Feature Engineering</h2>
+                    
+                    <div class="code-example">
+                        <h3>Advanced Feature Creation</h3>
+                        <pre><code class="language-csharp">// Generate polynomial features
+string[] numericFeatures = {"age", "income"};
+mlManager.GeneratePolynomialFeatures(
+    selectedFeatures: numericFeatures,
+    degree: 2,
+    includeBias: true,
+    interactionOnly: false);
+
+// Apply log transformation
+mlManager.ApplyLogTransformation(numericFeatures);
+
+// Binning continuous variables
+mlManager.ApplyBinning(
+    selectedFeatures: numericFeatures,
+    numberOfBins: 5,
+    encodeAsOrdinal: true);</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Date/Time Feature Engineering</h3>
+                        <pre><code class="language-csharp">// Extract date components
+mlManager.ExtractDateTimeComponents("transaction_date");
+
+// Calculate time differences
+mlManager.CalculateTimeDifference(
+    startColumn: "start_date",
+    endColumn: "end_date",
+    newColumnName: "duration_seconds");
+
+// Handle cyclical time features
+mlManager.HandleCyclicalTimeFeatures("hour", "hour");
+mlManager.HandleCyclicalTimeFeatures("month", "month");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Model Training -->
+                <section class="section">
+                    <h2>Model Training</h2>
+                    
+                    <div class="code-example">
+                        <h3>Training Different Algorithm Types</h3>
+                        <pre><code class="language-csharp">// Classification algorithms
+var classificationParams = new Dictionary<string, object>
+{
+    {"n_estimators", 100},
+    {"max_depth", 10},
+    {"random_state", 42}
+};
+
+mlManager.TrainModel(
+    modelId: "rf_classifier",
+    algorithm: MachineLearningAlgorithm.RandomForestClassifier,
+    parameters: classificationParams,
+    featureColumns: new[] {"age", "income", "education"},
+    labelColumn: "target");
+
+// Regression algorithms
+var regressionParams = new Dictionary<string, object>
+{
+    {"alpha", 0.1},
+    {"random_state", 42}
+};
+
+mlManager.TrainModel(
+    modelId: "ridge_regression",
+    algorithm: MachineLearningAlgorithm.RidgeRegression,
+    parameters: regressionParams,
+    featureColumns: new[] {"feature1", "feature2", "feature3"},
+    labelColumn: "price");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Supported Algorithms</h3>
+                        <pre><code class="language-csharp">// Classification Algorithms
+MachineLearningAlgorithm.LogisticRegression
+MachineLearningAlgorithm.RandomForestClassifier
+MachineLearningAlgorithm.GradientBoostingClassifier
+MachineLearningAlgorithm.SVC
+MachineLearningAlgorithm.KNeighborsClassifier
+MachineLearningAlgorithm.DecisionTreeClassifier
+MachineLearningAlgorithm.GaussianNB
+MachineLearningAlgorithm.AdaBoostClassifier
+
+// Regression Algorithms
+MachineLearningAlgorithm.LinearRegression
+MachineLearningAlgorithm.RandomForestRegressor
+MachineLearningAlgorithm.GradientBoostingRegressor
+MachineLearningAlgorithm.SVR
+MachineLearningAlgorithm.KNeighborsRegressor
+MachineLearningAlgorithm.DecisionTreeRegressor
+MachineLearningAlgorithm.LassoRegression
+MachineLearningAlgorithm.RidgeRegression
+MachineLearningAlgorithm.ElasticNet
+
+// Clustering Algorithms
+MachineLearningAlgorithm.KMeans
+MachineLearningAlgorithm.DBSCAN
+MachineLearningAlgorithm.AgglomerativeClustering</code></pre>
+                    </div>
+                </section>
+
+                <!-- Model Evaluation -->
+                <section class="section">
+                    <h2>Model Evaluation</h2>
+                    
+                    <div class="code-example">
+                        <h3>Classification Model Evaluation</h3>
+                        <pre><code class="language-csharp">// Get classification scores
+var (f1Score, accuracy) = mlManager.GetModelClassificationScore("rf_classifier");
+Console.WriteLine($"F1 Score: {f1Score:F4}");
+Console.WriteLine($"Accuracy: {accuracy:F4}");
+
+// Cross-validation
+mlManager.PerformCrossValidation("rf_classifier", numFolds: 5);</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Regression Model Evaluation</h3>
+                        <pre><code class="language-csharp">// Get regression scores
+var (mse, rmse, mae) = mlManager.GetModelRegressionScores("ridge_regression");
+Console.WriteLine($"MSE: {mse:F4}");
+Console.WriteLine($"RMSE: {rmse:F4}");
+Console.WriteLine($"MAE: {mae:F4}");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Predictions -->
+                <section class="section">
+                    <h2>Making Predictions</h2>
+                    
+                    <div class="code-example">
+                        <h3>Classification and Regression Predictions</h3>
+                        <pre><code class="language-csharp">// Classification predictions
+string[] trainingColumns = {"age", "income", "education"};
+dynamic classificationPredictions = mlManager.PredictClassification(trainingColumns);
+
+// Regression predictions (automatically rounded)
+dynamic regressionPredictions = mlManager.PredictRegression(trainingColumns);
+
+// Export prediction results
+mlManager.ExportTestResult(
+    filePath: @"C:\Results\predictions.csv",
+    iDColumn: "customer_id",
+    labelColumn: "predicted_target");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Imbalanced Data Handling -->
+                <section class="section">
+                    <h2>Imbalanced Data Handling</h2>
+                    
+                    <div class="code-example">
+                        <h3>Sampling Techniques</h3>
+                        <pre><code class="language-csharp">// Oversampling techniques
+mlManager.ApplyRandomOversampling("target", samplingStrategy: 1.0f);
+mlManager.ApplySMOTE("target", samplingStrategy: 1.0f);
+
+// Undersampling techniques
+mlManager.ApplyRandomUndersampling("target", samplingStrategy: 0.5f);
+mlManager.ApplyNearMiss("target", version: 1);
+
+// Ensemble methods for imbalanced data
+mlManager.ApplyBalancedRandomForest("target", nEstimators: 100);</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Class Weight Adjustment</h3>
+                        <pre><code class="language-csharp">// Adjust class weights automatically
+var params = new Dictionary<string, object>
+{
+    {"random_state", 42}
+};
+
+mlManager.AdjustClassWeights(
+    modelId: "balanced_classifier",
+    algorithmName: "RandomForestClassifier",
+    parameters: params,
+    featureColumns: new[] {"feature1", "feature2"},
+    labelColumn: "target");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Visualization and Reporting -->
+                <section class="section">
+                    <h2>Visualization and Reporting</h2>
+                    
+                    <div class="code-example">
+                        <h3>Individual Visualizations</h3>
+                        <pre><code class="language-csharp">// Create individual plots
+bool success1 = mlManager.CreateROC("rf_classifier", @"C:\Plots\roc_curve.png");
+bool success2 = mlManager.CreateConfusionMatrix("rf_classifier", @"C:\Plots\confusion_matrix.png");
+bool success3 = mlManager.CreateLearningCurve("rf_classifier", @"C:\Plots\learning_curve.png");
+bool success4 = mlManager.CreateFeatureImportance("rf_classifier", @"C:\Plots\feature_importance.png");
+bool success5 = mlManager.CreatePrecisionRecallCurve("rf_classifier", @"C:\Plots\precision_recall.png");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Comprehensive Evaluation Report</h3>
+                        <pre><code class="language-csharp">// Generate complete HTML evaluation report
+bool reportGenerated = mlManager.GenerateEvaluationReport(
+    modelId: "rf_classifier",
+    outputHtmlPath: @"C:\Reports\model_evaluation.html");
+
+if (reportGenerated)
+{
+    Console.WriteLine("Evaluation report generated successfully!");
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Model Persistence -->
+                <section class="section">
+                    <h2>Model Persistence</h2>
+                    
+                    <div class="code-example">
+                        <h3>Save and Load Models</h3>
+                        <pre><code class="language-csharp">// Save trained model
+mlManager.SaveModel("rf_classifier", @"C:\Models\random_forest_model.pkl");
+
+// Load existing model
+string loadedModelId = mlManager.LoadModel(@"C:\Models\random_forest_model.pkl");
+if (loadedModelId != null)
+{
+    Console.WriteLine($"Model loaded with ID: {loadedModelId}");
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Complete Workflow Example -->
+                <section class="section">
+                    <h2>Complete ML Workflow Example</h2>
+                    
+                    <div class="code-example">
+                        <h3>End-to-End Machine Learning Pipeline</h3>
+                        <pre><code class="language-csharp">// Initialize ML Manager
+var mlManager = new PythonMLManager(beepService, runtimeManager, sessionInfo);
+
+try
+{
+    // 1. Data Validation and Loading
+    Console.WriteLine("1. Validating and loading data...");
+    string[] columns = mlManager.ValidateAndPreviewData(@"C:\Data\dataset.csv", 5);
+    
+    string[] selectedFeatures = {"age", "income", "education", "region", "target"};
+    string[] features = mlManager.LoadData(@"C:\Data\dataset.csv", selectedFeatures);
+    
+    // 2. Data Splitting
+    Console.WriteLine("2. Splitting data...");
+    mlManager.SplitData(
+        testSize: 0.2f,
+        trainFilePath: @"C:\Data\train.csv",
+        testFilePath: @"C:\Data\test.csv");
+    
+    // 3. Data Preprocessing
+    Console.WriteLine("3. Preprocessing data...");
+    
+    // Handle missing values
+    mlManager.ImputeMissingValues("mean");
+    
+    // Handle categorical features
+    string[] categoricalFeatures = mlManager.GetCategoricalFeatures(features);
+    mlManager.OneHotEncode(categoricalFeatures);
+    
+    // Scale numerical features
+    mlManager.StandardizeData();
+    
+    // 4. Handle imbalanced data if needed
+    Console.WriteLine("4. Handling imbalanced data...");
+    mlManager.ApplySMOTE("target", 1.0f);
+    
+    // 5. Model Training
+    Console.WriteLine("5. Training model...");
+    var modelParams = new Dictionary<string, object>
+    {
+        {"n_estimators", 100},
+        {"max_depth", 10},
+        {"random_state", 42}
+    };
+    
+    mlManager.TrainModel(
+        modelId: "production_model",
+        algorithm: MachineLearningAlgorithm.RandomForestClassifier,
+        parameters: modelParams,
+        featureColumns: features.Where(f => f != "target").ToArray(),
+        labelColumn: "target");
+    
+    // 6. Model Evaluation
+    Console.WriteLine("6. Evaluating model...");
+    var (f1Score, accuracy) = mlManager.GetModelClassificationScore("production_model");
+    Console.WriteLine($"Model Performance - F1: {f1Score:F4}, Accuracy: {accuracy:F4}");
+    
+    // 7. Generate Evaluation Report
+    Console.WriteLine("7. Generating evaluation report...");
+    mlManager.GenerateEvaluationReport(
+        "production_model", 
+        @"C:\Reports\model_evaluation.html");
+    
+    // 8. Save Model
+    Console.WriteLine("8. Saving model...");
+    mlManager.SaveModel("production_model", @"C:\Models\production_model.pkl");
+    
+    // 9. Make Predictions
+    Console.WriteLine("9. Making predictions...");
+    dynamic predictions = mlManager.PredictClassification(
+        features.Where(f => f != "target").ToArray());
+    
+    mlManager.ExportTestResult(
+        @"C:\Results\predictions.csv",
+        "id",
+        "predicted_target");
+    
+    Console.WriteLine("ML pipeline completed successfully!");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Pipeline error: {ex.Message}");
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Best Practices -->
+                <section class="section">
+                    <h2>Best Practices</h2>
+                    
+                    <h3>?? Data Science Workflow</h3>
+                    <ul>
+                        <li><strong>Always validate data:</strong> Use ValidateAndPreviewData() before processing</li>
+                        <li><strong>Handle missing values appropriately:</strong> Choose the right strategy based on data type</li>
+                        <li><strong>Feature engineering:</strong> Create meaningful features from raw data</li>
+                        <li><strong>Cross-validation:</strong> Always use cross-validation for model evaluation</li>
+                    </ul>
+
+                    <h3>?? Model Training</h3>
+                    <ul>
+                        <li><strong>Start simple:</strong> Begin with simple algorithms before trying complex ones</li>
+                        <li><strong>Hyperparameter tuning:</strong> Experiment with different parameter combinations</li>
+                        <li><strong>Handle imbalanced data:</strong> Use appropriate techniques for imbalanced datasets</li>
+                        <li><strong>Monitor overfitting:</strong> Use validation curves and learning curves</li>
+                    </ul>
+
+                    <h3>?? Evaluation and Deployment</h3>
+                    <ul>
+                        <li><strong>Multiple metrics:</strong> Don't rely on a single evaluation metric</li>
+                        <li><strong>Generate reports:</strong> Create comprehensive evaluation reports</li>
+                        <li><strong>Version control:</strong> Keep track of model versions and performance</li>
+                        <li><strong>Monitor production:</strong> Continuously monitor model performance in production</li>
+                    </ul>
+                </section>
+
+                <!-- See Also -->
+                <section class="section" id="see-also">
+                    <h2>See Also</h2>
+                    <ul>
+                        <li><a href="PythonPandasManager.html">PythonPandasManager</a> - Data manipulation and analysis</li>
+                        <li><a href="PythonPlotManager.html">PythonPlotManager</a> - Data visualization and plotting</li>
+                        <li><a href="PythonNetRunTimeManager.html">PythonNetRunTimeManager</a> - Runtime management</li>
+                        <li><a href="examples.html">Examples</a> - Complete machine learning examples</li>
+                    </ul>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="PythonPackageManager.html">
+                        <i class="bi bi-arrow-left"></i> PythonPackageManager
+                    </a>
+                    <a href="PythonPandasManager.html">
+                        <i class="bi bi-arrow-right"></i> PythonPandasManager
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.Runtime.PythonNet Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="index.html">Home</a>
+                            <a href="api-reference.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="navigation.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

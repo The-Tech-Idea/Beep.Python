@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PythonVirtualEnvManager - Beep.Python.Runtime.PythonNet</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1>PythonVirtualEnvManager</h1>
+                    <p class="page-subtitle">Comprehensive virtual environment management for Python runtime integration</p>
+                </div>
+
+                <!-- Class Overview -->
+                <section class="section">
+                    <h2>Overview</h2>
+                    <p>
+                        The <strong>PythonVirtualEnvManager</strong> class provides comprehensive management of Python virtual environments 
+                        within the Beep.Python.Runtime framework. It handles creation, initialization, lifecycle management, and cleanup 
+                        of both standard Python virtual environments and Conda environments.
+                    </p>
+                    <div class="note">
+                        <strong>?? Key Features</strong>
+                        <ul>
+                            <li>Support for both pip-based and conda-based virtual environments</li>
+                            <li>Multi-user environment isolation and session management</li>
+                            <li>Automatic environment detection and validation</li>
+                            <li>Built-in cleanup and resource management</li>
+                            <li>Thread-safe operations with concurrent access support</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Constructor -->
+                <section class="section">
+                    <h2>Constructor</h2>
+                    <div class="code-example">
+                        <h3>Initialization</h3>
+                        <pre><code class="language-csharp">public PythonVirtualEnvManager(
+    IBeepService beepservice, 
+    IPythonRunTimeManager pythonRuntimeManager)
+{
+    _beepservice = beepservice ?? throw new ArgumentNullException(nameof(beepservice));
+    _pythonRuntime = pythonRuntimeManager ?? throw new ArgumentNullException(nameof(pythonRuntimeManager));
+    IsBusy = false;
+}</code></pre>
+                    </div>
+                    <div class="parameter-table">
+                        <h4>Parameters</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>beepservice</td>
+                                    <td>IBeepService</td>
+                                    <td>BEEP service for accessing application services and logging</td>
+                                </tr>
+                                <tr>
+                                    <td>pythonRuntimeManager</td>
+                                    <td>IPythonRunTimeManager</td>
+                                    <td>Main Python runtime manager for coordination</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Properties -->
+                <section class="section">
+                    <h2>Properties</h2>
+                    <div class="property-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Property</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>IsBusy</td>
+                                    <td>bool</td>
+                                    <td>Gets whether the manager is currently busy with an operation</td>
+                                </tr>
+                                <tr>
+                                    <td>ManagedVirtualEnvironments</td>
+                                    <td>ObservableBindingList&lt;PythonVirtualEnvironment&gt;</td>
+                                    <td>Collection of all managed virtual environments</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Environment Creation Methods -->
+                <section class="section">
+                    <h2>Environment Creation</h2>
+                    
+                    <div class="code-example">
+                        <h3>Create Virtual Environment</h3>
+                        <pre><code class="language-csharp">// Create basic virtual environment
+bool success = manager.CreateVirtualEnvironment(config, envPath);
+
+// Create environment with existing definition
+var env = new PythonVirtualEnvironment
+{
+    Name = "MyProject",
+    Path = @"C:\Environments\MyProject",
+    CreatedBy = "Developer"
+};
+bool created = manager.CreateVirtualEnvironment(config, env);</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Create Environment for User</h3>
+                        <pre><code class="language-csharp">// Create environment for specific user with session
+var session = new PythonSessionInfo
+{
+    Username = "john.doe",
+    SessionName = "DataAnalysis"
+};
+bool created = manager.CreateEnvForUser(config, session);
+
+// Create environment for user with custom path
+bool created = manager.CreateEnvForUser(
+    config, 
+    @"C:\UserEnvironments", 
+    "john.doe");
+
+// Create and get session for user
+var userSession = manager.CreateEnvironmentForUser(
+    config, 
+    @"C:\UserEnvironments", 
+    "john.doe", 
+    "CustomEnvName");</code></pre>
+                    </div>
+
+                    <div class="tip">
+                        <strong>?? Environment Types</strong>
+                        <p>The manager automatically detects and creates the appropriate environment type based on the Python runtime configuration:</p>
+                        <ul>
+                            <li><strong>Standard Python:</strong> Uses <code>python -m venv</code> for virtual environment creation</li>
+                            <li><strong>Conda Python:</strong> Uses <code>conda create</code> for conda environment creation</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Environment Management -->
+                <section class="section">
+                    <h2>Environment Management</h2>
+                    
+                    <div class="code-example">
+                        <h3>Environment Lookup and Management</h3>
+                        <pre><code class="language-csharp">// Find environment by path
+var env = manager.GetEnvironmentByPath(@"C:\Environments\MyProject");
+
+// Find environment by ID
+var env = manager.GetEnvironmentById("env-12345");
+
+// Add environment to managed collection
+bool added = manager.AddToManagedEnvironments(env);
+
+// Remove environment
+bool removed = manager.RemoveEnvironment("env-12345");
+
+// Update environment usage timestamp
+manager.UpdateEnvironmentUsage("env-12345");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h3>Environment Cleanup and Optimization</h3>
+                        <pre><code class="language-csharp">// Get least recently used environment
+var lruEnv = manager.GetLeastRecentlyUsedEnvironment();
+
+// Perform cleanup of idle environments
+var maxIdleTime = TimeSpan.FromHours(24);
+manager.PerformEnvironmentCleanup(maxIdleTime);
+
+// Check if environment exists in system
+bool exists = manager.VirtualEnvironmentExists(
+    "myenv", 
+    baseRuntime, 
+    PythonBinary.Conda);</code></pre>
+                    </div>
+                </section>
+
+                <!-- Initialization -->
+                <section class="section">
+                    <h2>Environment Initialization</h2>
+                    
+                    <div class="code-example">
+                        <h3>Initialize Python Environment</h3>
+                        <pre><code class="language-csharp">// Initialize environment for Python execution
+manager.InitializePythonEnvironment(env);
+
+// The initialization process:
+// 1. Finds the Python configuration for the environment
+// 2. Determines appropriate engine mode (SingleUser/MultiUser)
+// 3. Initializes Python runtime with the environment
+// 4. Creates admin session if needed
+// 5. Updates usage tracking</code></pre>
+                    </div>
+
+                    <div class="note">
+                        <strong>?? Engine Mode Determination</strong>
+                        <p>The manager automatically determines the appropriate Python engine mode based on:</p>
+                        <ul>
+                            <li>Environment name and creator</li>
+                            <li>Number of active sessions</li>
+                            <li>Environment usage patterns</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Session Management -->
+                <section class="section">
+                    <h2>Session Management</h2>
+                    
+                    <div class="code-example">
+                        <h3>Package Management Session</h3>
+                        <pre><code class="language-csharp">// Get admin session for package operations
+var adminSession = manager.GetPackageManagementSession(env);
+
+// The admin session is used for:
+// - Installing/uninstalling packages
+// - Environment maintenance operations
+// - System-level modifications</code></pre>
+                    </div>
+
+                    <div class="warning">
+                        <strong>?? Admin Session Management</strong>
+                        <p>The manager maintains a single admin session per environment for package management. This session is automatically created and managed to prevent conflicts during package operations.</p>
+                    </div>
+                </section>
+
+                <!-- Persistence -->
+                <section class="section">
+                    <h2>Persistence</h2>
+                    
+                    <div class="code-example">
+                        <h3>Save and Load Environments</h3>
+                        <pre><code class="language-csharp">// Save environments to file
+manager.SaveEnvironments(); // Uses default path
+manager.SaveEnvironments(@"C:\Config\environments.json");
+
+// Load environments from file
+manager.LoadEnvironments(@"C:\Config\environments.json");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Shutdown and Cleanup -->
+                <section class="section">
+                    <h2>Shutdown and Cleanup</h2>
+                    
+                    <div class="code-example">
+                        <h3>Environment Shutdown</h3>
+                        <pre><code class="language-csharp">// Shutdown specific environment
+var result = manager.ShutDown(env);
+if (result.Flag == Errors.Ok)
+{
+    Console.WriteLine("Environment shutdown successfully");
+}
+else
+{
+    Console.WriteLine($"Shutdown error: {result.Message}");
+}
+
+// Dispose of manager (shuts down all environments)
+manager.Dispose();</code></pre>
+                    </div>
+
+                    <div class="note">
+                        <strong>?? Shutdown Process</strong>
+                        <p>Environment shutdown involves:</p>
+                        <ol>
+                            <li>Terminating all regular user sessions</li>
+                            <li>Cleaning up session scopes</li>
+                            <li>Managing admin session lifecycle</li>
+                            <li>Shutting down Python runtime if no other environments are active</li>
+                        </ol>
+                    </div>
+                </section>
+
+                <!-- Complete Example -->
+                <section class="section">
+                    <h2>Complete Example</h2>
+                    
+                    <div class="code-example">
+                        <h3>Full Environment Management Workflow</h3>
+                        <pre><code class="language-csharp">using Beep.Python.RuntimeEngine;
+using TheTechIdea.Beep.Container.Services;
+
+// Initialize components
+var beepService = new BeepService();
+var runtimeManager = new PythonNetRunTimeManager(beepService);
+var envManager = new PythonVirtualEnvManager(beepService, runtimeManager);
+
+try
+{
+    // Get Python configuration
+    runtimeManager.RefreshPythonInstalltions();
+    var pythonConfig = runtimeManager.PythonInstallations.FirstOrDefault();
+    
+    if (pythonConfig != null)
+    {
+        // Create environment for user
+        var session = envManager.CreateEnvironmentForUser(
+            pythonConfig,
+            @"C:\ProjectEnvironments",
+            "developer",
+            "DataAnalysisProject");
+            
+        if (session != null)
+        {
+            // Get the environment
+            var env = envManager.GetEnvironmentById(session.VirtualEnvironmentId);
+            
+            // Initialize for Python execution
+            envManager.InitializePythonEnvironment(env);
+            
+            // Get package management session
+            var packageSession = envManager.GetPackageManagementSession(env);
+            
+            // Environment is ready for use
+            Console.WriteLine($"Environment ready: {env.Name}");
+            Console.WriteLine($"Session ID: {session.SessionId}");
+            
+            // Track usage
+            envManager.UpdateEnvironmentUsage(env.ID);
+            
+            // Save current state
+            envManager.SaveEnvironments();
+        }
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Error: {ex.Message}");
+}
+finally
+{
+    // Cleanup
+    envManager.Dispose();
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Best Practices -->
+                <section class="section">
+                    <h2>Best Practices</h2>
+                    
+                    <h3>??? Environment Creation</h3>
+                    <ul>
+                        <li><strong>Use descriptive names:</strong> Name environments based on their purpose</li>
+                        <li><strong>Organize by user:</strong> Create separate environments for different users</li>
+                        <li><strong>Plan for isolation:</strong> Consider package dependencies when creating environments</li>
+                        <li><strong>Set proper permissions:</strong> Ensure users have appropriate access rights</li>
+                    </ul>
+
+                    <h3>?? Environment Management</h3>
+                    <ul>
+                        <li><strong>Regular cleanup:</strong> Use PerformEnvironmentCleanup() to remove unused environments</li>
+                        <li><strong>Monitor usage:</strong> Track environment usage for optimization</li>
+                        <li><strong>Backup configurations:</strong> Regularly save environment configurations</li>
+                        <li><strong>Handle errors:</strong> Always check return values and handle exceptions</li>
+                    </ul>
+
+                    <h3>? Performance</h3>
+                    <ul>
+                        <li><strong>Reuse environments:</strong> Don't create new environments unnecessarily</li>
+                        <li><strong>Batch operations:</strong> Perform multiple operations in sequence</li>
+                        <li><strong>Async patterns:</strong> Use async operations where available</li>
+                        <li><strong>Resource cleanup:</strong> Always dispose of resources properly</li>
+                    </ul>
+
+                    <div class="tip">
+                        <strong>?? Performance Tip</strong>
+                        <p>Environment creation is an expensive operation. Consider reusing existing environments or implementing environment pooling for high-frequency scenarios.</p>
+                    </div>
+                </section>
+
+                <!-- Error Handling -->
+                <section class="section">
+                    <h2>Error Handling</h2>
+                    
+                    <div class="code-example">
+                        <h3>Common Error Scenarios</h3>
+                        <pre><code class="language-csharp">// Check if manager is busy before operations
+if (envManager.IsBusy)
+{
+    Console.WriteLine("Manager is busy, try again later");
+    return;
+}
+
+// Handle environment creation failures
+try
+{
+    bool created = envManager.CreateVirtualEnvironment(config, envPath);
+    if (!created)
+    {
+        Console.WriteLine("Failed to create environment - check logs");
+    }
+}
+catch (ArgumentException ex)
+{
+    Console.WriteLine($"Invalid arguments: {ex.Message}");
+}
+catch (InvalidOperationException ex)
+{
+    Console.WriteLine($"Operation not allowed: {ex.Message}");
+}
+
+// Handle shutdown errors
+var shutdownResult = envManager.ShutDown(env);
+if (shutdownResult.Flag != Errors.Ok)
+{
+    Console.WriteLine($"Shutdown warning: {shutdownResult.Message}");
+    // Log the exception if available
+    if (shutdownResult.Ex != null)
+    {
+        Console.WriteLine($"Exception: {shutdownResult.Ex}");
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- See Also -->
+                <section class="section" id="see-also">
+                    <h2>See Also</h2>
+                    <ul>
+                        <li><a href="PythonNetRunTimeManager.html">PythonNetRunTimeManager</a> - Main runtime coordination</li>
+                        <li><a href="PythonSessionManager.html">PythonSessionManager</a> - Session management</li>
+                        <li><a href="PythonPackageManager.html">PythonPackageManager</a> - Package management within environments</li>
+                        <li><a href="virtual-environments.html">Virtual Environments Guide</a> - Comprehensive virtual environment usage</li>
+                    </ul>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="PythonCodeExecuteManager.html">
+                        <i class="bi bi-arrow-left"></i> PythonCodeExecuteManager
+                    </a>
+                    <a href="PythonPackageManager.html">
+                        <i class="bi bi-arrow-right"></i> PythonPackageManager
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.Runtime.PythonNet Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="index.html">Home</a>
+                            <a href="api-reference.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="navigation.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>
