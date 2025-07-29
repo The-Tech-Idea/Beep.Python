@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>Beep.Python.AI.Transformers</AssemblyName>
+    <RootNamespace>Beep.Python.AI.Transformers</RootNamespace>
+    <PackageId>Beep.Python.AI.Transformers</PackageId>
+    <Title>Beep Python AI Transformers</Title>
+    <Description>Multi-provider transformer pipeline library supporting HuggingFace, OpenAI, Azure, local models, and custom sources for Python.NET integration</Description>
+    <Authors>The Tech Idea</Authors>
+    <Company>The Tech Idea</Company>
+    <Product>Beep Python AI Transformers</Product>
+    <PackageTags>python;transformers;huggingface;openai;azure;ai;ml;nlp</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Beep.Python.Model\Beep.Python.Model.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Installation - Beep.Python.AI.Transformers</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="index.html">Home</a>
+                    <span>›</span>
+                    <span>Installation</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-download"></i> Installation Guide</h1>
+                    <p class="page-subtitle">Complete installation and setup guide for Beep.Python.AI.Transformers</p>
+                </div>
+
+                <!-- Table of Contents -->
+                <div class="toc">
+                    <h3>?? Table of Contents</h3>
+                    <ul>
+                        <li><a href="#requirements">System Requirements</a></li>
+                        <li><a href="#nuget-installation">NuGet Installation</a></li>
+                        <li><a href="#python-setup">Python Environment Setup</a></li>
+                        <li><a href="#dependencies">Dependencies</a></li>
+                        <li><a href="#verification">Installation Verification</a></li>
+                        <li><a href="#troubleshooting">Troubleshooting</a></li>
+                    </ul>
+                </div>
+
+                <!-- System Requirements -->
+                <section class="section" id="requirements">
+                    <h2>??? System Requirements</h2>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-microsoft"></i> .NET Framework</h4>
+                            <p><strong>Required:</strong> .NET 6.0 or higher</p>
+                            <ul>
+                                <li>.NET 6.0 (LTS)</li>
+                                <li>.NET 7.0</li>
+                                <li>.NET 8.0 (LTS)</li>
+                                <li>.NET 9.0 (Latest)</li>
+                            </ul>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-laptop"></i> Operating Systems</h4>
+                            <p><strong>Supported Platforms:</strong></p>
+                            <ul>
+                                <li>Windows 10/11 (x64, ARM64)</li>
+                                <li>macOS 10.15+ (x64, ARM64)</li>
+                                <li>Linux (Ubuntu 18.04+, RHEL 8+)</li>
+                                <li>Docker containers</li>
+                            </ul>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-terminal"></i> Python Environment</h4>
+                            <p><strong>Required:</strong> Python 3.8 or higher</p>
+                            <ul>
+                                <li>Python 3.8+ installed</li>
+                                <li>pip package manager</li>
+                                <li>Virtual environment support</li>
+                                <li>Administrative privileges (for package installation)</li>
+                            </ul>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-hdd"></i> Hardware Requirements</h4>
+                            <p><strong>Minimum specifications:</strong></p>
+                            <ul>
+                                <li>4 GB RAM (8 GB recommended)</li>
+                                <li>2 GB free disk space</li>
+                                <li>Internet connection (for AI API calls)</li>
+                                <li>GPU optional (for local models)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- NuGet Installation -->
+                <section class="section" id="nuget-installation">
+                    <h2>?? NuGet Installation</h2>
+                    
+                    <h3>Method 1: Package Manager UI</h3>
+                    <div class="code-example">
+                        <h4>Visual Studio Package Manager</h4>
+                        <ol>
+                            <li>Right-click on your project in Visual Studio</li>
+                            <li>Select "Manage NuGet Packages..."</li>
+                            <li>Click on the "Browse" tab</li>
+                            <li>Search for "Beep.Python.AI.Transformers"</li>
+                            <li>Click "Install" on the package</li>
+                        </ol>
+                    </div>
+
+                    <h3>Method 2: Package Manager Console</h3>
+                    <div class="code-example">
+                        <h4>PowerShell Command</h4>
+                        <pre><code class="language-powershell">Install-Package Beep.Python.AI.Transformers</code></pre>
+                    </div>
+
+                    <h3>Method 3: .NET CLI</h3>
+                    <div class="code-example">
+                        <h4>Command Line Installation</h4>
+                        <pre><code class="language-bash"># Add package to your project
+dotnet add package Beep.Python.AI.Transformers
+
+# Restore packages
+dotnet restore</code></pre>
+                    </div>
+
+                    <h3>Method 4: PackageReference</h3>
+                    <div class="code-example">
+                        <h4>Add to your .csproj file</h4>
+                        <pre><code class="language-xml">&lt;Project Sdk="Microsoft.NET.Sdk"&gt;
+  &lt;PropertyGroup&gt;
+    &lt;TargetFramework&gt;net8.0&lt;/TargetFramework&gt;
+  &lt;/PropertyGroup&gt;
+
+  &lt;ItemGroup&gt;
+    &lt;PackageReference Include="Beep.Python.AI.Transformers" Version="1.0.0" /&gt;
+  &lt;/ItemGroup&gt;
+&lt;/Project&gt;</code></pre>
+                    </div>
+                </section>
+
+                <!-- Python Setup -->
+                <section class="section" id="python-setup">
+                    <h2>?? Python Environment Setup</h2>
+                    
+                    <div class="tip">
+                        <strong>?? Tip:</strong> The library automatically detects and configures Python environments, but manual setup provides better control for production deployments.
+                    </div>
+
+                    <h3>1. Python Installation Verification</h3>
+                    <div class="code-example">
+                        <h4>Check Python Installation</h4>
+                        <pre><code class="language-bash"># Check Python version
+python --version
+# or
+python3 --version
+
+# Check pip version
+pip --version
+
+# Verify Python.NET compatibility
+python -c "import sys; print(f'Python {sys.version}')"</code></pre>
+                    </div>
+
+                    <h3>2. Virtual Environment Setup (Recommended)</h3>
+                    <div class="code-example">
+                        <h4>Create Virtual Environment</h4>
+                        <pre><code class="language-bash"># Create virtual environment
+python -m venv transformers-env
+
+# Activate environment (Windows)
+transformers-env\Scripts\activate
+
+# Activate environment (macOS/Linux)
+source transformers-env/bin/activate
+
+# Verify activation
+which python
+pip list</code></pre>
+                    </div>
+
+                    <h3>3. Required Python Packages</h3>
+                    <div class="code-example">
+                        <h4>Install Base Dependencies</h4>
+                        <pre><code class="language-bash"># Core packages (installed automatically)
+pip install pythonnet>=3.0.3
+pip install numpy>=1.21.0
+pip install requests>=2.25.0
+
+# AI Provider packages (install as needed)
+pip install openai>=1.0.0              # For OpenAI
+pip install azure-openai>=1.0.0        # For Azure OpenAI
+pip install transformers>=4.20.0       # For HuggingFace
+pip install torch>=1.12.0              # For local models
+pip install anthropic>=0.3.0           # For Anthropic
+pip install google-generativeai>=0.3.0 # For Google AI</code></pre>
+                    </div>
+
+                    <h3>4. Configuration in .NET Application</h3>
+                    <div class="code-example">
+                        <h4>Manual Python Environment Configuration</h4>
+                        <pre><code class="language-csharp">using Beep.Python.Model;
+
+// Configure specific Python installation
+var pythonConfig = new PythonRunTime
+{
+    Name = "Transformers Environment",
+    RuntimePath = @"C:\Python39\python.exe", // or your Python path
+    Version = "3.9.7",
+    PackagesPath = @"C:\Python39\Lib\site-packages"
+};
+
+// Initialize with custom configuration
+var runtimeManager = new PythonNetRunTimeManager(beepService);
+await runtimeManager.InitializeAsync(pythonConfig, null, "transformers-env", 
+    PythonEngineMode.SingleUser);</code></pre>
+                    </div>
+                </section>
+
+                <!-- Dependencies -->
+                <section class="section" id="dependencies">
+                    <h2>?? Dependencies</h2>
+                    
+                    <h3>Automatic Dependencies</h3>
+                    <p>The following packages are automatically installed with Beep.Python.AI.Transformers:</p>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Package</th>
+                                <th>Version</th>
+                                <th>Purpose</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>Beep.Python.Model</code></td>
+                                <td>1.0.16+</td>
+                                <td>Core data models and interfaces</td>
+                            </tr>
+                            <tr>
+                                <td><code>Beep.Python.Runtime.PythonNet</code></td>
+                                <td>1.0.43+</td>
+                                <td>Python runtime management</td>
+                            </tr>
+                            <tr>
+                                <td><code>pythonnet</code></td>
+                                <td>3.0.3+</td>
+                                <td>Python.NET interoperability</td>
+                            </tr>
+                            <tr>
+                                <td><code>Microsoft.Extensions.DependencyInjection</code></td>
+                                <td>8.0.0+</td>
+                                <td>Dependency injection support</td>
+                            </tr>
+                            <tr>
+                                <td><code>Microsoft.Extensions.Configuration</code></td>
+                                <td>8.0.0+</td>
+                                <td>Configuration management</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Optional Provider Dependencies</h3>
+                    <div class="code-example">
+                        <h4>Install specific provider packages as needed</h4>
+                        <pre><code class="language-bash"># OpenAI provider
+pip install openai tiktoken
+
+# Azure OpenAI provider  
+pip install azure-openai azure-identity
+
+# HuggingFace provider
+pip install transformers torch datasets
+
+# Anthropic provider
+pip install anthropic
+
+# Google AI provider
+pip install google-generativeai
+
+# Local model support
+pip install torch torchvision torchaudio
+
+# Multimodal support
+pip install Pillow opencv-python librosa ffmpeg-python</code></pre>
+                    </div>
+                </section>
+
+                <!-- Verification -->
+                <section class="section" id="verification">
+                    <h2>? Installation Verification</h2>
+                    
+                    <h3>Basic Verification Test</h3>
+                    <div class="code-example">
+                        <h4>Simple Test Application</h4>
+                        <pre><code class="language-csharp">using Beep.Python.AI.Transformers;
+using Beep.Python.Model;
+using Microsoft.Extensions.DependencyInjection;
+
+public class Program
+{
+    public static async Task Main(string[] args)
+    {
+        // Setup dependency injection
+        var services = new ServiceCollection();
+        services.AddSingleton&lt;IPythonRunTimeManager, PythonNetRunTimeManager&gt;();
+        services.AddSingleton&lt;IPythonCodeExecuteManager, PythonCodeExecuteManager&gt;();
+        
+        var serviceProvider = services.BuildServiceProvider();
+        
+        // Test basic functionality
+        var runtimeManager = serviceProvider.GetRequiredService&lt;IPythonRunTimeManager&gt;();
+        var executeManager = serviceProvider.GetRequiredService&lt;IPythonCodeExecuteManager&gt;();
+        
+        // Verify Python runtime
+        var isInitialized = await runtimeManager.InitializeAsync();
+        Console.WriteLine($"Python Runtime Initialized: {isInitialized}");
+        
+        // Test transformer pipeline creation
+        try
+        {
+            var pipeline = new HuggingFaceTransformerPipeline(runtimeManager, executeManager);
+            Console.WriteLine("? Transformer pipeline created successfully!");
+            
+            var config = new TransformerPipelineConfig
+            {
+                TaskType = TransformerTask.TextGeneration
+            };
+            
+            var initialized = await pipeline.InitializeAsync(config);
+            Console.WriteLine($"? Pipeline initialized: {initialized}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"? Error: {ex.Message}");
+        }
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>Environment Validation</h3>
+                    <div class="code-example">
+                        <h4>Comprehensive Environment Check</h4>
+                        <pre><code class="language-csharp">public static async Task ValidateEnvironmentAsync()
+{
+    Console.WriteLine("?? Validating Beep.Python.AI.Transformers Environment...\n");
+    
+    // 1. Check .NET version
+    var dotnetVersion = Environment.Version;
+    Console.WriteLine($"? .NET Runtime: {dotnetVersion}");
+    
+    // 2. Check Python availability
+    var runtimeManager = new PythonNetRunTimeManager(null);
+    var pythonInstallations = runtimeManager.PythonInstallations;
+    
+    if (pythonInstallations.Any())
+    {
+        Console.WriteLine($"? Python Installations Found: {pythonInstallations.Count}");
+        foreach (var installation in pythonInstallations)
+        {
+            Console.WriteLine($"   - {installation.Name}: {installation.RuntimePath}");
+        }
+    }
+    else
+    {
+        Console.WriteLine("? No Python installations found");
+        return;
+    }
+    
+    // 3. Test package imports
+    var testPackages = new[] { "numpy", "requests", "json" };
+    foreach (var package in testPackages)
+    {
+        try
+        {
+            var result = await executeManager.ExecuteCodeAsync($"import {package}");
+            Console.WriteLine($"? Package '{package}': Available");
+        }
+        catch
+        {
+            Console.WriteLine($"? Package '{package}': Missing");
+        }
+    }
+    
+    Console.WriteLine("\n?? Environment validation complete!");
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Troubleshooting -->
+                <section class="section" id="troubleshooting">
+                    <h2>?? Troubleshooting</h2>
+                    
+                    <h3>Common Issues and Solutions</h3>
+                    
+                    <div class="warning">
+                        <strong>?? Python Not Found</strong>
+                        <p>If you get "Python not found" errors:</p>
+                        <ul>
+                            <li>Ensure Python is in your system PATH</li>
+                            <li>Restart your IDE/command prompt after Python installation</li>
+                            <li>Specify the exact Python path in configuration</li>
+                            <li>Check that Python version is 3.8 or higher</li>
+                        </ul>
+                    </div>
+
+                    <div class="error">
+                        <strong>?? Package Import Errors</strong>
+                        <p>If Python packages fail to import:</p>
+                        <ul>
+                            <li>Activate the correct virtual environment</li>
+                            <li>Install packages with pip install [package]</li>
+                            <li>Check for conflicting Python installations</li>
+                            <li>Verify package compatibility with your Python version</li>
+                        </ul>
+                    </div>
+
+                    <div class="note">
+                        <strong>?? Performance Issues</strong>
+                        <p>For optimal performance:</p>
+                        <ul>
+                            <li>Use virtual environments for isolation</li>
+                            <li>Install only required provider packages</li>
+                            <li>Configure appropriate timeouts</li>
+                            <li>Monitor memory usage with large models</li>
+                        </ul>
+                    </div>
+
+                    <h3>Advanced Configuration</h3>
+                    <div class="code-example">
+                        <h4>Custom Python Runtime Configuration</h4>
+                        <pre><code class="language-csharp">// Advanced runtime configuration
+var advancedConfig = new PythonRunTime
+{
+    Name = "Custom Transformers Runtime",
+    RuntimePath = @"C:\CustomPython\python.exe",
+    Version = "3.11.0",
+    PackagesPath = @"C:\CustomPython\Lib\site-packages",
+    ScriptsPath = @"C:\CustomPython\Scripts",
+    DLLPath = @"C:\CustomPython\python311.dll",
+    // Additional environment variables
+    EnvironmentVariables = new Dictionary&lt;string, string&gt;
+    {
+        ["PYTHONPATH"] = @"C:\CustomPython\Lib",
+        ["PYTHONHOME"] = @"C:\CustomPython",
+        ["TRANSFORMERS_CACHE"] = @"C:\AIModels\Cache"
+    }
+};
+
+// Initialize with detailed logging
+var runtimeManager = new PythonNetRunTimeManager(beepService, enableLogging: true);
+await runtimeManager.InitializeAsync(advancedConfig);</code></pre>
+                    </div>
+
+                    <h3>Docker Installation</h3>
+                    <div class="code-example">
+                        <h4>Dockerfile for Transformers Applications</h4>
+                        <pre><code class="language-dockerfile"># Use official .NET runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+WORKDIR /app
+EXPOSE 80
+
+# Install Python and dependencies
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create Python virtual environment
+RUN python3 -m venv /opt/transformers-env
+ENV PATH="/opt/transformers-env/bin:$PATH"
+
+# Install Python packages
+RUN pip install --upgrade pip && \
+    pip install pythonnet>=3.0.3 && \
+    pip install numpy requests
+
+# Copy and build .NET application
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY ["YourApp.csproj", "."]
+RUN dotnet restore "YourApp.csproj"
+COPY . .
+RUN dotnet build "YourApp.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "YourApp.csproj" -c Release -o /app/publish
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "YourApp.dll"]</code></pre>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="index.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> Documentation Home
+                    </a>
+                    <a href="getting-started.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> Getting Started Guide
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.AI.Transformers Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="index.html">Home</a>
+                            <a href="getting-started.html">Getting Started</a>
+                            <a href="examples/basic-usage.html">Examples</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="assets/navigation.js"></script>
+</body>
+</html>

@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ITransformerPipeLine API - Beep.Python.AI.Transformers</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="../assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="../index.html">Home</a>
+                    <span>›</span>
+                    <a href="../index.html#core-api">Core API</a>
+                    <span>›</span>
+                    <span>ITransformerPipeLine</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-gear"></i> ITransformerPipeLine Interface</h1>
+                    <p class="page-subtitle">Core interface for all transformer pipeline implementations providing unified access to AI models</p>
+                </div>
+
+                <!-- Class Info -->
+                <div class="class-info">
+                    <div class="class-namespace">
+                        <strong>Namespace:</strong> Beep.Python.AI.Transformers<br>
+                        <strong>Assembly:</strong> Beep.Python.AI.Transformers.dll<br>
+                        <strong>Package:</strong> Beep.Python.AI.Transformers
+                    </div>
+                    <div class="class-implements">
+                        <strong>Type:</strong> Interface<br>
+                        <strong>Inherits:</strong> IDisposable
+                    </div>
+                </div>
+
+                <!-- Overview Section -->
+                <section class="section" id="overview">
+                    <h2>Overview</h2>
+                    <p>
+                        The <code>ITransformerPipeLine</code> interface provides a unified abstraction for working with 
+                        transformer models from various sources including HuggingFace, OpenAI, Azure OpenAI, Google AI, 
+                        Anthropic, and other providers. It defines a consistent API that allows developers to switch 
+                        between different AI providers with minimal code changes.
+                    </p>
+
+                    <div class="highlight-box bg-light p-4 rounded">
+                        <h5><i class="bi bi-lightbulb"></i> Key Features</h5>
+                        <ul class="mb-0">
+                            <li><strong>Provider Agnostic</strong> - Same interface for all AI providers</li>
+                            <li><strong>Async Operations</strong> - All methods are asynchronous for better performance</li>
+                            <li><strong>Type Safety</strong> - Strongly-typed results with comprehensive error handling</li>
+                            <li><strong>Event Support</strong> - Real-time events for model loading and inference progress</li>
+                            <li><strong>Extensible</strong> - Easy to add new providers and capabilities</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Interface Declaration Section -->
+                <section class="section" id="declaration">
+                    <h2>Interface Declaration</h2>
+                    <div class="code-example">
+                        <h4>Interface Definition</h4>
+                        <pre><code class="language-csharp">public interface ITransformerPipeLine : IDisposable
+{
+    // Properties
+    bool IsInitialized { get; }
+    bool IsModelLoaded { get; }
+    string ModelName { get; }
+    TransformerModelSource ModelSource { get; }
+    TransformerTask TaskType { get; }
+    string Device { get; }
+    Dictionary&lt;string, object&gt; ModelConfig { get; }
+    TransformerPipelineConfig? PipelineConfig { get; set; }
+
+    // Events
+    event EventHandler&lt;TransformerEventArgs&gt;? ModelLoadingStarted;
+    event EventHandler&lt;TransformerEventArgs&gt;? ModelLoadingCompleted;
+    event EventHandler&lt;TransformerEventArgs&gt;? InferenceStarted;
+    event EventHandler&lt;TransformerEventArgs&gt;? InferenceCompleted;
+    event EventHandler&lt;TransformerErrorEventArgs&gt;? ErrorOccurred;
+    event EventHandler&lt;TransformerProgressEventArgs&gt;? ProgressUpdated;
+
+    // Core Methods
+    Task&lt;bool&gt; InitializeAsync(TransformerPipelineConfig config);
+    Task&lt;bool&gt; LoadModelAsync(TransformerModelInfo modelInfo, TransformerTask taskType, Dictionary&lt;string, object&gt;? modelConfig = null);
+    void UnloadModel();
+
+    // Inference Methods
+    Task&lt;TransformerResult&lt;string&gt;&gt; GenerateTextAsync(string prompt, TextGenerationParameters? parameters = null);
+    Task&lt;TransformerResult&lt;ClassificationResult&gt;&gt; ClassifyTextAsync(string text, ClassificationParameters? parameters = null);
+    Task&lt;TransformerResult&lt;List&lt;EntityResult&gt;&gt;&gt; ExtractEntitiesAsync(string text, NERParameters? parameters = null);
+    Task&lt;TransformerResult&lt;AnswerResult&gt;&gt; AnswerQuestionAsync(string question, string context, QAParameters? parameters = null);
+    Task&lt;TransformerResult&lt;List&lt;float[]&gt;&gt;&gt; GetEmbeddingsAsync(List&lt;string&gt; texts, EmbeddingParameters? parameters = null);
+    Task&lt;TransformerResult&lt;string&gt;&gt; SummarizeTextAsync(string text, SummarizationParameters? parameters = null);
+    Task&lt;TransformerResult&lt;string&gt;&gt; TranslateTextAsync(string text, string targetLanguage, string? sourceLanguage = null, TranslationParameters? parameters = null);
+
+    // Advanced Methods
+    Task&lt;List&lt;TransformerResult&lt;object&gt;&gt;&gt; BatchInferenceAsync(List&lt;string&gt; inputs, TransformerTask taskType, object? parameters = null);
+    Task&lt;TransformerResult&lt;object&gt;&gt; InferenceAsync(object inputs, Dictionary&lt;string, object&gt;? parameters = null);
+    Task&lt;List&lt;TransformerModelInfo&gt;&gt; GetAvailableModelsAsync(TransformerTask taskType, TransformerModelSource source = TransformerModelSource.HuggingFace);
+    Task&lt;ModelValidationResult&gt; ValidateModelAsync(TransformerModelInfo modelInfo);
+    TransformerModelInfo? GetModelInfo();
+    bool UpdateConfiguration(TransformerPipelineConfig config);
+    List&lt;TransformerTask&gt; GetSupportedTasks();
+    Task&lt;bool&gt; WarmUpAsync(string? sampleInput = null);
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Properties Section -->
+                <section class="section" id="properties">
+                    <h2>Properties</h2>
+                    
+                    <div class="parameter-table">
+                        <table>
+                            <thead>
+                                <tr><th>Property</th><th>Type</th><th>Description</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>IsInitialized</code></td>
+                                    <td><code>bool</code></td>
+                                    <td>Gets a value indicating whether the pipeline has been initialized</td>
+                                </tr>
+                                <tr>
+                                    <td><code>IsModelLoaded</code></td>
+                                    <td><code>bool</code></td>
+                                    <td>Gets a value indicating whether a model is currently loaded</td>
+                                </tr>
+                                <tr>
+                                    <td><code>ModelName</code></td>
+                                    <td><code>string</code></td>
+                                    <td>Gets the name of the currently loaded model</td>
+                                </tr>
+                                <tr>
+                                    <td><code>ModelSource</code></td>
+                                    <td><code>TransformerModelSource</code></td>
+                                    <td>Gets the source provider of the current model</td>
+                                </tr>
+                                <tr>
+                                    <td><code>TaskType</code></td>
+                                    <td><code>TransformerTask</code></td>
+                                    <td>Gets the primary task type for the current model</td>
+                                </tr>
+                                <tr>
+                                    <td><code>Device</code></td>
+                                    <td><code>string</code></td>
+                                    <td>Gets the device configuration (CPU, GPU, etc.)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>ModelConfig</code></td>
+                                    <td><code>Dictionary&lt;string, object&gt;</code></td>
+                                    <td>Gets the model configuration parameters</td>
+                                </tr>
+                                <tr>
+                                    <td><code>PipelineConfig</code></td>
+                                    <td><code>TransformerPipelineConfig?</code></td>
+                                    <td>Gets or sets the pipeline configuration</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Events Section -->
+                <section class="section" id="events">
+                    <h2>Events</h2>
+                    
+                    <div class="parameter-table">
+                        <table>
+                            <thead>
+                                <tr><th>Event</th><th>Type</th><th>Description</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>ModelLoadingStarted</code></td>
+                                    <td><code>EventHandler&lt;TransformerEventArgs&gt;</code></td>
+                                    <td>Raised when model loading begins</td>
+                                </tr>
+                                <tr>
+                                    <td><code>ModelLoadingCompleted</code></td>
+                                    <td><code>EventHandler&lt;TransformerEventArgs&gt;</code></td>
+                                    <td>Raised when model loading completes</td>
+                                </tr>
+                                <tr>
+                                    <td><code>InferenceStarted</code></td>
+                                    <td><code>EventHandler&lt;TransformerEventArgs&gt;</code></td>
+                                    <td>Raised when inference operation begins</td>
+                                </tr>
+                                <tr>
+                                    <td><code>InferenceCompleted</code></td>
+                                    <td><code>EventHandler&lt;TransformerEventArgs&gt;</code></td>
+                                    <td>Raised when inference operation completes</td>
+                                </tr>
+                                <tr>
+                                    <td><code>ErrorOccurred</code></td>
+                                    <td><code>EventHandler&lt;TransformerErrorEventArgs&gt;</code></td>
+                                    <td>Raised when an error occurs during any operation</td>
+                                </tr>
+                                <tr>
+                                    <td><code>ProgressUpdated</code></td>
+                                    <td><code>EventHandler&lt;TransformerProgressEventArgs&gt;</code></td>
+                                    <td>Raised to report progress during long-running operations</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Core Methods Section -->
+                <section class="section" id="core-methods">
+                    <h2>Core Methods</h2>
+                    
+                    <h3>InitializeAsync</h3>
+                    <div class="api-signature">
+                        <code>Task&lt;bool&gt; InitializeAsync(TransformerPipelineConfig config)</code>
+                    </div>
+                    <p>Initializes the pipeline with the specified configuration.</p>
+                    
+                    <div class="parameter-table">
+                        <h5>Parameters</h5>
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td><code>config</code></td>
+                                    <td><code>TransformerPipelineConfig</code></td>
+                                    <td>The configuration for the pipeline</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="success">
+                        <strong>Returns:</strong> <code>Task&lt;bool&gt;</code> - True if initialization was successful
+                    </div>
+
+                    <h3>LoadModelAsync</h3>
+                    <div class="api-signature">
+                        <code>Task&lt;bool&gt; LoadModelAsync(TransformerModelInfo modelInfo, TransformerTask taskType, Dictionary&lt;string, object&gt;? modelConfig = null)</code>
+                    </div>
+                    <p>Loads a model for the specified task type.</p>
+                    
+                    <div class="parameter-table">
+                        <h5>Parameters</h5>
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td><code>modelInfo</code></td>
+                                    <td><code>TransformerModelInfo</code></td>
+                                    <td>Information about the model to load</td>
+                                </tr>
+                                <tr>
+                                    <td><code>taskType</code></td>
+                                    <td><code>TransformerTask</code></td>
+                                    <td>The task type for the model</td>
+                                </tr>
+                                <tr>
+                                    <td><code>modelConfig</code></td>
+                                    <td><code>Dictionary&lt;string, object&gt;?</code></td>
+                                    <td>Optional model-specific configuration</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3>UnloadModel</h3>
+                    <div class="api-signature">
+                        <code>void UnloadModel()</code>
+                    </div>
+                    <p>Unloads the currently loaded model and frees associated resources.</p>
+                </section>
+
+                <!-- Inference Methods Section -->
+                <section class="section" id="inference-methods">
+                    <h2>Inference Methods</h2>
+                    
+                    <h3>GenerateTextAsync</h3>
+                    <div class="api-signature">
+                        <code>Task&lt;TransformerResult&lt;string&gt;&gt; GenerateTextAsync(string prompt, TextGenerationParameters? parameters = null)</code>
+                    </div>
+                    <p>Generates text based on the provided prompt.</p>
+                    
+                    <div class="code-example">
+                        <h5>Example Usage</h5>
+                        <pre><code class="language-csharp">var result = await pipeline.GenerateTextAsync("Write a short story about AI");
+if (result.Success)
+{
+    Console.WriteLine(result.Data);
+}
+else
+{
+    Console.WriteLine($"Error: {result.ErrorMessage}");
+}</code></pre>
+                    </div>
+
+                    <h3>ClassifyTextAsync</h3>
+                    <div class="api-signature">
+                        <code>Task&lt;TransformerResult&lt;ClassificationResult&gt;&gt; ClassifyTextAsync(string text, ClassificationParameters? parameters = null)</code>
+                    </div>
+                    <p>Classifies the provided text into predefined categories.</p>
+
+                    <div class="code-example">
+                        <h5>Example Usage</h5>
+                        <pre><code class="language-csharp">var result = await pipeline.ClassifyTextAsync("This movie is amazing!");
+if (result.Success)
+{
+    foreach (var label in result.Data.Labels)
+    {
+        Console.WriteLine($"{label.Label}: {label.Score:F3}");
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>GetEmbeddingsAsync</h3>
+                    <div class="api-signature">
+                        <code>Task&lt;TransformerResult&lt;List&lt;float[]&gt;&gt;&gt; GetEmbeddingsAsync(List&lt;string&gt; texts, EmbeddingParameters? parameters = null)</code>
+                    </div>
+                    <p>Generates vector embeddings for the provided texts.</p>
+
+                    <div class="code-example">
+                        <h5>Example Usage</h5>
+                        <pre><code class="language-csharp">var texts = new List&lt;string&gt; { "Hello world", "AI is amazing" };
+var result = await pipeline.GetEmbeddingsAsync(texts);
+if (result.Success)
+{
+    for (int i = 0; i &lt; result.Data.Count; i++)
+    {
+        Console.WriteLine($"Text: {texts[i]}");
+        Console.WriteLine($"Embedding: [{string.Join(", ", result.Data[i].Take(5))}...]");
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Usage Examples Section -->
+                <section class="section" id="usage-examples">
+                    <h2>Usage Examples</h2>
+                    
+                    <h3>Basic Pipeline Usage</h3>
+                    <div class="code-example">
+                        <h4>Complete Example</h4>
+                        <pre><code class="language-csharp">// Create and initialize pipeline
+var pipeline = TransformerPipelineFactory.CreatePipeline(
+    TransformerModelSource.OpenAI,
+    pythonRunTimeManager,
+    executeManager
+);
+
+// Configure connection
+var openAIConfig = new OpenAIConnectionConfig { ApiKey = "sk-..." };
+var basePipeline = pipeline as BaseTransformerPipeline;
+basePipeline?.ConfigureConnection(openAIConfig);
+
+// Initialize with configuration
+await pipeline.InitializeAsync(new TransformerPipelineConfig
+{
+    TaskType = TransformerTask.TextGeneration,
+    Device = TransformerDevice.Auto
+});
+
+// Load model
+await pipeline.LoadModelAsync(new TransformerModelInfo
+{
+    Name = "gpt-4",
+    Source = TransformerModelSource.OpenAI
+}, TransformerTask.TextGeneration);
+
+// Subscribe to events
+pipeline.InferenceStarted += (sender, args) => 
+    Console.WriteLine($"Starting inference with {args.ModelName}");
+
+pipeline.InferenceCompleted += (sender, args) => 
+    Console.WriteLine($"Inference completed for {args.ModelName}");
+
+// Perform inference
+var result = await pipeline.GenerateTextAsync("Explain quantum computing");
+Console.WriteLine(result.Data);</code></pre>
+                    </div>
+
+                    <h3>Multi-Task Pipeline Usage</h3>
+                    <div class="code-example">
+                        <h4>Multi-Task Service</h4>
+                        <pre><code class="language-csharp">public class MultiTaskService
+{
+    private readonly ITransformerPipeLine _pipeline;
+
+    public async Task&lt;string&gt; ProcessTextAsync(string text, TransformerTask task)
+    {
+        return task switch
+        {
+            TransformerTask.TextGeneration => 
+                (await _pipeline.GenerateTextAsync(text)).Data,
+            
+            TransformerTask.TextClassification => 
+                string.Join(", ", (await _pipeline.ClassifyTextAsync(text)).Data.Labels.Select(l => l.Label)),
+            
+            TransformerTask.Summarization => 
+                (await _pipeline.SummarizeTextAsync(text)).Data,
+            
+            TransformerTask.Translation => 
+                (await _pipeline.TranslateTextAsync(text, "es")).Data,
+            
+            _ => throw new NotSupportedException($"Task {task} not supported")
+        };
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>Error Handling</h3>
+                    <div class="code-example">
+                        <h4>Robust Error Handling</h4>
+                        <pre><code class="language-csharp">public async Task&lt;string&gt; SafeGenerateTextAsync(string prompt)
+{
+    try
+    {
+        // Subscribe to error events
+        pipeline.ErrorOccurred += (sender, args) => 
+            logger.LogError(args.Exception, args.ErrorMessage);
+
+        var result = await pipeline.GenerateTextAsync(prompt);
+        
+        if (result.Success)
+        {
+            return result.Data;
+        }
+        else
+        {
+            logger.LogWarning($"Generation failed: {result.ErrorMessage}");
+            return "Sorry, I couldn't generate a response.";
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Unexpected error during text generation");
+        throw;
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- See Also Section -->
+                <section class="section" id="see-also">
+                    <h2>See Also</h2>
+                    <ul class="member-list">
+                        <li>
+                            <div class="member-name">BaseTransformerPipeline</div>
+                            <div class="member-type">Abstract Class</div>
+                            <div class="member-desc">Base implementation class</div>
+                        </li>
+                        <li>
+                            <div class="member-name">TransformerPipelineFactory</div>
+                            <div class="member-type">Static Class</div>
+                            <div class="member-desc">Factory for creating pipelines</div>
+                        </li>
+                        <li>
+                            <div class="member-name">TransformerResult&lt;T&gt;</div>
+                            <div class="member-type">Class</div>
+                            <div class="member-desc">Result wrapper for all operations</div>
+                        </li>
+                        <li>
+                            <div class="member-name">TransformerModelInfo</div>
+                            <div class="member-type">Class</div>
+                            <div class="member-desc">Model information and metadata</div>
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.AI.Transformers API Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="../index.html">Home</a>
+                            <a href="BaseTransformerPipeline.html">BaseTransformerPipeline</a>
+                            <a href="TransformerPipelineFactory.html">TransformerPipelineFactory</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../assets/navigation.js"></script>
+</body>
+</html>

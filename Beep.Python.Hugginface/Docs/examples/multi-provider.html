@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Provider Setup - Beep.Python.AI.Transformers</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="../assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="../index.html">Home</a>
+                    <span>›</span>
+                    <a href="../index.html#examples">Examples</a>
+                    <span>›</span>
+                    <span>Multi-Provider Setup</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-diagram-3"></i> Multi-Provider Setup</h1>
+                    <p class="page-subtitle">Learn how to work with multiple AI providers in enterprise environments</p>
+                </div>
+
+                <!-- Table of Contents -->
+                <div class="toc">
+                    <h3>?? Table of Contents</h3>
+                    <ul>
+                        <li><a href="#overview">Multi-Provider Overview</a></li>
+                        <li><a href="#configuration">Provider Configuration</a></li>
+                        <li><a href="#fallback-strategy">Fallback Strategy</a></li>
+                        <li><a href="#load-balancing">Load Balancing</a></li>
+                        <li><a href="#monitoring">Monitoring & Analytics</a></li>
+                        <li><a href="#best-practices">Best Practices</a></li>
+                    </ul>
+                </div>
+
+                <!-- Overview Section -->
+                <section class="section" id="overview">
+                    <h2>Multi-Provider Overview</h2>
+                    <p>
+                        Multi-provider setups allow you to leverage multiple AI service providers simultaneously,
+                        providing redundancy, cost optimization, and access to different model capabilities.
+                    </p>
+
+                    <div class="tip">
+                        <strong>?? Benefits of Multi-Provider Setup</strong>
+                        <ul>
+                            <li><strong>Redundancy</strong> - Fallback when primary provider fails</li>
+                            <li><strong>Cost Optimization</strong> - Use different providers for different tasks</li>
+                            <li><strong>Model Diversity</strong> - Access to unique models from each provider</li>
+                            <li><strong>Performance</strong> - Load balancing across providers</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Configuration Section -->
+                <section class="section" id="configuration">
+                    <h2>Provider Configuration</h2>
+                    
+                    <h3>1. Configuration Setup</h3>
+                    <div class="code-example">
+                        <h4>appsettings.json</h4>
+                        <pre><code class="language-json">{
+  "AIProviders": {
+    "OpenAI": {
+      "ApiKey": "sk-your-openai-key",
+      "TimeoutSeconds": 60,
+      "MaxRetries": 3,
+      "Priority": 1
+    },
+    "Azure": {
+      "Endpoint": "https://your-resource.openai.azure.com/",
+      "ApiKey": "your-azure-key",
+      "ApiVersion": "2024-02-01",
+      "DeploymentName": "gpt-35-turbo",
+      "Priority": 2
+    },
+    "Anthropic": {
+      "ApiKey": "sk-ant-your-anthropic-key",
+      "TimeoutSeconds": 90,
+      "Priority": 3
+    },
+    "HuggingFace": {
+      "Token": "hf_your-token",
+      "UseInferenceAPI": true,
+      "Priority": 4
+    }
+  }
+}</code></pre>
+                    </div>
+
+                    <h3>2. Multi-Provider Service</h3>
+                    <div class="code-example">
+                        <h4>MultiProviderAIService.cs</h4>
+                        <pre><code class="language-csharp">public class MultiProviderAIService
+{
+    private readonly Dictionary<TransformerModelSource, ITransformerPipeLine> _pipelines;
+    private readonly Dictionary<TransformerModelSource, ProviderConfig> _configurations;
+    private readonly ILogger<MultiProviderAIService> _logger;
+
+    public MultiProviderAIService(
+        IPythonRunTimeManager runtimeManager,
+        IPythonCodeExecuteManager executeManager,
+        IConfiguration configuration,
+        ILogger<MultiProviderAIService> logger)
+    {
+        _logger = logger;
+        _pipelines = new Dictionary<TransformerModelSource, ITransformerPipeLine>();
+        _configurations = LoadProviderConfigurations(configuration);
+        
+        InitializeProvidersAsync(runtimeManager, executeManager).Wait();
+    }
+
+    private async Task InitializeProvidersAsync(
+        IPythonRunTimeManager runtimeManager,
+        IPythonCodeExecuteManager executeManager)
+    {
+        var providers = new[]
+        {
+            TransformerModelSource.OpenAI,
+            TransformerModelSource.Azure,
+            TransformerModelSource.Anthropic,
+            TransformerModelSource.HuggingFace
+        };
+
+        foreach (var provider in providers)
+        {
+            try
+            {
+                var pipeline = CreatePipelineForProvider(provider, runtimeManager, executeManager);
+                await pipeline.InitializeAsync(new TransformerPipelineConfig
+                {
+                    TaskType = TransformerTask.TextGeneration
+                });
+
+                _pipelines[provider] = pipeline;
+                _logger.LogInformation("? Provider {Provider} initialized successfully", provider);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning("?? Failed to initialize provider {Provider}: {Error}", 
+                    provider, ex.Message);
+            }
+        }
+    }
+
+    private ITransformerPipeLine CreatePipelineForProvider(
+        TransformerModelSource provider,
+        IPythonRunTimeManager runtimeManager,
+        IPythonCodeExecuteManager executeManager)
+    {
+        return provider switch
+        {
+            TransformerModelSource.OpenAI => TransformerPipelineFactory.CreateOpenAIPipeline(
+                runtimeManager, executeManager, GetOpenAIConfig()),
+            
+            TransformerModelSource.Azure => TransformerPipelineFactory.CreateAzureOpenAIPipeline(
+                runtimeManager, executeManager, GetAzureConfig()),
+            
+            TransformerModelSource.Anthropic => TransformerPipelineFactory.CreateAnthropicPipeline(
+                runtimeManager, executeManager, GetAnthropicConfig()),
+            
+            TransformerModelSource.HuggingFace => TransformerPipelineFactory.CreateHuggingFacePipeline(
+                runtimeManager, executeManager, GetHuggingFaceConfig()),
+            
+            _ => throw new NotSupportedException($"Provider {provider} not supported")
+        };
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Fallback Strategy Section -->
+                <section class="section" id="fallback-strategy">
+                    <h2>Fallback Strategy</h2>
+                    
+                    <div class="code-example">
+                        <h4>Intelligent Fallback Implementation</h4>
+                        <pre><code class="language-csharp">public async Task<string> GenerateTextWithFallbackAsync(
+    string prompt, 
+    TextGenerationParameters? parameters = null)
+{
+    var providers = GetProvidersInPriorityOrder();
+    Exception? lastException = null;
+
+    foreach (var provider in providers)
+    {
+        if (!_pipelines.ContainsKey(provider))
+            continue;
+
+        try
+        {
+            _logger.LogDebug("?? Attempting text generation with {Provider}", provider);
+            
+            var pipeline = _pipelines[provider];
+            var result = await pipeline.GenerateTextAsync(prompt, parameters);
+            
+            if (result.Success)
+            {
+                _logger.LogInformation("? Text generated successfully with {Provider}", provider);
+                await RecordSuccessAsync(provider);
+                return result.Data;
+            }
+            else
+            {
+                _logger.LogWarning("?? {Provider} returned unsuccessful result: {Error}", 
+                    provider, result.ErrorMessage);
+                await RecordFailureAsync(provider, result.ErrorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            lastException = ex;
+            _logger.LogError(ex, "? Error with provider {Provider}", provider);
+            await RecordFailureAsync(provider, ex.Message);
+            
+            // Wait before trying next provider
+            await Task.Delay(1000);
+        }
+    }
+
+    throw new InvalidOperationException(
+        "All providers failed to generate text", lastException);
+}
+
+private List<TransformerModelSource> GetProvidersInPriorityOrder()
+{
+    return _configurations
+        .Where(kvp => _pipelines.ContainsKey(kvp.Key))
+        .OrderBy(kvp => kvp.Value.Priority)
+        .ThenBy(kvp => GetProviderHealthScore(kvp.Key))
+        .Select(kvp => kvp.Key)
+        .ToList();
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Load Balancing Section -->
+                <section class="section" id="load-balancing">
+                    <h2>Load Balancing</h2>
+                    
+                    <div class="code-example">
+                        <h4>Round-Robin Load Balancer</h4>
+                        <pre><code class="language-csharp">public class LoadBalancedAIService
+{
+    private readonly List<TransformerModelSource> _availableProviders;
+    private int _currentProviderIndex = 0;
+    private readonly object _lock = new object();
+
+    public async Task<string> GenerateTextBalancedAsync(string prompt)
+    {
+        var provider = GetNextProvider();
+        var pipeline = _pipelines[provider];
+        
+        try
+        {
+            var result = await pipeline.GenerateTextAsync(prompt);
+            if (result.Success)
+            {
+                await RecordSuccessAsync(provider);
+                return result.Data;
+            }
+            else
+            {
+                // Fall back to failover strategy
+                return await GenerateTextWithFallbackAsync(prompt);
+            }
+        }
+        catch (Exception)
+        {
+            // Remove failed provider temporarily and try again
+            await TemporarilyDisableProviderAsync(provider);
+            return await GenerateTextWithFallbackAsync(prompt);
+        }
+    }
+
+    private TransformerModelSource GetNextProvider()
+    {
+        lock (_lock)
+        {
+            if (_availableProviders.Count == 0)
+                throw new InvalidOperationException("No providers available");
+
+            var provider = _availableProviders[_currentProviderIndex];
+            _currentProviderIndex = (_currentProviderIndex + 1) % _availableProviders.Count;
+            return provider;
+        }
+    }
+
+    private async Task TemporarilyDisableProviderAsync(TransformerModelSource provider)
+    {
+        lock (_lock)
+        {
+            _availableProviders.Remove(provider);
+        }
+
+        // Re-enable after cooldown period
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(TimeSpan.FromMinutes(5));
+            
+            lock (_lock)
+            {
+                if (!_availableProviders.Contains(provider))
+                {
+                    _availableProviders.Add(provider);
+                    _logger.LogInformation("?? Re-enabled provider {Provider}", provider);
+                }
+            }
+        });
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Monitoring Section -->
+                <section class="section" id="monitoring">
+                    <h2>Monitoring & Analytics</h2>
+                    
+                    <div class="code-example">
+                        <h4>Provider Health Monitoring</h4>
+                        <pre><code class="language-csharp">public class ProviderHealthMonitor
+{
+    private readonly Dictionary<TransformerModelSource, ProviderMetrics> _metrics;
+    private readonly Timer _healthCheckTimer;
+
+    public ProviderHealthMonitor()
+    {
+        _metrics = new Dictionary<TransformerModelSource, ProviderMetrics>();
+        
+        // Perform health checks every 30 seconds
+        _healthCheckTimer = new Timer(PerformHealthChecks, null, 
+            TimeSpan.Zero, TimeSpan.FromSeconds(30));
+    }
+
+    public async Task RecordRequestAsync(
+        TransformerModelSource provider, 
+        bool success, 
+        TimeSpan duration,
+        string? errorMessage = null)
+    {
+        if (!_metrics.ContainsKey(provider))
+            _metrics[provider] = new ProviderMetrics();
+
+        var metrics = _metrics[provider];
+        
+        metrics.TotalRequests++;
+        metrics.LastRequestTime = DateTime.UtcNow;
+        metrics.AverageResponseTime = 
+            (metrics.AverageResponseTime + duration.TotalMilliseconds) / 2;
+
+        if (success)
+        {
+            metrics.SuccessfulRequests++;
+            metrics.ConsecutiveFailures = 0;
+        }
+        else
+        {
+            metrics.FailedRequests++;
+            metrics.ConsecutiveFailures++;
+            metrics.LastErrorMessage = errorMessage;
+            metrics.LastErrorTime = DateTime.UtcNow;
+        }
+
+        // Update success rate
+        metrics.SuccessRate = (double)metrics.SuccessfulRequests / metrics.TotalRequests;
+    }
+
+    public double GetProviderHealthScore(TransformerModelSource provider)
+    {
+        if (!_metrics.ContainsKey(provider))
+            return 0.5; // Neutral score for unknown providers
+
+        var metrics = _metrics[provider];
+        
+        // Calculate health score based on multiple factors
+        var successRateScore = metrics.SuccessRate;
+        var responseTimeScore = Math.Max(0, 1 - (metrics.AverageResponseTime / 10000)); // Penalize slow responses
+        var recentFailuresPenalty = Math.Max(0, 1 - (metrics.ConsecutiveFailures * 0.2));
+        
+        return (successRateScore * 0.5) + (responseTimeScore * 0.3) + (recentFailuresPenalty * 0.2);
+    }
+
+    private async void PerformHealthChecks(object? state)
+    {
+        foreach (var provider in _pipelines.Keys)
+        {
+            try
+            {
+                var pipeline = _pipelines[provider];
+                var healthCheck = await pipeline.GenerateTextAsync("test", new TextGenerationParameters
+                {
+                    MaxTokens = 1,
+                    Temperature = 0
+                });
+
+                await RecordRequestAsync(provider, healthCheck.Success, TimeSpan.FromMilliseconds(100));
+            }
+            catch (Exception ex)
+            {
+                await RecordRequestAsync(provider, false, TimeSpan.FromSeconds(30), ex.Message);
+            }
+        }
+    }
+}
+
+public class ProviderMetrics
+{
+    public int TotalRequests { get; set; }
+    public int SuccessfulRequests { get; set; }
+    public int FailedRequests { get; set; }
+    public double SuccessRate { get; set; }
+    public double AverageResponseTime { get; set; }
+    public int ConsecutiveFailures { get; set; }
+    public DateTime LastRequestTime { get; set; }
+    public DateTime? LastErrorTime { get; set; }
+    public string? LastErrorMessage { get; set; }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Best Practices Section -->
+                <section class="section" id="best-practices">
+                    <h2>Best Practices</h2>
+                    
+                    <div class="tip">
+                        <strong>?? Configuration Best Practices</strong>
+                        <ul>
+                            <li>Store API keys securely (Azure Key Vault, AWS Secrets Manager)</li>
+                            <li>Set appropriate timeout values for each provider</li>
+                            <li>Configure retry policies with exponential backoff</li>
+                            <li>Monitor usage and costs across all providers</li>
+                        </ul>
+                    </div>
+
+                    <div class="success">
+                        <strong>?? Fallback Strategy Best Practices</strong>
+                        <ul>
+                            <li>Order providers by reliability and cost</li>
+                            <li>Implement circuit breaker patterns</li>
+                            <li>Cache successful provider responses</li>
+                            <li>Log all provider interactions for analysis</li>
+                        </ul>
+                    </div>
+
+                    <div class="warning">
+                        <strong>?? Common Pitfalls to Avoid</strong>
+                        <ul>
+                            <li>Don't retry the same failing provider immediately</li>
+                            <li>Don't ignore rate limiting from providers</li>
+                            <li>Don't forget to handle partial failures gracefully</li>
+                            <li>Don't use the same model parameters for all providers</li>
+                        </ul>
+                    </div>
+
+                    <h3>Provider-Specific Considerations</h3>
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4>OpenAI</h4>
+                            <ul>
+                                <li>Higher cost but excellent quality</li>
+                                <li>Rate limits vary by model</li>
+                                <li>Best for creative tasks</li>
+                            </ul>
+                        </div>
+                        <div class="feature-card">
+                            <h4>Azure OpenAI</h4>
+                            <ul>
+                                <li>Enterprise security features</li>
+                                <li>Predictable pricing</li>
+                                <li>Regional data residency</li>
+                            </ul>
+                        </div>
+                        <div class="feature-card">
+                            <h4>Anthropic</h4>
+                            <ul>
+                                <li>Strong safety features</li>
+                                <li>Good for analytical tasks</li>
+                                <li>Longer context windows</li>
+                            </ul>
+                        </div>
+                        <div class="feature-card">
+                            <h4>HuggingFace</h4>
+                            <ul>
+                                <li>Cost-effective for many tasks</li>
+                                <li>Huge model variety</li>
+                                <li>Good for specialized models</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="basic-usage.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> Basic Usage
+                    </a>
+                    <a href="enterprise.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> Enterprise Deployment
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.AI.Transformers Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="../index.html">Home</a>
+                            <a href="../getting-started.html">Getting Started</a>
+                            <a href="../api/ITransformerPipeLine.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../assets/navigation.js"></script>
+</body>
+</html>

@@ -1,5 +1,4 @@
-﻿
-namespace Beep.Python.Model
+﻿namespace Beep.Python.Model
 {
     /// <summary>
     /// Categorizes Python packages by their primary purpose.
@@ -115,4 +114,246 @@ namespace Beep.Python.Model
         Others
     }
 
+    #region Transformer Enums
+
+    /// <summary>
+    /// Represents the source of a transformer model
+    /// </summary>
+    public enum TransformerModelSource
+    {
+        /// <summary>
+        /// Model from HuggingFace Hub
+        /// </summary>
+        HuggingFace,
+        
+        /// <summary>
+        /// Local model file or directory
+        /// </summary>
+        Local,
+        
+        /// <summary>
+        /// Custom model source (URL, cloud storage, etc.)
+        /// </summary>
+        Custom,
+        
+        /// <summary>
+        /// OpenAI models
+        /// </summary>
+        OpenAI,
+        
+        /// <summary>
+        /// Google models (Vertex AI, etc.)
+        /// </summary>
+        Google,
+        
+        /// <summary>
+        /// Microsoft Azure OpenAI models
+        /// </summary>
+        Azure,
+        
+        /// <summary>
+        /// Anthropic Claude models
+        /// </summary>
+        Anthropic,
+        
+        /// <summary>
+        /// Cohere models
+        /// </summary>
+        Cohere,
+        
+        /// <summary>
+        /// Meta models (Llama, etc.)
+        /// </summary>
+        Meta,
+        
+        /// <summary>
+        /// Mistral AI models
+        /// </summary>
+        Mistral,
+        
+        /// <summary>
+        /// Other/Unknown source
+        /// </summary>
+        Other
+    }
+
+    /// <summary>
+    /// Represents different types of transformer tasks
+    /// </summary>
+    public enum TransformerTask
+    {
+        /// <summary>
+        /// Text generation task
+        /// </summary>
+        TextGeneration,
+        
+        /// <summary>
+        /// Text classification task
+        /// </summary>
+        TextClassification,
+        
+        /// <summary>
+        /// Named Entity Recognition task
+        /// </summary>
+        NamedEntityRecognition,
+        
+        /// <summary>
+        /// Question Answering task
+        /// </summary>
+        QuestionAnswering,
+        
+        /// <summary>
+        /// Text summarization task
+        /// </summary>
+        Summarization,
+        
+        /// <summary>
+        /// Language translation task
+        /// </summary>
+        Translation,
+        
+        /// <summary>
+        /// Text embedding generation
+        /// </summary>
+        FeatureExtraction,
+        
+        /// <summary>
+        /// Sentiment analysis task
+        /// </summary>
+        SentimentAnalysis,
+        
+        /// <summary>
+        /// Text similarity task
+        /// </summary>
+        SimilarityComparison,
+        
+        /// <summary>
+        /// Conversational AI task
+        /// </summary>
+        Conversational,
+        
+        /// <summary>
+        /// Text-to-text generation
+        /// </summary>
+        Text2TextGeneration,
+        
+        /// <summary>
+        /// Fill in the blank/mask task
+        /// </summary>
+        FillMask,
+        
+        /// <summary>
+        /// Zero-shot classification
+        /// </summary>
+        ZeroShotClassification,
+        
+        /// <summary>
+        /// Image captioning
+        /// </summary>
+        ImageCaptioning,
+        
+        /// <summary>
+        /// Visual question answering
+        /// </summary>
+        VisualQuestionAnswering,
+        
+        /// <summary>
+        /// Image classification
+        /// </summary>
+        ImageClassification,
+        
+        /// <summary>
+        /// Object detection
+        /// </summary>
+        ObjectDetection,
+        
+        /// <summary>
+        /// Audio classification
+        /// </summary>
+        AudioClassification,
+        
+        /// <summary>
+        /// Automatic speech recognition
+        /// </summary>
+        AutomaticSpeechRecognition,
+        
+        /// <summary>
+        /// Text-to-speech synthesis
+        /// </summary>
+        TextToSpeech,
+        
+        /// <summary>
+        /// Tabular data tasks
+        /// </summary>
+        TabularData,
+        
+        /// <summary>
+        /// Time series forecasting
+        /// </summary>
+        TimeSeriesForecasting,
+        
+        /// <summary>
+        /// Custom/Other task
+        /// </summary>
+        Custom
+    }
+
+    /// <summary>
+    /// Execution device types for transformer models
+    /// </summary>
+    public enum TransformerDevice
+    {
+        /// <summary>
+        /// CPU execution
+        /// </summary>
+        CPU,
+        
+        /// <summary>
+        /// CUDA GPU execution
+        /// </summary>
+        CUDA,
+        
+        /// <summary>
+        /// Metal Performance Shaders (Apple Silicon)
+        /// </summary>
+        MPS,
+        
+        /// <summary>
+        /// Automatic device selection
+        /// </summary>
+        Auto
+    }
+
+    /// <summary>
+    /// Model precision types
+    /// </summary>
+    public enum ModelPrecision
+    {
+        /// <summary>
+        /// Full precision (32-bit)
+        /// </summary>
+        Full,
+        
+        /// <summary>
+        /// Half precision (16-bit)
+        /// </summary>
+        Half,
+        
+        /// <summary>
+        /// 8-bit quantization
+        /// </summary>
+        Int8,
+        
+        /// <summary>
+        /// 4-bit quantization
+        /// </summary>
+        Int4,
+        
+        /// <summary>
+        /// Automatic precision selection
+        /// </summary>
+        Auto
+    }
+
+    #endregion
 }

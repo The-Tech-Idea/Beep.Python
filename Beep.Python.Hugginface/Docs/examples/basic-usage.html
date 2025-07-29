@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Usage Examples - Beep.Python.AI.Transformers</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="../assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="../index.html">Home</a>
+                    <span>›</span>
+                    <a href="../index.html#examples">Examples</a>
+                    <span>›</span>
+                    <span>Basic Usage</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-code-square"></i> Basic Usage Examples</h1>
+                    <p class="page-subtitle">Practical examples demonstrating core functionality of Beep.Python.AI.Transformers</p>
+                </div>
+
+                <!-- Table of Contents -->
+                <div class="toc">
+                    <h3>📋 Table of Contents</h3>
+                    <ul>
+                        <li><a href="#quick-start">Quick Start Example</a></li>
+                        <li><a href="#provider-examples">Provider-Specific Examples</a></li>
+                        <li><a href="#task-examples">Task-Specific Examples</a></li>
+                        <li><a href="#error-handling">Error Handling</a></li>
+                        <li><a href="#performance-tips">Performance Tips</a></li>
+                    </ul>
+                </div>
+
+                <!-- Quick Start Section -->
+                <section class="section" id="quick-start">
+                    <h2><i class="bi bi-rocket"></i> Quick Start Example</h2>
+                    <p>Here's the simplest way to get started with text generation using OpenAI:</p>
+                    
+                    <div class="code-example">
+                        <h4>Complete Example</h4>
+                        <pre><code class="language-csharp">using Beep.Python.AI.Transformers;
+using Beep.Python.Model;
+
+public class QuickStartExample
+{
+    private readonly IPythonRunTimeManager _runtimeManager;
+    private readonly IPythonCodeExecuteManager _executeManager;
+
+    public QuickStartExample(
+        IPythonRunTimeManager runtimeManager,
+        IPythonCodeExecuteManager executeManager)
+    {
+        _runtimeManager = runtimeManager;
+        _executeManager = executeManager;
+    }
+
+    public async Task&lt;string&gt; GenerateTextAsync(string prompt)
+    {
+        // 1. Configure OpenAI connection
+        var openAIConfig = new OpenAIConnectionConfig
+        {
+            ApiKey = "sk-your-openai-api-key-here",
+            TimeoutSeconds = 60,
+            MaxRetries = 3
+        };
+
+        // 2. Create pipeline
+        var pipeline = TransformerPipelineFactory.CreateOpenAIPipeline(
+            _runtimeManager,
+            _executeManager,
+            openAIConfig
+        );
+
+        try
+        {
+            // 3. Initialize pipeline
+            await pipeline.InitializeAsync(new TransformerPipelineConfig
+            {
+                TaskType = TransformerTask.TextGeneration,
+                Device = TransformerDevice.Auto
+            });
+
+            // 4. Load model
+            await pipeline.LoadModelAsync(new TransformerModelInfo
+            {
+                Name = "gpt-4",
+                Source = TransformerModelSource.OpenAI
+            }, TransformerTask.TextGeneration);
+
+            // 5. Generate text
+            var result = await pipeline.GenerateTextAsync(prompt);
+            
+            return result.Success ? result.Data : $"Error: {result.ErrorMessage}";
+        }
+        finally
+        {
+            // 6. Clean up
+            pipeline.Dispose();
+        }
+    }
+}
+
+// Usage
+var example = new QuickStartExample(runtimeManager, executeManager);
+var response = await example.GenerateTextAsync("Write a haiku about programming");
+Console.WriteLine(response);</code></pre>
+                    </div>
+                </section>
+
+                <!-- Provider Examples Section -->
+                <section class="section" id="provider-examples">
+                    <h2><i class="bi bi-diagram-3"></i> Provider-Specific Examples</h2>
+                    
+                    <h3>OpenAI Example</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public class OpenAIExample
+{
+    public async Task&lt;void&gt; RunOpenAIExampleAsync()
+    {
+        var config = new OpenAIConnectionConfig
+        {
+            ApiKey = "sk-your-openai-api-key",
+            OrganizationId = "org-your-organization", // Optional
+            TimeoutSeconds = 60
+        };
+
+        var pipeline = TransformerPipelineFactory.CreateOpenAIPipeline(
+            runtimeManager, executeManager, config);
+
+        await pipeline.InitializeAsync(new TransformerPipelineConfig
+        {
+            TaskType = TransformerTask.TextGeneration
+        });
+
+        await pipeline.LoadModelAsync(new TransformerModelInfo
+        {
+            Name = "gpt-4",
+            Source = TransformerModelSource.OpenAI
+        }, TransformerTask.TextGeneration);
+
+        // Generate text with custom parameters
+        var parameters = new TextGenerationParameters
+        {
+            MaxTokens = 150,
+            Temperature = 0.7,
+            TopP = 0.9
+        };
+
+        var result = await pipeline.GenerateTextAsync(
+            "Explain artificial intelligence in simple terms", 
+            parameters);
+
+        Console.WriteLine($"Generated text: {result.Data}");
+        Console.WriteLine($"Execution time: {result.ExecutionTimeMs}ms");
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>Azure OpenAI Example</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public class AzureOpenAIExample
+{
+    public async Task RunAzureExampleAsync()
+    {
+        var config = new AzureOpenAIConnectionConfig
+        {
+            Endpoint = "https://your-resource.openai.azure.com/",
+            ApiKey = "your-azure-api-key",
+            ApiVersion = "2024-02-01",
+            DeploymentName = "gpt-35-turbo",
+            TimeoutSeconds = 90
+        };
+
+        var pipeline = TransformerPipelineFactory.CreateAzureOpenAIPipeline(
+            runtimeManager, executeManager, config);
+
+        await pipeline.InitializeAsync(new TransformerPipelineConfig
+        {
+            TaskType = TransformerTask.TextGeneration
+        });
+
+        await pipeline.LoadModelAsync(new TransformerModelInfo
+        {
+            Name = "gpt-35-turbo",
+            Source = TransformerModelSource.Azure
+        }, TransformerTask.TextGeneration);
+
+        var result = await pipeline.GenerateTextAsync(
+            "What are the benefits of cloud computing?");
+
+        Console.WriteLine(result.Data);
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>HuggingFace Example</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public class HuggingFaceExample
+{
+    public async Task RunHuggingFaceExampleAsync()
+    {
+        var config = new HuggingFaceConnectionConfig
+        {
+            Token = "hf_your-huggingface-token", // For private models
+            UseInferenceAPI = true,
+            TimeoutSeconds = 120
+        };
+
+        var pipeline = TransformerPipelineFactory.CreateHuggingFacePipeline(
+            runtimeManager, executeManager, config);
+
+        await pipeline.InitializeAsync(new TransformerPipelineConfig
+        {
+            TaskType = TransformerTask.TextGeneration,
+            Device = TransformerDevice.CPU
+        });
+
+        await pipeline.LoadModelAsync(new TransformerModelInfo
+        {
+            Name = "microsoft/DialoGPT-medium",
+            Source = TransformerModelSource.HuggingFace
+        }, TransformerTask.TextGeneration);
+
+        var result = await pipeline.GenerateTextAsync("Hello, how are you today?");
+        Console.WriteLine($"Bot response: {result.Data}");
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>Anthropic Claude Example</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public class AnthropicExample
+{
+    public async Task RunAnthropicExampleAsync()
+    {
+        var config = new AnthropicConnectionConfig
+        {
+            ApiKey = "sk-ant-your-anthropic-api-key",
+            TimeoutSeconds = 120,
+            MaxRetries = 2
+        };
+
+        var pipeline = TransformerPipelineFactory.CreateAnthropicPipeline(
+            runtimeManager, executeManager, config);
+
+        await pipeline.InitializeAsync(new TransformerPipelineConfig
+        {
+            TaskType = TransformerTask.TextGeneration
+        });
+
+        await pipeline.LoadModelAsync(new TransformerModelInfo
+        {
+            Name = "claude-3-sonnet-20240229",
+            Source = TransformerModelSource.Anthropic
+        }, TransformerTask.TextGeneration);
+
+        var result = await pipeline.GenerateTextAsync(
+            "Analyze the following text for sentiment and explain your reasoning: 'I love this new AI technology!'");
+
+        Console.WriteLine(result.Data);
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Task-Specific Examples Section -->
+                <section class="section" id="task-examples">
+                    <h2><i class="bi bi-list-task"></i> Task-Specific Examples</h2>
+                    
+                    <h3>Text Classification</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public class TextClassificationExample
+{
+    public async Task RunClassificationAsync()
+    {
+        // Using HuggingFace for classification
+        var pipeline = TransformerPipelineFactory.CreatePipeline(
+            TransformerModelSource.HuggingFace,
+            runtimeManager,
+            executeManager
+        );
+
+        await pipeline.InitializeAsync(new TransformerPipelineConfig
+        {
+            TaskType = TransformerTask.TextClassification
+        });
+
+        await pipeline.LoadModelAsync(new TransformerModelInfo
+        {
+            Name = "cardiffnlp/twitter-roberta-base-sentiment-latest",
+            Source = TransformerModelSource.HuggingFace
+        }, TransformerTask.TextClassification);
+
+        var texts = new[]
+        {
+            "I love this product! It's amazing!",
+            "This service is terrible and slow.",
+            "The weather is okay today."
+        };
+
+        foreach (var text in texts)
+        {
+            var result = await pipeline.ClassifyTextAsync(text);
+            if (result.Success)
+            {
+                Console.WriteLine($"Text: {text}");
+                foreach (var label in result.Data.Labels)
+                {
+                    Console.WriteLine($"  {label.Label}: {label.Score:F3}");
+                }
+                Console.WriteLine();
+            }
+        }
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>Named Entity Recognition</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public class NERExample
+{
+    public async Task RunNERAsync()
+    {
+        var pipeline = TransformerPipelineFactory.CreatePipeline(
+            TransformerModelSource.HuggingFace,
+            runtimeManager,
+            executeManager
+        );
+
+        await pipeline.InitializeAsync(new TransformerPipelineConfig
+        {
+            TaskType = TransformerTask.NamedEntityRecognition
+        });
+
+        await pipeline.LoadModelAsync(new TransformerModelInfo
+        {
+            Name = "dbmdz/bert-large-cased-finetuned-conll03-english",
+            Source = TransformerModelSource.HuggingFace
+        }, TransformerTask.NamedEntityRecognition);
+
+        var text = "Apple Inc. was founded by Steve Jobs in Cupertino, California in 1976.";
+        var result = await pipeline.ExtractEntitiesAsync(text);
+
+        if (result.Success)
+        {
+            Console.WriteLine($"Text: {text}");
+            Console.WriteLine("Entities found:");
+            
+            foreach (var entity in result.Data)
+            {
+                Console.WriteLine($"  {entity.Text} ({entity.Label}) - Confidence: {entity.Score:F3}");
+            }
+        }
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>Question Answering</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public class QuestionAnsweringExample
+{
+    public async Task RunQAAsync()
+    {
+        var pipeline = TransformerPipelineFactory.CreatePipeline(
+            TransformerModelSource.HuggingFace,
+            runtimeManager,
+            executeManager
+        );
+
+        await pipeline.InitializeAsync(new TransformerPipelineConfig
+        {
+            TaskType = TransformerTask.QuestionAnswering
+        });
+
+        await pipeline.LoadModelAsync(new TransformerModelInfo
+        {
+            Name = "distilbert-base-cased-distilled-squad",
+            Source = TransformerModelSource.HuggingFace
+        }, TransformerTask.QuestionAnswering);
+
+        var context = @"
+            The Python programming language was created by Guido van Rossum and was first 
+            released in 1991. Python is known for its simple syntax and readability, making 
+            it popular for beginners and experienced programmers alike.
+        ";
+
+        var questions = new[]
+        {
+            "Who created Python?",
+            "When was Python first released?",
+            "What is Python known for?"
+        };
+
+        foreach (var question in questions)
+        {
+            var result = await pipeline.AnswerQuestionAsync(question, context);
+            if (result.Success)
+            {
+                Console.WriteLine($"Question: {question}");
+                Console.WriteLine($"Answer: {result.Data.Answer}");
+                Console.WriteLine($"Confidence: {result.Data.Score:F3}");
+                Console.WriteLine();
+            }
+        }
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>Text Embeddings</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public class EmbeddingsExample
+{
+    public async Task RunEmbeddingsAsync()
+    {
+        // Using OpenAI for embeddings
+        var config = new OpenAIConnectionConfig
+        {
+            ApiKey = "sk-your-openai-api-key"
+        };
+
+        var pipeline = TransformerPipelineFactory.CreateOpenAIPipeline(
+            runtimeManager, executeManager, config);
+
+        await pipeline.InitializeAsync(new TransformerPipelineConfig
+        {
+            TaskType = TransformerTask.FeatureExtraction
+        });
+
+        await pipeline.LoadModelAsync(new TransformerModelInfo
+        {
+            Name = "text-embedding-ada-002",
+            Source = TransformerModelSource.OpenAI
+        }, TransformerTask.FeatureExtraction);
+
+        var texts = new List&lt;string&gt;
+        {
+            "The quick brown fox jumps over the lazy dog.",
+            "Artificial intelligence is transforming the world.",
+            "Python is a versatile programming language."
+        };
+
+        var result = await pipeline.GetEmbeddingsAsync(texts);
+        
+        if (result.Success)
+        {
+            Console.WriteLine("Generated embeddings:");
+            for (int i = 0; i &lt; texts.Count; i++)
+            {
+                Console.WriteLine($"Text: {texts[i]}");
+                Console.WriteLine($"Embedding dimensions: {result.Data[i].Length}");
+                Console.WriteLine($"First 5 values: [{string.Join(", ", result.Data[i].Take(5).Select(x => x.ToString("F4")))}]");
+                Console.WriteLine();
+            }
+
+            // Calculate similarity between first two embeddings
+            var similarity = CosineSimilarity(result.Data[0], result.Data[1]);
+            Console.WriteLine($"Similarity between first two texts: {similarity:F4}");
+        }
+    }
+
+    private double CosineSimilarity(float[] vectorA, float[] vectorB)
+    {
+        var dotProduct = vectorA.Zip(vectorB, (a, b) => a * b).Sum();
+        var magnitudeA = Math.Sqrt(vectorA.Sum(a => a * a));
+        var magnitudeB = Math.Sqrt(vectorB.Sum(b => b * b));
+        return dotProduct / (magnitudeA * magnitudeB);
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Error Handling Section -->
+                <section class="section" id="error-handling">
+                    <h2><i class="bi bi-exclamation-triangle"></i> Error Handling and Best Practices</h2>
+                    
+                    <h3>Comprehensive Error Handling</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public class RobustAIService
+{
+    private readonly ILogger&lt;RobustAIService&gt; _logger;
+    private readonly IPythonRunTimeManager _runtimeManager;
+    private readonly IPythonCodeExecuteManager _executeManager;
+
+    public RobustAIService(
+        ILogger&lt;RobustAIService&gt; logger,
+        IPythonRunTimeManager runtimeManager,
+        IPythonCodeExecuteManager executeManager)
+    {
+        _logger = logger;
+        _runtimeManager = runtimeManager;
+        _executeManager = executeManager;
+    }
+
+    public async Task&lt;string&gt; SafeGenerateTextAsync(string prompt, int maxRetries = 3)
+    {
+        ITransformerPipeLine? pipeline = null;
+        
+        try
+        {
+            pipeline = await CreatePipelineWithRetryAsync(maxRetries);
+            
+            // Subscribe to events for monitoring
+            pipeline.ErrorOccurred += OnErrorOccurred;
+            pipeline.InferenceStarted += OnInferenceStarted;
+            pipeline.InferenceCompleted += OnInferenceCompleted;
+
+            var result = await pipeline.GenerateTextAsync(prompt);
+            
+            if (result.Success)
+            {
+                _logger.LogInformation("Text generation successful. Execution time: {ExecutionTime}ms", result.ExecutionTimeMs);
+                return result.Data;
+            }
+            else
+            {
+                _logger.LogWarning("Text generation failed: {Error}", result.ErrorMessage);
+                return "Sorry, I couldn't generate a response at this time.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error during text generation");
+            return "An unexpected error occurred. Please try again later.";
+        }
+        finally
+        {
+            pipeline?.Dispose();
+        }
+    }
+
+    private async Task&lt;ITransformerPipeLine&gt; CreatePipelineWithRetryAsync(int maxRetries)
+    {
+        Exception? lastException = null;
+        
+        for (int attempt = 1; attempt &lt;= maxRetries; attempt++)
+        {
+            try
+            {
+                var config = new OpenAIConnectionConfig
+                {
+                    ApiKey = GetApiKey(),
+                    TimeoutSeconds = 60 * attempt, // Increase timeout with retries
+                    MaxRetries = 1
+                };
+
+                var pipeline = TransformerPipelineFactory.CreateOpenAIPipeline(
+                    _runtimeManager, _executeManager, config);
+
+                await pipeline.InitializeAsync(new TransformerPipelineConfig
+                {
+                    TaskType = TransformerTask.TextGeneration
+                });
+
+                await pipeline.LoadModelAsync(new TransformerModelInfo
+                {
+                    Name = "gpt-4",
+                    Source = TransformerModelSource.OpenAI
+                }, TransformerTask.TextGeneration);
+
+                _logger.LogInformation("Pipeline created successfully on attempt {Attempt}", attempt);
+                return pipeline;
+            }
+            catch (Exception ex)
+            {
+                lastException = ex;
+                _logger.LogWarning("Pipeline creation failed on attempt {Attempt}: {Error}", attempt, ex.Message);
+                
+                if (attempt &lt; maxRetries)
+                {
+                    var delay = TimeSpan.FromSeconds(Math.Pow(2, attempt)); // Exponential backoff
+                    _logger.LogInformation("Retrying in {Delay} seconds...", delay.TotalSeconds);
+                    await Task.Delay(delay);
+                }
+            }
+        }
+
+        throw new InvalidOperationException($"Failed to create pipeline after {maxRetries} attempts", lastException);
+    }
+
+    private void OnErrorOccurred(object? sender, TransformerErrorEventArgs args)
+    {
+        _logger.LogError(args.Exception, "Pipeline error: {Message}", args.ErrorMessage);
+    }
+
+    private void OnInferenceStarted(object? sender, TransformerEventArgs args)
+    {
+        _logger.LogDebug("Inference started for model: {ModelName}", args.ModelName);
+    }
+
+    private void OnInferenceCompleted(object? sender, TransformerEventArgs args)
+    {
+        _logger.LogDebug("Inference completed for model: {ModelName}", args.ModelName);
+    }
+
+    private string GetApiKey()
+    {
+        return Environment.GetEnvironmentVariable("OPENAI_API_KEY") 
+               ?? throw new InvalidOperationException("OpenAI API key not found");
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>Connection Health Monitoring</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public class HealthMonitoringService
+{
+    private readonly Dictionary&lt;TransformerModelSource, ITransformerPipeLine&gt; _pipelines = new();
+    private readonly Timer _healthCheckTimer;
+
+    public HealthMonitoringService()
+    {
+        _healthCheckTimer = new Timer(PerformHealthCheck, null, 
+            TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(5));
+    }
+
+    public async Task&lt;bool&gt; IsProviderHealthyAsync(TransformerModelSource provider)
+    {
+        if (!_pipelines.ContainsKey(provider))
+            return false;
+
+        try
+        {
+            var pipeline = _pipelines[provider];
+            
+            // Simple health check with a basic prompt
+            var result = await pipeline.GenerateTextAsync("Hello", new TextGenerationParameters
+            {
+                MaxTokens = 1,
+                Temperature = 0
+            });
+
+            return result.Success;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Health check failed for {provider}: {ex.Message}");
+            return false;
+        }
+    }
+
+    private async void PerformHealthCheck(object? state)
+    {
+        foreach (var provider in _pipelines.Keys)
+        {
+            var isHealthy = await IsProviderHealthyAsync(provider);
+            Console.WriteLine($"Provider {provider}: {(isHealthy ? "Healthy" : "Unhealthy")}");
+        }
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Performance Tips Section -->
+                <section class="section" id="performance-tips">
+                    <h2><i class="bi bi-speedometer2"></i> Performance Tips and Best Practices</h2>
+                    
+                    <h3>1. Pipeline Reuse</h3>
+                    <div class="tip">
+                        <strong>✅ Do:</strong> Reuse pipeline instances for multiple requests<br>
+                        <strong>❌ Don't:</strong> Create new pipeline instances for each request
+                    </div>
+
+                    <div class="code-example">
+                        <pre><code class="language-csharp">// ✅ Good: Singleton pipeline service
+public class PipelineService
+{
+    private readonly ITransformerPipeLine _pipeline;
+
+    public PipelineService(ITransformerPipeLine pipeline)
+    {
+        _pipeline = pipeline;
+    }
+
+    public async Task&lt;string&gt; GenerateAsync(string prompt)
+    {
+        var result = await _pipeline.GenerateTextAsync(prompt);
+        return result.Data;
+    }
+}
+
+// ❌ Bad: Creating new pipeline each time
+public async Task&lt;string&gt; GenerateAsync(string prompt)
+{
+    using var pipeline = TransformerPipelineFactory.CreateOpenAIPipeline(/*...*/);
+    // ... initialization code
+    var result = await pipeline.GenerateTextAsync(prompt);
+    return result.Data;
+}</code></pre>
+                    </div>
+
+                    <h3>2. Batch Processing</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public class BatchProcessingExample
+{
+    public async Task&lt;List&lt;string&gt;&gt; ProcessMultipleTextsAsync(List&lt;string&gt; prompts)
+    {
+        var pipeline = /* ... get pipeline ... */;
+        
+        // Use batch inference for better performance
+        var batchResults = await pipeline.BatchInferenceAsync(
+            prompts, 
+            TransformerTask.TextGeneration
+        );
+
+        return batchResults
+            .Where(r => r.Success)
+            .Select(r => r.Data?.ToString() ?? "")
+            .ToList();
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>3. Model Warm-up</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public async Task WarmUpPipelineAsync(ITransformerPipeLine pipeline)
+{
+    // Warm up the model with a simple request
+    await pipeline.WarmUpAsync("Test prompt for warming up");
+    
+    // Or manually:
+    await pipeline.GenerateTextAsync("Hello", new TextGenerationParameters
+    {
+        MaxTokens = 1,
+        Temperature = 0
+    });
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="../getting-started.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> Getting Started
+                    </a>
+                    <a href="multi-provider.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> Multi-Provider Setup
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.AI.Transformers Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="../index.html">Home</a>
+                            <a href="../getting-started.html">Getting Started</a>
+                            <a href="../api/ITransformerPipeLine.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../assets/navigation.js"></script>
+</body>
+</html>

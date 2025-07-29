@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Deployment - Beep.Python.AI.Transformers</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="../assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="../index.html">Home</a>
+                    <span>›</span>
+                    <a href="../index.html#examples">Examples</a>
+                    <span>›</span>
+                    <span>Enterprise Deployment</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-building"></i> Enterprise Deployment</h1>
+                    <p class="page-subtitle">Production-ready deployment strategies for enterprise environments</p>
+                </div>
+
+                <!-- Table of Contents -->
+                <div class="toc">
+                    <h3>?? Table of Contents</h3>
+                    <ul>
+                        <li><a href="#overview">Enterprise Overview</a></li>
+                        <li><a href="#security">Security & Compliance</a></li>
+                        <li><a href="#scalability">Scalability & Performance</a></li>
+                        <li><a href="#monitoring">Monitoring & Observability</a></li>
+                        <li><a href="#deployment">Deployment Strategies</a></li>
+                        <li><a href="#governance">AI Governance</a></li>
+                    </ul>
+                </div>
+
+                <!-- Overview Section -->
+                <section class="section" id="overview">
+                    <h2>Enterprise Overview</h2>
+                    <p>
+                        Enterprise deployment of Beep.Python.AI.Transformers requires careful consideration of
+                        security, scalability, compliance, and governance requirements.
+                    </p>
+
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-shield-check"></i> Security First</h4>
+                            <p>End-to-end encryption, secure credential management, and audit trails</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-arrows-fullscreen"></i> Horizontal Scaling</h4>
+                            <p>Multi-instance deployment with load balancing and auto-scaling</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-eye"></i> Full Observability</h4>
+                            <p>Comprehensive monitoring, logging, and performance analytics</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-check-circle"></i> Compliance Ready</h4>
+                            <p>GDPR, HIPAA, SOC2, and other regulatory framework support</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Security Section -->
+                <section class="section" id="security">
+                    <h2>Security & Compliance</h2>
+                    
+                    <h3>1. Secure Configuration</h3>
+                    <div class="code-example">
+                        <h4>Enterprise Security Configuration</h4>
+                        <pre><code class="language-csharp">public class EnterpriseSecurityConfig
+{
+    public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    {
+        // Security policies
+        services.Configure&lt;SecurityPolicy&gt;(options =>
+        {
+            options.DataClassification = DataClassificationLevel.Confidential;
+            options.RequireModelSigning = true;
+            options.RequireSourceVerification = true;
+            options.Encryption = new EncryptionRequirements
+            {
+                EncryptAtRest = true,
+                EncryptInTransit = true,
+                EncryptionAlgorithm = "AES-256",
+                KeyRotationPeriod = TimeSpan.FromDays(90)
+            };
+            options.Auditing = new AuditingRequirements
+            {
+                EnableAuditing = true,
+                AuditedEvents = new[] { "ModelLoad", "Inference", "ConfigChange" },
+                RequireDigitalSignatures = true,
+                EnableRealTimeAlerting = true
+            };
+        });
+
+        // Privacy controls
+        services.Configure&lt;PrivacyControls&gt;(options =>
+        {
+            options.AnonymizationConfig = new AnonymizationConfig
+            {
+                KAnonymity = 5,
+                LDiversity = 2.0,
+                PreserveUtility = true
+            };
+            options.DifferentialPrivacyConfig = new DifferentialPrivacyConfig
+            {
+                Epsilon = 1.0,
+                Delta = 1e-5,
+                Mechanism = "Laplace"
+            };
+        });
+
+        // Secure credential management
+        services.AddSingleton&lt;ISecureCredentialManager, AzureKeyVaultCredentialManager&gt;();
+        
+        // Compliance framework
+        services.AddTransient&lt;ITransformerSecurity, TransformerSecurityManager&gt;();
+        services.AddTransient&lt;ITransformerPrivacy, TransformerPrivacyManager&gt;();
+        services.AddTransient&lt;ITransformerGovernance, TransformerGovernanceManager&gt;();
+    }
+}
+
+public class AzureKeyVaultCredentialManager : ISecureCredentialManager
+{
+    private readonly SecretClient _secretClient;
+
+    public async Task&lt;string&gt; GetApiKeyAsync(string providerName)
+    {
+        var secretName = $"ai-provider-{providerName.ToLower()}-key";
+        var secret = await _secretClient.GetSecretAsync(secretName);
+        return secret.Value.Value;
+    }
+}
+
+public class EnterpriseAIService
+{
+    private readonly ITransformerSecurity _security;
+    private readonly ITransformerPrivacy _privacy;
+    private readonly ILogger&lt;EnterpriseAIService&gt; _logger;
+
+    public async Task&lt;string&gt; SecureGenerateTextAsync(
+        string prompt, 
+        string userId, 
+        SecurityContext securityContext)
+    {
+        // Security assessment
+        var assessment = await _security.AssessSecurityAsync(securityContext.PipelineId);
+        if (assessment.OverallRating != SecurityRating.Excellent)
+        {
+            throw new SecurityException("Security requirements not met");
+        }
+
+        // Privacy impact assessment
+        var privacyAssessment = await _privacy.AssessPrivacyImpactAsync(securityContext.PipelineId);
+        if (privacyAssessment.OverallRisk == PrivacyRisk.VeryHigh)
+        {
+            throw new PrivacyException("Privacy risk too high");
+        }
+
+        // Apply data anonymization if required
+        if (securityContext.RequireAnonymization)
+        {
+            prompt = await AnonymizeDataAsync(prompt, securityContext.AnonymizationConfig);
+        }
+
+        // Audit trail entry
+        await _security.LogSecurityEventAsync(new SecurityEvent
+        {
+            EventType = "TextGenerationRequest",
+            UserId = userId,
+            Timestamp = DateTime.UtcNow,
+            Description = "Secure text generation request initiated"
+        });
+
+        try
+        {
+            // Perform inference with session isolation
+            var pipeline = await CreateSecureUserPipelineAsync(userId, securityContext);
+            var result = await pipeline.GenerateTextAsync(prompt);
+
+            // Log successful completion
+            await _security.LogSecurityEventAsync(new SecurityEvent
+            {
+                EventType = "TextGenerationCompleted",
+                UserId = userId,
+                Timestamp = DateTime.UtcNow,
+                Description = "Text generation completed successfully"
+            });
+
+            return result.Data;
+        }
+        catch (Exception ex)
+        {
+            // Log security incident
+            await _security.LogSecurityEventAsync(new SecurityEvent
+            {
+                EventType = "TextGenerationError",
+                UserId = userId,
+                Timestamp = DateTime.UtcNow,
+                Description = $"Text generation failed: {ex.Message}",
+                RequiresResponse = true
+            });
+
+            throw;
+        }
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>2. Data Classification & Governance</h3>
+                    <div class="code-example">
+                        <h4>Data Classification Implementation</h4>
+                        <pre><code class="language-csharp">public class DataClassificationService
+{
+    public DataClassificationLevel ClassifyPrompt(string prompt)
+    {
+        // Implement ML-based classification or rule-based classification
+        if (ContainsSensitiveInfo(prompt))
+            return DataClassificationLevel.Confidential;
+        
+        if (ContainsPersonalInfo(prompt))
+            return DataClassificationLevel.Restricted;
+        
+        if (ContainsBusinessInfo(prompt))
+            return DataClassificationLevel.Internal;
+        
+        return DataClassificationLevel.Public;
+    }
+
+    public async Task&lt;bool&gt; ValidateDataHandlingAsync(
+        string data, 
+        DataClassificationLevel classification,
+        ComplianceFramework framework)
+    {
+        switch (framework)
+        {
+            case ComplianceFramework.GDPR:
+                return await ValidateGDPRComplianceAsync(data, classification);
+            
+            case ComplianceFramework.HIPAA:
+                return await ValidateHIPAAComplianceAsync(data, classification);
+            
+            case ComplianceFramework.SOC2:
+                return await ValidateSOC2ComplianceAsync(data, classification);
+            
+            default:
+                return false;
+        }
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Scalability Section -->
+                <section class="section" id="scalability">
+                    <h2>Scalability & Performance</h2>
+                    
+                    <h3>1. Horizontal Scaling Architecture</h3>
+                    <div class="code-example">
+                        <h4>Scalable Service Design</h4>
+                        <pre><code class="language-csharp">public class ScalableAIService
+{
+    private readonly IConnectionMultiplexer _redis;
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger&lt;ScalableAIService&gt; _logger;
+
+    public async Task&lt;string&gt; DistributedGenerateTextAsync(
+        string prompt, 
+        string sessionId)
+    {
+        // Check cache first
+        var cacheKey = $"ai:response:{prompt.GetHashCode()}";
+        var cached = await _redis.GetDatabase().StringGetAsync(cacheKey);
+        if (cached.HasValue)
+        {
+            _logger.LogInformation("? Cache hit for prompt hash {Hash}", prompt.GetHashCode());
+            return cached;
+        }
+
+        // Load balance across available instances
+        var instance = await SelectOptimalInstanceAsync();
+        
+        // Generate response
+        var response = await instance.GenerateTextAsync(prompt);
+        
+        // Cache successful responses
+        if (!string.IsNullOrEmpty(response))
+        {
+            await _redis.GetDatabase().StringSetAsync(
+                cacheKey, 
+                response, 
+                TimeSpan.FromHours(1)
+            );
+        }
+
+        return response;
+    }
+
+    private async Task&lt;IAIServiceInstance&gt; SelectOptimalInstanceAsync()
+    {
+        var instances = await GetAvailableInstancesAsync();
+        
+        // Select instance based on current load and performance
+        return instances
+            .Where(i => i.IsHealthy && i.CurrentLoad &lt; 0.8)
+            .OrderBy(i => i.CurrentLoad)
+            .ThenBy(i => i.AverageResponseTime)
+            .FirstOrDefault() ?? throw new InvalidOperationException("No healthy instances available");
+    }
+
+    public async Task&lt;List&lt;IAIServiceInstance&gt;&gt; GetAvailableInstancesAsync()
+    {
+        // Service discovery integration (Consul, Eureka, etc.)
+        var instances = new List&lt;IAIServiceInstance&gt;();
+        
+        // Get instances from service registry
+        var registeredServices = await _serviceDiscovery.GetServicesAsync("ai-transformer-service");
+        
+        foreach (var service in registeredServices)
+        {
+            var healthCheck = await PerformHealthCheckAsync(service);
+            if (healthCheck.IsHealthy)
+            {
+                instances.Add(new AIServiceInstance
+                {
+                    Endpoint = service.Endpoint,
+                    IsHealthy = true,
+                    CurrentLoad = healthCheck.CurrentLoad,
+                    AverageResponseTime = healthCheck.AverageResponseTime
+                });
+            }
+        }
+
+        return instances;
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>2. Auto-Scaling Configuration</h3>
+                    <div class="code-example">
+                        <h4>Kubernetes Auto-Scaling</h4>
+                        <pre><code class="language-yaml"># ai-transformer-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-transformer-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ai-transformer-service
+  template:
+    metadata:
+      labels:
+        app: ai-transformer-service
+    spec:
+      containers:
+      - name: ai-transformer
+        image: your-registry/ai-transformer:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Production"
+        - name: ConnectionStrings__Redis
+          valueFrom:
+            secretKeyRef:
+              name: ai-secrets
+              key: redis-connection
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ai-transformer-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ai-transformer-service
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80</code></pre>
+                    </div>
+                </section>
+
+                <!-- Monitoring Section -->
+                <section class="section" id="monitoring">
+                    <h2>Monitoring & Observability</h2>
+                    
+                    <h3>1. Comprehensive Telemetry</h3>
+                    <div class="code-example">
+                        <h4>Telemetry Configuration</h4>
+                        <pre><code class="language-csharp">public class EnterpriseTelemetryService
+{
+    private readonly TelemetryClient _telemetryClient;
+    private readonly IMetricsLogger _metricsLogger;
+    private readonly ILogger&lt;EnterpriseTelemetryService&gt; _logger;
+
+    public async Task TrackInferenceAsync(
+        string modelName,
+        string provider,
+        TimeSpan duration,
+        bool success,
+        string userId,
+        int tokenCount = 0,
+        decimal cost = 0)
+    {
+        // Application Insights metrics
+        _telemetryClient.TrackEvent("AIInference", new Dictionary&lt;string, string&gt;
+        {
+            ["ModelName"] = modelName,
+            ["Provider"] = provider,
+            ["UserId"] = userId,
+            ["Success"] = success.ToString()
+        }, new Dictionary&lt;string, double&gt;
+        {
+            ["Duration"] = duration.TotalMilliseconds,
+            ["TokenCount"] = tokenCount,
+            ["Cost"] = (double)cost
+        });
+
+        // Custom metrics for dashboards
+        _metricsLogger.Counter("ai_inference_total")
+            .WithTag("model", modelName)
+            .WithTag("provider", provider)
+            .WithTag("success", success.ToString())
+            .Increment();
+
+        _metricsLogger.Histogram("ai_inference_duration_ms")
+            .WithTag("model", modelName)
+            .WithTag("provider", provider)
+            .Record(duration.TotalMilliseconds);
+
+        if (cost > 0)
+        {
+            _metricsLogger.Counter("ai_inference_cost_total")
+                .WithTag("provider", provider)
+                .Increment((double)cost);
+        }
+
+        // Structured logging
+        _logger.LogInformation(
+            "AI Inference completed: Model={Model}, Provider={Provider}, Duration={Duration}ms, Success={Success}, Tokens={Tokens}, Cost={Cost}",
+            modelName, provider, duration.TotalMilliseconds, success, tokenCount, cost);
+    }
+
+    public async Task TrackUserActivityAsync(string userId, string activity, Dictionary&lt;string, object&gt; properties)
+    {
+        _telemetryClient.TrackEvent($"UserActivity_{activity}", 
+            properties.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToString() ?? ""),
+            new Dictionary&lt;string, double&gt;
+            {
+                ["Timestamp"] = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+            });
+
+        // GDPR-compliant user activity logging
+        await LogUserActivityForComplianceAsync(userId, activity, properties);
+    }
+
+    public async Task&lt;HealthReport&gt; GetSystemHealthAsync()
+    {
+        var healthChecks = new List&lt;HealthCheck&gt;
+        {
+            await CheckDatabaseHealthAsync(),
+            await CheckRedisHealthAsync(),
+            await CheckAIProviderHealthAsync(),
+            await CheckResourceUtilizationAsync()
+        };
+
+        return new HealthReport
+        {
+            Status = healthChecks.All(h => h.IsHealthy) ? HealthStatus.Healthy : HealthStatus.Unhealthy,
+            Checks = healthChecks,
+            Timestamp = DateTime.UtcNow
+        };
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>2. Performance Dashboards</h3>
+                    <div class="code-example">
+                        <h4>Grafana Dashboard Configuration</h4>
+                        <pre><code class="language-json">{
+  "dashboard": {
+    "title": "AI Transformer Service - Enterprise Dashboard",
+    "panels": [
+      {
+        "title": "Request Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(ai_inference_total[5m])",
+            "legendFormat": "{{provider}} - {{model}}"
+          }
+        ]
+      },
+      {
+        "title": "Response Time",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, ai_inference_duration_ms)",
+            "legendFormat": "95th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.50, ai_inference_duration_ms)",
+            "legendFormat": "50th percentile"
+          }
+        ]
+      },
+      {
+        "title": "Success Rate",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "rate(ai_inference_total{success=\"true\"}[5m]) / rate(ai_inference_total[5m]) * 100"
+          }
+        ]
+      },
+      {
+        "title": "Cost per Hour",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(ai_inference_cost_total[1h])",
+            "legendFormat": "{{provider}}"
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Deployment Section -->
+                <section class="section" id="deployment">
+                    <h2>Deployment Strategies</h2>
+                    
+                    <h3>1. Blue-Green Deployment</h3>
+                    <div class="code-example">
+                        <h4>Azure DevOps Pipeline</h4>
+                        <pre><code class="language-yaml"># azure-pipelines.yml
+trigger:
+  branches:
+    include:
+    - main
+    - release/*
+
+variables:
+  dockerRegistryServiceConnection: 'your-registry-connection'
+  imageRepository: 'ai-transformer-service'
+  containerRegistry: 'yourregistry.azurecr.io'
+  dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
+  tag: '$(Build.BuildId)'
+
+stages:
+- stage: Build
+  displayName: Build and Test
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: Docker@2
+      displayName: Build Docker image
+      inputs:
+        command: build
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        tags: |
+          $(tag)
+          latest
+    
+    - task: DotNetCoreCLI@2
+      displayName: Run tests
+      inputs:
+        command: 'test'
+        projects: '**/*Tests/*.csproj'
+        arguments: '--configuration Release --collect:"XPlat Code Coverage"'
+
+- stage: DeployStaging
+  displayName: Deploy to Staging
+  dependsOn: Build
+  jobs:
+  - deployment: DeployStaging
+    displayName: Deploy to Staging Environment
+    environment: 'staging'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: KubernetesManifest@0
+            displayName: Deploy to staging
+            inputs:
+              action: deploy
+              manifests: |
+                $(Pipeline.Workspace)/manifests/staging/*.yaml
+
+- stage: DeployProduction
+  displayName: Deploy to Production
+  dependsOn: DeployStaging
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  jobs:
+  - deployment: DeployProduction
+    displayName: Deploy to Production Environment
+    environment: 'production'
+    strategy:
+      blueGreen:
+        preRouteTraffic:
+          steps:
+          - task: KubernetesManifest@0
+            displayName: Deploy green environment
+            inputs:
+              action: deploy
+              manifests: |
+                $(Pipeline.Workspace)/manifests/production/*.yaml
+        
+        routeTraffic:
+          steps:
+          - task: Kubernetes@1
+            displayName: Route traffic to green
+            inputs:
+              command: patch
+              arguments: service/ai-transformer-service -p '{"spec":{"selector":{"version":"green"}}}'
+        
+        postRouteTraffic:
+          steps:
+          - task: Delay@1
+            inputs:
+              delayForMinutes: 5
+          
+          - task: PowerShell@2
+            displayName: Run smoke tests
+            inputs:
+              targetType: inline
+              script: |
+                # Run comprehensive smoke tests
+                Invoke-RestMethod -Uri "https://your-service.com/health" -Method Get
+                # Add more smoke tests here</code></pre>
+                    </div>
+
+                    <h3>2. Configuration Management</h3>
+                    <div class="code-example">
+                        <h4>Environment-Specific Configuration</h4>
+                        <pre><code class="language-csharp">public class EnvironmentConfigurationService
+{
+    public void ConfigureForEnvironment(IServiceCollection services, IConfiguration configuration)
+    {
+        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        
+        switch (environment?.ToLower())
+        {
+            case "production":
+                ConfigureProductionServices(services, configuration);
+                break;
+            case "staging":
+                ConfigureStagingServices(services, configuration);
+                break;
+            case "development":
+                ConfigureDevelopmentServices(services, configuration);
+                break;
+        }
+    }
+
+    private void ConfigureProductionServices(IServiceCollection services, IConfiguration configuration)
+    {
+        // Production-specific configuration
+        services.Configure&lt;AIServiceOptions&gt;(options =>
+        {
+            options.MaxConcurrentRequests = 1000;
+            options.DefaultTimeout = TimeSpan.FromSeconds(30);
+            options.EnableCaching = true;
+            options.CacheExpiryMinutes = 60;
+            options.EnableRateLimiting = true;
+            options.RateLimitPerMinute = 100;
+        });
+
+        // Production monitoring
+        services.AddApplicationInsightsTelemetry();
+        services.AddHealthChecks()
+            .AddCheck&lt;DatabaseHealthCheck&gt;("database")
+            .AddCheck&lt;RedisHealthCheck&gt;("redis")
+            .AddCheck&lt;AIProviderHealthCheck&gt;("ai-providers");
+
+        // Production security
+        services.AddAuthentication("Bearer")
+            .AddJwtBearer(options =>
+            {
+                options.Authority = configuration["Auth:Authority"];
+                options.Audience = configuration["Auth:Audience"];
+            });
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Governance Section -->
+                <section class="section" id="governance">
+                    <h2>AI Governance</h2>
+                    
+                    <div class="code-example">
+                        <h4>AI Governance Framework Implementation</h4>
+                        <pre><code class="language-csharp">public class AIGovernanceService
+{
+    private readonly ITransformerGovernance _governance;
+    private readonly ILogger&lt;AIGovernanceService&gt; _logger;
+
+    public async Task&lt;ModelApprovalResult&gt; RequestModelApprovalAsync(
+        string modelId,
+        ModelDeploymentRequest request)
+    {
+        // Generate governance report
+        var report = await _governance.GenerateGovernanceReportAsync(modelId);
+        
+        if (report.Status != ModelGovernanceStatus.Approved)
+        {
+            return new ModelApprovalResult
+            {
+                IsApproved = false,
+                Reason = "Model does not meet governance requirements",
+                RequiredActions = report.Gaps.Select(g => g.RemediationSteps).SelectMany(x => x).ToList()
+            };
+        }
+
+        // Risk assessment
+        var riskAssessment = report.RiskAssessment;
+        if (riskAssessment.OverallRisk == SecurityRating.Critical)
+        {
+            return new ModelApprovalResult
+            {
+                IsApproved = false,
+                Reason = "Risk level too high for deployment",
+                RequiredActions = riskAssessment.MitigationStrategies
+            };
+        }
+
+        // Stakeholder approval process
+        var approvalRequest = new ApprovalRequest
+        {
+            RequesterId = request.RequestedBy,
+            Justification = request.BusinessJustification,
+            TargetEnvironment = request.TargetEnvironment,
+            RequiredApprovers = GetRequiredApprovers(request.TargetEnvironment)
+        };
+
+        var approvalResult = await _governance.ApproveModelAsync(modelId, approvalRequest);
+        
+        return new ModelApprovalResult
+        {
+            IsApproved = approvalResult,
+            ApprovalId = approvalRequest.Id,
+            RequiredApprovers = approvalRequest.RequiredApprovers
+        };
+    }
+
+    public async Task&lt;ComplianceReport&gt; GenerateComplianceReportAsync(
+        ComplianceFramework framework)
+    {
+        return await _governance.GenerateComplianceReportAsync(framework);
+    }
+
+    private List&lt;string&gt; GetRequiredApprovers(Environment environment)
+    {
+        return environment switch
+        {
+            Environment.Production => new List&lt;string&gt; 
+            { 
+                "security-team@company.com", 
+                "ai-governance@company.com", 
+                "compliance@company.com" 
+            },
+            Environment.Staging => new List&lt;string&gt; 
+            { 
+                "ai-governance@company.com" 
+            },
+            _ => new List&lt;string&gt;()
+        };
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="multi-provider.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> Multi-Provider Setup
+                    </a>
+                    <a href="../getting-started.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> Getting Started
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.AI.Transformers Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="../index.html">Home</a>
+                            <a href="../getting-started.html">Getting Started</a>
+                            <a href="../api/ITransformerPipeLine.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../assets/navigation.js"></script>
+</body>
+</html>

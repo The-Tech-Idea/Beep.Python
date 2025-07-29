@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multimodal AI Examples - Beep.Python.AI.Transformers</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="../assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="../index.html">Home</a>
+                    <span>›</span>
+                    <a href="../index.html#multimodal">Multimodal AI</a>
+                    <span>›</span>
+                    <span>Examples</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-collection"></i> Multimodal AI Examples</h1>
+                    <p class="page-subtitle">Comprehensive examples for working with text, images, audio, and video using AI transformers</p>
+                </div>
+
+                <!-- Table of Contents -->
+                <div class="toc">
+                    <h3>?? Table of Contents</h3>
+                    <ul>
+                        <li><a href="#vision-examples">Vision & Image Analysis</a></li>
+                        <li><a href="#audio-examples">Audio Processing</a></li>
+                        <li><a href="#video-examples">Video Analysis</a></li>
+                        <li><a href="#document-examples">Document Understanding</a></li>
+                        <li><a href="#combined-examples">Combined Multimodal</a></li>
+                        <li><a href="#real-world-scenarios">Real-World Scenarios</a></li>
+                    </ul>
+                </div>
+
+                <!-- Vision Examples Section -->
+                <section class="section" id="vision-examples">
+                    <h2><i class="bi bi-eye"></i> Vision & Image Analysis</h2>
+                    
+                    <h3>Image Description and Analysis</h3>
+                    <div class="code-example">
+                        <h4>Basic Image Analysis</h4>
+                        <pre><code class="language-csharp">public class ImageAnalysisService
+{
+    private readonly ITransformerPipeLine _visionPipeline;
+
+    public async Task<ImageAnalysisResult> AnalyzeImageAsync(string imagePath)
+    {
+        // Configure for vision tasks
+        var config = new GoogleAIConnectionConfig
+        {
+            ApiKey = GetGoogleApiKey(),
+            ProjectId = "your-project-id"
+        };
+
+        var pipeline = TransformerPipelineFactory.CreateGoogleAIPipeline(
+            runtimeManager, executeManager, config);
+
+        await pipeline.LoadModelAsync(new TransformerModelInfo
+        {
+            Name = "gemini-pro-vision",
+            Source = TransformerModelSource.Google
+        }, TransformerTask.ImageAnalysis);
+
+        var request = new MultimodalRequest
+        {
+            TextPrompt = @"Analyze this image and provide:
+            1. A detailed description of what you see
+            2. List of objects and their locations
+            3. Overall mood or atmosphere
+            4. Any text visible in the image
+            5. Suggested use cases for this image",
+            
+            ImageInputs = new[]
+            {
+                new ImageInput
+                {
+                    ImagePath = imagePath,
+                    ImageFormat = ImageFormat.Auto
+                }
+            }
+        };
+
+        var result = await pipeline.ProcessMultimodalAsync(request);
+        
+        return new ImageAnalysisResult
+        {
+            Description = result.Data.TextResponse,
+            Confidence = result.Data.Confidence,
+            ProcessingTimeMs = result.ExecutionTimeMs
+        };
+    }
+
+    public async Task<List<DetectedObject>> DetectObjectsAsync(string imagePath)
+    {
+        var request = new MultimodalRequest
+        {
+            TextPrompt = @"Identify and list all objects in this image. 
+            For each object, provide:
+            - Object name
+            - Approximate location (left/right/center, top/bottom/middle)
+            - Confidence level
+            - Brief description
+            
+            Format as JSON array.",
+            
+            ImageInputs = new[] { new ImageInput { ImagePath = imagePath } }
+        };
+
+        var result = await _visionPipeline.ProcessMultimodalAsync(request);
+        
+        // Parse JSON response to structured data
+        var objects = JsonSerializer.Deserialize<List<DetectedObject>>(
+            result.Data.TextResponse);
+        
+        return objects;
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>OCR and Text Extraction</h3>
+                    <div class="code-example">
+                        <h4>Extract Text from Images</h4>
+                        <pre><code class="language-csharp">public class OCRService
+{
+    public async Task<ExtractedTextResult> ExtractTextAsync(string imagePath)
+    {
+        var request = new MultimodalRequest
+        {
+            TextPrompt = @"Extract all text from this image. Include:
+            1. All visible text content
+            2. Text formatting (bold, italic, etc.)
+            3. Text layout and positioning
+            4. Any logos or brand names
+            5. Confidence level for each text block",
+            
+            ImageInputs = new[] { new ImageInput { ImagePath = imagePath } },
+            
+            Parameters = new TextGenerationParameters
+            {
+                Temperature = 0.1,  // Low temperature for accuracy
+                MaxTokens = 2000
+            }
+        };
+
+        var result = await _visionPipeline.ProcessMultimodalAsync(request);
+        
+        return new ExtractedTextResult
+        {
+            ExtractedText = result.Data.TextResponse,
+            Language = DetectLanguage(result.Data.TextResponse),
+            Confidence = result.Data.Confidence
+        };
+    }
+
+    public async Task<DocumentAnalysisResult> AnalyzeDocumentAsync(string imagePath)
+    {
+        var request = new MultimodalRequest
+        {
+            TextPrompt = @"Analyze this document image and extract:
+            1. Document type (invoice, receipt, form, etc.)
+            2. Key information fields and values
+            3. Table data if present
+            4. Signatures or stamps
+            5. Structured data in JSON format",
+            
+            ImageInputs = new[] { new ImageInput { ImagePath = imagePath } }
+        };
+
+        var result = await _visionPipeline.ProcessMultimodalAsync(request);
+        
+        return ParseDocumentAnalysis(result.Data.TextResponse);
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>Visual Question Answering</h3>
+                    <div class="code-example">
+                        <h4>Interactive Image Q&A</h4>
+                        <pre><code class="language-csharp">public class VisualQAService
+{
+    public async Task<string> AskAboutImageAsync(string imagePath, string question)
+    {
+        var request = new MultimodalRequest
+        {
+            TextPrompt = $"Looking at this image, please answer: {question}",
+            ImageInputs = new[] { new ImageInput { ImagePath = imagePath } },
+            Parameters = new TextGenerationParameters
+            {
+                Temperature = 0.3,
+                MaxTokens = 500
+            }
+        };
+
+        var result = await _visionPipeline.ProcessMultimodalAsync(request);
+        return result.Data.TextResponse;
+    }
+
+    public async Task<ComparisonResult> CompareImagesAsync(
+        string image1Path, 
+        string image2Path, 
+        string comparisonAspect)
+    {
+        var request = new MultimodalRequest
+        {
+            TextPrompt = $@"Compare these two images focusing on: {comparisonAspect}
+            
+            Provide a detailed comparison including:
+            1. Similarities between the images
+            2. Key differences
+            3. Which image is better for the specified aspect and why
+            4. Overall analysis",
+            
+            ImageInputs = new[]
+            {
+                new ImageInput { ImagePath = image1Path, Label = "Image 1" },
+                new ImageInput { ImagePath = image2Path, Label = "Image 2" }
+            }
+        };
+
+        var result = await _visionPipeline.ProcessMultimodalAsync(request);
+        
+        return new ComparisonResult
+        {
+            ComparisonText = result.Data.TextResponse,
+            Confidence = result.Data.Confidence
+        };
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Audio Examples Section -->
+                <section class="section" id="audio-examples">
+                    <h2><i class="bi bi-mic"></i> Audio Processing</h2>
+                    
+                    <h3>Speech Recognition</h3>
+                    <div class="code-example">
+                        <h4>Audio Transcription</h4>
+                        <pre><code class="language-csharp">public class AudioTranscriptionService
+{
+    public async Task<TranscriptionResult> TranscribeAudioAsync(string audioPath)
+    {
+        // Use OpenAI Whisper for audio transcription
+        var config = new OpenAIConnectionConfig
+        {
+            ApiKey = GetOpenAIApiKey()
+        };
+
+        var pipeline = TransformerPipelineFactory.CreateOpenAIPipeline(
+            runtimeManager, executeManager, config);
+
+        await pipeline.LoadModelAsync(new TransformerModelInfo
+        {
+            Name = "whisper-1",
+            Source = TransformerModelSource.OpenAI
+        }, TransformerTask.SpeechRecognition);
+
+        var audioRequest = new AudioTranscriptionRequest
+        {
+            AudioPath = audioPath,
+            Language = "en",  // Auto-detect if null
+            OutputFormat = TranscriptionFormat.VerboseJson,
+            Temperature = 0.2
+        };
+
+        var result = await pipeline.TranscribeAudioAsync(audioRequest);
+        
+        return new TranscriptionResult
+        {
+            Text = result.Data.Text,
+            Language = result.Data.Language,
+            Confidence = result.Data.Confidence,
+            Segments = result.Data.Segments,
+            Duration = result.Data.Duration
+        };
+    }
+
+    public async Task<AudioAnalysisResult> AnalyzeAudioContentAsync(string audioPath)
+    {
+        // First transcribe the audio
+        var transcription = await TranscribeAudioAsync(audioPath);
+        
+        // Then analyze the content
+        var textPipeline = TransformerPipelineFactory.CreateOpenAIPipeline(
+            runtimeManager, executeManager, new OpenAIConnectionConfig 
+            { ApiKey = GetOpenAIApiKey() });
+
+        await textPipeline.LoadModelAsync(new TransformerModelInfo
+        {
+            Name = "gpt-4",
+            Source = TransformerModelSource.OpenAI
+        }, TransformerTask.TextGeneration);
+
+        var analysisPrompt = $@"Analyze this audio transcription:
+
+Transcription: {transcription.Text}
+
+Provide analysis including:
+1. Topic and main themes
+2. Sentiment analysis
+3. Key information extracted
+4. Speaker characteristics (if identifiable)
+5. Audio quality assessment
+6. Suggested actions or follow-ups";
+
+        var analysis = await textPipeline.GenerateTextAsync(analysisPrompt);
+        
+        return new AudioAnalysisResult
+        {
+            Transcription = transcription,
+            Analysis = analysis.Data,
+            Topics = ExtractTopics(analysis.Data),
+            Sentiment = ExtractSentiment(analysis.Data)
+        };
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>Audio Understanding and Q&A</h3>
+                    <div class="code-example">
+                        <h4>Ask Questions About Audio Content</h4>
+                        <pre><code class="language-csharp">public class AudioQAService
+{
+    private readonly Dictionary<string, TranscriptionResult> _audioCache = new();
+
+    public async Task<string> AskAboutAudioAsync(string audioPath, string question)
+    {
+        // Get or create transcription
+        if (!_audioCache.ContainsKey(audioPath))
+        {
+            var transcriptionService = new AudioTranscriptionService();
+            _audioCache[audioPath] = await transcriptionService.TranscribeAudioAsync(audioPath);
+        }
+
+        var transcription = _audioCache[audioPath];
+        
+        var qaPrompt = $@"Based on this audio transcription, answer the question:
+
+Audio Content: {transcription.Text}
+
+Question: {question}
+
+Please provide a detailed answer based only on the content from the audio.";
+
+        var pipeline = TransformerPipelineFactory.CreateOpenAIPipeline(
+            runtimeManager, executeManager, new OpenAIConnectionConfig 
+            { ApiKey = GetOpenAIApiKey() });
+
+        await pipeline.LoadModelAsync(new TransformerModelInfo
+        {
+            Name = "gpt-4",
+            Source = TransformerModelSource.OpenAI
+        }, TransformerTask.QuestionAnswering);
+
+        var result = await pipeline.GenerateTextAsync(qaPrompt);
+        return result.Data;
+    }
+
+    public async Task<MeetingSummary> SummarizeMeetingAsync(string audioPath)
+    {
+        var transcription = await new AudioTranscriptionService()
+            .TranscribeAudioAsync(audioPath);
+        
+        var summaryPrompt = $@"Summarize this meeting transcription:
+
+Transcription: {transcription.Text}
+
+Create a structured summary with:
+1. Meeting overview
+2. Key discussion points
+3. Decisions made
+4. Action items (with responsible parties if mentioned)
+5. Next steps
+6. Important dates or deadlines mentioned
+
+Format as a professional meeting summary.";
+
+        var pipeline = TransformerPipelineFactory.CreateOpenAIPipeline(
+            runtimeManager, executeManager, new OpenAIConnectionConfig 
+            { ApiKey = GetOpenAIApiKey() });
+
+        var result = await pipeline.GenerateTextAsync(summaryPrompt);
+        
+        return ParseMeetingSummary(result.Data);
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Video Examples Section -->
+                <section class="section" id="video-examples">
+                    <h2><i class="bi bi-play-circle"></i> Video Analysis</h2>
+                    
+                    <h3>Video Frame Analysis</h3>
+                    <div class="code-example">
+                        <h4>Extract and Analyze Video Frames</h4>
+                        <pre><code class="language-csharp">public class VideoAnalysisService
+{
+    public async Task<VideoAnalysisResult> AnalyzeVideoAsync(string videoPath)
+    {
+        // Extract frames from video
+        var frames = await ExtractKeyFramesAsync(videoPath, frameCount: 10);
+        var frameAnalyses = new List<FrameAnalysis>();
+
+        foreach (var frame in frames)
+        {
+            var analysis = await AnalyzeFrameAsync(frame);
+            frameAnalyses.Add(analysis);
+        }
+
+        // Analyze overall video content
+        var videoSummary = await SummarizeVideoAsync(frameAnalyses);
+        
+        return new VideoAnalysisResult
+        {
+            Duration = await GetVideoDurationAsync(videoPath),
+            FrameAnalyses = frameAnalyses,
+            OverallSummary = videoSummary,
+            KeyMoments = ExtractKeyMoments(frameAnalyses)
+        };
+    }
+
+    private async Task<FrameAnalysis> AnalyzeFrameAsync(VideoFrame frame)
+    {
+        var request = new MultimodalRequest
+        {
+            TextPrompt = @"Analyze this video frame and describe:
+            1. What's happening in the scene
+            2. Objects and people present
+            3. Setting/location
+            4. Action or movement
+            5. Important details",
+            
+            ImageInputs = new[]
+            {
+                new ImageInput
+                {
+                    ImageData = frame.ImageData,
+                    ImageFormat = ImageFormat.JPEG
+                }
+            }
+        };
+
+        var pipeline = TransformerPipelineFactory.CreateGoogleAIPipeline(
+            runtimeManager, executeManager, new GoogleAIConnectionConfig 
+            { ApiKey = GetGoogleApiKey() });
+
+        var result = await pipeline.ProcessMultimodalAsync(request);
+        
+        return new FrameAnalysis
+        {
+            Timestamp = frame.Timestamp,
+            Description = result.Data.TextResponse,
+            Confidence = result.Data.Confidence
+        };
+    }
+
+    public async Task<VideoSearchResult> SearchVideoContentAsync(
+        string videoPath, 
+        string searchQuery)
+    {
+        var analysis = await AnalyzeVideoAsync(videoPath);
+        
+        var searchPrompt = $@"Search through this video analysis for: {searchQuery}
+
+Video Analysis:
+{string.Join("\n", analysis.FrameAnalyses.Select(f => 
+    $"Time {f.Timestamp}: {f.Description}"))}
+
+Find relevant moments and provide:
+1. Timestamps where the search query appears
+2. Detailed description of relevant scenes
+3. Confidence score for each match";
+
+        var pipeline = TransformerPipelineFactory.CreateOpenAIPipeline(
+            runtimeManager, executeManager, new OpenAIConnectionConfig 
+            { ApiKey = GetOpenAIApiKey() });
+
+        var result = await pipeline.GenerateTextAsync(searchPrompt);
+        
+        return ParseVideoSearchResult(result.Data);
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>Video Content Understanding</h3>
+                    <div class="code-example">
+                        <h4>Comprehensive Video Analysis</h4>
+                        <pre><code class="language-csharp">public class VideoContentAnalyzer
+{
+    public async Task<ContentAnalysisResult> AnalyzeVideoContentAsync(string videoPath)
+    {
+        // Extract audio for transcription
+        var audioPath = await ExtractAudioAsync(videoPath);
+        var transcription = await new AudioTranscriptionService()
+            .TranscribeAudioAsync(audioPath);
+
+        // Extract and analyze key frames
+        var frames = await ExtractKeyFramesAsync(videoPath, frameCount: 15);
+        var visualAnalysis = await AnalyzeVisualContentAsync(frames);
+
+        // Combine audio and visual analysis
+        var combinedPrompt = $@"Analyze this video content combining audio and visual information:
+
+Audio Transcription:
+{transcription.Text}
+
+Visual Analysis:
+{string.Join("\n", visualAnalysis.Select(v => $"Frame {v.Timestamp}: {v.Description}"))}
+
+Provide comprehensive analysis including:
+1. Main topic and purpose of the video
+2. Key events or scenes
+3. Important information conveyed
+4. Audience and intended use
+5. Quality assessment
+6. Suggested improvements
+7. Content categorization";
+
+        var pipeline = TransformerPipelineFactory.CreateOpenAIPipeline(
+            runtimeManager, executeManager, new OpenAIConnectionConfig 
+            { ApiKey = GetOpenAIApiKey() });
+
+        var analysis = await pipeline.GenerateTextAsync(combinedPrompt);
+        
+        return new ContentAnalysisResult
+        {
+            AudioTranscription = transcription,
+            VisualAnalysis = visualAnalysis,
+            CombinedAnalysis = analysis.Data,
+            ContentType = DetermineContentType(analysis.Data),
+            KeyTopics = ExtractKeyTopics(analysis.Data)
+        };
+    }
+
+    public async Task<VideoEditingSuggestions> GetEditingSuggestionsAsync(string videoPath)
+    {
+        var contentAnalysis = await AnalyzeVideoContentAsync(videoPath);
+        
+        var editingPrompt = $@"Based on this video analysis, provide editing suggestions:
+
+Content Analysis: {contentAnalysis.CombinedAnalysis}
+
+Suggest:
+1. Optimal video length and pacing
+2. Scenes to trim or expand
+3. Key moments to highlight
+4. Transition suggestions
+5. Audio improvements needed
+6. Visual enhancement opportunities
+7. Accessibility improvements";
+
+        var pipeline = TransformerPipelineFactory.CreateOpenAIPipeline(
+            runtimeManager, executeManager, new OpenAIConnectionConfig 
+            { ApiKey = GetOpenAIApiKey() });
+
+        var suggestions = await pipeline.GenerateTextAsync(editingPrompt);
+        
+        return ParseEditingSuggestions(suggestions.Data);
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Document Examples Section -->
+                <section class="section" id="document-examples">
+                    <h2><i class="bi bi-file-text"></i> Document Understanding</h2>
+                    
+                    <h3>Multi-Page Document Analysis</h3>
+                    <div class="code-example">
+                        <h4>Process Complex Documents</h4>
+                        <pre><code class="language-csharp">public class DocumentProcessor
+{
+    public async Task<DocumentAnalysisResult> ProcessDocumentAsync(string[] imagePaths)
+    {
+        var pageAnalyses = new List<PageAnalysis>();
+        
+        for (int i = 0; i < imagePaths.Length; i++)
+        {
+            var pageAnalysis = await AnalyzeDocumentPageAsync(imagePaths[i], i + 1);
+            pageAnalyses.Add(pageAnalysis);
+        }
+
+        // Combine all pages for comprehensive analysis
+        var documentSummary = await SummarizeDocumentAsync(pageAnalyses);
+        
+        return new DocumentAnalysisResult
+        {
+            PageCount = imagePaths.Length,
+            PageAnalyses = pageAnalyses,
+            DocumentSummary = documentSummary,
+            ExtractedData = ExtractStructuredData(pageAnalyses),
+            DocumentType = DetermineDocumentType(pageAnalyses)
+        };
+    }
+
+    private async Task<PageAnalysis> AnalyzeDocumentPageAsync(string imagePath, int pageNumber)
+    {
+        var request = new MultimodalRequest
+        {
+            TextPrompt = $@"Analyze page {pageNumber} of this document:
+
+Extract and organize:
+1. All text content with formatting preserved
+2. Headers, titles, and section names
+3. Tables, lists, and structured data
+4. Images, charts, or diagrams
+5. Signatures, stamps, or marks
+6. Page layout and structure
+7. Key information and data points
+
+Maintain the logical flow and hierarchy of information.",
+            
+            ImageInputs = new[] { new ImageInput { ImagePath = imagePath } },
+            
+            Parameters = new TextGenerationParameters
+            {
+                Temperature = 0.1,  // High accuracy for document processing
+                MaxTokens = 3000
+            }
+        };
+
+        var pipeline = TransformerPipelineFactory.CreateGoogleAIPipeline(
+            runtimeManager, executeManager, new GoogleAIConnectionConfig 
+            { ApiKey = GetGoogleApiKey() });
+
+        var result = await pipeline.ProcessMultimodalAsync(request);
+        
+        return new PageAnalysis
+        {
+            PageNumber = pageNumber,
+            ExtractedText = result.Data.TextResponse,
+            StructuredData = ExtractStructuredData(result.Data.TextResponse),
+            Confidence = result.Data.Confidence
+        };
+    }
+
+    public async Task<FormDataExtractionResult> ExtractFormDataAsync(string imagePath)
+    {
+        var request = new MultimodalRequest
+        {
+            TextPrompt = @"Extract form data from this document image:
+
+Identify and extract:
+1. Form fields and their labels
+2. Filled-in values
+3. Checkboxes and their states
+4. Signatures and dates
+5. Form type and purpose
+
+Format the output as structured JSON with field names and values.",
+            
+            ImageInputs = new[] { new ImageInput { ImagePath = imagePath } }
+        };
+
+        var pipeline = TransformerPipelineFactory.CreateGoogleAIPipeline(
+            runtimeManager, executeManager, new GoogleAIConnectionConfig 
+            { ApiKey = GetGoogleApiKey() });
+
+        var result = await pipeline.ProcessMultimodalAsync(request);
+        
+        // Parse JSON response
+        var formData = JsonSerializer.Deserialize<Dictionary<string, object>>(
+            result.Data.TextResponse);
+        
+        return new FormDataExtractionResult
+        {
+            FormFields = formData,
+            Confidence = result.Data.Confidence,
+            FormType = DetermineFormType(formData)
+        };
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Combined Examples Section -->
+                <section class="section" id="combined-examples">
+                    <h2><i class="bi bi-layers"></i> Combined Multimodal</h2>
+                    
+                    <h3>Multi-Modal Content Analysis</h3>
+                    <div class="code-example">
+                        <h4>Comprehensive Media Analysis</h4>
+                        <pre><code class="language-csharp">public class MultiModalAnalyzer
+{
+    public async Task<ComprehensiveAnalysisResult> AnalyzeMultipleMediaAsync(
+        MediaAnalysisRequest request)
+    {
+        var results = new List<MediaAnalysisResult>();
+        
+        // Process each media item
+        foreach (var mediaItem in request.MediaItems)
+        {
+            var result = await AnalyzeMediaItemAsync(mediaItem);
+            results.Add(result);
+        }
+
+        // Cross-reference and combine insights
+        var combinedAnalysis = await CrossReferenceMediaAsync(results);
+        
+        return new ComprehensiveAnalysisResult
+        {
+            IndividualResults = results,
+            CombinedInsights = combinedAnalysis,
+            Correlations = FindCorrelations(results),
+            Summary = GenerateSummary(results, combinedAnalysis)
+        };
+    }
+
+    private async Task<MediaAnalysisResult> AnalyzeMediaItemAsync(MediaItem item)
+    {
+        return item.Type switch
+        {
+            MediaType.Image => await AnalyzeImageContentAsync(item),
+            MediaType.Audio => await AnalyzeAudioContentAsync(item),
+            MediaType.Video => await AnalyzeVideoContentAsync(item),
+            MediaType.Document => await AnalyzeDocumentContentAsync(item),
+            _ => throw new NotSupportedException($"Media type {item.Type} not supported")
+        };
+    }
+
+    public async Task<StoryGenerationResult> GenerateStoryFromMediaAsync(
+        List<MediaItem> mediaItems)
+    {
+        // Analyze all media items
+        var analyses = new List<string>();
+        
+        foreach (var item in mediaItems)
+        {
+            var analysis = await AnalyzeMediaItemAsync(item);
+            analyses.Add($"{item.Type}: {analysis.Description}");
+        }
+
+        var storyPrompt = $@"Create a coherent story based on these media elements:
+
+Media Analysis:
+{string.Join("\n", analyses)}
+
+Generate:
+1. A compelling narrative that connects all elements
+2. Character development and plot
+3. Setting and atmosphere descriptions
+4. Dialogue where appropriate
+5. A satisfying conclusion
+
+Make the story engaging and ensure all media elements are meaningfully incorporated.";
+
+        var pipeline = TransformerPipelineFactory.CreateOpenAIPipeline(
+            runtimeManager, executeManager, new OpenAIConnectionConfig 
+            { ApiKey = GetOpenAIApiKey() });
+
+        var result = await pipeline.GenerateTextAsync(storyPrompt);
+        
+        return new StoryGenerationResult
+        {
+            GeneratedStory = result.Data,
+            MediaElementsUsed = mediaItems.Count,
+            StoryLength = result.Data.Split(' ').Length
+        };
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Real-World Scenarios Section -->
+                <section class="section" id="real-world-scenarios">
+                    <h2><i class="bi bi-globe"></i> Real-World Scenarios</h2>
+                    
+                    <h3>Content Moderation Pipeline</h3>
+                    <div class="code-example">
+                        <h4>Automated Content Review</h4>
+                        <pre><code class="language-csharp">public class ContentModerationService
+{
+    public async Task<ModerationResult> ModerateContentAsync(
+        ContentModerationRequest request)
+    {
+        var moderationResults = new List<ModerationResult>();
+        
+        // Analyze each media type
+        if (request.Images?.Any() == true)
+        {
+            foreach (var image in request.Images)
+            {
+                var imageResult = await ModerateImageAsync(image);
+                moderationResults.Add(imageResult);
+            }
+        }
+
+        if (!string.IsNullOrEmpty(request.TextContent))
+        {
+            var textResult = await ModerateTextAsync(request.TextContent);
+            moderationResults.Add(textResult);
+        }
+
+        if (request.AudioFiles?.Any() == true)
+        {
+            foreach (var audio in request.AudioFiles)
+            {
+                var audioResult = await ModerateAudioAsync(audio);
+                moderationResults.Add(audioResult);
+            }
+        }
+
+        // Combine results and make final decision
+        return CombineModerationResults(moderationResults);
+    }
+
+    private async Task<ModerationResult> ModerateImageAsync(string imagePath)
+    {
+        var request = new MultimodalRequest
+        {
+            TextPrompt = @"Analyze this image for content moderation:
+
+Check for:
+1. Inappropriate or harmful content
+2. Violence or dangerous activities
+3. Adult content
+4. Hate symbols or extremist content
+5. Privacy violations (personal information visible)
+6. Copyright violations (branded content)
+
+Provide a safety score (0-100) and detailed explanation.",
+            
+            ImageInputs = new[] { new ImageInput { ImagePath = imagePath } }
+        };
+
+        var pipeline = TransformerPipelineFactory.CreateGoogleAIPipeline(
+            runtimeManager, executeManager, new GoogleAIConnectionConfig 
+            { ApiKey = GetGoogleApiKey() });
+
+        var result = await pipeline.ProcessMultimodalAsync(request);
+        
+        return ParseModerationResult(result.Data.TextResponse, MediaType.Image);
+    }
+
+    public async Task<AccessibilityReport> GenerateAccessibilityReportAsync(
+        List<MediaItem> mediaItems)
+    {
+        var accessibilityIssues = new List<AccessibilityIssue>();
+        var recommendations = new List<string>();
+
+        foreach (var item in mediaItems)
+        {
+            switch (item.Type)
+            {
+                case MediaType.Image:
+                    var imageAccessibility = await CheckImageAccessibilityAsync(item.Path);
+                    accessibilityIssues.AddRange(imageAccessibility.Issues);
+                    recommendations.AddRange(imageAccessibility.Recommendations);
+                    break;
+
+                case MediaType.Video:
+                    var videoAccessibility = await CheckVideoAccessibilityAsync(item.Path);
+                    accessibilityIssues.AddRange(videoAccessibility.Issues);
+                    recommendations.AddRange(videoAccessibility.Recommendations);
+                    break;
+
+                case MediaType.Audio:
+                    var audioAccessibility = await CheckAudioAccessibilityAsync(item.Path);
+                    accessibilityIssues.AddRange(audioAccessibility.Issues);
+                    recommendations.AddRange(audioAccessibility.Recommendations);
+                    break;
+            }
+        }
+
+        return new AccessibilityReport
+        {
+            TotalItems = mediaItems.Count,
+            Issues = accessibilityIssues,
+            Recommendations = recommendations,
+            OverallScore = CalculateAccessibilityScore(accessibilityIssues),
+            ComplianceLevel = DetermineComplianceLevel(accessibilityIssues)
+        };
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>Educational Content Generator</h3>
+                    <div class="code-example">
+                        <h4>Create Learning Materials</h4>
+                        <pre><code class="language-csharp">public class EducationalContentGenerator
+{
+    public async Task<LearningMaterialsResult> GenerateLearningMaterialsAsync(
+        string topic, 
+        EducationLevel level,
+        List<MediaItem> referenceMedia)
+    {
+        // Analyze reference media for context
+        var mediaAnalyses = new List<string>();
+        foreach (var media in referenceMedia)
+        {
+            var analysis = await AnalyzeEducationalMediaAsync(media);
+            mediaAnalyses.Add(analysis);
+        }
+
+        var prompt = $@"Create comprehensive learning materials for: {topic}
+        
+Education Level: {level}
+Reference Media Analysis:
+{string.Join("\n", mediaAnalyses)}
+
+Generate:
+1. Learning objectives
+2. Key concepts explanation
+3. Interactive exercises
+4. Assessment questions
+5. Additional resources needed
+6. Multimedia suggestions for each concept
+7. Accessibility considerations
+
+Tailor the complexity and language to the {level} level.";
+
+        var pipeline = TransformerPipelineFactory.CreateOpenAIPipeline(
+            runtimeManager, executeManager, new OpenAIConnectionConfig 
+            { ApiKey = GetOpenAIApiKey() });
+
+        var result = await pipeline.GenerateTextAsync(prompt);
+        
+        return new LearningMaterialsResult
+        {
+            Topic = topic,
+            Level = level,
+            GeneratedContent = result.Data,
+            ReferenceMediaUsed = referenceMedia.Count,
+            EstimatedStudyTime = CalculateStudyTime(result.Data, level)
+        };
+    }
+
+    private async Task<string> AnalyzeEducationalMediaAsync(MediaItem media)
+    {
+        var request = new MultimodalRequest
+        {
+            TextPrompt = @"Analyze this educational media and describe:
+            1. Main educational concepts presented
+            2. Teaching methods used
+            3. Target audience level
+            4. Effectiveness for learning
+            5. Key information to extract for curriculum development",
+            
+            ImageInputs = media.Type == MediaType.Image ? 
+                new[] { new ImageInput { ImagePath = media.Path } } : null
+        };
+
+        // Handle different media types appropriately
+        if (media.Type == MediaType.Audio)
+        {
+            var transcription = await new AudioTranscriptionService()
+                .TranscribeAudioAsync(media.Path);
+            request.TextPrompt += $"\n\nAudio Content: {transcription.Text}";
+        }
+
+        var pipeline = TransformerPipelineFactory.CreateGoogleAIPipeline(
+            runtimeManager, executeManager, new GoogleAIConnectionConfig 
+            { ApiKey = GetGoogleApiKey() });
+
+        var result = await pipeline.ProcessMultimodalAsync(request);
+        return result.Data.TextResponse;
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="enterprise.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> Enterprise Examples
+                    </a>
+                    <a href="../api/MultimodalTransformerPipeline.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> Multimodal API
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.AI.Transformers Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="../index.html">Home</a>
+                            <a href="../getting-started.html">Getting Started</a>
+                            <a href="../api/ITransformerPipeLine.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../assets/navigation.js"></script>
+</body>
+</html>

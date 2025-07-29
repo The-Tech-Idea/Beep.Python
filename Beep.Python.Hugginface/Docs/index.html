@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beep.Python.AI.Transformers Documentation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-robot"></i> Beep.Python.AI.Transformers</h1>
+                    <p class="page-subtitle">Enterprise-grade multi-provider transformer pipeline library for .NET 6, 7, 8, and 9</p>
+                </div>
+
+                <!-- Overview Section -->
+                <section class="section" id="overview">
+                    <h2>Overview</h2>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <p>
+                                The <strong>Beep.Python.AI.Transformers</strong> library provides a unified, enterprise-grade 
+                                abstraction for working with transformer models from multiple AI service providers. It offers 
+                                seamless integration with HuggingFace, OpenAI, Azure OpenAI, Google AI, Anthropic, and many 
+                                other providers through a consistent, type-safe API.
+                            </p>
+                            
+                            <div class="highlight-box bg-light p-4 rounded">
+                                <h5><i class="bi bi-lightbulb"></i> Key Benefits</h5>
+                                <ul class="mb-0">
+                                    <li><strong>Provider Agnostic</strong> - Switch between AI providers with minimal code changes</li>
+                                    <li><strong>Enterprise Security</strong> - Built-in authentication, rate limiting, and compliance</li>
+                                    <li><strong>Session Management</strong> - Multi-user isolation with virtual environments</li>
+                                    <li><strong>Multimodal Support</strong> - Text, image, audio, and video processing</li>
+                                    <li><strong>Production Ready</strong> - Monitoring, analytics, and error handling</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="info-box">
+                                <h5><i class="bi bi-graph-up"></i> Project Stats</h5>
+                                <div class="stat-item">
+                                    <span class="stat-number">10+</span>
+                                    <span class="stat-label">AI Providers</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">15+</span>
+                                    <span class="stat-label">Task Types</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">50+</span>
+                                    <span class="stat-label">API Methods</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">100%</span>
+                                    <span class="stat-label">Async Support</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Quick Start Section -->
+                <section class="section">
+                    <div class="quick-start">
+                        <h2>?? Quick Start</h2>
+                        <p>Get started with Beep.Python.AI.Transformers in minutes</p>
+                        <div class="quick-start-buttons">
+                            <a href="installation.html" class="btn-beep">
+                                <i class="bi bi-download"></i> Installation Guide
+                            </a>
+                            <a href="getting-started.html" class="btn-beep">
+                                <i class="bi bi-play-circle"></i> Quick Tutorial
+                            </a>
+                            <a href="examples/basic-usage.html" class="btn-beep">
+                                <i class="bi bi-code-square"></i> Code Examples
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Features Section -->
+                <section class="section" id="features">
+                    <h2>?? Key Features</h2>
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-diagram-3"></i> Multi-Provider Support</h4>
+                            <p>Unified interface for HuggingFace, OpenAI, Azure, Google AI, Anthropic, Cohere, Meta, Mistral, and custom providers.</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-shield-check"></i> Enterprise Security</h4>
+                            <p>Built-in authentication, rate limiting, proxy support, and compliance frameworks (GDPR, HIPAA, SOC2).</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-people"></i> Multi-User Sessions</h4>
+                            <p>Isolated Python sessions with virtual environment management for secure multi-tenant deployments.</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-collection"></i> Multimodal AI</h4>
+                            <p>Text, image, audio, and video processing with seamless provider switching and unified APIs.</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-graph-up"></i> Real-time Monitoring</h4>
+                            <p>Performance metrics, usage analytics, cost tracking, and intelligent alerting systems.</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-lightning"></i> Performance Optimized</h4>
+                            <p>Intelligent caching, load balancing, batch processing, and automatic optimization recommendations.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Code Examples Section -->
+                <section class="section" id="examples">
+                    <h2>?? Code Examples</h2>
+                    
+                    <div class="code-example">
+                        <h4>Basic Usage - OpenAI Integration</h4>
+                        <pre><code class="language-csharp">using Beep.Python.AI.Transformers;
+
+// Configure OpenAI connection
+var openAIConfig = new OpenAIConnectionConfig
+{
+    ApiKey = "sk-your-api-key",
+    TimeoutSeconds = 60
+};
+
+// Create pipeline with connection
+var pipeline = TransformerPipelineFactory.CreateOpenAIPipeline(
+    pythonRunTimeManager,
+    executeManager,
+    openAIConfig
+);
+
+// Initialize and load model
+await pipeline.InitializeAsync(new TransformerPipelineConfig
+{
+    TaskType = TransformerTask.TextGeneration
+});
+
+await pipeline.LoadModelAsync(new TransformerModelInfo
+{
+    Name = "gpt-4",
+    Source = TransformerModelSource.OpenAI
+}, TransformerTask.TextGeneration);
+
+// Generate text
+var result = await pipeline.GenerateTextAsync("Write a short story about AI");
+Console.WriteLine(result.Data); // AI-generated response</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Multi-Provider Enterprise Setup</h4>
+                        <pre><code class="language-csharp">// Configure multiple providers
+var providers = new Dictionary&lt;TransformerModelSource, TransformerConnectionConfig&gt;
+{
+    [TransformerModelSource.OpenAI] = new OpenAIConnectionConfig { ApiKey = "..." },
+    [TransformerModelSource.Azure] = new AzureOpenAIConnectionConfig { Endpoint = "..." },
+    [TransformerModelSource.Anthropic] = new AnthropicConnectionConfig { ApiKey = "..." }
+}
+
+// Create enterprise pipeline with session management
+var enterprisePipeline = TransformerPipelineFactory.CreateSessionAwarePipelineWithConnection(
+    TransformerModelSource.OpenAI,
+    pythonRunTimeManager,
+    executeManager,
+    username: "alice",
+    connectionConfig: providers[TransformerModelSource.OpenAI]
+);
+
+// Use the same API regardless of provider
+var result = await enterprisePipeline.GenerateTextAsync("Explain quantum computing");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Multimodal AI - Text to Image</h4>
+                        <pre><code class="language-csharp">// Create multimodal pipeline
+var multimodalPipeline = new MultimodalTransformerPipeline(
+    pythonRunTimeManager, 
+    executeManager
+);
+
+// Initialize with configuration
+await multimodalPipeline.InitializeAsync(new MultimodalPipelineConfig
+{
+    PreloadPipelines = new List&lt;MultimodalTask&gt; 
+    { 
+        MultimodalTask.TextToImage,
+        MultimodalTask.ImageToText
+    }
+});
+
+// Generate image from text
+var imageResult = await multimodalPipeline.GenerateImageFromTextAsync(
+    "A futuristic cityscape at sunset",
+    new TextToImageParameters 
+    { 
+        Width = 1024, 
+        Height = 768,
+        Style = "photorealistic"
+    }
+);
+
+if (imageResult.Success)
+{
+    Console.WriteLine($"Image generated: {imageResult.Data.ImageData}");
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Architecture Section -->
+                <section class="section" id="architecture">
+                    <h2>??? Architecture</h2>
+                    <p>The library follows a layered architecture with clear separation of concerns:</p>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-app"></i> Application Layer</h4>
+                            <p>Your application code using the transformer pipelines with type-safe APIs</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-gear"></i> Pipeline Layer</h4>
+                            <p>ITransformerPipeLine interface and provider-specific implementations</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-shield"></i> Security Layer</h4>
+                            <p>Connection management, authentication, session handling, and compliance</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-hdd"></i> Runtime Layer</h4>
+                            <p>Python.NET integration with virtual environment and session management</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-cloud"></i> Provider Layer</h4>
+                            <p>AI service providers (OpenAI, Azure, HuggingFace, Anthropic, etc.)</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-database"></i> Data Layer</h4>
+                            <p>Model information, configurations, and result data structures</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Supported Providers Section -->
+                <section class="section" id="providers">
+                    <h2>?? Supported AI Providers</h2>
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-lightning"></i> OpenAI</h4>
+                            <p>GPT-4, GPT-3.5, DALL-E, Whisper, and other OpenAI models</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-cloud"></i> Azure OpenAI</h4>
+                            <p>Enterprise-grade OpenAI models hosted on Azure with enhanced security</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-hdd"></i> HuggingFace</h4>
+                            <p>Thousands of open-source models from the HuggingFace model hub</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-google"></i> Google AI</h4>
+                            <p>Gemini, PaLM, and other Google AI models and services</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-chat-square-text"></i> Anthropic</h4>
+                            <p>Claude models with advanced reasoning and safety features</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-folder"></i> Local Models</h4>
+                            <p>Self-hosted models with full control over data and processing</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Getting Started Section -->
+                <section class="section" id="next-steps">
+                    <h2>?? Next Steps</h2>
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-book"></i> Learn the Basics</h4>
+                            <p>Follow our comprehensive getting started guide to learn the fundamentals.</p>
+                            <a href="getting-started.html" class="btn-beep">Getting Started Guide</a>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-code-square"></i> Explore Examples</h4>
+                            <p>Browse practical examples and real-world use cases for inspiration.</p>
+                            <a href="examples/basic-usage.html" class="btn-beep">View Examples</a>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-collection"></i> Multimodal AI</h4>
+                            <p>Learn how to work with text, images, audio, and video in your applications.</p>
+                            <a href="examples/multimodal.html" class="btn-beep">Multimodal Guide</a>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-building"></i> Enterprise Features</h4>
+                            <p>Discover security, monitoring, and compliance features for production use.</p>
+                            <a href="examples/enterprise.html" class="btn-beep">Enterprise Guide</a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.AI.Transformers Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="https://github.com/The-Tech-Idea/Beep.Python">GitHub</a>
+                            <a href="getting-started.html">Getting Started</a>
+                            <a href="examples/basic-usage.html">Examples</a>
+                            <a href="api/ITransformerPipeLine.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="assets/navigation.js"></script>
+</body>
+</html>

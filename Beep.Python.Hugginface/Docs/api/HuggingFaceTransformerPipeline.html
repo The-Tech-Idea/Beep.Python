@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HuggingFaceTransformerPipeline - Beep.Python.AI.Transformers API</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="../assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="../index.html">Home</a>
+                    <span>›</span>
+                    <a href="../index.html#providers">AI Providers</a>
+                    <span>›</span>
+                    <span>HuggingFace</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-hdd"></i> HuggingFaceTransformerPipeline</h1>
+                    <p class="page-subtitle">Pipeline implementation for HuggingFace transformer models and Inference API</p>
+                </div>
+
+                <!-- Class Info -->
+                <div class="class-info">
+                    <div class="class-namespace">
+                        <strong>Namespace:</strong> Beep.Python.AI.Transformers<br>
+                        <strong>Assembly:</strong> Beep.Python.AI.Transformers.dll
+                    </div>
+                    <div class="class-implements">
+                        <strong>Inheritance:</strong> BaseTransformerPipeline ? HuggingFaceTransformerPipeline<br>
+                        <strong>Implements:</strong> ITransformerPipeLine, IDisposable
+                    </div>
+                </div>
+
+                <!-- Overview -->
+                <section class="section" id="overview">
+                    <h2>Overview</h2>
+                    <p>
+                        The <code>HuggingFaceTransformerPipeline</code> provides access to the vast ecosystem of 
+                        HuggingFace transformer models. It supports both local model execution and the HuggingFace 
+                        Inference API, offering flexibility for different deployment scenarios.
+                    </p>
+                    
+                    <div class="highlight-box bg-light p-4 rounded">
+                        <h5><i class="bi bi-lightbulb"></i> Key Features</h5>
+                        <ul class="mb-0">
+                            <li><strong>Model Hub Access</strong> - Access to thousands of pre-trained models</li>
+                            <li><strong>Local & Cloud Execution</strong> - Run models locally or via Inference API</li>
+                            <li><strong>Multi-Task Support</strong> - Text generation, classification, NER, Q&A, and more</li>
+                            <li><strong>Custom Models</strong> - Support for custom fine-tuned models</li>
+                            <li><strong>Optimized Performance</strong> - Automatic model caching and optimization</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Configuration -->
+                <section class="section" id="configuration">
+                    <h2>Configuration</h2>
+                    
+                    <h3>HuggingFaceConnectionConfig</h3>
+                    <div class="code-example">
+                        <h4>Basic Configuration</h4>
+                        <pre><code class="language-csharp">var config = new HuggingFaceConnectionConfig
+{
+    Token = "hf_your-huggingface-token",    // Optional for public models
+    UseInferenceAPI = true,                 // Use HF Inference API vs local
+    CacheDirectory = @"C:\HFCache",         // Local model cache directory
+    TimeoutSeconds = 120,                   // Request timeout
+    MaxRetries = 3,                         // Retry attempts
+    ModelRevision = "main"                  // Model revision/branch
+};</code></pre>
+                    </div>
+
+                    <h3>Advanced Configuration</h3>
+                    <div class="code-example">
+                        <h4>Production Setup</h4>
+                        <pre><code class="language-csharp">var advancedConfig = new HuggingFaceConnectionConfig
+{
+    Token = GetSecureToken(),
+    UseInferenceAPI = false,                // Use local models for privacy
+    CacheDirectory = @"D:\ModelCache\HF",
+    TimeoutSeconds = 300,
+    MaxRetries = 5,
+    
+    // Local execution settings
+    LocalExecutionConfig = new LocalExecutionConfig
+    {
+        Device = "cuda",                    // Use GPU if available
+        MaxMemoryGB = 8,                    // Memory limit
+        PrecisionMode = "fp16",             // Half precision for speed
+        BatchSize = 4                       // Batch processing
+    },
+    
+    // Inference API settings
+    InferenceAPIConfig = new InferenceAPIConfig
+    {
+        WaitForModel = true,                // Wait if model is loading
+        UseCache = true,                    // Use HF caching
+        ReturnFullText = false              // Return only generated part
+    }
+};</code></pre>
+                    </div>
+                </section>
+
+                <!-- Usage Examples -->
+                <section class="section" id="examples">
+                    <h2>Usage Examples</h2>
+                    
+                    <h3>Text Generation</h3>
+                    <div class="code-example">
+                        <h4>GPT-2 Text Generation</h4>
+                        <pre><code class="language-csharp">// Create HuggingFace pipeline
+var config = new HuggingFaceConnectionConfig
+{
+    UseInferenceAPI = true,
+    TimeoutSeconds = 60
+};
+
+var pipeline = TransformerPipelineFactory.CreateHuggingFacePipeline(
+    runtimeManager, executeManager, config);
+
+await pipeline.InitializeAsync(new TransformerPipelineConfig
+{
+    TaskType = TransformerTask.TextGeneration,
+    Device = TransformerDevice.Auto
+});
+
+// Load GPT-2 model
+await pipeline.LoadModelAsync(new TransformerModelInfo
+{
+    Name = "gpt2-medium",
+    Source = TransformerModelSource.HuggingFace
+}, TransformerTask.TextGeneration);
+
+// Generate text
+var result = await pipeline.GenerateTextAsync(
+    "The future of artificial intelligence is",
+    new TextGenerationParameters
+    {
+        MaxTokens = 100,
+        Temperature = 0.8,
+        TopP = 0.9,
+        StopSequences = new[] { "\n\n" }
+    });
+
+Console.WriteLine(result.Data);</code></pre>
+                    </div>
+
+                    <h3>Text Classification</h3>
+                    <div class="code-example">
+                        <h4>Sentiment Analysis</h4>
+                        <pre><code class="language-csharp">// Configure for classification
+await pipeline.InitializeAsync(new TransformerPipelineConfig
+{
+    TaskType = TransformerTask.TextClassification
+});
+
+// Load sentiment analysis model
+await pipeline.LoadModelAsync(new TransformerModelInfo
+{
+    Name = "cardiffnlp/twitter-roberta-base-sentiment-latest",
+    Source = TransformerModelSource.HuggingFace
+}, TransformerTask.TextClassification);
+
+// Classify text
+var texts = new[]
+{
+    "I love this new product!",
+    "This is terrible quality.",
+    "It's okay, nothing special."
+};
+
+foreach (var text in texts)
+{
+    var result = await pipeline.ClassifyTextAsync(text);
+    if (result.Success)
+    {
+        Console.WriteLine($"Text: {text}");
+        foreach (var label in result.Data.Labels)
+        {
+            Console.WriteLine($"  {label.Label}: {label.Score:F3}");
+        }
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>Question Answering</h3>
+                    <div class="code-example">
+                        <h4>BERT Q&A</h4>
+                        <pre><code class="language-csharp">// Configure for Q&A
+await pipeline.InitializeAsync(new TransformerPipelineConfig
+{
+    TaskType = TransformerTask.QuestionAnswering
+});
+
+// Load BERT Q&A model
+await pipeline.LoadModelAsync(new TransformerModelInfo
+{
+    Name = "deepset/roberta-base-squad2",
+    Source = TransformerModelSource.HuggingFace
+}, TransformerTask.QuestionAnswering);
+
+var context = @"
+HuggingFace is a company that develops tools for building applications 
+using machine learning. They are known for their open-source library 
+called Transformers, which provides APIs and tools to download and 
+train state-of-the-art pre-trained models.
+";
+
+var questions = new[]
+{
+    "What is HuggingFace known for?",
+    "What does the Transformers library provide?",
+    "What type of models can you download?"
+};
+
+foreach (var question in questions)
+{
+    var result = await pipeline.AnswerQuestionAsync(question, context);
+    if (result.Success)
+    {
+        Console.WriteLine($"Q: {question}");
+        Console.WriteLine($"A: {result.Data.Answer}");
+        Console.WriteLine($"Confidence: {result.Data.Score:F3}\n");
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>Named Entity Recognition</h3>
+                    <div class="code-example">
+                        <h4>Extract Entities</h4>
+                        <pre><code class="language-csharp">// Configure for NER
+await pipeline.InitializeAsync(new TransformerPipelineConfig
+{
+    TaskType = TransformerTask.NamedEntityRecognition
+});
+
+// Load NER model
+await pipeline.LoadModelAsync(new TransformerModelInfo
+{
+    Name = "dbmdz/bert-large-cased-finetuned-conll03-english",
+    Source = TransformerModelSource.HuggingFace
+}, TransformerTask.NamedEntityRecognition);
+
+var text = "Apple Inc. was founded by Steve Jobs in Cupertino, California in 1976.";
+var result = await pipeline.ExtractEntitiesAsync(text);
+
+if (result.Success)
+{
+    Console.WriteLine($"Text: {text}");
+    Console.WriteLine("Entities found:");
+    
+    foreach (var entity in result.Data)
+    {
+        Console.WriteLine($"  {entity.Text} ({entity.Label}) - Score: {entity.Score:F3}");
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Local vs Inference API -->
+                <section class="section" id="local-vs-api">
+                    <h2>Local Execution vs Inference API</h2>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-hdd"></i> Local Execution</h4>
+                            <p><strong>Pros:</strong></p>
+                            <ul>
+                                <li>Complete data privacy</li>
+                                <li>No network dependency</li>
+                                <li>Customizable inference settings</li>
+                                <li>No API rate limits</li>
+                            </ul>
+                            <p><strong>Cons:</strong></p>
+                            <ul>
+                                <li>Higher hardware requirements</li>
+                                <li>Model download/storage needed</li>
+                                <li>Setup complexity</li>
+                            </ul>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-cloud"></i> Inference API</h4>
+                            <p><strong>Pros:</strong></p>
+                            <ul>
+                                <li>No hardware requirements</li>
+                                <li>Always latest models</li>
+                                <li>Instant availability</li>
+                                <li>Automatic scaling</li>
+                            </ul>
+                            <p><strong>Cons:</strong></p>
+                            <ul>
+                                <li>Data sent to HuggingFace</li>
+                                <li>Network dependency</li>
+                                <li>API rate limits</li>
+                                <li>Usage costs</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Switching Between Modes</h4>
+                        <pre><code class="language-csharp">public class HuggingFaceService
+{
+    private HuggingFaceTransformerPipeline _pipeline;
+
+    public async Task SwitchToLocalModeAsync()
+    {
+        var localConfig = new HuggingFaceConnectionConfig
+        {
+            UseInferenceAPI = false,
+            CacheDirectory = @"C:\Models\HuggingFace",
+            LocalExecutionConfig = new LocalExecutionConfig
+            {
+                Device = "cuda",  // Use GPU
+                PrecisionMode = "fp16"
+            }
+        };
+
+        _pipeline = TransformerPipelineFactory.CreateHuggingFacePipeline(
+            runtimeManager, executeManager, localConfig);
+    }
+
+    public async Task SwitchToInferenceAPIAsync()
+    {
+        var apiConfig = new HuggingFaceConnectionConfig
+        {
+            UseInferenceAPI = true,
+            Token = GetHuggingFaceToken(),
+            InferenceAPIConfig = new InferenceAPIConfig
+            {
+                WaitForModel = true,
+                UseCache = true
+            }
+        };
+
+        _pipeline = TransformerPipelineFactory.CreateHuggingFacePipeline(
+            runtimeManager, executeManager, apiConfig);
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Model Management -->
+                <section class="section" id="model-management">
+                    <h2>Model Management</h2>
+                    
+                    <h3>Model Discovery</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">// Search for models
+var searchResults = await pipeline.SearchModelsAsync(new ModelSearchCriteria
+{
+    Task = TransformerTask.TextGeneration,
+    Language = "en",
+    MinDownloads = 1000,
+    Tags = new[] { "gpt", "text-generation" }
+});
+
+foreach (var model in searchResults.Data)
+{
+    Console.WriteLine($"Model: {model.Name}");
+    Console.WriteLine($"Downloads: {model.Downloads}");
+    Console.WriteLine($"Description: {model.Description}");
+}</code></pre>
+                    </div>
+
+                    <h3>Model Information</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">// Get detailed model information
+var modelInfo = await pipeline.GetModelInfoAsync("microsoft/DialoGPT-medium");
+
+if (modelInfo.Success)
+{
+    var info = modelInfo.Data;
+    Console.WriteLine($"Model: {info.Name}");
+    Console.WriteLine($"Task: {info.PipelineTask}");
+    Console.WriteLine($"Language: {info.Language}");
+    Console.WriteLine($"License: {info.License}");
+    Console.WriteLine($"Size: {info.SizeGB:F1} GB");
+    Console.WriteLine($"Parameters: {info.ParameterCount:N0}");
+}</code></pre>
+                    </div>
+
+                    <h3>Custom Model Loading</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">// Load custom fine-tuned model
+await pipeline.LoadModelAsync(new TransformerModelInfo
+{
+    Name = "your-username/your-custom-model",
+    Source = TransformerModelSource.HuggingFace,
+    Revision = "v1.2",                     // Specific version
+    AuthToken = "hf_your_token",           // For private models
+    LocalPath = @"C:\Models\CustomModel"   // Local cache path
+}, TransformerTask.TextClassification);
+
+// Load model from local path
+await pipeline.LoadModelAsync(new TransformerModelInfo
+{
+    Name = "local-custom-model",
+    Source = TransformerModelSource.Local,
+    LocalPath = @"C:\MyModels\CustomBERT"
+}, TransformerTask.TextClassification);</code></pre>
+                    </div>
+                </section>
+
+                <!-- Performance Optimization -->
+                <section class="section" id="performance">
+                    <h2>Performance Optimization</h2>
+                    
+                    <div class="tip">
+                        <strong>?? Local Model Optimization</strong>
+                        <ul>
+                            <li>Use GPU acceleration when available</li>
+                            <li>Enable half-precision (fp16) for faster inference</li>
+                            <li>Implement model quantization for smaller memory footprint</li>
+                            <li>Cache frequently used models locally</li>
+                        </ul>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Optimized Local Configuration</h4>
+                        <pre><code class="language-csharp">var optimizedConfig = new HuggingFaceConnectionConfig
+{
+    UseInferenceAPI = false,
+    CacheDirectory = @"D:\FastSSD\HFCache",  // Use fast storage
+    
+    LocalExecutionConfig = new LocalExecutionConfig
+    {
+        Device = "cuda:0",                    // Specific GPU
+        PrecisionMode = "fp16",               // Half precision
+        BatchSize = 8,                        // Larger batches
+        MaxMemoryGB = 12,                     // Memory limit
+        EnableModelQuantization = true,       // Reduce model size
+        CacheCompiledModel = true,            // JIT compilation cache
+        OptimizeForLatency = true             // Speed vs accuracy trade-off
+    }
+};
+
+// Pre-warm the model
+await pipeline.WarmUpAsync("Sample input for warming up the model");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Error Handling -->
+                <section class="section" id="error-handling">
+                    <h2>Error Handling</h2>
+                    
+                    <div class="code-example">
+                        <h4>Robust HuggingFace Integration</h4>
+                        <pre><code class="language-csharp">public class RobustHuggingFaceService
+{
+    public async Task&lt;string&gt; GenerateWithFallbackAsync(string prompt)
+    {
+        // Try Inference API first
+        try
+        {
+            var apiResult = await _inferenceAPIPipeline.GenerateTextAsync(prompt);
+            if (apiResult.Success)
+                return apiResult.Data;
+        }
+        catch (HuggingFaceAPIException ex) when (ex.IsRateLimited)
+        {
+            // API rate limited, fall back to local model
+            Console.WriteLine("API rate limited, switching to local model");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"API error: {ex.Message}");
+        }
+
+        // Fall back to local model
+        try
+        {
+            var localResult = await _localPipeline.GenerateTextAsync(prompt);
+            return localResult.Success ? localResult.Data : "Generation failed";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Local model error: {ex.Message}");
+            return "Service temporarily unavailable";
+        }
+    }
+
+    public async Task&lt;bool&gt; ValidateModelAvailabilityAsync(string modelName)
+    {
+        try
+        {
+            var modelInfo = await _pipeline.GetModelInfoAsync(modelName);
+            return modelInfo.Success && modelInfo.Data.IsAvailable;
+        }
+        catch (ModelNotFoundException)
+        {
+            return false;
+        }
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Related Classes -->
+                <section class="section" id="related">
+                    <h2>?? Related Classes</h2>
+                    <ul class="member-list">
+                        <li>
+                            <div class="member-name">BaseTransformerPipeline</div>
+                            <div class="member-type">Abstract Class</div>
+                            <div class="member-desc">Base implementation with common pipeline functionality</div>
+                        </li>
+                        <li>
+                            <div class="member-name">HuggingFaceConnectionConfig</div>
+                            <div class="member-type">Configuration Class</div>
+                            <div class="member-desc">Configuration options for HuggingFace integration</div>
+                        </li>
+                        <li>
+                            <div class="member-name">TransformerModelInfo</div>
+                            <div class="member-type">Data Class</div>
+                            <div class="member-desc">Model metadata and configuration information</div>
+                        </li>
+                    </ul>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="BaseTransformerPipeline.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> BaseTransformerPipeline
+                    </a>
+                    <a href="OpenAITransformerPipeline.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> OpenAI Pipeline
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.AI.Transformers API Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="../index.html">Home</a>
+                            <a href="ITransformerPipeLine.html">ITransformerPipeLine</a>
+                            <a href="TransformerPipelineFactory.html">Pipeline Factory</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../assets/navigation.js"></script>
+</body>
+</html>

@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration - Beep.Python.AI.Transformers</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="index.html">Home</a>
+                    <span>›</span>
+                    <a href="getting-started.html">Getting Started</a>
+                    <span>›</span>
+                    <span>Configuration</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-gear"></i> Configuration Guide</h1>
+                    <p class="page-subtitle">Comprehensive configuration options for Beep.Python.AI.Transformers</p>
+                </div>
+
+                <!-- Table of Contents -->
+                <div class="toc">
+                    <h3>?? Table of Contents</h3>
+                    <ul>
+                        <li><a href="#basic-config">Basic Configuration</a></li>
+                        <li><a href="#provider-config">Provider Configuration</a></li>
+                        <li><a href="#security-config">Security Configuration</a></li>
+                        <li><a href="#performance-config">Performance Tuning</a></li>
+                        <li><a href="#enterprise-config">Enterprise Configuration</a></li>
+                        <li><a href="#environment-config">Environment-Specific Settings</a></li>
+                    </ul>
+                </div>
+
+                <!-- Basic Configuration Section -->
+                <section class="section" id="basic-config">
+                    <h2><i class="bi bi-sliders"></i> Basic Configuration</h2>
+                    
+                    <h3>1. Application Settings (appsettings.json)</h3>
+                    <div class="code-example">
+                        <pre><code class="language-json">{
+  "Beep": {
+    "Python": {
+      "RuntimePath": "C:\\Python39\\python.exe",
+      "VirtualEnvironmentPath": "C:\\Python\\venvs",
+      "DefaultTimeout": 60,
+      "MaxConcurrentSessions": 10
+    },
+    "AI": {
+      "Transformers": {
+        "DefaultProvider": "OpenAI",
+        "CacheEnabled": true,
+        "CacheExpiryMinutes": 30,
+        "MaxRetries": 3
+      }
+    }
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Beep.Python.AI.Transformers": "Debug"
+    }
+  }
+}</code></pre>
+                    </div>
+
+                    <h3>2. Dependency Injection Setup</h3>
+                    <div class="code-example">
+                        <h4>Program.cs (.NET 6+)</h4>
+                        <pre><code class="language-csharp">using Beep.Python.AI.Transformers;
+using Beep.Python.Model;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add Beep Python Runtime services
+builder.Services.AddBeepPythonRuntime(options =>
+{
+    options.DefaultPythonPath = builder.Configuration["Beep:Python:RuntimePath"];
+    options.VirtualEnvironmentPath = builder.Configuration["Beep:Python:VirtualEnvironmentPath"];
+    options.MaxConcurrentSessions = builder.Configuration.GetValue<int>("Beep:Python:MaxConcurrentSessions");
+});
+
+// Add Transformer services
+builder.Services.AddTransformerServices(options =>
+{
+    options.DefaultProvider = TransformerModelSource.OpenAI;
+    options.EnableCaching = builder.Configuration.GetValue<bool>("Beep:AI:Transformers:CacheEnabled");
+    options.CacheExpiryMinutes = builder.Configuration.GetValue<int>("Beep:AI:Transformers:CacheExpiryMinutes");
+});
+
+// Configure AI Providers
+builder.Services.Configure<OpenAIConnectionConfig>(
+    builder.Configuration.GetSection("AIProviders:OpenAI"));
+builder.Services.Configure<AzureOpenAIConnectionConfig>(
+    builder.Configuration.GetSection("AIProviders:Azure"));
+builder.Services.Configure<HuggingFaceConnectionConfig>(
+    builder.Configuration.GetSection("AIProviders:HuggingFace"));
+
+var app = builder.Build();
+
+// Initialize Python Runtime
+var runtimeManager = app.Services.GetRequiredService<IPythonRunTimeManager>();
+await runtimeManager.InitializeAsync();
+
+app.Run();</code></pre>
+                    </div>
+
+                    <h3>3. Configuration Model Classes</h3>
+                    <div class="code-example">
+                        <h4>Custom Configuration Classes</h4>
+                        <pre><code class="language-csharp">public class BeepPythonOptions
+{
+    public string DefaultPythonPath { get; set; } = string.Empty;
+    public string VirtualEnvironmentPath { get; set; } = string.Empty;
+    public int MaxConcurrentSessions { get; set; } = 10;
+    public int DefaultTimeoutSeconds { get; set; } = 60;
+    public bool EnableLogging { get; set; } = true;
+}
+
+public class TransformerOptions
+{
+    public TransformerModelSource DefaultProvider { get; set; } = TransformerModelSource.OpenAI;
+    public bool EnableCaching { get; set; } = true;
+    public int CacheExpiryMinutes { get; set; } = 30;
+    public int MaxRetries { get; set; } = 3;
+    public bool EnableTelemetry { get; set; } = true;
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Provider Configuration Section -->
+                <section class="section" id="provider-config">
+                    <h2><i class="bi bi-diagram-3"></i> Provider Configuration</h2>
+                    
+                    <h3>1. Complete Provider Configuration</h3>
+                    <div class="code-example">
+                        <h4>All Providers - appsettings.json</h4>
+                        <pre><code class="language-json">{
+  "AIProviders": {
+    "OpenAI": {
+      "ApiKey": "sk-your-openai-api-key",
+      "OrganizationId": "org-your-organization-id",
+      "TimeoutSeconds": 60,
+      "MaxRetries": 3,
+      "RateLimit": {
+        "RequestsPerMinute": 100,
+        "TokensPerMinute": 10000
+      }
+    },
+    "Azure": {
+      "Endpoint": "https://your-resource.openai.azure.com/",
+      "ApiKey": "your-azure-api-key",
+      "ApiVersion": "2024-02-01",
+      "DeploymentName": "gpt-35-turbo",
+      "TimeoutSeconds": 90,
+      "MaxRetries": 3
+    },
+    "HuggingFace": {
+      "Token": "hf_your-huggingface-token",
+      "UseInferenceAPI": true,
+      "CacheDirectory": "C:\\HuggingFaceCache",
+      "TimeoutSeconds": 120,
+      "MaxRetries": 2
+    },
+    "Anthropic": {
+      "ApiKey": "sk-ant-your-anthropic-key",
+      "TimeoutSeconds": 120,
+      "MaxRetries": 3,
+      "MaxTokens": 4096
+    },
+    "Google": {
+      "ApiKey": "your-google-ai-key",
+      "ProjectId": "your-project-id",
+      "Location": "us-central1",
+      "TimeoutSeconds": 90
+    }
+  }
+}</code></pre>
+                    </div>
+
+                    <h3>2. Dynamic Provider Selection</h3>
+                    <div class="code-example">
+                        <h4>Provider Selection Logic</h4>
+                        <pre><code class="language-csharp">public class ProviderConfigurationService
+{
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<ProviderConfigurationService> _logger;
+
+    public TransformerConnectionConfig GetProviderConfig(TransformerModelSource provider)
+    {
+        return provider switch
+        {
+            TransformerModelSource.OpenAI => GetOpenAIConfig(),
+            TransformerModelSource.Azure => GetAzureConfig(),
+            TransformerModelSource.HuggingFace => GetHuggingFaceConfig(),
+            TransformerModelSource.Anthropic => GetAnthropicConfig(),
+            TransformerModelSource.Google => GetGoogleConfig(),
+            _ => throw new NotSupportedException($"Provider {provider} not configured")
+        };
+    }
+
+    private OpenAIConnectionConfig GetOpenAIConfig()
+    {
+        var config = new OpenAIConnectionConfig();
+        _configuration.GetSection("AIProviders:OpenAI").Bind(config);
+        
+        // Validate required settings
+        if (string.IsNullOrEmpty(config.ApiKey))
+        {
+            throw new InvalidOperationException("OpenAI API key not configured");
+        }
+
+        return config;
+    }
+
+    public async Task<bool> TestProviderConnectionAsync(TransformerModelSource provider)
+    {
+        try
+        {
+            var config = GetProviderConfig(provider);
+            // Implement provider-specific health check
+            return await PerformHealthCheckAsync(provider, config);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to test connection for provider {Provider}", provider);
+            return false;
+        }
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>3. Environment-Based Provider Selection</h3>
+                    <div class="code-example">
+                        <h4>Multi-Environment Configuration</h4>
+                        <pre><code class="language-csharp">public class EnvironmentProviderSelector
+{
+    public TransformerModelSource SelectProvider(string environment, TransformerTask taskType)
+    {
+        return environment.ToLower() switch
+        {
+            "development" => SelectDevelopmentProvider(taskType),
+            "staging" => SelectStagingProvider(taskType),
+            "production" => SelectProductionProvider(taskType),
+            _ => TransformerModelSource.OpenAI
+        };
+    }
+
+    private TransformerModelSource SelectDevelopmentProvider(TransformerTask taskType)
+    {
+        // Use free/cheaper options for development
+        return taskType switch
+        {
+            TransformerTask.TextGeneration => TransformerModelSource.HuggingFace,
+            TransformerTask.TextClassification => TransformerModelSource.HuggingFace,
+            TransformerTask.QuestionAnswering => TransformerModelSource.OpenAI,
+            _ => TransformerModelSource.HuggingFace
+        };
+    }
+
+    private TransformerModelSource SelectProductionProvider(TransformerTask taskType)
+    {
+        // Use enterprise providers for production
+        return taskType switch
+        {
+            TransformerTask.TextGeneration => TransformerModelSource.Azure,
+            TransformerTask.TextClassification => TransformerModelSource.OpenAI,
+            TransformerTask.QuestionAnswering => TransformerModelSource.Azure,
+            _ => TransformerModelSource.Azure
+        };
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Security Configuration Section -->
+                <section class="section" id="security-config">
+                    <h2><i class="bi bi-shield-check"></i> Security Configuration</h2>
+                    
+                    <h3>1. Secure Credential Management</h3>
+                    <div class="code-example">
+                        <h4>Azure Key Vault Integration</h4>
+                        <pre><code class="language-csharp">using Azure.Security.KeyVault.Secrets;
+using Azure.Identity;
+
+public class SecureConfigurationService
+{
+    private readonly SecretClient _keyVaultClient;
+
+    public SecureConfigurationService(IConfiguration configuration)
+    {
+        var keyVaultUrl = configuration["KeyVault:VaultUrl"];
+        _keyVaultClient = new SecretClient(new Uri(keyVaultUrl), new DefaultAzureCredential());
+    }
+
+    public async Task<OpenAIConnectionConfig> GetSecureOpenAIConfigAsync()
+    {
+        var apiKeySecret = await _keyVaultClient.GetSecretAsync("openai-api-key");
+        var orgIdSecret = await _keyVaultClient.GetSecretAsync("openai-org-id");
+
+        return new OpenAIConnectionConfig
+        {
+            ApiKey = apiKeySecret.Value.Value,
+            OrganizationId = orgIdSecret.Value.Value,
+            TimeoutSeconds = 60,
+            MaxRetries = 3
+        };
+    }
+}
+
+// Usage in Program.cs
+builder.Services.AddSingleton<SecureConfigurationService>();
+builder.Services.AddSingleton<OpenAIConnectionConfig>(serviceProvider =>
+{
+    var secureConfig = serviceProvider.GetRequiredService<SecureConfigurationService>();
+    return secureConfig.GetSecureOpenAIConfigAsync().Result;
+});</code></pre>
+                    </div>
+
+                    <h3>2. Data Classification and Compliance</h3>
+                    <div class="code-example">
+                        <h4>Security Policy Configuration</h4>
+                        <pre><code class="language-json">{
+  "Security": {
+    "DataClassification": {
+      "DefaultLevel": "Internal",
+      "AllowedProviders": {
+        "Public": ["HuggingFace"],
+        "Internal": ["OpenAI", "HuggingFace"],
+        "Confidential": ["Azure", "Local"],
+        "Restricted": ["Local"]
+      }
+    },
+    "Compliance": {
+      "RequireGDPRCompliance": true,
+      "RequireHIPAACompliance": false,
+      "DataRetentionDays": 30,
+      "RequireAuditLogging": true
+    },
+    "Encryption": {
+      "EncryptAtRest": true,
+      "EncryptInTransit": true,
+      "KeyRotationPeriodDays": 90
+    }
+  }
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Security Policy Implementation</h4>
+                        <pre><code class="language-csharp">public class SecurityPolicyService
+{
+    public bool IsProviderAllowed(TransformerModelSource provider, DataClassificationLevel classification)
+    {
+        var allowedProviders = _configuration
+            .GetSection($"Security:DataClassification:AllowedProviders:{classification}")
+            .Get<string[]>() ?? Array.Empty<string>();
+
+        return allowedProviders.Contains(provider.ToString(), StringComparer.OrdinalIgnoreCase);
+    }
+
+    public async Task<SecurityValidationResult> ValidateRequestAsync(
+        string prompt, 
+        TransformerModelSource provider)
+    {
+        // Classify data
+        var classification = await ClassifyDataAsync(prompt);
+        
+        // Check provider compliance
+        if (!IsProviderAllowed(provider, classification))
+        {
+            return new SecurityValidationResult
+            {
+                IsValid = false,
+                Reason = $"Provider {provider} not allowed for {classification} data"
+            };
+        }
+
+        return new SecurityValidationResult { IsValid = true };
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Performance Configuration Section -->
+                <section class="section" id="performance-config">
+                    <h2><i class="bi bi-speedometer2"></i> Performance Tuning</h2>
+                    
+                    <h3>1. Caching Configuration</h3>
+                    <div class="code-example">
+                        <h4>Redis Cache Setup</h4>
+                        <pre><code class="language-json">{
+  "Caching": {
+    "Provider": "Redis",
+    "Redis": {
+      "ConnectionString": "localhost:6379",
+      "Database": 0,
+      "KeyPrefix": "beep:transformers:",
+      "DefaultExpiryMinutes": 60
+    },
+    "InMemory": {
+      "MaxSize": 100,
+      "DefaultExpiryMinutes": 30
+    }
+  }
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Cache Configuration Service</h4>
+                        <pre><code class="language-csharp">public class CacheConfigurationService
+{
+    public void ConfigureCaching(IServiceCollection services, IConfiguration configuration)
+    {
+        var cacheProvider = configuration["Caching:Provider"];
+
+        switch (cacheProvider?.ToLower())
+        {
+            case "redis":
+                services.AddStackExchangeRedisCache(options =>
+                {
+                    options.Configuration = configuration.GetConnectionString("Redis");
+                    options.InstanceName = "BeepTransformers";
+                });
+                break;
+
+            case "inmemory":
+            default:
+                services.AddMemoryCache(options =>
+                {
+                    options.SizeLimit = configuration.GetValue<int>("Caching:InMemory:MaxSize");
+                });
+                break;
+        }
+
+        services.AddTransient<ITransformerCache, TransformerCacheService>();
+    }
+}
+
+public class TransformerCacheService : ITransformerCache
+{
+    private readonly IDistributedCache _cache;
+    private readonly IConfiguration _configuration;
+
+    public async Task<T?> GetAsync<T>(string key) where T : class
+    {
+        var cachedValue = await _cache.GetStringAsync($"beep:transformers:{key}");
+        return cachedValue != null ? JsonSerializer.Deserialize<T>(cachedValue) : null;
+    }
+
+    public async Task SetAsync<T>(string key, T value, TimeSpan? expiry = null) where T : class
+    {
+        var serializedValue = JsonSerializer.Serialize(value);
+        var options = new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = expiry ?? TimeSpan.FromMinutes(
+                _configuration.GetValue<int>("Caching:Redis:DefaultExpiryMinutes"))
+        };
+
+        await _cache.SetStringAsync($"beep:transformers:{key}", serializedValue, options);
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>2. Connection Pooling and Rate Limiting</h3>
+                    <div class="code-example">
+                        <h4>Advanced Performance Configuration</h4>
+                        <pre><code class="language-json">{
+  "Performance": {
+    "ConnectionPooling": {
+      "MaxConnections": 50,
+      "ConnectionTimeout": 30,
+      "IdleTimeout": 300
+    },
+    "RateLimiting": {
+      "EnableGlobalRateLimit": true,
+      "RequestsPerMinute": 1000,
+      "PerUserRequestsPerMinute": 60,
+      "BurstAllowance": 10
+    },
+    "Threading": {
+      "MaxConcurrentRequests": 100,
+      "ThreadPoolMinThreads": 25,
+      "ThreadPoolMaxThreads": 500
+    }
+  }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Enterprise Configuration Section -->
+                <section class="section" id="enterprise-config">
+                    <h2><i class="bi bi-building"></i> Enterprise Configuration</h2>
+                    
+                    <h3>1. Multi-Tenant Configuration</h3>
+                    <div class="code-example">
+                        <h4>Tenant-Specific Settings</h4>
+                        <pre><code class="language-json">{
+  "MultiTenant": {
+    "EnableTenantIsolation": true,
+    "TenantIdentificationStrategy": "Header", // Header, Subdomain, Path
+    "DefaultTenant": "default",
+    "Tenants": {
+      "tenant1": {
+        "Name": "Acme Corporation",
+        "AllowedProviders": ["Azure", "OpenAI"],
+        "RateLimits": {
+          "RequestsPerMinute": 500
+        },
+        "SecurityLevel": "High"
+      },
+      "tenant2": {
+        "Name": "Beta Company",
+        "AllowedProviders": ["HuggingFace", "OpenAI"],
+        "RateLimits": {
+          "RequestsPerMinute": 100
+        },
+        "SecurityLevel": "Standard"
+      }
+    }
+  }
+}</code></pre>
+                    </div>
+
+                    <h3>2. Monitoring and Telemetry</h3>
+                    <div class="code-example">
+                        <h4>Enterprise Monitoring Setup</h4>
+                        <pre><code class="language-csharp">public class EnterpriseMonitoringConfiguration
+{
+    public void ConfigureMonitoring(IServiceCollection services, IConfiguration configuration)
+    {
+        // Application Insights
+        services.AddApplicationInsightsTelemetry(configuration["ApplicationInsights:ConnectionString"]);
+
+        // Custom metrics
+        services.AddSingleton<IMetricsLogger, MetricsLogger>();
+
+        // Health checks
+        services.AddHealthChecks()
+            .AddCheck<PythonRuntimeHealthCheck>("python-runtime")
+            .AddCheck<AIProviderHealthCheck>("ai-providers")
+            .AddCheck<DatabaseHealthCheck>("database")
+            .AddCheck<CacheHealthCheck>("cache");
+
+        // OpenTelemetry
+        services.AddOpenTelemetryTracing(builder =>
+        {
+            builder
+                .AddSource("Beep.Python.AI.Transformers")
+                .AddJaegerExporter()
+                .AddConsoleExporter();
+        });
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Environment Configuration Section -->
+                <section class="section" id="environment-config">
+                    <h2><i class="bi bi-layers"></i> Environment-Specific Settings</h2>
+                    
+                    <h3>Development Environment</h3>
+                    <div class="code-example">
+                        <h4>appsettings.Development.json</h4>
+                        <pre><code class="language-json">{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Debug",
+      "Beep.Python.AI.Transformers": "Trace"
+    }
+  },
+  "AIProviders": {
+    "OpenAI": {
+      "ApiKey": "sk-dev-api-key",
+      "TimeoutSeconds": 30
+    }
+  },
+  "Performance": {
+    "RateLimiting": {
+      "RequestsPerMinute": 10000
+    }
+  },
+  "Caching": {
+    "Provider": "InMemory"
+  }
+}</code></pre>
+                    </div>
+
+                    <h3>Production Environment</h3>
+                    <div class="code-example">
+                        <h4>appsettings.Production.json</h4>
+                        <pre><code class="language-json">{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Beep.Python.AI.Transformers": "Information"
+    }
+  },
+  "Security": {
+    "RequireAuthentication": true,
+    "RequireHttps": true,
+    "DataClassification": {
+      "DefaultLevel": "Confidential"
+    }
+  },
+  "Performance": {
+    "ConnectionPooling": {
+      "MaxConnections": 100
+    },
+    "RateLimiting": {
+      "EnableGlobalRateLimit": true,
+      "RequestsPerMinute": 1000
+    }
+  },
+  "Caching": {
+    "Provider": "Redis"
+  }
+}</code></pre>
+                    </div>
+
+                    <h3>Docker Configuration</h3>
+                    <div class="code-example">
+                        <h4>Docker Environment Variables</h4>
+                        <pre><code class="language-bash"># Docker Compose environment variables
+ASPNETCORE_ENVIRONMENT=Production
+OPENAI_API_KEY=sk-your-production-key
+AZURE_OPENAI_ENDPOINT=https://your-prod-resource.openai.azure.com/
+REDIS_CONNECTION_STRING=redis:6379
+KEY_VAULT_URL=https://your-vault.vault.azure.net/
+
+# Python configuration
+PYTHON_PATH=/usr/bin/python3
+PYTHON_VENV_PATH=/app/venvs
+TRANSFORMERS_CACHE=/app/cache</code></pre>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="getting-started.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> Getting Started
+                    </a>
+                    <a href="examples/basic-usage.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> Basic Usage Examples
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.AI.Transformers Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="index.html">Home</a>
+                            <a href="getting-started.html">Getting Started</a>
+                            <a href="api/ITransformerPipeLine.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="assets/navigation.js"></script>
+</body>
+</html>

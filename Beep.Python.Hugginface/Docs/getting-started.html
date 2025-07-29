@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Getting Started - Beep.Python.AI.Transformers</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="index.html">Home</a>
+                    <span>›</span>
+                    <span>Getting Started</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-play-circle"></i> Getting Started</h1>
+                    <p class="page-subtitle">Quick start guide to begin using Beep.Python.AI.Transformers in your projects</p>
+                </div>
+
+                <!-- Table of Contents -->
+                <div class="toc">
+                    <h3>?? Table of Contents</h3>
+                    <ul>
+                        <li><a href="#prerequisites">Prerequisites</a></li>
+                        <li><a href="#installation">Quick Installation</a></li>
+                        <li><a href="#basic-setup">Basic Setup</a></li>
+                        <li><a href="#provider-examples">Provider Examples</a></li>
+                        <li><a href="#enterprise-setup">Enterprise Setup</a></li>
+                        <li><a href="#next-steps">Next Steps</a></li>
+                    </ul>
+                </div>
+
+                <!-- Prerequisites Section -->
+                <section class="section" id="prerequisites">
+                    <h2><i class="bi bi-list-check"></i> Prerequisites</h2>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <p>Before you start using Beep.Python.AI.Transformers, ensure you have the following:</p>
+                            
+                            <div class="highlight-box bg-light p-4 rounded">
+                                <h5><i class="bi bi-gear"></i> System Requirements</h5>
+                                <ul>
+                                    <li><strong>.NET 6, 7, 8, or 9</strong> - Any supported .NET version</li>
+                                    <li><strong>Python 3.8+</strong> installed on your system</li>
+                                    <li><strong>Python.NET</strong> for Python interoperability</li>
+                                    <li><strong>Virtual Environment Support</strong> (recommended)</li>
+                                    <li><strong>API Keys</strong> for your preferred AI providers</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="info-box">
+                                <h5><i class="bi bi-info-circle"></i> Supported Platforms</h5>
+                                <ul>
+                                    <li>Windows 10/11</li>
+                                    <li>macOS 10.15+</li>
+                                    <li>Linux (Ubuntu 18.04+)</li>
+                                    <li>Docker containers</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Installation Section -->
+                <section class="section" id="installation">
+                    <h2><i class="bi bi-download"></i> Quick Installation</h2>
+                    
+                    <div class="code-example">
+                        <h4>Install via NuGet Package Manager</h4>
+                        <pre><code class="language-xml">&lt;PackageReference Include="Beep.Python.AI.Transformers" Version="1.0.0" /&gt;</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Install via .NET CLI</h4>
+                        <pre><code class="language-bash">dotnet add package Beep.Python.AI.Transformers</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Install via Package Manager Console</h4>
+                        <pre><code class="language-powershell">Install-Package Beep.Python.AI.Transformers</code></pre>
+                    </div>
+                </section>
+
+                <!-- Basic Setup Section -->
+                <section class="section" id="basic-setup">
+                    <h2><i class="bi bi-wrench"></i> Basic Setup</h2>
+                    
+                    <h3>1. Configure Services (ASP.NET Core)</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">using Beep.Python.AI.Transformers;
+using Beep.Python.Model;
+
+// In Program.cs or Startup.cs
+builder.Services.AddSingleton&lt;IPythonRunTimeManager, PythonNetRunTimeManager&gt;();
+builder.Services.AddSingleton&lt;IPythonCodeExecuteManager, PythonCodeExecuteManager&gt;();
+
+// Configure AI provider connections
+builder.Services.Configure&lt;OpenAIConnectionConfig&gt;(
+    builder.Configuration.GetSection("OpenAI"));
+builder.Services.Configure&lt;AzureOpenAIConnectionConfig&gt;(
+    builder.Configuration.GetSection("AzureOpenAI"));</code></pre>
+                    </div>
+
+                    <h3>2. Configuration (appsettings.json)</h3>
+                    <div class="code-example">
+                        <pre><code class="language-json">{
+  "OpenAI": {
+    "ApiKey": "sk-your-openai-api-key",
+    "TimeoutSeconds": 60,
+    "MaxRetries": 3
+  },
+  "AzureOpenAI": {
+    "Endpoint": "https://your-resource.openai.azure.com/",
+    "ApiKey": "your-azure-api-key",
+    "ApiVersion": "2024-02-01",
+    "DeploymentName": "gpt-35-turbo"
+  }
+}</code></pre>
+                    </div>
+
+                    <h3>3. Basic Usage Example</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">using Beep.Python.AI.Transformers;
+
+public class AIService
+{
+    private readonly IPythonRunTimeManager _runtimeManager;
+    private readonly IPythonCodeExecuteManager _executeManager;
+
+    public AIService(
+        IPythonRunTimeManager runtimeManager,
+        IPythonCodeExecuteManager executeManager)
+    {
+        _runtimeManager = runtimeManager;
+        _executeManager = executeManager;
+    }
+
+    public async Task&lt;string&gt; GenerateTextAsync(string prompt)
+    {
+        // Configure OpenAI connection
+        var openAIConfig = new OpenAIConnectionConfig
+        {
+            ApiKey = "sk-your-api-key",
+            TimeoutSeconds = 60
+        };
+
+        // Create pipeline
+        var pipeline = TransformerPipelineFactory.CreateOpenAIPipeline(
+            _runtimeManager,
+            _executeManager,
+            openAIConfig
+        );
+
+        // Initialize and load model
+        await pipeline.InitializeAsync(new TransformerPipelineConfig
+        {
+            TaskType = TransformerTask.TextGeneration
+        });
+
+        await pipeline.LoadModelAsync(new TransformerModelInfo
+        {
+            Name = "gpt-4",
+            Source = TransformerModelSource.OpenAI
+        }, TransformerTask.TextGeneration);
+
+        // Generate text
+        var result = await pipeline.GenerateTextAsync(prompt);
+        return result.Success ? result.Data : $"Error: {result.ErrorMessage}";
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Provider Examples Section -->
+                <section class="section" id="provider-examples">
+                    <h2><i class="bi bi-diagram-3"></i> Provider Examples</h2>
+                    
+                    <h3>OpenAI Example</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">var openAIConfig = new OpenAIConnectionConfig
+{
+    ApiKey = "sk-your-openai-api-key",
+    OrganizationId = "org-your-org-id", // Optional
+    TimeoutSeconds = 60
+};
+
+var pipeline = TransformerPipelineFactory.CreateOpenAIPipeline(
+    runtimeManager, executeManager, openAIConfig);
+
+var result = await pipeline.GenerateTextAsync("Write a short story about AI");</code></pre>
+                    </div>
+
+                    <h3>Azure OpenAI Example</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">var azureConfig = new AzureOpenAIConnectionConfig
+{
+    Endpoint = "https://your-resource.openai.azure.com/",
+    ApiKey = "your-azure-api-key",
+    ApiVersion = "2024-02-01",
+    DeploymentName = "gpt-35-turbo"
+};
+
+var pipeline = TransformerPipelineFactory.CreateAzureOpenAIPipeline(
+    runtimeManager, executeManager, azureConfig);
+
+var result = await pipeline.GenerateTextAsync("Explain quantum computing");</code></pre>
+                    </div>
+
+                    <h3>HuggingFace Example</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">var hfConfig = new HuggingFaceConnectionConfig
+{
+    Token = "hf_your-token", // For private models
+    UseInferenceAPI = true,
+    TimeoutSeconds = 120
+};
+
+var pipeline = TransformerPipelineFactory.CreateHuggingFacePipeline(
+    runtimeManager, executeManager, hfConfig);
+
+await pipeline.LoadModelAsync(new TransformerModelInfo
+{
+    Name = "microsoft/DialoGPT-medium",
+    Source = TransformerModelSource.HuggingFace
+}, TransformerTask.TextGeneration);
+
+var result = await pipeline.GenerateTextAsync("Hello, how are you?");</code></pre>
+                    </div>
+
+                    <h3>Multiple Providers Example</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public class MultiProviderService
+{
+    private readonly Dictionary&lt;TransformerModelSource, ITransformerPipeLine&gt; _pipelines = new();
+
+    public async Task InitializeProvidersAsync()
+    {
+        // OpenAI
+        _pipelines[TransformerModelSource.OpenAI] = 
+            TransformerPipelineFactory.CreateOpenAIPipeline(
+                runtimeManager, executeManager, openAIConfig);
+
+        // Azure
+        _pipelines[TransformerModelSource.Azure] = 
+            TransformerPipelineFactory.CreateAzureOpenAIPipeline(
+                runtimeManager, executeManager, azureConfig);
+
+        // Anthropic
+        _pipelines[TransformerModelSource.Anthropic] = 
+            TransformerPipelineFactory.CreateAnthropicPipeline(
+                runtimeManager, executeManager, anthropicConfig);
+
+        // Initialize all pipelines
+        foreach (var pipeline in _pipelines.Values)
+        {
+            await pipeline.InitializeAsync(new TransformerPipelineConfig
+            {
+                TaskType = TransformerTask.TextGeneration
+            });
+        }
+    }
+
+    public async Task&lt;string&gt; GenerateWithBestProviderAsync(string prompt)
+    {
+        // Try providers in order of preference
+        var providers = new[] { 
+            TransformerModelSource.OpenAI, 
+            TransformerModelSource.Azure, 
+            TransformerModelSource.Anthropic 
+        };
+
+        foreach (var provider in providers)
+        {
+            try
+            {
+                var result = await _pipelines[provider].GenerateTextAsync(prompt);
+                if (result.Success)
+                    return result.Data;
+            }
+            catch (Exception ex)
+            {
+                // Log error and try next provider
+                Console.WriteLine($"Provider {provider} failed: {ex.Message}");
+            }
+        }
+
+        throw new Exception("All providers failed");
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Enterprise Setup Section -->
+                <section class="section" id="enterprise-setup">
+                    <h2><i class="bi bi-building"></i> Enterprise Setup</h2>
+                    
+                    <h3>Session Management for Multi-User Environments</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public class EnterpriseAIService
+{
+    private readonly IPythonRunTimeManager _runtimeManager;
+    private readonly IPythonCodeExecuteManager _executeManager;
+
+    public async Task&lt;ITransformerPipeLine&gt; CreateUserPipelineAsync(
+        string userId, 
+        TransformerModelSource provider)
+    {
+        // Create session-aware pipeline with isolation
+        var pipeline = TransformerPipelineFactory.CreateSessionAwarePipelineWithConnection(
+            provider,
+            _runtimeManager,
+            _executeManager,
+            username: userId,
+            connectionConfig: GetConnectionConfig(provider)
+        );
+
+        await pipeline.InitializeAsync(new TransformerPipelineConfig
+        {
+            TaskType = TransformerTask.TextGeneration,
+            Device = TransformerDevice.Auto
+        });
+
+        return pipeline;
+    }
+
+    private TransformerConnectionConfig GetConnectionConfig(TransformerModelSource provider)
+    {
+        return provider switch
+        {
+            TransformerModelSource.OpenAI => new OpenAIConnectionConfig 
+            { 
+                ApiKey = GetSecureApiKey("OpenAI"),
+                RateLimit = new RateLimitConfig { RequestsPerMinute = 100 }
+            },
+            TransformerModelSource.Azure => new AzureOpenAIConnectionConfig 
+            { 
+                Endpoint = GetConfigValue("Azure:Endpoint"),
+                ApiKey = GetSecureApiKey("Azure")
+            },
+            _ => throw new NotSupportedException($"Provider {provider} not configured")
+        };
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>Security and Compliance</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">// Configure security policies
+var securityPolicy = new SecurityPolicy
+{
+    DataClassification = DataClassificationLevel.Confidential,
+    RequireModelSigning = true,
+    RequireSourceVerification = true,
+    Encryption = new EncryptionRequirements
+    {
+        EncryptAtRest = true,
+        EncryptInTransit = true
+    }
+};
+
+// Apply to pipeline
+var securityService = serviceProvider.GetService&lt;ITransformerSecurity&gt;();
+await securityService.ApplySecurityPolicyAsync("pipeline-id", securityPolicy);</code></pre>
+                    </div>
+                </section>
+
+                <!-- Next Steps Section -->
+                <section class="section" id="next-steps">
+                    <h2><i class="bi bi-arrow-right-circle"></i> Next Steps</h2>
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-book"></i> Learn More</h4>
+                            <p>Explore detailed API documentation and advanced features.</p>
+                            <a href="api/ITransformerPipeLine.html" class="btn-beep">API Reference</a>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-code-square"></i> See Examples</h4>
+                            <p>Browse comprehensive examples and tutorials.</p>
+                            <a href="examples/basic-usage.html" class="btn-beep">View Examples</a>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-collection"></i> Multimodal AI</h4>
+                            <p>Work with text, images, audio, and video.</p>
+                            <a href="examples/multimodal.html" class="btn-beep">Multimodal Guide</a>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-building"></i> Enterprise Features</h4>
+                            <p>Learn about security, monitoring, and compliance.</p>
+                            <a href="examples/enterprise.html" class="btn-beep">Enterprise Guide</a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="index.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> Documentation Home
+                    </a>
+                    <a href="installation.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> Detailed Installation
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.AI.Transformers Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="index.html">Home</a>
+                            <a href="examples/basic-usage.html">Examples</a>
+                            <a href="api/ITransformerPipeLine.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="assets/navigation.js"></script>
+</body>
+</html>
