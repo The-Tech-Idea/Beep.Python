@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenAITransformerPipeline - Beep.Python.AI.Transformers API</title>
+    <title>OpenAITransformerPipeline API - Beep.Python.AI.Transformers</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
@@ -32,592 +32,623 @@
                 <!-- Breadcrumb Navigation -->
                 <div class="breadcrumb-nav">
                     <a href="../index.html">Home</a>
-                    <span>�</span>
+                    <span>→</span>
                     <a href="../index.html#providers">AI Providers</a>
-                    <span>�</span>
-                    <span>OpenAI</span>
+                    <span>→</span>
+                    <span>OpenAI Pipeline</span>
                 </div>
 
                 <!-- Page Header -->
                 <div class="page-header">
-                    <h1><i class="bi bi-lightning"></i> OpenAITransformerPipeline</h1>
-                    <p class="page-subtitle">Pipeline implementation for OpenAI's GPT models and API services</p>
+                    <h1><i class="bi bi-circle-fill text-success"></i> OpenAITransformerPipeline Class</h1>
+                    <p class="page-subtitle">High-performance transformer pipeline for OpenAI GPT models with advanced features and enterprise capabilities</p>
                 </div>
 
                 <!-- Class Info -->
                 <div class="class-info">
                     <div class="class-namespace">
                         <strong>Namespace:</strong> Beep.Python.AI.Transformers<br>
-                        <strong>Assembly:</strong> Beep.Python.AI.Transformers.dll
+                        <strong>Assembly:</strong> Beep.Python.AI.Transformers.dll<br>
+                        <strong>Package:</strong> Beep.Python.AI.Transformers
                     </div>
                     <div class="class-implements">
-                        <strong>Inheritance:</strong> BaseTransformerPipeline ? OpenAITransformerPipeline<br>
+                        <strong>Inherits:</strong> BaseTransformerPipeline<br>
                         <strong>Implements:</strong> ITransformerPipeLine, IDisposable
                     </div>
                 </div>
 
-                <!-- Overview -->
+                <!-- Overview Section -->
                 <section class="section" id="overview">
-                    <h2>Overview</h2>
+                    <h2>🔍 Overview</h2>
                     <p>
-                        The <code>OpenAITransformerPipeline</code> provides seamless integration with OpenAI's powerful 
-                        language models including GPT-4, GPT-3.5, DALL-E, and Whisper. It handles authentication, 
-                        rate limiting, and provides a consistent interface for all OpenAI services.
+                        The <strong>OpenAITransformerPipeline</strong> class provides comprehensive integration with OpenAI's GPT models, 
+                        including GPT-4, GPT-3.5-turbo, and other OpenAI language models. It offers enterprise-grade features such as 
+                        conversation management, token usage tracking, rate limiting, and advanced prompt engineering capabilities.
                     </p>
                     
-                    <div class="highlight-box bg-light p-4 rounded">
-                        <h5><i class="bi bi-lightbulb"></i> Key Features</h5>
-                        <ul class="mb-0">
-                            <li><strong>Latest Models</strong> - Access to GPT-4, GPT-3.5 Turbo, and other cutting-edge models</li>
-                            <li><strong>Function Calling</strong> - Native support for OpenAI function calling</li>
-                            <li><strong>Streaming Responses</strong> - Real-time streaming for long-form content</li>
-                            <li><strong>Enterprise Ready</strong> - Organization management and usage tracking</li>
-                            <li><strong>Multimodal</strong> - Text, image, and audio processing capabilities</li>
+                    <div class="success">
+                        <strong>✅ Supported Models</strong>
+                        <ul>
+                            <li><strong>GPT-4 Turbo:</strong> Latest GPT-4 model with improved performance</li>
+                            <li><strong>GPT-4:</strong> Most capable model for complex reasoning</li>
+                            <li><strong>GPT-3.5-turbo:</strong> Fast and efficient for most tasks</li>
+                            <li><strong>GPT-3.5-turbo-16k:</strong> Extended context length version</li>
+                            <li><strong>Text-Davinci-003:</strong> Legacy completion model</li>
+                        </ul>
+                    </div>
+
+                    <div class="tip">
+                        <strong>💡 Key Features</strong>
+                        <ul>
+                            <li><strong>Conversation Management:</strong> Built-in chat history and context handling</li>
+                            <li><strong>Token Optimization:</strong> Intelligent token counting and optimization</li>
+                            <li><strong>Rate Limiting:</strong> Automatic rate limit handling and retry logic</li>
+                            <li><strong>Streaming Support:</strong> Real-time response streaming capabilities</li>
+                            <li><strong>Function Calling:</strong> Advanced function calling and tool integration</li>
                         </ul>
                     </div>
                 </section>
 
-                <!-- Configuration -->
-                <section class="section" id="configuration">
-                    <h2>Configuration</h2>
+                <!-- Constructor Section -->
+                <section class="section" id="constructors">
+                    <h2>🏗️ Constructors</h2>
                     
-                    <h3>OpenAIConnectionConfig</h3>
-                    <div class="code-example">
-                        <h4>Basic Configuration</h4>
-                        <pre><code class="language-csharp">var config = new OpenAIConnectionConfig
-{
-    ApiKey = "sk-your-openai-api-key-here",
-    OrganizationId = "org-your-organization",    // Optional
-    TimeoutSeconds = 60,
-    MaxRetries = 3,
-    BaseUrl = "https://api.openai.com/v1"        // Default URL
-};</code></pre>
-                    </div>
-
-                    <h3>Advanced Configuration</h3>
-                    <div class="code-example">
-                        <h4>Enterprise Setup</h4>
-                        <pre><code class="language-csharp">var enterpriseConfig = new OpenAIConnectionConfig
-{
-    ApiKey = GetSecureApiKey(),
-    OrganizationId = "org-enterprise-id",
-    TimeoutSeconds = 120,
-    MaxRetries = 5,
-    
-    // Rate limiting
-    RateLimitConfig = new RateLimitConfig
-    {
-        RequestsPerMinute = 100,
-        TokensPerMinute = 10000,
-        EnableBackoff = true,
-        BackoffMultiplier = 2.0
-    },
-    
-    // Usage tracking
-    UsageTrackingConfig = new UsageTrackingConfig
-    {
-        EnableUsageLogging = true,
-        TrackCosts = true,
-        AlertOnHighUsage = true,
-        MonthlyBudgetUSD = 1000
-    },
-    
-    // Proxy settings
-    ProxyConfig = new ProxyConfig
-    {
-        ProxyUrl = "http://corporate-proxy:8080",
-        ProxyUsername = "proxy-user",
-        ProxyPassword = GetProxyPassword()
-    }
-};</code></pre>
+                    <div class="member">
+                        <div class="member-signature">
+                            <strong>OpenAITransformerPipeline</strong>
+                        </div>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public OpenAITransformerPipeline(
+    IPythonRunTimeManager pythonRunTimeManager,
+    IPythonCodeExecuteManager executeManager,
+    OpenAIConnectionConfig connectionConfig)</code></pre>
+                        </div>
+                        <div class="member-description">
+                            <p>Initializes a new instance of the OpenAITransformerPipeline with the specified runtime manager, execution manager, and OpenAI connection configuration.</p>
+                        </div>
                     </div>
                 </section>
 
-                <!-- Usage Examples -->
-                <section class="section" id="examples">
-                    <h2>Usage Examples</h2>
-                    
-                    <h3>Text Generation</h3>
-                    <div class="code-example">
-                        <h4>GPT-4 Text Generation</h4>
-                        <pre><code class="language-csharp">// Create OpenAI pipeline
-var config = new OpenAIConnectionConfig
-{
-    ApiKey = "sk-your-api-key",
-    TimeoutSeconds = 60
-};
+                <!-- Properties Section -->
+                <section class="section" id="properties">
+                    <h2>📋 Properties</h2>
 
-var pipeline = TransformerPipelineFactory.CreateOpenAIPipeline(
-    runtimeManager, executeManager, config);
-
-await pipeline.InitializeAsync(new TransformerPipelineConfig
-{
-    TaskType = TransformerTask.TextGeneration
-});
-
-// Load GPT-4 model
-await pipeline.LoadModelAsync(new TransformerModelInfo
-{
-    Name = "gpt-4",
-    Source = TransformerModelSource.OpenAI
-}, TransformerTask.TextGeneration);
-
-// Generate text with advanced parameters
-var result = await pipeline.GenerateTextAsync(
-    "Write a comprehensive article about the future of AI",
-    new TextGenerationParameters
-    {
-        MaxTokens = 1000,
-        Temperature = 0.7,
-        TopP = 0.9,
-        FrequencyPenalty = 0.1,
-        PresencePenalty = 0.1,
-        StopSequences = new[] { "\n\n---\n\n" },
-        LogitBias = new Dictionary<int, double>
-        {
-            [1234] = -100  // Suppress specific tokens
-        }
-    });
-
-Console.WriteLine(result.Data);</code></pre>
+                    <div class="member">
+                        <div class="member-signature">
+                            <strong>ConnectionConfig</strong>
+                        </div>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public OpenAIConnectionConfig ConnectionConfig { get; }</code></pre>
+                        </div>
+                        <div class="member-description">
+                            <p>Gets the OpenAI connection configuration including API key, organization ID, and request settings.</p>
+                        </div>
                     </div>
 
-                    <h3>Chat Completions</h3>
+                    <div class="member">
+                        <div class="member-signature">
+                            <strong>CurrentModel</strong>
+                        </div>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public string CurrentModel { get; private set; }</code></pre>
+                        </div>
+                        <div class="member-description">
+                            <p>Gets the currently loaded OpenAI model name (e.g., "gpt-4", "gpt-3.5-turbo").</p>
+                        </div>
+                    </div>
+
+                    <div class="member">
+                        <div class="member-signature">
+                            <strong>TokenUsage</strong>
+                        </div>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public TokenUsageInfo TokenUsage { get; }</code></pre>
+                        </div>
+                        <div class="member-description">
+                            <p>Gets detailed token usage statistics including prompt tokens, completion tokens, and total tokens consumed.</p>
+                        </div>
+                    </div>
+
+                    <div class="member">
+                        <div class="member-signature">
+                            <strong>ConversationHistory</strong>
+                        </div>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public List<ChatMessage> ConversationHistory { get; }</code></pre>
+                        </div>
+                        <div class="member-description">
+                            <p>Gets the current conversation history for chat-based interactions with context preservation.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Methods Section -->
+                <section class="section" id="methods">
+                    <h2>⚡ Methods</h2>
+
+                    <h3>Text Generation Methods</h3>
+
+                    <div class="member">
+                        <div class="member-signature">
+                            <strong>GenerateTextAsync</strong>
+                        </div>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public override async Task<TransformerResponse<string>> GenerateTextAsync(
+    string prompt,
+    TextGenerationParameters parameters = null)
+
+// Overload with conversation context
+public async Task<TransformerResponse<string>> GenerateTextAsync(
+    string prompt,
+    List<ChatMessage> conversationHistory,
+    TextGenerationParameters parameters = null)</code></pre>
+                        </div>
+                        <div class="member-description">
+                            <p>Generates text using the loaded OpenAI model with optional conversation context and generation parameters.</p>
+                        </div>
+                    </div>
+
+                    <div class="member">
+                        <div class="member-signature">
+                            <strong>GenerateStreamingTextAsync</strong>
+                        </div>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public async IAsyncEnumerable<string> GenerateStreamingTextAsync(
+    string prompt,
+    TextGenerationParameters parameters = null)
+
+// With progress callback
+public async Task GenerateStreamingTextAsync(
+    string prompt,
+    Action<string> onTokenReceived,
+    TextGenerationParameters parameters = null)</code></pre>
+                        </div>
+                        <div class="member-description">
+                            <p>Generates text with real-time streaming, yielding tokens as they are received from OpenAI's API.</p>
+                        </div>
+                    </div>
+
+                    <h3>Chat and Conversation Methods</h3>
+
+                    <div class="member">
+                        <div class="member-signature">
+                            <strong>SendChatMessageAsync</strong>
+                        </div>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public async Task<TransformerResponse<string>> SendChatMessageAsync(
+    string message,
+    string role = "user",
+    TextGenerationParameters parameters = null)
+
+// With system message
+public async Task<TransformerResponse<string>> SendChatMessageAsync(
+    string message,
+    string systemMessage,
+    TextGenerationParameters parameters = null)</code></pre>
+                        </div>
+                        <div class="member-description">
+                            <p>Sends a chat message and maintains conversation context automatically.</p>
+                        </div>
+                    </div>
+
+                    <div class="member">
+                        <div class="member-signature">
+                            <strong>ClearConversationHistory</strong>
+                        </div>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public void ClearConversationHistory()
+
+// Clear with system message retention
+public void ClearConversationHistory(bool retainSystemMessage = false)</code></pre>
+                        </div>
+                        <div class="member-description">
+                            <p>Clears the conversation history, optionally retaining system messages.</p>
+                        </div>
+                    </div>
+
+                    <h3>Function Calling Methods</h3>
+
+                    <div class="member">
+                        <div class="member-signature">
+                            <strong>CallFunctionAsync</strong>
+                        </div>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public async Task<TransformerResponse<string>> CallFunctionAsync(
+    string prompt,
+    List<FunctionDefinition> availableFunctions,
+    TextGenerationParameters parameters = null)
+
+// With automatic function execution
+public async Task<TransformerResponse<string>> CallFunctionWithExecutionAsync(
+    string prompt,
+    Dictionary<string, Func<string, Task<string>>> functionHandlers,
+    TextGenerationParameters parameters = null)</code></pre>
+                        </div>
+                        <div class="member-description">
+                            <p>Enables function calling capabilities with OpenAI models, allowing the AI to call predefined functions.</p>
+                        </div>
+                    </div>
+
+                    <h3>Model Management Methods</h3>
+
+                    <div class="member">
+                        <div class="member-signature">
+                            <strong>LoadModelAsync</strong>
+                        </div>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public override async Task<bool> LoadModelAsync(
+    TransformerModelInfo modelInfo,
+    TransformerTask taskType)
+
+// With validation
+public async Task<bool> LoadModelAsync(
+    TransformerModelInfo modelInfo,
+    TransformerTask taskType,
+    bool validateModel = true)</code></pre>
+                        </div>
+                        <div class="member-description">
+                            <p>Loads and validates the specified OpenAI model for the given task type.</p>
+                        </div>
+                    </div>
+
+                    <div class="member">
+                        <div class="member-signature">
+                            <strong>GetAvailableModelsAsync</strong>
+                        </div>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public async Task<List<string>> GetAvailableModelsAsync()
+
+// With model details
+public async Task<List<ModelInfo>> GetAvailableModelsWithDetailsAsync()</code></pre>
+                        </div>
+                        <div class="member-description">
+                            <p>Retrieves the list of available OpenAI models for the current account.</p>
+                        </div>
+                    </div>
+
+                    <h3>Utility Methods</h3>
+
+                    <div class="member">
+                        <div class="member-signature">
+                            <strong>EstimateTokenCountAsync</strong>
+                        </div>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public async Task<int> EstimateTokenCountAsync(string text)
+
+// For conversation
+public async Task<int> EstimateConversationTokenCountAsync(
+    List<ChatMessage> messages)</code></pre>
+                        </div>
+                        <div class="member-description">
+                            <p>Estimates the token count for the given text or conversation, useful for cost optimization.</p>
+                        </div>
+                    </div>
+
+                    <div class="member">
+                        <div class="member-signature">
+                            <strong>TestConnectionAsync</strong>
+                        </div>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public override async Task<bool> TestConnectionAsync()
+
+// With detailed diagnostics
+public async Task<ConnectionTestResult> TestConnectionWithDiagnosticsAsync()</code></pre>
+                        </div>
+                        <div class="member-description">
+                            <p>Tests the connection to OpenAI's API and validates the API key and configuration.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Usage Examples Section -->
+                <section class="section" id="examples">
+                    <h2>💻 Usage Examples</h2>
+
+                    <h3>Basic Text Generation</h3>
                     <div class="code-example">
-                        <h4>Multi-Turn Conversation</h4>
-                        <pre><code class="language-csharp">// Configure for chat
-await pipeline.InitializeAsync(new TransformerPipelineConfig
+                        <pre><code class="language-csharp">// Initialize OpenAI pipeline
+var config = new OpenAIConnectionConfig
 {
-    TaskType = TransformerTask.ChatCompletion
-});
-
-await pipeline.LoadModelAsync(new TransformerModelInfo
-{
-    Name = "gpt-3.5-turbo",
-    Source = TransformerModelSource.OpenAI
-}, TransformerTask.ChatCompletion);
-
-// Create conversation context
-var conversation = new ConversationContext
-{
-    SystemMessage = "You are a helpful AI assistant specializing in software development.",
-    MaxHistoryLength = 10
+    ApiKey = "your-openai-api-key",
+    OrganizationId = "your-org-id", // Optional
+    TimeoutSeconds = 60,
+    MaxRetries = 3
 };
 
-// Add user message and get response
-conversation.AddUserMessage("How do I implement a singleton pattern in C#?");
+var pipeline = new OpenAITransformerPipeline(runtimeManager, executeManager, config);
 
-var response = await pipeline.ChatAsync(conversation, new ChatParameters
+// Load GPT-4 model
+await pipeline.LoadModelAsync(
+    new TransformerModelInfo 
+    { 
+        Name = "gpt-4", 
+        Source = TransformerModelSource.OpenAI 
+    },
+    TransformerTask.TextGeneration);
+
+// Generate text
+var result = await pipeline.GenerateTextAsync(
+    "Explain quantum computing in simple terms",
+    new TextGenerationParameters
+    {
+        MaxLength = 500,
+        Temperature = 0.7,
+        TopP = 0.9
+    });
+
+if (result.Success)
 {
-    Temperature = 0.3,  // Lower temperature for technical accuracy
-    MaxTokens = 500
-});
+    Console.WriteLine($"Generated text: {result.Data}");
+    Console.WriteLine($"Tokens used: {pipeline.TokenUsage.TotalTokens}");
+}
+else
+{
+    Console.WriteLine($"Error: {result.ErrorMessage}");
+}</code></pre>
+                    </div>
 
-conversation.AddAssistantMessage(response.Data.Message);
+                    <h3>Chat Conversation</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">// Initialize chat session
+var pipeline = new OpenAITransformerPipeline(runtimeManager, executeManager, config);
+await pipeline.LoadModelAsync(
+    new TransformerModelInfo { Name = "gpt-3.5-turbo", Source = TransformerModelSource.OpenAI },
+    TransformerTask.Conversation);
 
-// Continue conversation
-conversation.AddUserMessage("Can you show me a thread-safe version?");
-var followUp = await pipeline.ChatAsync(conversation);
+// Set system message
+await pipeline.SendChatMessageAsync(
+    "You are a helpful AI assistant specialized in programming.",
+    "system");
 
-Console.WriteLine(followUp.Data.Message);</code></pre>
+// User conversation
+var response1 = await pipeline.SendChatMessageAsync(
+    "How do I implement a binary search algorithm in C#?");
+
+Console.WriteLine($"AI: {response1.Data}");
+
+// Continue conversation with context
+var response2 = await pipeline.SendChatMessageAsync(
+    "Can you show me a recursive version?");
+
+Console.WriteLine($"AI: {response2.Data}");
+
+// View conversation history
+foreach (var message in pipeline.ConversationHistory)
+{
+    Console.WriteLine($"{message.Role}: {message.Content}");
+}</code></pre>
+                    </div>
+
+                    <h3>Streaming Text Generation</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">// Set up streaming with real-time output
+var pipeline = new OpenAITransformerPipeline(runtimeManager, executeManager, config);
+await pipeline.LoadModelAsync(
+    new TransformerModelInfo { Name = "gpt-4", Source = TransformerModelSource.OpenAI },
+    TransformerTask.TextGeneration);
+
+Console.Write("AI Response: ");
+
+// Stream response token by token
+await pipeline.GenerateStreamingTextAsync(
+    "Write a short story about a robot learning to paint",
+    token => 
+    {
+        Console.Write(token);
+        Console.Out.Flush();
+    },
+    new TextGenerationParameters
+    {
+        Temperature = 0.8,
+        MaxLength = 1000
+    });
+
+Console.WriteLine("\n\nStreaming completed.");</code></pre>
                     </div>
 
                     <h3>Function Calling</h3>
                     <div class="code-example">
-                        <h4>Tool Integration</h4>
                         <pre><code class="language-csharp">// Define available functions
-var functions = new List<FunctionDefinition>
+var weatherFunction = new FunctionDefinition
 {
-    new FunctionDefinition
+    Name = "get_weather",
+    Description = "Get current weather for a location",
+    Parameters = new
     {
-        Name = "get_weather",
-        Description = "Get current weather for a location",
-        Parameters = new
+        type = "object",
+        properties = new
         {
-            type = "object",
-            properties = new
-            {
-                location = new
-                {
-                    type = "string",
-                    description = "City name or coordinates"
-                },
-                unit = new
-                {
-                    type = "string",
-                    @enum = new[] { "celsius", "fahrenheit" }
-                }
-            },
-            required = new[] { "location" }
-        }
+            location = new { type = "string", description = "City name" },
+            unit = new { type = "string", @enum = new[] { "celsius", "fahrenheit" } }
+        },
+        required = new[] { "location" }
+    }
+};
+
+var calculatorFunction = new FunctionDefinition
+{
+    Name = "calculate",
+    Description = "Perform mathematical calculations",
+    Parameters = new
+    {
+        type = "object",
+        properties = new
+        {
+            expression = new { type = "string", description = "Mathematical expression" }
+        },
+        required = new[] { "expression" }
+    }
+};
+
+// Set up function handlers
+var functionHandlers = new Dictionary<string, Func<string, Task<string>>>
+{
+    ["get_weather"] = async (args) =>
+    {
+        var weatherArgs = JsonSerializer.Deserialize<WeatherArgs>(args);
+        // Call actual weather API
+        return await GetWeatherAsync(weatherArgs.Location, weatherArgs.Unit);
     },
-    new FunctionDefinition
+    
+    ["calculate"] = async (args) =>
     {
-        Name = "calculate_math",
-        Description = "Perform mathematical calculations",
-        Parameters = new
+        var calcArgs = JsonSerializer.Deserialize<CalculatorArgs>(args);
+        // Perform calculation
+        return EvaluateExpression(calcArgs.Expression).ToString();
+    }
+};
+
+// Use function calling
+var result = await pipeline.CallFunctionWithExecutionAsync(
+    "What's the weather like in New York and what's 15 * 24?",
+    functionHandlers,
+    new TextGenerationParameters { Temperature = 0.1 });
+
+Console.WriteLine($"AI Response: {result.Data}");</code></pre>
+                    </div>
+
+                    <h3>Error Handling and Retry Logic</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public async Task<string> GenerateTextWithRetry(string prompt, int maxRetries = 3)
+{
+    var pipeline = new OpenAITransformerPipeline(runtimeManager, executeManager, config);
+    
+    for (int attempt = 1; attempt <= maxRetries; attempt++)
+    {
+        try
         {
-            type = "object",
-            properties = new
+            var result = await pipeline.GenerateTextAsync(prompt);
+            
+            if (result.Success)
             {
-                expression = new
-                {
-                    type = "string",
-                    description = "Mathematical expression to evaluate"
-                }
-            },
-            required = new[] { "expression" }
+                return result.Data;
+            }
+            
+            // Handle specific OpenAI errors
+            if (result.ErrorMessage?.Contains("rate_limit_exceeded") == true)
+            {
+                var delaySeconds = Math.Pow(2, attempt); // Exponential backoff
+                Console.WriteLine($"Rate limit hit, waiting {delaySeconds} seconds...");
+                await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
+                continue;
+            }
+            
+            if (result.ErrorMessage?.Contains("insufficient_quota") == true)
+            {
+                throw new InvalidOperationException("OpenAI quota exceeded");
+            }
+            
+            Console.WriteLine($"Attempt {attempt} failed: {result.ErrorMessage}");
+        }
+        catch (Exception ex) when (attempt < maxRetries)
+        {
+            Console.WriteLine($"Attempt {attempt} threw exception: {ex.Message}");
+            await Task.Delay(TimeSpan.FromSeconds(attempt)); // Linear backoff
         }
     }
-};
-
-// Chat with function calling enabled
-var chatResult = await pipeline.ChatWithFunctionsAsync(
-    "What's the weather like in Paris and what's 15 * 23?",
-    functions,
-    new ChatParameters
-    {
-        Temperature = 0.1,
-        FunctionCall = "auto"  // Let model decide when to call functions
-    });
-
-// Handle function calls
-if (chatResult.Data.RequiresFunctionCall)
-{
-    foreach (var functionCall in chatResult.Data.FunctionCalls)
-    {
-        object result = functionCall.Name switch
-        {
-            "get_weather" => await GetWeatherAsync(functionCall.Arguments["location"].ToString()),
-            "calculate_math" => EvaluateExpression(functionCall.Arguments["expression"].ToString()),
-            _ => "Function not implemented"
-        };
-
-        // Send function result back to the model
-        var finalResponse = await pipeline.ContinueChatWithFunctionResultAsync(
-            chatResult.Data.ConversationId,
-            functionCall.Id,
-            result);
-
-        Console.WriteLine(finalResponse.Data.Message);
-    }
-}</code></pre>
-                    </div>
-
-                    <h3>Streaming Responses</h3>
-                    <div class="code-example">
-                        <h4>Real-time Text Generation</h4>
-                        <pre><code class="language-csharp">// Enable streaming
-var streamingResult = await pipeline.GenerateTextStreamAsync(
-    "Write a detailed explanation of machine learning",
-    new TextGenerationParameters
-    {
-        MaxTokens = 1000,
-        Temperature = 0.7,
-        Stream = true
-    });
-
-// Process streaming tokens
-await foreach (var token in streamingResult.TokenStream)
-{
-    Console.Write(token.Text);
     
-    // Optional: Handle special tokens
-    if (token.IsFinished)
-    {
-        Console.WriteLine("\n[Generation Complete]");
-        Console.WriteLine($"Total tokens: {token.TotalTokens}");
-        Console.WriteLine($"Completion tokens: {token.CompletionTokens}");
-        break;
-    }
-    
-    // Optional: Handle function calls in stream
-    if (token.RequiresFunctionCall)
-    {
-        // Handle function call...
-    }
-}</code></pre>
-                    </div>
-
-                    <h3>Embeddings</h3>
-                    <div class="code-example">
-                        <h4>Text Embeddings</h4>
-                        <pre><code class="language-csharp">// Configure for embeddings
-await pipeline.InitializeAsync(new TransformerPipelineConfig
-{
-    TaskType = TransformerTask.FeatureExtraction
-});
-
-await pipeline.LoadModelAsync(new TransformerModelInfo
-{
-    Name = "text-embedding-ada-002",
-    Source = TransformerModelSource.OpenAI
-}, TransformerTask.FeatureExtraction);
-
-var texts = new List<string>
-{
-    "Machine learning is a subset of artificial intelligence.",
-    "Deep learning uses neural networks with multiple layers.",
-    "Natural language processing helps computers understand text."
-};
-
-// Get embeddings
-var embeddingResult = await pipeline.GetEmbeddingsAsync(texts);
-
-if (embeddingResult.Success)
-{
-    for (int i = 0; i < texts.Count; i++)
-    {
-        Console.WriteLine($"Text: {texts[i]}");
-        Console.WriteLine($"Embedding dimensions: {embeddingResult.Data[i].Length}");
-        
-        // Calculate similarity with first text
-        if (i > 0)
-        {
-            var similarity = CosineSimilarity(
-                embeddingResult.Data[0], 
-                embeddingResult.Data[i]);
-            Console.WriteLine($"Similarity to first text: {similarity:F4}");
-        }
-        Console.WriteLine();
-    }
+    throw new InvalidOperationException($"Failed to generate text after {maxRetries} attempts");
 }</code></pre>
                     </div>
                 </section>
 
-                <!-- Model Support -->
-                <section class="section" id="models">
-                    <h2>Supported Models</h2>
-                    
-                    <div class="feature-grid">
-                        <div class="feature-card">
-                            <h4><i class="bi bi-chat-text"></i> GPT Models</h4>
-                            <ul>
-                                <li><strong>gpt-4</strong> - Most capable model</li>
-                                <li><strong>gpt-4-32k</strong> - Extended context window</li>
-                                <li><strong>gpt-3.5-turbo</strong> - Fast and cost-effective</li>
-                                <li><strong>gpt-3.5-turbo-16k</strong> - Larger context</li>
-                            </ul>
-                        </div>
-                        <div class="feature-card">
-                            <h4><i class="bi bi-image"></i> DALL-E Models</h4>
-                            <ul>
-                                <li><strong>dall-e-3</strong> - Latest image generation</li>
-                                <li><strong>dall-e-2</strong> - High-quality images</li>
-                            </ul>
-                        </div>
-                        <div class="feature-card">
-                            <h4><i class="bi bi-mic"></i> Audio Models</h4>
-                            <ul>
-                                <li><strong>whisper-1</strong> - Speech recognition</li>
-                                <li><strong>tts-1</strong> - Text-to-speech</li>
-                                <li><strong>tts-1-hd</strong> - High-quality TTS</li>
-                            </ul>
-                        </div>
-                        <div class="feature-card">
-                            <h4><i class="bi bi-vector-pen"></i> Embedding Models</h4>
-                            <ul>
-                                <li><strong>text-embedding-ada-002</strong> - Text embeddings</li>
-                                <li><strong>text-embedding-3-small</strong> - Efficient embeddings</li>
-                                <li><strong>text-embedding-3-large</strong> - High-performance embeddings</li>
-                            </ul>
-                        </div>
+                <!-- Configuration Section -->
+                <section class="section" id="configuration">
+                    <h2>⚙️ Configuration Options</h2>
+
+                    <h3>OpenAIConnectionConfig Properties</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public class OpenAIConnectionConfig : TransformerConnectionConfig
+{
+    // Authentication
+    public string ApiKey { get; set; }
+    public string OrganizationId { get; set; } // Optional
+
+    // Request settings
+    public int TimeoutSeconds { get; set; } = 60;
+    public int MaxRetries { get; set; } = 3;
+    public double RetryDelayMultiplier { get; set; } = 2.0;
+
+    // Rate limiting
+    public int RequestsPerMinute { get; set; } = 3500;
+    public int TokensPerMinute { get; set; } = 90000;
+
+    // Model defaults
+    public string DefaultModel { get; set; } = "gpt-3.5-turbo";
+    public double DefaultTemperature { get; set; } = 0.7;
+    public int DefaultMaxTokens { get; set; } = 1000;
+
+    // Advanced options
+    public bool EnableFunctionCalling { get; set; } = true;
+    public bool EnableStreaming { get; set; } = true;
+    public bool LogRequests { get; set; } = false;
+}</code></pre>
+                    </div>
+
+                    <h3>Environment Configuration</h3>
+                    <div class="code-example">
+                        <pre><code class="language-bash"># Environment variables
+OPENAI_API_KEY=your-api-key-here
+OPENAI_ORGANIZATION=your-org-id-here
+OPENAI_DEFAULT_MODEL=gpt-4
+OPENAI_TIMEOUT_SECONDS=60
+OPENAI_MAX_RETRIES=3</code></pre>
                     </div>
 
                     <div class="code-example">
-                        <h4>Model Selection</h4>
-                        <pre><code class="language-csharp">public class OpenAIModelSelector
+                        <h4>Configuration from Environment</h4>
+                        <pre><code class="language-csharp">var config = new OpenAIConnectionConfig
 {
-    public static string SelectModelForTask(TransformerTask task, bool prioritizeSpeed = false)
-    {
-        return task switch
-        {
-            TransformerTask.TextGeneration when prioritizeSpeed => "gpt-3.5-turbo",
-            TransformerTask.TextGeneration => "gpt-4",
-            TransformerTask.ChatCompletion when prioritizeSpeed => "gpt-3.5-turbo",
-            TransformerTask.ChatCompletion => "gpt-4",
-            TransformerTask.FeatureExtraction => "text-embedding-ada-002",
-            TransformerTask.ImageGeneration => "dall-e-3",
-            TransformerTask.SpeechRecognition => "whisper-1",
-            TransformerTask.TextToSpeech => "tts-1-hd",
-            _ => "gpt-3.5-turbo"
-        };
-    }
-
-    public static int GetModelContextWindow(string modelName)
-    {
-        return modelName switch
-        {
-            "gpt-4-32k" => 32_768,
-            "gpt-3.5-turbo-16k" => 16_384,
-            "gpt-4" => 8_192,
-            "gpt-3.5-turbo" => 4_096,
-            _ => 4_096
-        };
-    }
-}</code></pre>
+    ApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY"),
+    OrganizationId = Environment.GetEnvironmentVariable("OPENAI_ORGANIZATION"),
+    DefaultModel = Environment.GetEnvironmentVariable("OPENAI_DEFAULT_MODEL") ?? "gpt-3.5-turbo",
+    TimeoutSeconds = int.Parse(Environment.GetEnvironmentVariable("OPENAI_TIMEOUT_SECONDS") ?? "60"),
+    MaxRetries = int.Parse(Environment.GetEnvironmentVariable("OPENAI_MAX_RETRIES") ?? "3")
+};</code></pre>
                     </div>
                 </section>
 
-                <!-- Cost Management -->
-                <section class="section" id="cost-management">
-                    <h2>Cost Management</h2>
-                    
-                    <div class="warning">
-                        <strong>?? Cost Considerations</strong>
-                        <p>OpenAI charges based on token usage. Monitor your usage to avoid unexpected costs:</p>
+                <!-- Best Practices Section -->
+                <section class="section" id="best-practices">
+                    <h2>🎯 Best Practices</h2>
+
+                    <div class="success">
+                        <strong>✅ Performance Optimization</strong>
                         <ul>
-                            <li>GPT-4 is more expensive than GPT-3.5 Turbo</li>
-                            <li>Longer prompts and responses cost more</li>
-                            <li>Function calling adds to token count</li>
-                            <li>Set usage limits and alerts</li>
+                            <li>Use GPT-3.5-turbo for most tasks; reserve GPT-4 for complex reasoning</li>
+                            <li>Optimize prompts to reduce token usage and improve response quality</li>
+                            <li>Implement caching for repeated queries to reduce API costs</li>
+                            <li>Use streaming for long responses to improve user experience</li>
+                            <li>Monitor token usage and implement usage limits</li>
                         </ul>
                     </div>
 
-                    <div class="code-example">
-                        <h4>Usage Tracking</h4>
-                        <pre><code class="language-csharp">public class OpenAIUsageTracker
-{
-    private readonly Dictionary<string, UsageStats> _dailyUsage = new();
-
-    public async Task<string> GenerateWithBudgetCheckAsync(
-        ITransformerPipeLine pipeline, 
-        string prompt, 
-        decimal dailyBudgetUSD = 100)
-    {
-        var today = DateTime.Today.ToString("yyyy-MM-dd");
-        
-        // Check current usage
-        if (!_dailyUsage.ContainsKey(today))
-            _dailyUsage[today] = new UsageStats();
-
-        var todayUsage = _dailyUsage[today];
-        
-        if (todayUsage.CostUSD >= dailyBudgetUSD)
-        {
-            throw new BudgetExceededException($"Daily budget of ${dailyBudgetUSD} exceeded");
-        }
-
-        // Estimate cost before generation
-        var estimatedTokens = EstimateTokenCount(prompt) + 500; // Assume 500 response tokens
-        var estimatedCost = CalculateCost("gpt-4", estimatedTokens);
-        
-        if (todayUsage.CostUSD + estimatedCost > dailyBudgetUSD)
-        {
-            throw new BudgetExceededException($"Request would exceed daily budget");
-        }
-
-        // Generate text
-        var result = await pipeline.GenerateTextAsync(prompt);
-        
-        if (result.Success)
-        {
-            // Track actual usage
-            todayUsage.TotalTokens += result.Usage.TotalTokens;
-            todayUsage.RequestCount++;
-            todayUsage.CostUSD += CalculateCost("gpt-4", result.Usage.TotalTokens);
-            
-            Console.WriteLine($"Today's usage: {todayUsage.RequestCount} requests, " +
-                            $"{todayUsage.TotalTokens} tokens, ${todayUsage.CostUSD:F2}");
-        }
-
-        return result.Data;
-    }
-
-    private decimal CalculateCost(string model, int tokens)
-    {
-        // OpenAI pricing (as of 2024 - check current rates)
-        var pricePerToken = model switch
-        {
-            "gpt-4" => 0.00003m,           // $0.03 per 1K tokens
-            "gpt-3.5-turbo" => 0.000002m,  // $0.002 per 1K tokens
-            _ => 0.00002m
-        };
-
-        return tokens * pricePerToken;
-    }
-}</code></pre>
+                    <div class="warning">
+                        <strong>⚠️ Cost Management</strong>
+                        <ul>
+                            <li>Always set reasonable max_tokens limits to prevent runaway costs</li>
+                            <li>Use conversation trimming to manage context length</li>
+                            <li>Monitor API usage and set up billing alerts</li>
+                            <li>Consider using fine-tuned models for specific domains</li>
+                            <li>Implement request queuing during high-traffic periods</li>
+                        </ul>
                     </div>
-                </section>
 
-                <!-- Error Handling -->
-                <section class="section" id="error-handling">
-                    <h2>Error Handling</h2>
-                    
-                    <div class="code-example">
-                        <h4>Comprehensive Error Handling</h4>
-                        <pre><code class="language-csharp">public class RobustOpenAIService
-{
-    public async Task<string> SafeGenerateAsync(string prompt)
-    {
-        try
-        {
-            var result = await _pipeline.GenerateTextAsync(prompt);
-            return result.Data;
-        }
-        catch (OpenAIRateLimitException ex)
-        {
-            // Handle rate limiting with exponential backoff
-            var delay = TimeSpan.FromSeconds(Math.Pow(2, ex.RetryAfter ?? 1));
-            await Task.Delay(delay);
-            return await SafeGenerateAsync(prompt); // Retry
-        }
-        catch (OpenAIQuotaExceededException ex)
-        {
-            _logger.LogError("OpenAI quota exceeded: {Message}", ex.Message);
-            return "Service temporarily unavailable - quota exceeded";
-        }
-        catch (OpenAIInvalidRequestException ex)
-        {
-            _logger.LogError("Invalid OpenAI request: {Message}", ex.Message);
-            return "Invalid request - please check your input";
-        }
-        catch (OpenAIAuthenticationException ex)
-        {
-            _logger.LogError("OpenAI authentication failed: {Message}", ex.Message);
-            throw; // Don't handle auth errors gracefully
-        }
-        catch (OpenAIServerException ex)
-        {
-            _logger.LogWarning("OpenAI server error: {Message}", ex.Message);
-            
-            // Implement fallback strategy
-            return await FallbackToAlternativeModel(prompt);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error in OpenAI service");
-            return "An unexpected error occurred";
-        }
-    }
-
-    private async Task<string> FallbackToAlternativeModel(string prompt)
-    {
-        // Fall back to a different model or provider
-        try
-        {
-            // Switch to GPT-3.5 if GPT-4 fails
-            await _pipeline.LoadModelAsync(new TransformerModelInfo
-            {
-                Name = "gpt-3.5-turbo",
-                Source = TransformerModelSource.OpenAI
-            }, TransformerTask.TextGeneration);
-
-            var result = await _pipeline.GenerateTextAsync(prompt);
-            return result.Data;
-        }
-        catch
-        {
-            return "Service temporarily unavailable";
-        }
-    }
-}</code></pre>
+                    <div class="note">
+                        <strong>📋 Quality Assurance</strong>
+                        <ul>
+                            <li>Validate all outputs, especially for production applications</li>
+                            <li>Implement content filtering for user-facing applications</li>
+                            <li>Use system messages to guide model behavior consistently</li>
+                            <li>Test with various temperature settings to find optimal balance</li>
+                            <li>Implement fact-checking for factual claims when necessary</li>
+                        </ul>
                     </div>
                 </section>
 
                 <!-- Related Classes -->
                 <section class="section" id="related">
-                    <h2>?? Related Classes</h2>
+                    <h2>🔗 Related Classes</h2>
                     <ul class="member-list">
                         <li>
                             <div class="member-name">BaseTransformerPipeline</div>
@@ -632,7 +663,12 @@ if (embeddingResult.Success)
                         <li>
                             <div class="member-name">AzureTransformerPipeline</div>
                             <div class="member-type">Pipeline Class</div>
-                            <div class="member-desc">Azure OpenAI service integration</div>
+                            <div class="member-desc">Azure OpenAI pipeline implementation</div>
+                        </li>
+                        <li>
+                            <div class="member-name">ChatMessage</div>
+                            <div class="member-type">Data Class</div>
+                            <div class="member-desc">Represents a message in a chat conversation</div>
                         </li>
                     </ul>
                 </section>
@@ -643,7 +679,7 @@ if (embeddingResult.Success)
                         <i class="bi bi-arrow-left"></i> HuggingFace Pipeline
                     </a>
                     <a href="AzureTransformerPipeline.html" class="btn-beep">
-                        <i class="bi bi-arrow-right"></i> Azure OpenAI Pipeline
+                        <i class="bi bi-arrow-right"></i> Azure Pipeline
                     </a>
                 </div>
 

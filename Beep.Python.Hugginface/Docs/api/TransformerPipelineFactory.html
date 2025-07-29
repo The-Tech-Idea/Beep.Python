@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TransformerPipelineFactory - Beep.Python.AI.Transformers API</title>
+    <title>TransformerPipelineFactory API - Beep.Python.AI.Transformers</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
@@ -32,397 +32,559 @@
                 <!-- Breadcrumb Navigation -->
                 <div class="breadcrumb-nav">
                     <a href="../index.html">Home</a>
-                    <span>�</span>
+                    <span>→</span>
                     <a href="../index.html#core-api">Core API</a>
-                    <span>�</span>
+                    <span>→</span>
                     <span>TransformerPipelineFactory</span>
                 </div>
 
                 <!-- Page Header -->
                 <div class="page-header">
-                    <h1><i class="bi bi-factory"></i> TransformerPipelineFactory</h1>
-                    <p class="page-subtitle">Static factory class for creating transformer pipeline instances</p>
+                    <h1><i class="bi bi-factory"></i> TransformerPipelineFactory Class</h1>
+                    <p class="page-subtitle">Static factory class for creating and configuring AI transformer pipelines with simplified setup and provider selection</p>
                 </div>
 
                 <!-- Class Info -->
                 <div class="class-info">
                     <div class="class-namespace">
                         <strong>Namespace:</strong> Beep.Python.AI.Transformers<br>
-                        <strong>Assembly:</strong> Beep.Python.AI.Transformers.dll
+                        <strong>Assembly:</strong> Beep.Python.AI.Transformers.dll<br>
+                        <strong>Package:</strong> Beep.Python.AI.Transformers
                     </div>
                     <div class="class-implements">
-                        <strong>Type:</strong> Static Factory Class
+                        <strong>Type:</strong> Static Factory Class<br>
+                        <strong>Purpose:</strong> Simplified pipeline creation and configuration
                     </div>
                 </div>
 
-                <!-- Overview -->
+                <!-- Overview Section -->
                 <section class="section" id="overview">
-                    <h2>Overview</h2>
+                    <h2>🔍 Overview</h2>
                     <p>
-                        The <code>TransformerPipelineFactory</code> is a static factory class that provides convenient 
-                        methods for creating transformer pipeline instances for different AI providers. It simplifies 
-                        the process of instantiating pipelines with proper configuration and connection settings.
+                        The <strong>TransformerPipelineFactory</strong> class provides a centralized, simplified way to create and configure AI transformer pipelines 
+                        for various providers. It handles the complexity of provider-specific initialization, connection management, and configuration setup, 
+                        allowing developers to quickly create working pipelines with minimal boilerplate code.
                     </p>
                     
-                    <div class="highlight-box bg-light p-4 rounded">
-                        <h5><i class="bi bi-lightbulb"></i> Key Features</h5>
-                        <ul class="mb-0">
-                            <li><strong>Provider-Specific Creation</strong> - Dedicated methods for each AI provider</li>
-                            <li><strong>Session-Aware Pipelines</strong> - Support for multi-user environments</li>
-                            <li><strong>Connection Management</strong> - Built-in connection configuration</li>
-                            <li><strong>Enterprise Features</strong> - Security and monitoring capabilities</li>
+                    <div class="tip">
+                        <strong>💡 Key Benefits</strong>
+                        <ul>
+                            <li><strong>Simplified Creation:</strong> One-line pipeline creation for all providers</li>
+                            <li><strong>Provider Abstraction:</strong> Uniform interface regardless of AI provider</li>
+                            <li><strong>Configuration Management:</strong> Centralized configuration handling</li>
+                            <li><strong>Auto-Discovery:</strong> Automatic provider capability detection</li>
                         </ul>
                     </div>
                 </section>
 
-                <!-- Methods -->
+                <!-- Static Methods Section -->
                 <section class="section" id="methods">
-                    <h2>Static Methods</h2>
+                    <h2>📋 Static Factory Methods</h2>
 
-                    <!-- OpenAI Methods -->
-                    <h3>OpenAI Provider Methods</h3>
+                    <h3>Provider-Specific Factory Methods</h3>
                     
-                    <div class="code-example">
-                        <h4>CreateOpenAIPipeline</h4>
-                        <div class="api-signature">
-                            <code>public static ITransformerPipeLine CreateOpenAIPipeline(
+                    <div class="member">
+                        <div class="member-signature">
+                            <strong>CreateOpenAIPipeline</strong>
+                        </div>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public static ITransformerPipeLine CreateOpenAIPipeline(
     IPythonRunTimeManager runtimeManager,
     IPythonCodeExecuteManager executeManager,
-    OpenAIConnectionConfig connectionConfig
-)</code>
-                        </div>
-                    </div>
-                    
-                    <p>Creates a pipeline configured for OpenAI services.</p>
-                    
-                    <div class="parameter-table">
-                        <table>
-                            <thead>
-                                <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><code>runtimeManager</code></td>
-                                    <td><code>IPythonRunTimeManager</code></td>
-                                    <td>Python runtime management interface</td>
-                                </tr>
-                                <tr>
-                                    <td><code>executeManager</code></td>
-                                    <td><code>IPythonCodeExecuteManager</code></td>
-                                    <td>Python code execution interface</td>
-                                </tr>
-                                <tr>
-                                    <td><code>connectionConfig</code></td>
-                                    <td><code>OpenAIConnectionConfig</code></td>
-                                    <td>OpenAI-specific connection configuration</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+    OpenAIConnectionConfig config)
 
-                    <div class="code-example">
-                        <h4>Usage Example</h4>
-                        <pre><code class="language-csharp">var openAIConfig = new OpenAIConnectionConfig
-{
-    ApiKey = "sk-your-api-key",
-    OrganizationId = "org-your-org-id",
-    TimeoutSeconds = 60,
-    MaxRetries = 3
-};
-
-var pipeline = TransformerPipelineFactory.CreateOpenAIPipeline(
-    runtimeManager,
-    executeManager,
-    openAIConfig
-);
-
-await pipeline.InitializeAsync(new TransformerPipelineConfig
-{
-    TaskType = TransformerTask.TextGeneration
-});</code></pre>
-                    </div>
-
-                    <!-- Azure OpenAI Methods -->
-                    <h3>Azure OpenAI Provider Methods</h3>
-                    
-                    <div class="code-example">
-                        <h4>CreateAzureOpenAIPipeline</h4>
-                        <div class="api-signature">
-                            <code>public static ITransformerPipeLine CreateAzureOpenAIPipeline(
+// Overload with validation
+public static ITransformerPipeLine CreateOpenAIPipeline(
     IPythonRunTimeManager runtimeManager,
     IPythonCodeExecuteManager executeManager,
-    AzureOpenAIConnectionConfig connectionConfig
-)</code>
+    OpenAIConnectionConfig config,
+    bool validateConnection = true)</code></pre>
+                        </div>
+                        <div class="member-description">
+                            <p>Creates a configured OpenAI transformer pipeline with the specified connection configuration.</p>
                         </div>
                     </div>
-                    
-                    <p>Creates a pipeline configured for Azure OpenAI services.</p>
-                    
-                    <div class="code-example">
-                        <h4>Usage Example</h4>
-                        <pre><code class="language-csharp">var azureConfig = new AzureOpenAIConnectionConfig
-{
-    Endpoint = "https://your-resource.openai.azure.com/",
-    ApiKey = "your-azure-api-key",
-    ApiVersion = "2024-02-01",
-    DeploymentName = "gpt-35-turbo"
-};
 
-var pipeline = TransformerPipelineFactory.CreateAzureOpenAIPipeline(
-    runtimeManager,
-    executeManager,
-    azureConfig
-);</code></pre>
-                    </div>
-
-                    <!-- HuggingFace Methods -->
-                    <h3>HuggingFace Provider Methods</h3>
-                    
-                    <div class="code-example">
-                        <h4>CreateHuggingFacePipeline</h4>
-                        <div class="api-signature">
-                            <code>public static ITransformerPipeLine CreateHuggingFacePipeline(
+                    <div class="member">
+                        <div class="member-signature">
+                            <strong>CreateAzurePipeline</strong>
+                        </div>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public static ITransformerPipeLine CreateAzurePipeline(
     IPythonRunTimeManager runtimeManager,
     IPythonCodeExecuteManager executeManager,
-    HuggingFaceConnectionConfig? connectionConfig = null
-)</code>
+    AzureOpenAIConnectionConfig config)</code></pre>
+                        </div>
+                        <div class="member-description">
+                            <p>Creates a configured Azure OpenAI transformer pipeline for enterprise Azure deployments.</p>
                         </div>
                     </div>
-                    
-                    <p>Creates a pipeline configured for HuggingFace models and services.</p>
-                    
-                    <div class="code-example">
-                        <h4>Usage Example</h4>
-                        <pre><code class="language-csharp">var hfConfig = new HuggingFaceConnectionConfig
-{
-    Token = "hf_your-token", // Optional for public models
-    UseInferenceAPI = true,
-    CacheDirectory = @"C:\HuggingFaceCache"
-};
 
-var pipeline = TransformerPipelineFactory.CreateHuggingFacePipeline(
-    runtimeManager,
-    executeManager,
-    hfConfig
-);
-
-// Load a specific model
-await pipeline.LoadModelAsync(new TransformerModelInfo
-{
-    Name = "microsoft/DialoGPT-medium",
-    Source = TransformerModelSource.HuggingFace
-}, TransformerTask.TextGeneration);</code></pre>
+                    <div class="member">
+                        <div class="member-signature">
+                            <strong>CreateHuggingFacePipeline</strong>
+                        </div>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public static ITransformerPipeLine CreateHuggingFacePipeline(
+    IPythonRunTimeManager runtimeManager,
+    IPythonCodeExecuteManager executeManager,
+    HuggingFaceConnectionConfig config)</code></pre>
+                        </div>
+                        <div class="member-description">
+                            <p>Creates a HuggingFace transformer pipeline with support for both API and local model execution.</p>
+                        </div>
                     </div>
 
-                    <!-- Session-Aware Methods -->
-                    <h3>Session-Aware Pipeline Methods</h3>
-                    
-                    <div class="code-example">
-                        <h4>CreateSessionAwarePipelineWithConnection</h4>
-                        <div class="api-signature">
-                            <code>public static ITransformerPipeLine CreateSessionAwarePipelineWithConnection(
+                    <div class="member">
+                        <div class="member-signature">
+                            <strong>CreateGoogleAIPipeline</strong>
+                        </div>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public static ITransformerPipeLine CreateGoogleAIPipeline(
+    IPythonRunTimeManager runtimeManager,
+    IPythonCodeExecuteManager executeManager,
+    GoogleAIConnectionConfig config)</code></pre>
+                        </div>
+                        <div class="member-description">
+                            <p>Creates a Google AI (Gemini) transformer pipeline with multimodal capabilities.</p>
+                        </div>
+                    </div>
+
+                    <div class="member">
+                        <div class="member-signature">
+                            <strong>CreateAnthropicPipeline</strong>
+                        </div>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public static ITransformerPipeLine CreateAnthropicPipeline(
+    IPythonRunTimeManager runtimeManager,
+    IPythonCodeExecuteManager executeManager,
+    AnthropicConnectionConfig config)</code></pre>
+                        </div>
+                        <div class="member-description">
+                            <p>Creates an Anthropic Claude transformer pipeline with enhanced safety features.</p>
+                        </div>
+                    </div>
+
+                    <h3>Dynamic Factory Methods</h3>
+
+                    <div class="member">
+                        <div class="member-signature">
+                            <strong>CreatePipeline</strong>
+                        </div>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public static ITransformerPipeLine CreatePipeline(
     TransformerModelSource provider,
     IPythonRunTimeManager runtimeManager,
     IPythonCodeExecuteManager executeManager,
-    string username,
-    TransformerConnectionConfig connectionConfig
-)</code>
+    TransformerConnectionConfig config)
+
+// Generic overload
+public static T CreatePipeline<T>(
+    IPythonRunTimeManager runtimeManager,
+    IPythonCodeExecuteManager executeManager,
+    TransformerConnectionConfig config) where T : class, ITransformerPipeLine</code></pre>
+                        </div>
+                        <div class="member-description">
+                            <p>Creates a transformer pipeline dynamically based on the provider type specified in the configuration.</p>
                         </div>
                     </div>
-                    
-                    <p>Creates a session-aware pipeline with user isolation for enterprise multi-tenant environments.</p>
-                    
-                    <div class="parameter-table">
-                        <table>
-                            <thead>
-                                <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><code>provider</code></td>
-                                    <td><code>TransformerModelSource</code></td>
-                                    <td>The AI provider to use</td>
-                                </tr>
-                                <tr>
-                                    <td><code>runtimeManager</code></td>
-                                    <td><code>IPythonRunTimeManager</code></td>
-                                    <td>Python runtime management interface</td>
-                                </tr>
-                                <tr>
-                                    <td><code>executeManager</code></td>
-                                    <td><code>IPythonCodeExecuteManager</code></td>
-                                    <td>Python code execution interface</td>
-                                </tr>
-                                <tr>
-                                    <td><code>username</code></td>
-                                    <td><code>string</code></td>
-                                    <td>Username for session isolation</td>
-                                </tr>
-                                <tr>
-                                    <td><code>connectionConfig</code></td>
-                                    <td><code>TransformerConnectionConfig</code></td>
-                                    <td>Provider-specific connection configuration</td>
-                                </tr>
-                            </tbody>
-                        </table>
+
+                    <div class="member">
+                        <div class="member-signature">
+                            <strong>CreatePipelineFromConfig</strong>
+                        </div>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public static async Task<ITransformerPipeLine> CreatePipelineFromConfigAsync(
+    string configurationPath,
+    IPythonRunTimeManager runtimeManager,
+    IPythonCodeExecuteManager executeManager)
+
+// Overload with IConfiguration
+public static ITransformerPipeLine CreatePipelineFromConfig(
+    IConfiguration configuration,
+    string sectionName,
+    IPythonRunTimeManager runtimeManager,
+    IPythonCodeExecuteManager executeManager)</code></pre>
+                        </div>
+                        <div class="member-description">
+                            <p>Creates a transformer pipeline from configuration files (JSON, XML, etc.) or IConfiguration instances.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Usage Examples Section -->
+                <section class="section" id="examples">
+                    <h2>💻 Usage Examples</h2>
+
+                    <h3>Basic Pipeline Creation</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">using Beep.Python.AI.Transformers;
+
+// Create OpenAI pipeline
+var openAIConfig = new OpenAIConnectionConfig
+{
+    ApiKey = "your-openai-api-key",
+    TimeoutSeconds = 60
+};
+
+var openAIPipeline = TransformerPipelineFactory.CreateOpenAIPipeline(
+    runtimeManager, executeManager, openAIConfig);
+
+// Load a model and start using
+await openAIPipeline.LoadModelAsync(
+    new TransformerModelInfo { Name = "gpt-4", Source = TransformerModelSource.OpenAI },
+    TransformerTask.TextGeneration);
+
+var result = await openAIPipeline.GenerateTextAsync("Hello, world!");
+Console.WriteLine(result.Data);</code></pre>
+                    </div>
+
+                    <h3>Multi-Provider Setup</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">// Create multiple pipelines for different tasks
+var providers = new Dictionary<string, ITransformerPipeLine>();
+
+// OpenAI for general text generation
+providers["openai"] = TransformerPipelineFactory.CreateOpenAIPipeline(
+    runtimeManager, executeManager, openAIConfig);
+
+// HuggingFace for specialized models
+providers["huggingface"] = TransformerPipelineFactory.CreateHuggingFacePipeline(
+    runtimeManager, executeManager, huggingFaceConfig);
+
+// Azure for enterprise workloads
+providers["azure"] = TransformerPipelineFactory.CreateAzurePipeline(
+    runtimeManager, executeManager, azureConfig);
+
+// Use appropriate provider based on task
+async Task<string> ProcessText(string text, string taskType)
+{
+    var pipeline = taskType switch
+    {
+        "general" => providers["openai"],
+        "specialized" => providers["huggingface"],
+        "enterprise" => providers["azure"],
+        _ => providers["openai"]
+    };
+
+    var result = await pipeline.GenerateTextAsync(text);
+    return result.Data;
+}</code></pre>
+                    </div>
+
+                    <h3>Dynamic Pipeline Creation</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">// Create pipeline dynamically based on configuration
+public async Task<ITransformerPipeLine> CreatePipelineForUser(string userId)
+{
+    // Load user preferences
+    var userConfig = await GetUserConfigurationAsync(userId);
+    
+    // Create pipeline based on user's preferred provider
+    var pipeline = TransformerPipelineFactory.CreatePipeline(
+        userConfig.PreferredProvider,
+        runtimeManager,
+        executeManager,
+        userConfig.ConnectionConfig);
+
+    // Apply user-specific settings
+    if (userConfig.CustomModelPath != null)
+    {
+        await pipeline.LoadModelAsync(
+            new TransformerModelInfo 
+            { 
+                Name = userConfig.CustomModelPath,
+                Source = userConfig.PreferredProvider 
+            },
+            userConfig.DefaultTask);
+    }
+
+    return pipeline;
+}
+
+// Configuration from appsettings.json
+public ITransformerPipeLine CreateFromAppSettings(IConfiguration config)
+{
+    return TransformerPipelineFactory.CreatePipelineFromConfig(
+        config, "AIProviders:Default", runtimeManager, executeManager);
+}</code></pre>
+                    </div>
+
+                    <h3>Pipeline with Validation and Error Handling</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public async Task<ITransformerPipeLine> CreateValidatedPipelineAsync(
+    TransformerModelSource provider,
+    TransformerConnectionConfig config)
+{
+    try
+    {
+        // Create pipeline with validation
+        var pipeline = TransformerPipelineFactory.CreatePipeline(
+            provider, runtimeManager, executeManager, config);
+
+        // Test connection
+        var isConnected = await pipeline.TestConnectionAsync();
+        if (!isConnected)
+        {
+            throw new InvalidOperationException($"Failed to connect to {provider}");
+        }
+
+        // Validate model availability
+        var availableModels = await pipeline.GetAvailableModelsAsync();
+        if (!availableModels.Any())
+        {
+            throw new InvalidOperationException($"No models available for {provider}");
+        }
+
+        Console.WriteLine($"✅ Successfully created {provider} pipeline");
+        Console.WriteLine($"📊 Available models: {availableModels.Count()}");
+
+        return pipeline;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Failed to create {provider} pipeline: {ex.Message}");
+        
+        // Fallback to local pipeline if available
+        if (provider != TransformerModelSource.Local)
+        {
+            Console.WriteLine("🔄 Falling back to local pipeline...");
+            return CreateValidatedPipelineAsync(
+                TransformerModelSource.Local, 
+                new LocalConnectionConfig());
+        }
+        
+        throw;
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Configuration Examples Section -->
+                <section class="section" id="configuration">
+                    <h2>⚙️ Configuration Examples</h2>
+
+                    <h3>Configuration File Integration</h3>
+                    <div class="code-example">
+                        <h4>appsettings.json</h4>
+                        <pre><code class="language-json">{
+  "AIProviders": {
+    "Default": {
+      "Provider": "OpenAI",
+      "ConnectionConfig": {
+        "ApiKey": "your-api-key",
+        "TimeoutSeconds": 60,
+        "MaxRetries": 3
+      }
+    },
+    "Fallback": {
+      "Provider": "HuggingFace",
+      "ConnectionConfig": {
+        "UseInferenceAPI": true,
+        "Token": "your-hf-token"
+      }
+    }
+  }
+}</code></pre>
                     </div>
 
                     <div class="code-example">
-                        <h4>Enterprise Multi-User Example</h4>
-                        <pre><code class="language-csharp">public class EnterpriseAIService
+                        <h4>Factory Service with Configuration</h4>
+                        <pre><code class="language-csharp">public class PipelineFactoryService
 {
+    private readonly IConfiguration _configuration;
     private readonly IPythonRunTimeManager _runtimeManager;
     private readonly IPythonCodeExecuteManager _executeManager;
-    private readonly Dictionary&lt;string, ITransformerPipeLine&gt; _userPipelines = new();
 
-    public async Task&lt;ITransformerPipeLine&gt; GetUserPipelineAsync(
-        string userId, 
-        TransformerModelSource provider)
+    public PipelineFactoryService(
+        IConfiguration configuration,
+        IPythonRunTimeManager runtimeManager,
+        IPythonCodeExecuteManager executeManager)
     {
-        if (!_userPipelines.ContainsKey(userId))
-        {
-            var connectionConfig = GetConnectionConfig(provider);
-            
-            var pipeline = TransformerPipelineFactory.CreateSessionAwarePipelineWithConnection(
-                provider,
-                _runtimeManager,
-                _executeManager,
-                username: userId,
-                connectionConfig: connectionConfig
-            );
-
-            await pipeline.InitializeAsync(new TransformerPipelineConfig
-            {
-                TaskType = TransformerTask.TextGeneration,
-                Device = TransformerDevice.Auto
-            });
-
-            _userPipelines[userId] = pipeline;
-        }
-
-        return _userPipelines[userId];
+        _configuration = configuration;
+        _runtimeManager = runtimeManager;
+        _executeManager = executeManager;
     }
 
-    private TransformerConnectionConfig GetConnectionConfig(TransformerModelSource provider)
+    public ITransformerPipeLine CreateDefaultPipeline()
     {
-        return provider switch
+        return TransformerPipelineFactory.CreatePipelineFromConfig(
+            _configuration, "AIProviders:Default", _runtimeManager, _executeManager);
+    }
+
+    public ITransformerPipeLine CreateFallbackPipeline()
+    {
+        return TransformerPipelineFactory.CreatePipelineFromConfig(
+            _configuration, "AIProviders:Fallback", _runtimeManager, _executeManager);
+    }
+
+    public async Task<ITransformerPipeLine> CreateBestAvailablePipelineAsync()
+    {
+        // Try default first
+        try
         {
-            TransformerModelSource.OpenAI => new OpenAIConnectionConfig 
-            { 
-                ApiKey = GetSecureApiKey("OpenAI") 
-            },
-            TransformerModelSource.Azure => new AzureOpenAIConnectionConfig 
-            { 
-                Endpoint = GetConfigValue("Azure:Endpoint"),
-                ApiKey = GetSecureApiKey("Azure")
-            },
-            _ => throw new NotSupportedException($"Provider {provider} not configured")
+            var defaultPipeline = CreateDefaultPipeline();
+            if (await defaultPipeline.TestConnectionAsync())
+            {
+                return defaultPipeline;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Default pipeline failed: {ex.Message}");
+        }
+
+        // Fall back to secondary option
+        try
+        {
+            var fallbackPipeline = CreateFallbackPipeline();
+            if (await fallbackPipeline.TestConnectionAsync())
+            {
+                return fallbackPipeline;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Fallback pipeline failed: {ex.Message}");
+        }
+
+        throw new InvalidOperationException("No available AI providers");
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Factory Patterns Section -->
+                <section class="section" id="patterns">
+                    <h2>🏗️ Factory Patterns and Best Practices</h2>
+
+                    <h3>Provider Registration Pattern</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public class PipelineRegistry
+{
+    private readonly Dictionary<TransformerModelSource, Func<ITransformerPipeLine>> _factories;
+
+    public PipelineRegistry(
+        IPythonRunTimeManager runtimeManager,
+        IPythonCodeExecuteManager executeManager)
+    {
+        _factories = new Dictionary<TransformerModelSource, Func<ITransformerPipeLine>>
+        {
+            [TransformerModelSource.OpenAI] = () => 
+                TransformerPipelineFactory.CreateOpenAIPipeline(
+                    runtimeManager, executeManager, GetOpenAIConfig()),
+            
+            [TransformerModelSource.Azure] = () => 
+                TransformerPipelineFactory.CreateAzurePipeline(
+                    runtimeManager, executeManager, GetAzureConfig()),
+            
+            [TransformerModelSource.HuggingFace] = () => 
+                TransformerPipelineFactory.CreateHuggingFacePipeline(
+                    runtimeManager, executeManager, GetHuggingFaceConfig()),
+            
+            [TransformerModelSource.Google] = () => 
+                TransformerPipelineFactory.CreateGoogleAIPipeline(
+                    runtimeManager, executeManager, GetGoogleConfig())
         };
+    }
+
+    public ITransformerPipeLine GetPipeline(TransformerModelSource provider)
+    {
+        if (_factories.TryGetValue(provider, out var factory))
+        {
+            return factory();
+        }
+        
+        throw new NotSupportedException($"Provider {provider} not registered");
+    }
+
+    public IEnumerable<TransformerModelSource> GetAvailableProviders()
+    {
+        return _factories.Keys;
     }
 }</code></pre>
                     </div>
 
-                    <!-- All Provider Methods -->
-                    <h3>Complete Provider Method List</h3>
-                    
-                    <div class="feature-grid">
-                        <div class="feature-card">
-                            <h4><i class="bi bi-lightning"></i> OpenAI</h4>
-                            <p><code>CreateOpenAIPipeline</code></p>
-                            <p>GPT-4, GPT-3.5, DALL-E, Whisper models</p>
-                        </div>
-                        <div class="feature-card">
-                            <h4><i class="bi bi-cloud"></i> Azure OpenAI</h4>
-                            <p><code>CreateAzureOpenAIPipeline</code></p>
-                            <p>Enterprise OpenAI models on Azure</p>
-                        </div>
-                        <div class="feature-card">
-                            <h4><i class="bi bi-hdd"></i> HuggingFace</h4>
-                            <p><code>CreateHuggingFacePipeline</code></p>
-                            <p>Open-source transformer models</p>
-                        </div>
-                        <div class="feature-card">
-                            <h4><i class="bi bi-google"></i> Google AI</h4>
-                            <p><code>CreateGoogleAIPipeline</code></p>
-                            <p>Gemini, PaLM, and other Google models</p>
-                        </div>
-                        <div class="feature-card">
-                            <h4><i class="bi bi-chat-square-text"></i> Anthropic</h4>
-                            <p><code>CreateAnthropicPipeline</code></p>
-                            <p>Claude models with safety features</p>
-                        </div>
-                        <div class="feature-card">
-                            <h4><i class="bi bi-folder"></i> Local Models</h4>
-                            <p><code>CreateLocalPipeline</code></p>
-                            <p>Self-hosted transformer models</p>
-                        </div>
-                    </div>
-                </section>
+                    <h3>Dependency Injection Integration</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">// Program.cs or Startup.cs
+public void ConfigureServices(IServiceCollection services)
+{
+    // Register core components
+    services.AddSingleton<IPythonRunTimeManager, PythonNetRunTimeManager>();
+    services.AddScoped<IPythonCodeExecuteManager, PythonCodeExecuteManager>();
 
-                <!-- Best Practices -->
-                <section class="section" id="best-practices">
-                    <h2>?? Best Practices</h2>
-                    
-                    <div class="tip">
-                        <strong>?? Connection Configuration</strong>
-                        <p>Always configure connection settings for optimal performance and reliability:</p>
-                        <ul>
-                            <li>Set appropriate timeout values based on your use case</li>
-                            <li>Configure retry policies for resilient error handling</li>
-                            <li>Use secure credential storage for API keys</li>
-                            <li>Enable logging for troubleshooting and monitoring</li>
-                        </ul>
-                    </div>
+    // Register factory as a service
+    services.AddScoped<IPipelineFactory, TransformerPipelineFactory>();
 
-                    <div class="success">
-                        <strong>? Session Management</strong>
-                        <p>For enterprise applications, use session-aware pipelines:</p>
-                        <ul>
-                            <li>Isolate user sessions for security and resource management</li>
-                            <li>Implement proper cleanup and disposal patterns</li>
-                            <li>Monitor resource usage per user/session</li>
-                            <li>Use connection pooling for better performance</li>
-                        </ul>
-                    </div>
+    // Register specific pipeline configurations
+    services.Configure<OpenAIConnectionConfig>(
+        configuration.GetSection("AIProviders:OpenAI"));
+    services.Configure<AzureOpenAIConnectionConfig>(
+        configuration.GetSection("AIProviders:Azure"));
 
-                    <div class="warning">
-                        <strong>?? Production Considerations</strong>
-                        <p>Important considerations for production deployments:</p>
-                        <ul>
-                            <li>Implement rate limiting to avoid API quota issues</li>
-                            <li>Use health checks to monitor pipeline availability</li>
-                            <li>Configure proper logging and telemetry</li>
-                            <li>Plan for graceful degradation when providers are unavailable</li>
-                        </ul>
+    // Register pipeline factory service
+    services.AddScoped<PipelineFactoryService>();
+}
+
+// Usage in controller or service
+[ApiController]
+public class AIController : ControllerBase
+{
+    private readonly PipelineFactoryService _pipelineFactory;
+
+    public AIController(PipelineFactoryService pipelineFactory)
+    {
+        _pipelineFactory = pipelineFactory;
+    }
+
+    [HttpPost("generate")]
+    public async Task<IActionResult> GenerateText([FromBody] GenerateRequest request)
+    {
+        var pipeline = await _pipelineFactory.CreateBestAvailablePipelineAsync();
+        var result = await pipeline.GenerateTextAsync(request.Prompt);
+        return Ok(result);
+    }
+}</code></pre>
                     </div>
                 </section>
 
                 <!-- Related Classes -->
                 <section class="section" id="related">
-                    <h2>?? Related Classes</h2>
+                    <h2>🔗 Related Classes</h2>
                     <ul class="member-list">
                         <li>
                             <div class="member-name">ITransformerPipeLine</div>
                             <div class="member-type">Interface</div>
-                            <div class="member-desc">Core transformer pipeline interface</div>
+                            <div class="member-desc">Core interface implemented by all transformer pipelines</div>
                         </li>
                         <li>
                             <div class="member-name">BaseTransformerPipeline</div>
                             <div class="member-type">Abstract Class</div>
-                            <div class="member-desc">Base implementation for all pipeline providers</div>
+                            <div class="member-desc">Base implementation with common pipeline functionality</div>
                         </li>
                         <li>
                             <div class="member-name">TransformerConnectionConfig</div>
-                            <div class="member-type">Abstract Class</div>
-                            <div class="member-desc">Base configuration class for provider connections</div>
+                            <div class="member-type">Configuration Class</div>
+                            <div class="member-desc">Base configuration class for all AI provider connections</div>
                         </li>
                         <li>
-                            <div class="member-name">TransformerPipelineConfig</div>
-                            <div class="member-type">Class</div>
-                            <div class="member-desc">Pipeline-specific configuration settings</div>
+                            <div class="member-name">MultimodalPipelineFactory</div>
+                            <div class="member-type">Factory Class</div>
+                            <div class="member-desc">Specialized factory for multimodal AI pipelines</div>
                         </li>
                     </ul>
                 </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="BaseTransformerPipeline.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> BaseTransformerPipeline
+                    </a>
+                    <a href="ITransformerPipeLine.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> ITransformerPipeLine
+                    </a>
+                </div>
 
                 <!-- Footer -->
                 <footer class="documentation-footer">

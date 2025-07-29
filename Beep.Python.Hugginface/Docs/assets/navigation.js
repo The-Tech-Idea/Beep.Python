@@ -6,6 +6,7 @@
 class TransformerNavigationManager {
     constructor() {
         this.currentPage = this.getCurrentPageName();
+        this.currentPath = this.getCurrentPath();
         this.navigationMapping = this.createNavigationMapping();
     }
 
@@ -13,6 +14,23 @@ class TransformerNavigationManager {
         const path = window.location.pathname;
         const filename = path.split('/').pop() || 'index.html';
         return filename.replace('.html', '');
+    }
+
+    getCurrentPath() {
+        const path = window.location.pathname;
+        const pathParts = path.split('/');
+        
+        // Determine the relative path prefix based on current location
+        let relativePath = '';
+        
+        // Check if we're in a subdirectory
+        const docIndex = pathParts.findIndex(part => part.toLowerCase() === 'docs');
+        if (docIndex !== -1 && docIndex < pathParts.length - 2) {
+            const dirsAfterDocs = pathParts.length - docIndex - 2; // -1 for docs, -1 for filename
+            relativePath = '../'.repeat(dirsAfterDocs);
+        }
+        
+        return relativePath;
     }
 
     createNavigationMapping() {
@@ -70,6 +88,18 @@ class TransformerNavigationManager {
             },
             'AnthropicTransformerPipeline': { 
                 activeId: 'nav-anthropic', 
+                openSection: 'nav-providers' 
+            },
+            'CohereTransformerPipeline': { 
+                activeId: 'nav-cohere', 
+                openSection: 'nav-providers' 
+            },
+            'MetaTransformerPipeline': { 
+                activeId: 'nav-meta', 
+                openSection: 'nav-providers' 
+            },
+            'MistralTransformerPipeline': { 
+                activeId: 'nav-mistral', 
                 openSection: 'nav-providers' 
             },
             'LocalTransformerPipeline': { 
@@ -140,6 +170,8 @@ class TransformerNavigationManager {
     }
 
     getNavigationHTML() {
+        const basePath = this.currentPath;
+        
         return `
         <!-- Beep.Python.AI.Transformers - Shared Navigation Component -->
         <div class="logo">
@@ -156,76 +188,103 @@ class TransformerNavigationManager {
 
         <nav>
             <ul class="nav-menu">
-                <li><a href="index.html" id="nav-home"><i class="bi bi-house"></i> Home</a></li>
+                <li><a href="${basePath}index.html" id="nav-home"><i class="bi bi-house"></i> Home</a></li>
                 
                 <li class="has-submenu" id="nav-getting-started">
                     <a href="#"><i class="bi bi-rocket"></i> Getting Started</a>
                     <ul class="submenu">
-                        <li><a href="installation.html" id="nav-installation">Installation</a></li>
-                        <li><a href="getting-started.html" id="nav-quick-start">Quick Start Guide</a></li>
-                        <li><a href="configuration.html" id="nav-configuration">Configuration</a></li>
+                        <li><a href="${basePath}installation.html" id="nav-installation">Installation</a></li>
+                        <li><a href="${basePath}getting-started.html" id="nav-quick-start">Quick Start Guide</a></li>
+                        <li><a href="${basePath}configuration.html" id="nav-configuration">Configuration</a></li>
                     </ul>
                 </li>
                 
                 <li class="has-submenu" id="nav-core-api">
                     <a href="#"><i class="bi bi-layers"></i> Core API</a>
                     <ul class="submenu">
-                        <li><a href="api/ITransformerPipeLine.html" id="nav-core-interface">ITransformerPipeLine</a></li>
-                        <li><a href="api/BaseTransformerPipeline.html" id="nav-base-pipeline">BaseTransformerPipeline</a></li>
-                        <li><a href="api/TransformerPipelineFactory.html" id="nav-pipeline-factory">TransformerPipelineFactory</a></li>
+                        <li><a href="${basePath}api/ITransformerPipeLine.html" id="nav-core-interface">ITransformerPipeLine</a></li>
+                        <li><a href="${basePath}api/BaseTransformerPipeline.html" id="nav-base-pipeline">BaseTransformerPipeline</a></li>
+                        <li><a href="${basePath}api/TransformerPipelineFactory.html" id="nav-pipeline-factory">TransformerPipelineFactory</a></li>
                     </ul>
                 </li>
                 
                 <li class="has-submenu" id="nav-providers">
                     <a href="#"><i class="bi bi-cloud"></i> AI Providers</a>
                     <ul class="submenu">
-                        <li><a href="api/HuggingFaceTransformerPipeline.html" id="nav-huggingface">HuggingFace</a></li>
-                        <li><a href="api/OpenAITransformerPipeline.html" id="nav-openai">OpenAI</a></li>
-                        <li><a href="api/AzureTransformerPipeline.html" id="nav-azure">Azure OpenAI</a></li>
-                        <li><a href="api/GoogleTransformerPipeline.html" id="nav-google">Google AI</a></li>
-                        <li><a href="api/AnthropicTransformerPipeline.html" id="nav-anthropic">Anthropic</a></li>
-                        <li><a href="api/LocalTransformerPipeline.html" id="nav-local">Local Models</a></li>
-                        <li><a href="api/CustomTransformerPipeline.html" id="nav-custom">Custom Providers</a></li>
+                        <li><a href="${basePath}api/HuggingFaceTransformerPipeline.html" id="nav-huggingface"><i class="bi bi-circle-fill text-warning"></i> HuggingFace</a></li>
+                        <li><a href="${basePath}api/OpenAITransformerPipeline.html" id="nav-openai"><i class="bi bi-circle-fill text-success"></i> OpenAI</a></li>
+                        <li><a href="${basePath}api/AzureTransformerPipeline.html" id="nav-azure"><i class="bi bi-circle-fill text-primary"></i> Azure OpenAI</a></li>
+                        <li><a href="${basePath}api/GoogleTransformerPipeline.html" id="nav-google"><i class="bi bi-circle-fill text-info"></i> Google AI</a></li>
+                        <li><a href="${basePath}api/AnthropicTransformerPipeline.html" id="nav-anthropic"><i class="bi bi-circle-fill text-secondary"></i> Anthropic</a></li>
+                        <li><a href="${basePath}api/CohereTransformerPipeline.html" id="nav-cohere"><i class="bi bi-circle-fill text-purple"></i> Cohere</a></li>
+                        <li><a href="${basePath}api/MetaTransformerPipeline.html" id="nav-meta"><i class="bi bi-circle-fill text-dark"></i> Meta AI</a></li>
+                        <li><a href="${basePath}api/MistralTransformerPipeline.html" id="nav-mistral"><i class="bi bi-circle-fill text-orange"></i> Mistral AI</a></li>
+                        <li><a href="${basePath}api/LocalTransformerPipeline.html" id="nav-local"><i class="bi bi-circle-fill text-muted"></i> Local Models</a></li>
+                        <li><a href="${basePath}api/CustomTransformerPipeline.html" id="nav-custom"><i class="bi bi-circle-fill text-danger"></i> Custom Providers</a></li>
                     </ul>
                 </li>
                 
                 <li class="has-submenu" id="nav-multimodal">
                     <a href="#"><i class="bi bi-collection"></i> Multimodal AI</a>
                     <ul class="submenu">
-                        <li><a href="api/MultimodalTransformerPipeline.html" id="nav-multimodal-pipeline">Multimodal Pipeline</a></li>
-                        <li><a href="api/MultimodalPipelineFactory.html" id="nav-multimodal-factory">Multimodal Factory</a></li>
-                        <li><a href="examples/multimodal-examples.html" id="nav-multimodal-examples">Multimodal Examples</a></li>
+                        <li><a href="${basePath}api/MultimodalTransformerPipeline.html" id="nav-multimodal-pipeline">Multimodal Pipeline</a></li>
+                        <li><a href="${basePath}api/MultimodalPipelineFactory.html" id="nav-multimodal-factory">Multimodal Factory</a></li>
+                        <li><a href="${basePath}examples/multimodal-examples.html" id="nav-multimodal-examples">Multimodal Examples</a></li>
                     </ul>
                 </li>
                 
                 <li class="has-submenu" id="nav-examples">
                     <a href="#"><i class="bi bi-code-square"></i> Examples</a>
                     <ul class="submenu">
-                        <li><a href="examples/basic-usage.html" id="nav-basic-examples">Basic Usage</a></li>
-                        <li><a href="examples/multi-provider.html" id="nav-multi-provider">Multi-Provider Setup</a></li>
-                        <li><a href="examples/enterprise.html" id="nav-enterprise-examples">Enterprise Deployment</a></li>
+                        <li><a href="${basePath}examples/basic-usage.html" id="nav-basic-examples">Basic Usage</a></li>
+                        <li><a href="${basePath}examples/multi-provider.html" id="nav-multi-provider">Multi-Provider Setup</a></li>
+                        <li><a href="${basePath}examples/enterprise.html" id="nav-enterprise-examples">Enterprise Deployment</a></li>
                     </ul>
                 </li>
                 
                 <li class="has-submenu" id="nav-configuration">
                     <a href="#"><i class="bi bi-gear"></i> Configuration</a>
                     <ul class="submenu">
-                        <li><a href="configuration/connection-config.html" id="nav-connection-config">Connection Setup</a></li>
-                        <li><a href="configuration/security.html" id="nav-security">Security & Compliance</a></li>
-                        <li><a href="configuration/monitoring.html" id="nav-monitoring">Monitoring & Analytics</a></li>
+                        <li><a href="${basePath}configuration/connection-config.html" id="nav-connection-config">Connection Setup</a></li>
+                        <li><a href="${basePath}configuration/security.html" id="nav-security">Security & Compliance</a></li>
+                        <li><a href="${basePath}configuration/monitoring.html" id="nav-monitoring">Monitoring & Analytics</a></li>
                     </ul>
                 </li>
                 
                 <li class="has-submenu" id="nav-reference">
                     <a href="#"><i class="bi bi-book"></i> Reference</a>
                     <ul class="submenu">
-                        <li><a href="reference/enums.html" id="nav-enums">Enumerations</a></li>
-                        <li><a href="reference/data-models.html" id="nav-data-models">Data Models</a></li>
-                        <li><a href="reference/changelog.html" id="nav-changelog">Changelog</a></li>
+                        <li><a href="${basePath}reference/enums.html" id="nav-enums">Enumerations</a></li>
+                        <li><a href="${basePath}reference/data-models.html" id="nav-data-models">Data Models</a></li>
+                        <li><a href="${basePath}reference/changelog.html" id="nav-changelog">Changelog</a></li>
                     </ul>
                 </li>
             </ul>
         </nav>
+        
+        <!-- Footer Section -->
+        <div class="nav-footer">
+            <div class="nav-footer-section">
+                <h6><i class="bi bi-check-circle text-success"></i> Recently Added</h6>
+                <ul class="nav-footer-links">
+                    <li><a href="${basePath}api/CohereTransformerPipeline.html" class="text-muted small">Cohere Pipeline</a></li>
+                    <li><a href="${basePath}api/MetaTransformerPipeline.html" class="text-muted small">Meta AI Pipeline</a></li>
+                    <li><a href="${basePath}api/MistralTransformerPipeline.html" class="text-muted small">Mistral Pipeline</a></li>
+                    <li><a href="${basePath}api/CustomTransformerPipeline.html" class="text-muted small">Custom Pipeline</a></li>
+                    <li><a href="${basePath}api/MultimodalPipelineFactory.html" class="text-muted small">Multimodal Factory</a></li>
+                </ul>
+            </div>
+            
+            <div class="nav-footer-section">
+                <h6><i class="bi bi-star text-warning"></i> Popular</h6>
+                <ul class="nav-footer-links">
+                    <li><a href="${basePath}getting-started.html" class="text-muted small">Quick Start</a></li>
+                    <li><a href="${basePath}api/OpenAITransformerPipeline.html" class="text-muted small">OpenAI Integration</a></li>
+                    <li><a href="${basePath}examples/basic-usage.html" class="text-muted small">Basic Examples</a></li>
+                    <li><a href="${basePath}api/HuggingFaceTransformerPipeline.html" class="text-muted small">HuggingFace Models</a></li>
+                </ul>
+            </div>
+        </div>
         `;
     }
 
@@ -250,6 +309,8 @@ class TransformerNavigationManager {
                 // Set up navigation after loading
                 this.setupNavigation();
                 console.log('? Transformer navigation loaded successfully');
+                console.log('?? Current path:', this.currentPath);
+                console.log('?? Current page:', this.currentPage);
             } else {
                 console.error('? Sidebar element not found with any selector');
             }

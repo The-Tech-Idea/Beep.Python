@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security & Compliance - Beep.Python.AI.Transformers</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="../assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="../index.html">Home</a>
+                    <span>›</span>
+                    <a href="../configuration.html">Configuration</a>
+                    <span>›</span>
+                    <span>Security & Compliance</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-shield-check"></i> Security & Compliance</h1>
+                    <p class="page-subtitle">Enterprise-grade security practices and compliance frameworks for AI transformer pipelines</p>
+                </div>
+
+                <!-- Table of Contents -->
+                <div class="toc">
+                    <h3>?? Table of Contents</h3>
+                    <ul>
+                        <li><a href="#overview">Security Overview</a></li>
+                        <li><a href="#authentication">Authentication & Authorization</a></li>
+                        <li><a href="#data-protection">Data Protection</a></li>
+                        <li><a href="#compliance">Compliance Frameworks</a></li>
+                        <li><a href="#content-safety">Content Safety</a></li>
+                        <li><a href="#audit-logging">Audit & Logging</a></li>
+                        <li><a href="#incident-response">Incident Response</a></li>
+                        <li><a href="#best-practices">Security Best Practices</a></li>
+                    </ul>
+                </div>
+
+                <!-- Security Overview -->
+                <section class="section" id="overview">
+                    <h2><i class="bi bi-shield-lock"></i> Security Overview</h2>
+                    
+                    <p>
+                        The Beep.Python.AI.Transformers library implements comprehensive security measures to protect sensitive data, 
+                        ensure compliance with regulatory requirements, and maintain the integrity of AI operations in enterprise environments.
+                    </p>
+
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-key"></i> Authentication</h4>
+                            <p>Multi-factor authentication, API key management, and identity verification</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-lock"></i> Encryption</h4>
+                            <p>End-to-end encryption for data in transit and at rest</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-eye"></i> Monitoring</h4>
+                            <p>Real-time security monitoring and threat detection</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-clipboard-check"></i> Compliance</h4>
+                            <p>GDPR, HIPAA, SOC 2, and other regulatory compliance</p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h4>?? Security Architecture Principles</h4>
+                        <ul>
+                            <li><strong>Zero Trust:</strong> Never trust, always verify approach</li>
+                            <li><strong>Defense in Depth:</strong> Multiple layers of security controls</li>
+                            <li><strong>Least Privilege:</strong> Minimal access rights for users and systems</li>
+                            <li><strong>Data Minimization:</strong> Collect and process only necessary data</li>
+                            <li><strong>Privacy by Design:</strong> Built-in privacy protection</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Authentication & Authorization -->
+                <section class="section" id="authentication">
+                    <h2><i class="bi bi-person-check"></i> Authentication & Authorization</h2>
+                    
+                    <h3>1. API Key Security</h3>
+                    <div class="code-example">
+                        <h4>Secure API Key Management</h4>
+                        <pre><code class="language-csharp">// Use Azure Key Vault for API key storage
+public class SecureApiKeyService
+{
+    private readonly SecretClient _keyVaultClient;
+    private readonly IMemoryCache _cache;
+    private readonly ILogger<SecureApiKeyService> _logger;
+
+    public async Task<string> GetApiKeyAsync(string provider, string environment)
+    {
+        var cacheKey = $"apikey_{provider}_{environment}";
+        
+        if (_cache.TryGetValue(cacheKey, out string cachedKey))
+        {
+            return cachedKey;
+        }
+
+        try
+        {
+            var secretName = $"{provider}-api-key-{environment}";
+            var secret = await _keyVaultClient.GetSecretAsync(secretName);
+            
+            // Cache for 5 minutes with sliding expiration
+            _cache.Set(cacheKey, secret.Value.Value, TimeSpan.FromMinutes(5));
+            
+            _logger.LogInformation("Retrieved API key for {Provider} from Key Vault", provider);
+            return secret.Value.Value;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to retrieve API key for {Provider}", provider);
+            throw new SecurityException($"Failed to retrieve API key for {provider}");
+        }
+    }
+
+    public async Task RotateApiKeyAsync(string provider, string newKey)
+    {
+        try
+        {
+            var secretName = $"{provider}-api-key-production";
+            await _keyVaultClient.SetSecretAsync(secretName, newKey);
+            
+            // Invalidate cache
+            _cache.Remove($"apikey_{provider}_production");
+            
+            _logger.LogInformation("API key rotated for {Provider}", provider);
+            
+            // Notify monitoring system
+            await NotifyKeyRotationAsync(provider);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to rotate API key for {Provider}", provider);
+            throw;
+        }
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>2. OAuth 2.0 Integration</h3>
+                    <div class="code-example">
+                        <h4>OAuth 2.0 with Azure AD</h4>
+                        <pre><code class="language-csharp">// Configure OAuth 2.0 authentication
+services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = "https://login.microsoftonline.com/{tenant-id}";
+        options.Audience = "api://beep-transformers";
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+// Role-based authorization
+services.AddAuthorization(options =>
+{
+    options.AddPolicy("TransformerAdmin", policy =>
+        policy.RequireRole("Transformer.Admin"));
+    
+    options.AddPolicy("TransformerUser", policy =>
+        policy.RequireRole("Transformer.User", "Transformer.Admin"));
+    
+    options.AddPolicy("HighValueData", policy =>
+        policy.RequireClaim("data_classification", "confidential", "restricted"));
+});
+
+// Usage in controllers
+[Authorize(Policy = "TransformerAdmin")]
+[HttpPost("admin/configure")]
+public async Task<IActionResult> ConfigureProvider([FromBody] ProviderConfig config)
+{
+    // Admin-only configuration
+}</code></pre>
+                    </div>
+
+                    <h3>3. Multi-Factor Authentication</h3>
+                    <div class="code-example">
+                        <h4>MFA Implementation</h4>
+                        <pre><code class="language-csharp">public class MfaRequiredAttribute : ActionFilterAttribute
+{
+    public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+    {
+        var user = context.HttpContext.User;
+        var mfaService = context.HttpContext.RequestServices.GetService<IMfaService>();
+        
+        // Check if user has completed MFA
+        if (!await mfaService.IsMfaCompletedAsync(user.Identity.Name))
+        {
+            // Check if this is a high-risk operation
+            if (IsHighRiskOperation(context.ActionDescriptor))
+            {
+                context.Result = new ChallengeResult("MFA");
+                return;
+            }
+        }
+        
+        await next();
+    }
+    
+    private bool IsHighRiskOperation(ActionDescriptor action)
+    {
+        // Define high-risk operations
+        var highRiskActions = new[]
+        {
+            "ConfigureProvider",
+            "DeleteModel",
+            "ExportData",
+            "ModifySecuritySettings"
+        };
+        
+        return highRiskActions.Contains(action.RouteValues["action"]);
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Data Protection -->
+                <section class="section" id="data-protection">
+                    <h2><i class="bi bi-shield-lock-fill"></i> Data Protection</h2>
+                    
+                    <h3>1. Encryption at Rest</h3>
+                    <div class="code-example">
+                        <h4>Data Encryption Configuration</h4>
+                        <pre><code class="language-json">{
+  "Encryption": {
+    "Provider": "AzureKeyVault",
+    "KeyVaultUrl": "https://your-vault.vault.azure.net/",
+    "KeyName": "beep-transformers-key",
+    "Algorithm": "AES-256-GCM",
+    "RotationPeriodDays": 90,
+    "DatabaseEncryption": {
+      "Enabled": true,
+      "TransparentDataEncryption": true,
+      "AlwaysEncrypted": true,
+      "ColumnMasterKey": "CMK_BeepTransformers"
+    },
+    "FileSystemEncryption": {
+      "Enabled": true,
+      "Path": "/encrypted-data",
+      "Algorithm": "AES-256-CBC"
+    }
+  }
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Encryption Service Implementation</h4>
+                        <pre><code class="language-csharp">public class DataEncryptionService
+{
+    private readonly KeyVaultKeyResolver _keyResolver;
+    private readonly ILogger<DataEncryptionService> _logger;
+    
+    public async Task<EncryptedData> EncryptAsync(byte[] data, string keyId = null)
+    {
+        try
+        {
+            keyId ??= await GetCurrentKeyIdAsync();
+            var key = await _keyResolver.ResolveKeyAsync(keyId);
+            
+            // Generate random IV for each encryption
+            var iv = new byte[16];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(iv);
+            }
+            
+            using var aes = Aes.Create();
+            aes.Key = key.KeyBytes;
+            aes.IV = iv;
+            aes.Mode = CipherMode.GCM;
+            
+            using var encryptor = aes.CreateEncryptor();
+            var encryptedData = encryptor.TransformFinalBlock(data, 0, data.Length);
+            
+            return new EncryptedData
+            {
+                Data = encryptedData,
+                IV = iv,
+                KeyId = keyId,
+                Algorithm = "AES-256-GCM",
+                Timestamp = DateTimeOffset.UtcNow
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to encrypt data");
+            throw new CryptographicException("Encryption failed", ex);
+        }
+    }
+    
+    public async Task<byte[]> DecryptAsync(EncryptedData encryptedData)
+    {
+        try
+        {
+            var key = await _keyResolver.ResolveKeyAsync(encryptedData.KeyId);
+            
+            using var aes = Aes.Create();
+            aes.Key = key.KeyBytes;
+            aes.IV = encryptedData.IV;
+            aes.Mode = CipherMode.GCM;
+            
+            using var decryptor = aes.CreateDecryptor();
+            return decryptor.TransformFinalBlock(encryptedData.Data, 0, encryptedData.Data.Length);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to decrypt data with key {KeyId}", encryptedData.KeyId);
+            throw new CryptographicException("Decryption failed", ex);
+        }
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>2. Data Classification</h3>
+                    <div class="code-example">
+                        <h4>Automated Data Classification</h4>
+                        <pre><code class="language-csharp">public class DataClassificationService
+{
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<DataClassificationService> _logger;
+    
+    public DataClassification ClassifyText(string text)
+    {
+        var classification = new DataClassification
+        {
+            Level = DataClassificationLevel.Public,
+            Confidence = 1.0,
+            DetectedPatterns = new List<string>()
+        };
+        
+        // Check for PII patterns
+        if (ContainsPII(text))
+        {
+            classification.Level = DataClassificationLevel.Confidential;
+            classification.DetectedPatterns.Add("PII");
+        }
+        
+        // Check for financial data
+        if (ContainsFinancialData(text))
+        {
+            classification.Level = DataClassificationLevel.Restricted;
+            classification.DetectedPatterns.Add("Financial");
+        }
+        
+        // Check for health information
+        if (ContainsHealthInformation(text))
+        {
+            classification.Level = DataClassificationLevel.Restricted;
+            classification.DetectedPatterns.Add("Health");
+        }
+        
+        return classification;
+    }
+    
+    private bool ContainsPII(string text)
+    {
+        // Email pattern
+        var emailPattern = @"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b";
+        
+        // SSN pattern
+        var ssnPattern = @"\b\d{3}-?\d{2}-?\d{4}\b";
+        
+        // Phone pattern
+        var phonePattern = @"\b\d{3}[-.]?\d{3}[-.]?\d{4}\b";
+        
+        return Regex.IsMatch(text, emailPattern) ||
+               Regex.IsMatch(text, ssnPattern) ||
+               Regex.IsMatch(text, phonePattern);
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>3. Data Loss Prevention (DLP)</h3>
+                    <div class="code-example">
+                        <h4>DLP Policy Enforcement</h4>
+                        <pre><code class="language-csharp">public class DlpService
+{
+    public async Task<DlpResult> ScanContentAsync(string content, DlpPolicy policy)
+    {
+        var result = new DlpResult
+        {
+            IsAllowed = true,
+            Violations = new List<DlpViolation>()
+        };
+        
+        // Scan for sensitive patterns
+        foreach (var rule in policy.Rules)
+        {
+            var matches = await ScanForPatternAsync(content, rule);
+            
+            if (matches.Any())
+            {
+                var violation = new DlpViolation
+                {
+                    RuleId = rule.Id,
+                    Severity = rule.Severity,
+                    Matches = matches,
+                    Action = rule.Action
+                };
+                
+                result.Violations.Add(violation);
+                
+                if (rule.Action == DlpAction.Block)
+                {
+                    result.IsAllowed = false;
+                }
+                else if (rule.Action == DlpAction.Redact)
+                {
+                    content = RedactMatches(content, matches);
+                }
+            }
+        }
+        
+        result.ProcessedContent = content;
+        return result;
+    }
+    
+    private string RedactMatches(string content, List<PatternMatch> matches)
+    {
+        var redactedContent = content;
+        
+        // Redact matches from end to beginning to preserve indices
+        foreach (var match in matches.OrderByDescending(m => m.StartIndex))
+        {
+            var redactionText = new string('*', match.Length);
+            redactedContent = redactedContent.Remove(match.StartIndex, match.Length)
+                                           .Insert(match.StartIndex, redactionText);
+        }
+        
+        return redactedContent;
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Compliance Frameworks -->
+                <section class="section" id="compliance">
+                    <h2><i class="bi bi-clipboard-check"></i> Compliance Frameworks</h2>
+                    
+                    <h3>1. GDPR Compliance</h3>
+                    <div class="code-example">
+                        <h4>GDPR Implementation</h4>
+                        <pre><code class="language-csharp">public class GdprComplianceService
+{
+    public async Task<ConsentResult> ProcessConsentAsync(ConsentRequest request)
+    {
+        // Validate consent requirements
+        if (!IsValidConsent(request))
+        {
+            return new ConsentResult
+            {
+                IsValid = false,
+                Reason = "Consent does not meet GDPR requirements"
+            };
+        }
+        
+        // Store consent record
+        var consent = new ConsentRecord
+        {
+            SubjectId = request.SubjectId,
+            Purpose = request.Purpose,
+            ConsentText = request.ConsentText,
+            Timestamp = DateTimeOffset.UtcNow,
+            LegalBasis = request.LegalBasis,
+            WithdrawalMethod = "API endpoint /consent/withdraw",
+            RetentionPeriod = request.RetentionPeriod
+        };
+        
+        await _consentRepository.SaveAsync(consent);
+        
+        return new ConsentResult { IsValid = true, ConsentId = consent.Id };
+    }
+    
+    public async Task<DataExportResult> ExportUserDataAsync(string subjectId)
+    {
+        // Collect all data for the subject
+        var userData = await _dataService.GetUserDataAsync(subjectId);
+        
+        // Format according to GDPR requirements
+        var export = new DataExportResult
+        {
+            SubjectId = subjectId,
+            ExportDate = DateTimeOffset.UtcNow,
+            DataCategories = new Dictionary<string, object>
+            {
+                ["Profile"] = userData.Profile,
+                ["Interactions"] = userData.Interactions,
+                ["Preferences"] = userData.Preferences,
+                ["ProcessingHistory"] = userData.ProcessingHistory
+            },
+            Format = "JSON",
+            RetentionPolicy = await GetRetentionPolicyAsync(subjectId)
+        };
+        
+        return export;
+    }
+    
+    public async Task<bool> ForgetUserAsync(string subjectId, ForgetRequest request)
+    {
+        // Validate right to be forgotten request
+        if (!await CanForgetUserAsync(subjectId, request))
+        {
+            return false;
+        }
+        
+        // Anonymize or delete user data
+        await _dataService.AnonymizeUserDataAsync(subjectId);
+        
+        // Record the action
+        await _auditService.LogForgetActionAsync(subjectId, request);
+        
+        return true;
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>2. HIPAA Compliance</h3>
+                    <div class="code-example">
+                        <h4>HIPAA Safeguards</h4>
+                        <pre><code class="language-json">{
+  "HIPAA": {
+    "PhysicalSafeguards": {
+      "FacilityAccess": "Controlled access to facilities",
+      "WorkstationSecurity": "Secure workstation configuration",
+      "DeviceControls": "Hardware and media controls"
+    },
+    "AdministrativeSafeguards": {
+      "SecurityOfficer": "Designated security officer",
+      "Workforce": "Access management and training",
+      "AccessManagement": "Role-based access controls",
+      "IncidentResponse": "Security incident procedures"
+    },
+    "TechnicalSafeguards": {
+      "AccessControl": "Unique user identification and authentication",
+      "AuditControls": "Hardware, software, and procedural mechanisms",
+      "Integrity": "PHI alteration and destruction protection",
+      "Transmission": "End-to-end encryption for PHI transmission"
+    }
+  }
+}</code></pre>
+                    </div>
+
+                    <h3>3. SOC 2 Controls</h3>
+                    <div class="code-example">
+                        <h4>SOC 2 Implementation</h4>
+                        <pre><code class="language-csharp">public class Soc2ControlsService
+{
+    // Common Criteria Controls
+    public void ImplementSecurityControls()
+    {
+        // CC6.1 - Logical and Physical Access Controls
+        ConfigureAccessControls();
+        
+        // CC6.2 - Authentication
+        ConfigureAuthenticationMechanisms();
+        
+        // CC6.3 - Authorization
+        ConfigureAuthorizationControls();
+        
+        // CC6.6 - Logical Access Controls
+        ConfigureLogicalAccessRestrictions();
+        
+        // CC6.7 - Data Transmission
+        ConfigureSecureDataTransmission();
+        
+        // CC6.8 - Data Disposal
+        ConfigureSecureDataDisposal();
+    }
+    
+    private void ConfigureAccessControls()
+    {
+        // Implement multi-factor authentication
+        services.AddMfaAuthentication();
+        
+        // Configure session management
+        services.AddSessionManagement(options =>
+        {
+            options.SessionTimeout = TimeSpan.FromMinutes(30);
+            options.RequireReauthentication = true;
+            options.MaxConcurrentSessions = 1;
+        });
+        
+        // Implement access reviews
+        services.AddAccessReviewService(options =>
+        {
+            options.ReviewFrequency = TimeSpan.FromDays(90);
+            options.AutoDisableUnusedAccounts = TimeSpan.FromDays(180);
+        });
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Content Safety -->
+                <section class="section" id="content-safety">
+                    <h2><i class="bi bi-shield-exclamation"></i> Content Safety</h2>
+                    
+                    <h3>1. Content Moderation</h3>
+                    <div class="code-example">
+                        <h4>AI Content Safety</h4>
+                        <pre><code class="language-csharp">public class ContentSafetyService
+{
+    public async Task<SafetyResult> AnalyzeContentAsync(string content, ContentType type)
+    {
+        var result = new SafetyResult
+        {
+            IsApproved = true,
+            Violations = new List<SafetyViolation>(),
+            ContentType = type
+        };
+        
+        // Check for harmful content categories
+        var categories = new[]
+        {
+            SafetyCategory.Violence,
+            SafetyCategory.Hate,
+            SafetyCategory.SelfHarm,
+            SafetyCategory.Sexual,
+            SafetyCategory.Harassment
+        };
+        
+        foreach (var category in categories)
+        {
+            var score = await _safetyClassifier.ClassifyAsync(content, category);
+            
+            if (score.Confidence > _configuration.SafetyThreshold)
+            {
+                var violation = new SafetyViolation
+                {
+                    Category = category,
+                    Confidence = score.Confidence,
+                    Severity = GetSeverityLevel(score.Confidence),
+                    Explanation = score.Explanation
+                };
+                
+                result.Violations.Add(violation);
+                
+                if (violation.Severity >= SeverityLevel.High)
+                {
+                    result.IsApproved = false;
+                }
+            }
+        }
+        
+        // Log safety analysis
+        await LogSafetyAnalysisAsync(content, result);
+        
+        return result;
+    }
+    
+    public async Task<string> ApplySafetyFiltersAsync(string content)
+    {
+        var filteredContent = content;
+        
+        // Apply profanity filter
+        filteredContent = await _profanityFilter.FilterAsync(filteredContent);
+        
+        // Apply PII redaction
+        filteredContent = await _piiRedactor.RedactAsync(filteredContent);
+        
+        // Apply custom content filters
+        foreach (var filter in _customFilters)
+        {
+            filteredContent = await filter.ApplyAsync(filteredContent);
+        }
+        
+        return filteredContent;
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>2. Prompt Injection Detection</h3>
+                    <div class="code-example">
+                        <h4>Prompt Security</h4>
+                        <pre><code class="language-csharp">public class PromptSecurityService
+{
+    public async Task<PromptSecurityResult> ValidatePromptAsync(string prompt)
+    {
+        var result = new PromptSecurityResult { IsSecure = true };
+        
+        // Check for injection patterns
+        var injectionPatterns = new[]
+        {
+            @"ignore\s+previous\s+instructions",
+            @"system\s*:\s*you\s+are",
+            @"\/\*.*\*\//",
+            @"<script.*?>.*?</script>",
+            @"javascript:",
+            @"data:text\/html"
+        };
+        
+        foreach (var pattern in injectionPatterns)
+        {
+            if (Regex.IsMatch(prompt, pattern, RegexOptions.IgnoreCase))
+            {
+                result.IsSecure = false;
+                result.DetectedThreats.Add(new SecurityThreat
+                {
+                    Type = ThreatType.PromptInjection,
+                    Pattern = pattern,
+                    Severity = SeverityLevel.High
+                });
+            }
+        }
+        
+        // Check for social engineering attempts
+        var socialEngineeringKeywords = new[]
+        {
+            "pretend", "roleplay", "act as", "ignore", "forget",
+            "jailbreak", "developer mode", "admin mode"
+        };
+        
+        var suspiciousWordCount = socialEngineeringKeywords
+            .Count(keyword => prompt.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+        
+        if (suspiciousWordCount >= 3)
+        {
+            result.IsSecure = false;
+            result.DetectedThreats.Add(new SecurityThreat
+            {
+                Type = ThreatType.SocialEngineering,
+                Severity = SeverityLevel.Medium,
+                Details = $"Found {suspiciousWordCount} suspicious keywords"
+            });
+        }
+        
+        return result;
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Audit & Logging -->
+                <section class="section" id="audit-logging">
+                    <h2><i class="bi bi-journal-text"></i> Audit & Logging</h2>
+                    
+                    <h3>1. Security Event Logging</h3>
+                    <div class="code-example">
+                        <h4>Comprehensive Audit Trail</h4>
+                        <pre><code class="language-csharp">public class SecurityAuditService
+{
+    public async Task LogSecurityEventAsync(SecurityEvent securityEvent)
+    {
+        var auditEntry = new AuditLogEntry
+        {
+            EventId = Guid.NewGuid(),
+            Timestamp = DateTimeOffset.UtcNow,
+            EventType = securityEvent.Type,
+            Severity = securityEvent.Severity,
+            UserId = securityEvent.UserId,
+            SessionId = securityEvent.SessionId,
+            IpAddress = securityEvent.IpAddress,
+            UserAgent = securityEvent.UserAgent,
+            Resource = securityEvent.Resource,
+            Action = securityEvent.Action,
+            Result = securityEvent.Result,
+            Details = securityEvent.Details,
+            Risk = CalculateRiskScore(securityEvent)
+        };
+        
+        // Store in secure audit database
+        await _auditRepository.SaveAsync(auditEntry);
+        
+        // Send to SIEM if high risk
+        if (auditEntry.Risk >= RiskLevel.High)
+        {
+            await _siemConnector.SendEventAsync(auditEntry);
+        }
+        
+        // Trigger alerts for critical events
+        if (securityEvent.Severity >= SeverityLevel.Critical)
+        {
+            await _alertingService.TriggerSecurityAlertAsync(auditEntry);
+        }
+    }
+    
+    public async Task<List<AuditLogEntry>> SearchAuditLogsAsync(AuditSearchCriteria criteria)
+    {
+        // Ensure user has permission to access audit logs
+        if (!await _authorizationService.CanAccessAuditLogsAsync(criteria.RequestingUserId))
+        {
+            throw new UnauthorizedAccessException("Insufficient permissions to access audit logs");
+        }
+        
+        return await _auditRepository.SearchAsync(criteria);
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>2. Compliance Reporting</h3>
+                    <div class="code-example">
+                        <h4>Automated Compliance Reports</h4>
+                        <pre><code class="language-csharp">public class ComplianceReportingService
+{
+    public async Task<ComplianceReport> GenerateReportAsync(ComplianceFramework framework, DateRange period)
+    {
+        var report = new ComplianceReport
+        {
+            Framework = framework,
+            Period = period,
+            GeneratedAt = DateTimeOffset.UtcNow,
+            Controls = new List<ControlAssessment>()
+        };
+        
+        var controls = await GetRequiredControlsAsync(framework);
+        
+        foreach (var control in controls)
+        {
+            var assessment = await AssessControlAsync(control, period);
+            report.Controls.Add(assessment);
+        }
+        
+        // Calculate overall compliance score
+        report.ComplianceScore = CalculateComplianceScore(report.Controls);
+        
+        // Generate recommendations
+        report.Recommendations = GenerateRecommendations(report.Controls);
+        
+        // Sign the report
+        report.Signature = await SignReportAsync(report);
+        
+        return report;
+    }
+    
+    private async Task<ControlAssessment> AssessControlAsync(ComplianceControl control, DateRange period)
+    {
+        var evidence = await CollectEvidenceAsync(control, period);
+        
+        return new ControlAssessment
+        {
+            ControlId = control.Id,
+            ControlName = control.Name,
+            Status = EvaluateControlStatus(evidence),
+            Evidence = evidence,
+            TestResults = await ExecuteControlTestsAsync(control),
+            Gaps = IdentifyGaps(evidence, control.Requirements),
+            LastTested = DateTimeOffset.UtcNow
+        };
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Best Practices -->
+                <section class="section" id="best-practices">
+                    <h2><i class="bi bi-check-circle"></i> Security Best Practices</h2>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4>?? Authentication</h4>
+                            <ul>
+                                <li>Implement multi-factor authentication</li>
+                                <li>Use strong password policies</li>
+                                <li>Rotate API keys regularly</li>
+                                <li>Monitor for suspicious login attempts</li>
+                            </ul>
+                        </div>
+                        <div class="feature-card">
+                            <h4>??? Data Protection</h4>
+                            <ul>
+                                <li>Encrypt all data in transit and at rest</li>
+                                <li>Implement data classification policies</li>
+                                <li>Use data loss prevention tools</li>
+                                <li>Regular security assessments</li>
+                            </ul>
+                        </div>
+                        <div class="feature-card">
+                            <h4>?? Monitoring</h4>
+                            <ul>
+                                <li>Real-time security monitoring</li>
+                                <li>Comprehensive audit logging</li>
+                                <li>Automated threat detection</li>
+                                <li>Regular vulnerability scans</li>
+                            </ul>
+                        </div>
+                        <div class="feature-card">
+                            <h4>?? Compliance</h4>
+                            <ul>
+                                <li>Regular compliance assessments</li>
+                                <li>Automated compliance reporting</li>
+                                <li>Staff security training</li>
+                                <li>Incident response procedures</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="tip">
+                        <h4>?? Implementation Checklist</h4>
+                        <ul>
+                            <li>? Configure secure authentication mechanisms</li>
+                            <li>? Implement comprehensive logging and monitoring</li>
+                            <li>? Set up data encryption and protection</li>
+                            <li>? Establish incident response procedures</li>
+                            <li>? Regular security training for staff</li>
+                            <li>? Conduct periodic security assessments</li>
+                            <li>? Maintain up-to-date compliance documentation</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="connection-config.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> Connection Configuration
+                    </a>
+                    <a href="monitoring.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> Monitoring & Analytics
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.AI.Transformers Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="../index.html">Home</a>
+                            <a href="../configuration.html">Configuration</a>
+                            <a href="../api/ITransformerPipeLine.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../assets/navigation.js"></script>
+</body>
+</html>

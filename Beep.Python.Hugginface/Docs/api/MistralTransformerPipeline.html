@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MistralTransformerPipeline API - Beep.Python.AI.Transformers</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="../assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="../index.html">Home</a>
+                    <span>›</span>
+                    <a href="../index.html#core-api">Core API</a>
+                    <span>›</span>
+                    <span>MistralTransformerPipeline</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-wind"></i> MistralTransformerPipeline Class</h1>
+                    <p class="page-subtitle">High-performance integration with Mistral AI's efficient language models and mixture-of-experts architecture</p>
+                </div>
+
+                <!-- Class Info -->
+                <div class="class-info">
+                    <div class="class-namespace">
+                        <strong>Namespace:</strong> Beep.Python.AI.Transformers<br>
+                        <strong>Assembly:</strong> Beep.Python.AI.Transformers.dll<br>
+                        <strong>Package:</strong> Beep.Python.AI.Transformers
+                    </div>
+                    <div class="class-implements">
+                        <strong>Inheritance:</strong> BaseTransformerPipeline ? MistralTransformerPipeline<br>
+                        <strong>Implements:</strong> ITransformerPipeLine, IDisposable
+                    </div>
+                </div>
+
+                <!-- Overview Section -->
+                <section class="section" id="overview">
+                    <h2>?? Overview</h2>
+                    <p>
+                        The <code>MistralTransformerPipeline</code> class provides seamless integration with Mistral AI's advanced language models, 
+                        including both the standard Mistral models and the innovative Mixtral mixture-of-experts models. Mistral AI focuses on 
+                        efficient, high-performance models that deliver excellent results with lower computational requirements.
+                    </p>
+
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-speedometer2"></i> High Efficiency</h4>
+                            <p>Optimized architectures for superior performance per parameter</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-diagram-3"></i> Mixture of Experts</h4>
+                            <p>Advanced Mixtral models with sparse expert activation</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-cloud-arrow-up"></i> Dual Integration</h4>
+                            <p>Support for both Mistral API and open-source models</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-translate"></i> Multilingual</h4>
+                            <p>Strong multilingual capabilities with European language focus</p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h4>?? Mistral Model Family</h4>
+                        <ul>
+                            <li><strong>Mistral 7B:</strong> Efficient 7B parameter model with excellent performance</li>
+                            <li><strong>Mistral 7B Instruct:</strong> Fine-tuned for instruction following</li>
+                            <li><strong>Mixtral 8x7B:</strong> Mixture-of-experts model with 8 expert networks</li>
+                            <li><strong>Mixtral 8x7B Instruct:</strong> Instruction-tuned Mixtral model</li>
+                            <li><strong>Mistral Medium:</strong> Balanced model via API</li>
+                            <li><strong>Mistral Small:</strong> Fast and efficient API model</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Constructor Section -->
+                <section class="section" id="constructor">
+                    <h2>?? Constructor</h2>
+                    
+                    <div class="code-example">
+                        <h4>MistralTransformerPipeline(IPythonRunTimeManager, IPythonCodeExecuteManager)</h4>
+                        <pre><code class="language-csharp">public MistralTransformerPipeline(
+    IPythonRunTimeManager pythonRunTimeManager,
+    IPythonCodeExecuteManager executeManager
+)</code></pre>
+                        <h5>Parameters</h5>
+                        <ul>
+                            <li><code>pythonRunTimeManager</code> - Python runtime management interface</li>
+                            <li><code>executeManager</code> - Python code execution interface</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Methods Section -->
+                <section class="section" id="methods">
+                    <h2>?? Methods</h2>
+
+                    <!-- InitializeAsync -->
+                    <div class="method">
+                        <h3>InitializeAsync</h3>
+                        <pre><code class="language-csharp">public override async Task&lt;bool&gt; InitializeAsync(TransformerPipelineConfig config)</code></pre>
+                        <p>Initializes the Mistral pipeline with both API client and transformers support.</p>
+                        
+                        <h4>Installed Dependencies</h4>
+                        <ul>
+                            <li><strong>mistralai:</strong> Official Mistral API client</li>
+                            <li><strong>torch:</strong> PyTorch framework</li>
+                            <li><strong>accelerate:</strong> Distributed computing support</li>
+                            <li><strong>bitsandbytes:</strong> Quantization for large models</li>
+                        </ul>
+                    </div>
+
+                    <!-- LoadModelAsync -->
+                    <div class="method">
+                        <h3>LoadModelAsync</h3>
+                        <pre><code class="language-csharp">public override async Task&lt;bool&gt; LoadModelAsync(
+    TransformerModelInfo modelInfo, 
+    TransformerTask taskType, 
+    Dictionary&lt;string, object&gt;? modelConfig = null
+)</code></pre>
+                        <p>Loads Mistral models from API or HuggingFace with automatic source detection.</p>
+                        
+                        <h4>Source Detection Logic</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Source</th>
+                                    <th>Detection</th>
+                                    <th>Use Case</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Mistral API</strong></td>
+                                    <td>api_key present in config</td>
+                                    <td>Production, managed service</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>HuggingFace</strong></td>
+                                    <td>No api_key in config</td>
+                                    <td>Local development, customization</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- GenerateTextAsync -->
+                    <div class="method">
+                        <h3>GenerateTextAsync</h3>
+                        <pre><code class="language-csharp">public override async Task&lt;TransformerResult&lt;string&gt;&gt; GenerateTextAsync(
+    string prompt, 
+    TextGenerationParameters? parameters = null
+)</code></pre>
+                        <p>Generates text using Mistral models with optimized inference parameters.</p>
+                    </div>
+
+                    <!-- GetSupportedTasks -->
+                    <div class="method">
+                        <h3>GetSupportedTasks</h3>
+                        <pre><code class="language-csharp">public override List&lt;TransformerTask&gt; GetSupportedTasks()</code></pre>
+                        <p>Returns tasks supported by Mistral models:</p>
+                        <ul>
+                            <li>TextGeneration</li>
+                            <li>Conversational</li>
+                            <li>TextClassification</li>
+                            <li>Summarization</li>
+                            <li>QuestionAnswering</li>
+                            <li>FeatureExtraction</li>
+                            <li>FillMask</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Usage Examples -->
+                <section class="section" id="examples">
+                    <h2>?? Usage Examples</h2>
+
+                    <!-- Mistral API Example -->
+                    <div class="example">
+                        <h3>1. Mistral API Integration</h3>
+                        <pre><code class="language-csharp">using Beep.Python.AI.Transformers;
+
+// Initialize Mistral pipeline
+var mistralPipeline = new MistralTransformerPipeline(runtimeManager, executeManager);
+await mistralPipeline.InitializeAsync(new TransformerPipelineConfig());
+
+// Configure for Mistral API
+var modelInfo = new TransformerModelInfo
+{
+    Name = "mistral-medium",  // or "mistral-small", "mistral-tiny"
+    Source = TransformerModelSource.Mistral
+};
+
+var apiConfig = new Dictionary&lt;string, object&gt;
+{
+    ["api_key"] = "your-mistral-api-key"
+};
+
+await mistralPipeline.LoadModelAsync(modelInfo, TransformerTask.TextGeneration, apiConfig);
+
+// Generate text with API
+var result = await mistralPipeline.GenerateTextAsync(
+    "Explain the concept of mixture-of-experts in neural networks",
+    new TextGenerationParameters 
+    { 
+        MaxLength = 300,
+        Temperature = 0.7,
+        TopP = 0.95
+    });
+
+if (result.Success)
+{
+    Console.WriteLine($"Mistral API Response: {result.Data}");
+    Console.WriteLine($"Execution time: {result.ExecutionTimeMs}ms");
+}
+</code></pre>
+                    </div>
+
+                    <!-- Open Source Mistral Example -->
+                    <div class="example">
+                        <h3>2. Open Source Mistral 7B</h3>
+                        <pre><code class="language-csharp">// Load open-source Mistral model from HuggingFace
+var openSourceModel = new TransformerModelInfo
+{
+    Name = "mistralai/Mistral-7B-Instruct-v0.1",
+    Source = TransformerModelSource.HuggingFace
+};
+
+// Optimize for local deployment
+var localConfig = new Dictionary&lt;string, object&gt;
+{
+    ["torch_dtype"] = "torch.float16",
+    ["device_map"] = "auto",
+    ["load_in_8bit"] = true  // Memory optimization
+};
+
+await mistralPipeline.LoadModelAsync(openSourceModel, TransformerTask.TextGeneration, localConfig);
+
+// Generate with open-source model
+var localResult = await mistralPipeline.GenerateTextAsync(
+    "Write a Python function to implement a binary search tree",
+    new TextGenerationParameters 
+    { 
+        MaxLength = 400,
+        Temperature = 0.3,  // Lower temperature for code generation
+        TopP = 0.9
+    });
+
+if (localResult.Success)
+{
+    Console.WriteLine("Generated Code:");
+    Console.WriteLine(localResult.Data);
+}
+</code></pre>
+                    </div>
+
+                    <!-- Mixtral 8x7B Example -->
+                    <div class="example">
+                        <h3>3. Mixtral 8x7B Mixture-of-Experts</h3>
+                        <pre><code class="language-csharp">// Load the powerful Mixtral 8x7B model
+var mixtralModel = new TransformerModelInfo
+{
+    Name = "mistralai/Mixtral-8x7B-Instruct-v0.1",
+    Source = TransformerModelSource.HuggingFace
+};
+
+// Mixtral requires more memory - use aggressive quantization
+var mixtralConfig = new Dictionary&lt;string, object&gt;
+{
+    ["torch_dtype"] = "torch.float16",
+    ["device_map"] = "auto",
+    ["load_in_4bit"] = true,  // 4-bit quantization for Mixtral
+    ["bnb_4bit_compute_dtype"] = "torch.float16",
+    ["bnb_4bit_quant_type"] = "nf4",
+    ["bnb_4bit_use_double_quant"] = true
+};
+
+await mistralPipeline.LoadModelAsync(mixtralModel, TransformerTask.TextGeneration, mixtralConfig);
+
+// Complex reasoning task for Mixtral
+var complexPrompt = @"
+You are a senior software architect. Analyze the following system design problem:
+
+Problem: Design a scalable microservices architecture for an e-commerce platform that needs to handle:
+- 1 million daily users
+- Real-time inventory management
+- Payment processing
+- Order tracking
+- Recommendation engine
+
+Provide a detailed architecture with specific technologies and justify your choices.
+";
+
+var architectureResult = await mistralPipeline.GenerateTextAsync(complexPrompt,
+    new TextGenerationParameters 
+    { 
+        MaxLength = 800,
+        Temperature = 0.6,
+        TopP = 0.95,
+        RepetitionPenalty = 1.1
+    });
+
+if (architectureResult.Success)
+{
+    Console.WriteLine("Mixtral Architecture Analysis:");
+    Console.WriteLine(architectureResult.Data);
+    
+    // Mixtral models provide rich metadata
+    Console.WriteLine($"Model Family: {architectureResult.Metadata?["mistral_model_family"]}");
+}
+</code></pre>
+                    </div>
+
+                    <!-- Multilingual Example -->
+                    <div class="example">
+                        <h3>4. Multilingual Capabilities</h3>
+                        <pre><code class="language-csharp">// Mistral models excel at multilingual tasks
+var multilingualPrompts = new Dictionary&lt;string, string&gt;
+{
+    ["English"] = "Explain quantum computing in simple terms",
+    ["French"] = "Expliquez l'informatique quantique en termes simples",
+    ["Spanish"] = "Explica la computación cuántica en términos simples",
+    ["German"] = "Erkläre Quantencomputing in einfachen Begriffen",
+    ["Italian"] = "Spiega l'informatica quantistica in termini semplici"
+};
+
+var multilingualResults = new Dictionary&lt;string, string&gt;();
+
+foreach (var (language, prompt) in multilingualPrompts)
+{
+    var result = await mistralPipeline.GenerateTextAsync(prompt,
+        new TextGenerationParameters 
+        { 
+            MaxLength = 200,
+            Temperature = 0.7
+        });
+    
+    if (result.Success)
+    {
+        multilingualResults[language] = result.Data;
+        Console.WriteLine($"{language}: {result.Data}");
+        Console.WriteLine($"Execution time: {result.ExecutionTimeMs}ms\n");
+    }
+}
+
+// Compare response quality across languages
+Console.WriteLine("Multilingual Performance Summary:");
+foreach (var (language, response) in multilingualResults)
+{
+    Console.WriteLine($"{language}: {response.Length} characters");
+}
+</code></pre>
+                    </div>
+                </section>
+
+                <!-- Advanced Features -->
+                <section class="section" id="advanced">
+                    <h2>?? Advanced Features</h2>
+
+                    <!-- Mixture of Experts -->
+                    <div class="feature-section">
+                        <h3>Mixture-of-Experts (MoE) Architecture</h3>
+                        <p>Mixtral models use MoE architecture for efficient scaling:</p>
+                        
+                        <div class="highlight-box">
+                            <h4>?? How Mixtral Works</h4>
+                            <ul>
+                                <li><strong>8 Expert Networks:</strong> Each token is processed by 2 out of 8 experts</li>
+                                <li><strong>Sparse Activation:</strong> Only 12.9B parameters active per token (out of 46.7B total)</li>
+                                <li><strong>Router Network:</strong> Intelligently selects which experts to use</li>
+                                <li><strong>Efficiency:</strong> Better performance than Llama 2 70B at much lower cost</li>
+                            </ul>
+                        </div>
+
+                        <pre><code class="language-csharp">// Optimize Mixtral configuration for MoE
+var mixtralOptimized = new Dictionary&lt;string, object&gt;
+{
+    ["torch_dtype"] = "torch.float16",
+    ["device_map"] = "auto",
+    ["load_in_8bit"] = true,
+    
+    // MoE-specific optimizations
+    ["router_aux_loss_coef"] = 0.02,    // Router loss coefficient
+    ["max_position_embeddings"] = 32768, // Extended context
+    ["sliding_window"] = 4096,           // Sliding window attention
+    
+    // Memory optimization for MoE
+    ["offload_folder"] = "./mixtral_offload",
+    ["disk_offload"] = true
+};</code></pre>
+                    </div>
+
+                    <!-- Performance Optimization -->
+                    <div class="feature-section">
+                        <h3>Performance Optimization</h3>
+                        <p>Mistral models are designed for efficiency:</p>
+                        
+                        <div class="performance-comparison">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Model</th>
+                                        <th>Parameters</th>
+                                        <th>Active Params</th>
+                                        <th>Memory (8-bit)</th>
+                                        <th>Performance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Mistral 7B</td>
+                                        <td>7.3B</td>
+                                        <td>7.3B</td>
+                                        <td>~7GB</td>
+                                        <td>Excellent</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Mixtral 8x7B</td>
+                                        <td>46.7B</td>
+                                        <td>12.9B</td>
+                                        <td>~24GB</td>
+                                        <td>Superior</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Sliding Window Attention -->
+                    <div class="feature-section">
+                        <h3>Sliding Window Attention</h3>
+                        <p>Mistral uses sliding window attention for efficient long-context processing:</p>
+                        
+                        <pre><code class="language-csharp">// Configure for long context tasks
+var longContextConfig = new Dictionary&lt;string, object&gt;
+{
+    ["max_position_embeddings"] = 32768,  // 32K context window
+    ["sliding_window"] = 4096,             // 4K sliding window
+    ["use_cache"] = true,                  // Enable key-value caching
+    ["torch_dtype"] = "torch.float16"
+};
+
+// Long document summarization
+var longDocument = File.ReadAllText("long_research_paper.txt");
+var summary = await mistralPipeline.GenerateTextAsync(
+    $"Summarize the following research paper:\n\n{longDocument}",
+    new TextGenerationParameters 
+    { 
+        MaxLength = 500,
+        Temperature = 0.3
+    });
+</code></pre>
+                    </div>
+                </section>
+
+                <!-- API vs Open Source -->
+                <section class="section" id="api-vs-opensource">
+                    <h2>?? API vs Open Source Comparison</h2>
+
+                    <div class="comparison-grid">
+                        <div class="comparison-card">
+                            <h3><i class="bi bi-cloud"></i> Mistral API</h3>
+                            <h4>Advantages:</h4>
+                            <ul>
+                                <li>No infrastructure management</li>
+                                <li>Always latest model versions</li>
+                                <li>Automatic scaling</li>
+                                <li>Professional support</li>
+                            </ul>
+                            <h4>Best for:</h4>
+                            <ul>
+                                <li>Production applications</li>
+                                <li>Startups and prototypes</li>
+                                <li>Variable workloads</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="comparison-card">
+                            <h3><i class="bi bi-hdd"></i> Open Source</h3>
+                            <h4>Advantages:</h4>
+                            <ul>
+                                <li>Full control and customization</li>
+                                <li>No per-token costs</li>
+                                <li>Data privacy and security</li>
+                                <li>Offline capabilities</li>
+                            </ul>
+                            <h4>Best for:</h4>
+                            <li>High-volume applications</li>
+                            <li>Sensitive data processing</li>
+                            <li>Custom fine-tuning</li>
+                            <li>Research and development</li>
+                        </div>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Unified Configuration Pattern</h4>
+                        <pre><code class="language-csharp">// Method to switch between API and open-source based on environment
+private Dictionary&lt;string, object&gt; GetMistralConfig(bool useAPI = false)
+{
+    if (useAPI)
+    {
+        return new Dictionary&lt;string, object&gt;
+        {
+            ["api_key"] = Environment.GetEnvironmentVariable("MISTRAL_API_KEY")
+        };
+    }
+    else
+    {
+        return new Dictionary&lt;string, object&gt;
+        {
+            ["torch_dtype"] = "torch.float16",
+            ["device_map"] = "auto",
+            ["load_in_8bit"] = true,
+            ["trust_remote_code"] = true
+        };
+    }
+}
+
+// Usage
+var isProduction = Environment.GetEnvironmentVariable("ENVIRONMENT") == "production";
+var config = GetMistralConfig(useAPI: isProduction);
+await mistralPipeline.LoadModelAsync(modelInfo, taskType, config);
+</code></pre>
+                    </div>
+                </section>
+
+                <!-- Best Practices -->
+                <section class="section" id="best-practices">
+                    <h2>? Best Practices</h2>
+
+                    <div class="tip">
+                        <h4>?? Model Selection</h4>
+                        <ul>
+                            <li><strong>Mistral 7B:</strong> Best for most general tasks, fast inference</li>
+                            <li><strong>Mixtral 8x7B:</strong> Complex reasoning, multilingual, code generation</li>
+                            <li><strong>API Models:</strong> Production workloads, variable usage</li>
+                            <li><strong>Instruct Models:</strong> Better for instruction-following tasks</li>
+                        </ul>
+                    </div>
+
+                    <div class="warning">
+                        <h4>? Performance Optimization</h4>
+                        <ul>
+                            <li><strong>Memory Management:</strong> Use quantization for large models</li>
+                            <li><strong>Batch Processing:</strong> Process multiple requests together</li>
+                            <li><strong>Context Management:</strong> Leverage sliding window for long texts</li>
+                            <li><strong>Expert Routing:</strong> Monitor expert utilization in Mixtral</li>
+                        </ul>
+                    </div>
+
+                    <div class="note">
+                        <h4>?? Development Workflow</h4>
+                        <ul>
+                            <li><strong>Development:</strong> Start with API for rapid prototyping</li>
+                            <li><strong>Optimization:</strong> Profile performance with different configurations</li>
+                            <li><strong>Production:</strong> Consider open-source for cost optimization</li>
+                            <li><strong>Monitoring:</strong> Track both performance and quality metrics</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="MetaTransformerPipeline.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> MetaTransformerPipeline
+                    </a>
+                    <a href="MultimodalTransformerPipeline.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> MultimodalTransformerPipeline
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.AI.Transformers API Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="../index.html">Home</a>
+                            <a href="ITransformerPipeLine.html">ITransformerPipeLine</a>
+                            <a href="TransformerPipelineFactory.html">Pipeline Factory</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../assets/navigation.js"></script>
+</body>
+</html>

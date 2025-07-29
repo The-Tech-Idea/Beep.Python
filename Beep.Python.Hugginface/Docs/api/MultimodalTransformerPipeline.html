@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MultimodalTransformerPipeline API - Beep.Python.AI.Transformers</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="../assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="../index.html">Home</a>
+                    <span>›</span>
+                    <a href="../index.html#multimodal">Multimodal AI</a>
+                    <span>›</span>
+                    <span>MultimodalTransformerPipeline</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-collection-fill"></i> MultimodalTransformerPipeline Class</h1>
+                    <p class="page-subtitle">Advanced multimodal AI pipeline for processing text, images, audio, and video content</p>
+                </div>
+
+                <!-- Class Info -->
+                <div class="class-info">
+                    <div class="class-namespace">
+                        <strong>Namespace:</strong> Beep.Python.AI.Transformers<br>
+                        <strong>Assembly:</strong> Beep.Python.AI.Transformers.dll<br>
+                        <strong>Package:</strong> Beep.Python.AI.Transformers
+                    </div>
+                    <div class="class-implements">
+                        <strong>Inheritance:</strong> BaseTransformerPipeline ? MultimodalTransformerPipeline<br>
+                        <strong>Implements:</strong> ITransformerPipeLine, IDisposable
+                    </div>
+                </div>
+
+                <!-- Overview Section -->
+                <section class="section" id="overview">
+                    <h2>?? Overview</h2>
+                    <p>
+                        The <code>MultimodalTransformerPipeline</code> class provides comprehensive support for processing multiple types of content 
+                        simultaneously. This pipeline enables advanced AI workflows that can understand and process text, images, audio, and video 
+                        in a unified manner, supporting state-of-the-art multimodal models from various providers.
+                    </p>
+
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-eye"></i> Vision Processing</h4>
+                            <p>Image analysis, OCR, object detection, and visual understanding</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-volume-up"></i> Audio Processing</h4>
+                            <p>Speech-to-text, audio classification, and sound analysis</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-play-circle"></i> Video Analysis</h4>
+                            <p>Video understanding, frame analysis, and temporal processing</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-chat-text"></i> Text Integration</h4>
+                            <p>Combined text and media processing for rich understanding</p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h4>?? Supported Multimodal Capabilities</h4>
+                        <ul>
+                            <li><strong>Vision-Language Models:</strong> GPT-4 Vision, Gemini Pro Vision, Claude 3</li>
+                            <li><strong>Document Analysis:</strong> PDF, image, and document understanding</li>
+                            <li><strong>Content Moderation:</strong> Cross-modal content safety analysis</li>
+                            <li><strong>Creative Generation:</strong> Text-to-image, image-to-text workflows</li>
+                            <li><strong>Real-time Processing:</strong> Live stream and webcam analysis</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Constructor Section -->
+                <section class="section" id="constructor">
+                    <h2>?? Constructor</h2>
+                    
+                    <div class="code-example">
+                        <h4>MultimodalTransformerPipeline(IPythonRunTimeManager, IPythonCodeExecuteManager)</h4>
+                        <pre><code class="language-csharp">public MultimodalTransformerPipeline(
+    IPythonRunTimeManager pythonRunTimeManager,
+    IPythonCodeExecuteManager executeManager
+)</code></pre>
+                        <h5>Parameters</h5>
+                        <ul>
+                            <li><code>pythonRunTimeManager</code> - Python runtime management interface</li>
+                            <li><code>executeManager</code> - Python code execution interface</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Methods Section -->
+                <section class="section" id="methods">
+                    <h2>?? Methods</h2>
+
+                    <!-- InitializeAsync -->
+                    <div class="method">
+                        <h3>InitializeAsync</h3>
+                        <pre><code class="language-csharp">public override async Task&lt;bool&gt; InitializeAsync(TransformerPipelineConfig config)</code></pre>
+                        <p>Initializes the multimodal pipeline with required libraries and dependencies.</p>
+                        
+                        <h4>Required Configuration</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Setting</th>
+                                    <th>Required</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>primary_provider</code></td>
+                                    <td>?</td>
+                                    <td>Primary AI provider (OpenAI, Google, Anthropic, etc.)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>enable_vision</code></td>
+                                    <td>?</td>
+                                    <td>Enable vision processing capabilities</td>
+                                </tr>
+                                <tr>
+                                    <td><code>enable_audio</code></td>
+                                    <td>?</td>
+                                    <td>Enable audio processing capabilities</td>
+                                </tr>
+                                <tr>
+                                    <td><code>temp_directory</code></td>
+                                    <td>?</td>
+                                    <td>Temporary directory for media processing</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- ProcessMultimodalAsync -->
+                    <div class="method">
+                        <h3>ProcessMultimodalAsync</h3>
+                        <pre><code class="language-csharp">public async Task&lt;TransformerResult&lt;MultimodalResponse&gt;&gt; ProcessMultimodalAsync(
+    MultimodalRequest request,
+    MultimodalParameters? parameters = null
+)</code></pre>
+                        <p>Processes multimodal content including text, images, audio, and video.</p>
+                        
+                        <h4>MultimodalRequest Properties</h4>
+                        <ul>
+                            <li><code>TextPrompt:</code> Text prompt or question</li>
+                            <li><code>Images:</code> List of image files or base64 encoded images</li>
+                            <li><code>AudioFiles:</code> List of audio file paths</li>
+                            <li><code>VideoFiles:</code> List of video file paths</li>
+                            <li><code>Documents:</code> PDF or document files for analysis</li>
+                        </ul>
+                    </div>
+
+                    <!-- AnalyzeImageAsync -->
+                    <div class="method">
+                        <h3>AnalyzeImageAsync</h3>
+                        <pre><code class="language-csharp">public async Task&lt;TransformerResult&lt;ImageAnalysisResult&gt;&gt; AnalyzeImageAsync(
+    string imagePath,
+    string prompt,
+    ImageAnalysisParameters? parameters = null
+)</code></pre>
+                        <p>Analyzes a single image with a text prompt using vision-language models.</p>
+                    </div>
+
+                    <!-- TranscribeAudioAsync -->
+                    <div class="method">
+                        <h3>TranscribeAudioAsync</h3>
+                        <pre><code class="language-csharp">public async Task&lt;TransformerResult&lt;AudioTranscriptionResult&gt;&gt; TranscribeAudioAsync(
+    string audioPath,
+    AudioTranscriptionParameters? parameters = null
+)</code></pre>
+                        <p>Transcribes audio files to text with optional speaker identification and timestamps.</p>
+                    </div>
+
+                    <!-- ProcessDocumentAsync -->
+                    <div class="method">
+                        <h3>ProcessDocumentAsync</h3>
+                        <pre><code class="language-csharp">public async Task&lt;TransformerResult&lt;DocumentAnalysisResult&gt;&gt; ProcessDocumentAsync(
+    string documentPath,
+    string query,
+    DocumentProcessingParameters? parameters = null
+)</code></pre>
+                        <p>Processes documents (PDF, Word, etc.) for content extraction and analysis.</p>
+                    </div>
+
+                    <!-- GetSupportedTasks -->
+                    <div class="method">
+                        <h3>GetSupportedTasks</h3>
+                        <pre><code class="language-csharp">public override List&lt;TransformerTask&gt; GetSupportedTasks()</code></pre>
+                        <p>Returns the list of tasks supported by multimodal models:</p>
+                        <ul>
+                            <li>VisionLanguageModeling</li>
+                            <li>ImageAnalysis</li>
+                            <li>AudioTranscription</li>
+                            <li>DocumentAnalysis</li>
+                            <li>ContentModeration</li>
+                            <li>VideoAnalysis</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Usage Examples -->
+                <section class="section" id="examples">
+                    <h2>?? Usage Examples</h2>
+
+                    <!-- Basic Image Analysis -->
+                    <div class="example">
+                        <h3>1. Image Analysis with Vision Models</h3>
+                        <pre><code class="language-csharp">using Beep.Python.AI.Transformers;
+
+// Initialize the multimodal pipeline
+var multimodalPipeline = new MultimodalTransformerPipeline(runtimeManager, executeManager);
+
+// Configure for vision processing
+var config = new TransformerPipelineConfig
+{
+    ["primary_provider"] = "OpenAI",
+    ["enable_vision"] = true,
+    ["api_key"] = "your-openai-api-key"
+};
+
+await multimodalPipeline.InitializeAsync(config);
+
+// Load vision model
+var modelInfo = new TransformerModelInfo
+{
+    Name = "gpt-4-vision-preview",
+    Source = TransformerModelSource.OpenAI
+};
+
+await multimodalPipeline.LoadModelAsync(modelInfo, TransformerTask.VisionLanguageModeling);
+
+// Analyze an image
+var result = await multimodalPipeline.AnalyzeImageAsync(
+    "path/to/image.jpg",
+    "What objects do you see in this image? Describe the scene in detail.",
+    new ImageAnalysisParameters 
+    { 
+        MaxTokens = 500,
+        DetailLevel = "high"
+    });
+
+if (result.Success)
+{
+    Console.WriteLine($"Image Analysis: {result.Data.Description}");
+    Console.WriteLine($"Detected Objects: {string.Join(", ", result.Data.DetectedObjects)}");
+    Console.WriteLine($"Confidence: {result.Data.ConfidenceScore:P}");
+}
+</code></pre>
+                    </div>
+
+                    <!-- Multimodal Document Processing -->
+                    <div class="example">
+                        <h3>2. Document Analysis and Question Answering</h3>
+                        <pre><code class="language-csharp">// Process a PDF document with images and text
+var multimodalRequest = new MultimodalRequest
+{
+    TextPrompt = "Summarize the key findings from this research paper and extract any data from charts or graphs.",
+    Documents = new List&lt;string&gt; { "research_paper.pdf" },
+    Images = new List&lt;string&gt; { "chart1.png", "graph2.jpg" }
+};
+
+var parameters = new MultimodalParameters
+{
+    MaxTokens = 1000,
+    IncludePageNumbers = true,
+    ExtractTables = true,
+    AnalyzeCharts = true
+};
+
+var result = await multimodalPipeline.ProcessMultimodalAsync(multimodalRequest, parameters);
+
+if (result.Success)
+{
+    var response = result.Data;
+    Console.WriteLine($"Document Summary: {response.Summary}");
+    
+    // Process extracted tables
+    foreach (var table in response.ExtractedTables)
+    {
+        Console.WriteLine($"Table {table.PageNumber}: {table.Caption}");
+        Console.WriteLine($"Data: {table.CsvData}");
+    }
+    
+    // Process chart analysis
+    foreach (var chart in response.ChartAnalysis)
+    {
+        Console.WriteLine($"Chart: {chart.Title}");
+        Console.WriteLine($"Data Trends: {chart.Insights}");
+    }
+}
+</code></pre>
+                    </div>
+
+                    <!-- Audio Transcription and Analysis -->
+                    <div class="example">
+                        <h3>3. Audio Transcription with Speaker Identification</h3>
+                        <pre><code class="language-csharp">// Transcribe audio with advanced features
+var transcriptionParams = new AudioTranscriptionParameters
+{
+    Language = "en",
+    EnableSpeakerDiarization = true,
+    EnableTimestamps = true,
+    EnableSentimentAnalysis = true,
+    OutputFormat = "detailed_json"
+};
+
+var audioResult = await multimodalPipeline.TranscribeAudioAsync(
+    "meeting_recording.mp3", 
+    transcriptionParams);
+
+if (audioResult.Success)
+{
+    var transcription = audioResult.Data;
+    Console.WriteLine($"Duration: {transcription.Duration}");
+    Console.WriteLine($"Speakers Detected: {transcription.SpeakerCount}");
+    
+    foreach (var segment in transcription.Segments)
+    {
+        Console.WriteLine($"[{segment.Start:mm\\:ss} - {segment.End:mm\\:ss}] " +
+                         $"Speaker {segment.SpeakerId}: {segment.Text}");
+        Console.WriteLine($"Sentiment: {segment.Sentiment} (Confidence: {segment.SentimentScore:P})");
+    }
+    
+    // Generate meeting summary
+    var summaryRequest = new MultimodalRequest
+    {
+        TextPrompt = $"Summarize this meeting transcript and identify key action items:\n\n{transcription.FullText}"
+    };
+    
+    var summaryResult = await multimodalPipeline.ProcessMultimodalAsync(summaryRequest);
+    if (summaryResult.Success)
+    {
+        Console.WriteLine($"Meeting Summary: {summaryResult.Data.Summary}");
+    }
+}
+</code></pre>
+                    </div>
+
+                    <!-- Real-time Multimodal Processing -->
+                    <div class="example">
+                        <h3>4. Real-time Video Stream Analysis</h3>
+                        <pre><code class="language-csharp">// Process video stream in real-time
+var videoParams = new VideoAnalysisParameters
+{
+    FrameInterval = TimeSpan.FromSeconds(2), // Analyze every 2 seconds
+    EnableObjectTracking = true,
+    EnableActivityRecognition = true,
+    EnableEmotionDetection = true
+};
+
+// Note: This shows the intended API design for video processing
+await foreach (var frame in multimodalPipeline.ProcessVideoStreamAsync("webcam://0", videoParams))
+{
+    Console.WriteLine($"Frame {frame.FrameNumber} at {frame.Timestamp}:");
+    
+    // Object detection results
+    foreach (var detection in frame.ObjectDetections)
+    {
+        Console.WriteLine($"  {detection.Class}: {detection.Confidence:P} at ({detection.BoundingBox})");
+    }
+    
+    // Activity recognition
+    if (frame.Activities.Any())
+    {
+        var topActivity = frame.Activities.OrderByDescending(a => a.Confidence).First();
+        Console.WriteLine($"  Activity: {topActivity.Name} ({topActivity.Confidence:P})");
+    }
+    
+    // Emotion detection for faces
+    foreach (var face in frame.FaceAnalysis)
+    {
+        Console.WriteLine($"  Face {face.Id}: {face.Emotion} ({face.Confidence:P})");
+    }
+}
+</code></pre>
+                    </div>
+
+                    <!-- Content Moderation -->
+                    <div class="example">
+                        <h3>5. Multimodal Content Moderation</h3>
+                        <pre><code class="language-csharp">// Comprehensive content safety analysis
+var moderationRequest = new MultimodalRequest
+{
+    TextPrompt = "Analyze this content for safety concerns",
+    Images = new List&lt;string&gt; { "user_upload1.jpg", "user_upload2.png" },
+    AudioFiles = new List&lt;string&gt; { "voice_message.wav" }
+};
+
+var moderationParams = new MultimodalParameters
+{
+    EnableContentSafety = true,
+    SafetyCategories = new[] { "violence", "hate", "sexual", "harassment", "self_harm" },
+    SafetyThreshold = 0.7
+};
+
+var moderationResult = await multimodalPipeline.ProcessMultimodalAsync(moderationRequest, moderationParams);
+
+if (moderationResult.Success)
+{
+    var safety = moderationResult.Data.SafetyAnalysis;
+    
+    Console.WriteLine($"Overall Safety Score: {safety.OverallScore:P}");
+    Console.WriteLine($"Content Approved: {safety.IsApproved}");
+    
+    if (!safety.IsApproved)
+    {
+        Console.WriteLine("Safety Concerns:");
+        foreach (var concern in safety.Concerns)
+        {
+            Console.WriteLine($"  {concern.Category}: {concern.Severity} (Score: {concern.Score:P})");
+            Console.WriteLine($"    Reason: {concern.Explanation}");
+        }
+    }
+    
+    // Detailed modality-specific results
+    foreach (var modalityResult in safety.ModalityResults)
+    {
+        Console.WriteLine($"{modalityResult.Type} Analysis:");
+        Console.WriteLine($"  Safe: {modalityResult.IsSafe}");
+        Console.WriteLine($"  Confidence: {modalityResult.Confidence:P}");
+    }
+}
+</code></pre>
+                    </div>
+                </section>
+
+                <!-- Advanced Features -->
+                <section class="section" id="advanced">
+                    <h2>?? Advanced Features</h2>
+
+                    <!-- Batch Processing -->
+                    <div class="feature-section">
+                        <h3>Batch Multimodal Processing</h3>
+                        <p>Process multiple multimodal inputs efficiently:</p>
+                        <pre><code class="language-csharp">// Batch process multiple multimodal requests
+var batchRequests = new List&lt;MultimodalRequest&gt;
+{
+    new() { TextPrompt = "Describe this image", Images = new[] { "image1.jpg" } },
+    new() { TextPrompt = "Transcribe this audio", AudioFiles = new[] { "audio1.mp3" } },
+    new() { TextPrompt = "Analyze this document", Documents = new[] { "doc1.pdf" } }
+};
+
+var batchResults = await multimodalPipeline.ProcessBatchAsync(batchRequests, batchParams);
+
+foreach (var result in batchResults)
+{
+    if (result.Success)
+    {
+        Console.WriteLine($"Batch item processed: {result.Data.Summary}");
+    }
+    else
+    {
+        Console.WriteLine($"Batch error: {result.ErrorMessage}");
+    }
+}
+</code></pre>
+                    </div>
+
+                    <!-- Custom Workflow Chains -->
+                    <div class="feature-section">
+                        <h3>Workflow Chains</h3>
+                        <p>Create complex multimodal processing workflows:</p>
+                        <pre><code class="language-csharp">// Create a workflow chain for complex processing
+var workflow = new MultimodalWorkflow()
+    .AddStep("extract_text", new DocumentExtractionStep())
+    .AddStep("analyze_images", new ImageAnalysisStep())
+    .AddStep("synthesize", new ContentSynthesisStep())
+    .AddStep("generate_report", new ReportGenerationStep());
+
+var workflowInput = new MultimodalWorkflowInput
+{
+    Documents = new[] { "annual_report.pdf" },
+    Images = new[] { "chart1.png", "chart2.png" },
+    Parameters = new { ReportFormat = "executive_summary" }
+};
+
+var workflowResult = await multimodalPipeline.ExecuteWorkflowAsync(workflow, workflowInput);
+
+if (workflowResult.Success)
+{
+    Console.WriteLine($"Generated Report: {workflowResult.Data.FinalOutput}");
+    
+    // Access intermediate results
+    var extractedText = workflowResult.Data.StepResults["extract_text"];
+    var imageAnalysis = workflowResult.Data.StepResults["analyze_images"];
+}
+</code></pre>
+                    </div>
+
+                    <!-- Performance Optimization -->
+                    <div class="feature-section">
+                        <h3>Performance Optimization</h3>
+                        <p>Tips for optimizing multimodal processing:</p>
+                        <div class="tip">
+                            <ul>
+                                <li><strong>Image Preprocessing:</strong> Resize and optimize images before processing</li>
+                                <li><strong>Audio Compression:</strong> Use appropriate audio formats and compression</li>
+                                <li><strong>Parallel Processing:</strong> Process different modalities in parallel when possible</li>
+                                <li><strong>Caching:</strong> Cache processed results for repeated content</li>
+                                <li><strong>Progressive Loading:</strong> Stream large media files for real-time processing</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Error Handling -->
+                <section class="section" id="error-handling">
+                    <h2>??? Error Handling</h2>
+
+                    <div class="code-example">
+                        <h4>Comprehensive Error Handling Pattern</h4>
+                        <pre><code class="language-csharp">try
+{
+    var result = await multimodalPipeline.ProcessMultimodalAsync(request, parameters);
+    
+    if (!result.Success)
+    {
+        // Handle specific multimodal errors
+        switch (result.ErrorCode)
+        {
+            case "UNSUPPORTED_FORMAT":
+                Console.WriteLine($"Unsupported media format: {result.ErrorMessage}");
+                break;
+                
+            case "FILE_TOO_LARGE":
+                Console.WriteLine($"Media file exceeds size limit: {result.ErrorMessage}");
+                break;
+                
+            case "VISION_MODEL_UNAVAILABLE":
+                Console.WriteLine("Vision processing unavailable. Falling back to text-only mode.");
+                // Implement fallback logic
+                break;
+                
+            case "CONTENT_SAFETY_VIOLATION":
+                Console.WriteLine($"Content safety violation detected: {result.ErrorMessage}");
+                break;
+                
+            default:
+                Console.WriteLine($"Processing error: {result.ErrorMessage}");
+                break;
+        }
+    }
+    else
+    {
+        // Success - process multimodal results
+        ProcessMultimodalResults(result.Data);
+    }
+}
+catch (FileNotFoundException ex)
+{
+    Console.WriteLine($"Media file not found: {ex.FileName}");
+}
+catch (UnauthorizedAccessException ex)
+{
+    Console.WriteLine($"Access denied to media file: {ex.Message}");
+}
+catch (OutOfMemoryException ex)
+{
+    Console.WriteLine("Insufficient memory for multimodal processing. Try reducing media size.");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Unexpected error in multimodal processing: {ex.Message}");
+    // Log for debugging
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Best Practices -->
+                <section class="section" id="best-practices">
+                    <h2>? Best Practices</h2>
+
+                    <div class="tip">
+                        <h4>??? Image Processing</h4>
+                        <ul>
+                            <li><strong>Format Support:</strong> Use JPEG, PNG, WebP for best compatibility</li>
+                            <li><strong>Resolution:</strong> Optimize resolution for task (higher for OCR, moderate for description)</li>
+                            <li><strong>File Size:</strong> Keep images under 20MB for optimal processing speed</li>
+                            <li><strong>Quality:</strong> Use lossless formats for text-heavy images</li>
+                        </ul>
+                    </div>
+
+                    <div class="warning">
+                        <h4>?? Audio Processing</h4>
+                        <ul>
+                            <li><strong>Format Compatibility:</strong> Use WAV, MP3, or FLAC formats</li>
+                            <li><strong>Sample Rate:</strong> 16kHz minimum for speech, 44.1kHz for music</li>
+                            <li><strong>Duration Limits:</strong> Split long audio files for better processing</li>
+                            <li><strong>Noise Reduction:</strong> Pre-process audio to reduce background noise</li>
+                        </ul>
+                    </div>
+
+                    <div class="note">
+                        <h4>?? Document Processing</h4>
+                        <ul>
+                            <li><strong>OCR Optimization:</strong> Ensure high contrast and readable text</li>
+                            <li><strong>Page Limits:</strong> Process large documents in chunks</li>
+                            <li><strong>Format Support:</strong> PDF, DOCX, and common image formats</li>
+                            <li><strong>Security:</strong> Sanitize documents before processing</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="MultimodalPipelineFactory.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> MultimodalPipelineFactory
+                    </a>
+                    <a href="BaseTransformerPipeline.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> BaseTransformerPipeline
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.AI.Transformers API Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="../index.html">Home</a>
+                            <a href="ITransformerPipeLine.html">ITransformerPipeLine</a>
+                            <a href="TransformerPipelineFactory.html">Pipeline Factory</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../assets/navigation.js"></script>
+</body>
+</html>

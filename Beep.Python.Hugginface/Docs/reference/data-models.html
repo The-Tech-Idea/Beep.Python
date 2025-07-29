@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Models - Beep.Python.AI.Transformers</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="../assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="../index.html">Home</a>
+                    <span>›</span>
+                    <a href="../index.html#reference">Reference</a>
+                    <span>›</span>
+                    <span>Data Models</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-diagram-3"></i> Data Models Reference</h1>
+                    <p class="page-subtitle">Complete reference for all data models and DTOs in Beep.Python.AI.Transformers</p>
+                </div>
+
+                <!-- Table of Contents -->
+                <div class="toc">
+                    <h3>?? Table of Contents</h3>
+                    <ul>
+                        <li><a href="#core-models">Core Models</a></li>
+                        <li><a href="#configuration-models">Configuration Models</a></li>
+                        <li><a href="#request-response-models">Request & Response Models</a></li>
+                        <li><a href="#multimodal-models">Multimodal Models</a></li>
+                        <li><a href="#monitoring-models">Monitoring Models</a></li>
+                        <li><a href="#security-models">Security Models</a></li>
+                    </ul>
+                </div>
+
+                <!-- Core Models -->
+                <section class="section" id="core-models">
+                    <h2><i class="bi bi-diagram-2"></i> Core Models</h2>
+                    
+                    <h3>TransformerResult&lt;T&gt;</h3>
+                    <div class="code-example">
+                        <h4>Generic Result Container</h4>
+                        <pre><code class="language-csharp">/// <summary>
+/// Generic result container for transformer operations
+/// </summary>
+/// <typeparam name="T">Type of the result data</typeparam>
+public class TransformerResult<T>
+{
+    /// <summary>
+    /// Indicates if the operation was successful
+    /// </summary>
+    public bool Success { get; set; }
+    
+    /// <summary>
+    /// The result data (null if operation failed)
+    /// </summary>
+    public T? Data { get; set; }
+    
+    /// <summary>
+    /// Error message if operation failed
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+    
+    /// <summary>
+    /// Specific error code for programmatic handling
+    /// </summary>
+    public string? ErrorCode { get; set; }
+    
+    /// <summary>
+    /// Additional metadata about the operation
+    /// </summary>
+    public Dictionary<string, object>? Metadata { get; set; }
+    
+    /// <summary>
+    /// Token usage information
+    /// </summary>
+    public TokenUsage? TokenUsage { get; set; }
+    
+    /// <summary>
+    /// Execution time in milliseconds
+    /// </summary>
+    public long ExecutionTimeMs { get; set; }
+    
+    /// <summary>
+    /// Correlation ID for request tracking
+    /// </summary>
+    public string? CorrelationId { get; set; }
+    
+    /// <summary>
+    /// Timestamp when the operation completed
+    /// </summary>
+    public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.UtcNow;
+}</code></pre>
+                    </div>
+
+                    <h3>TransformerModelInfo</h3>
+                    <div class="code-example">
+                        <h4>Model Information</h4>
+                        <pre><code class="language-csharp">/// <summary>
+/// Information about a transformer model
+/// </summary>
+public class TransformerModelInfo
+{
+    /// <summary>
+    /// Unique identifier for the model
+    /// </summary>
+    public string Id { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Display name of the model
+    /// </summary>
+    public string Name { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Model version or revision
+    /// </summary>
+    public string Version { get; set; } = "latest";
+    
+    /// <summary>
+    /// AI provider or source
+    /// </summary>
+    public TransformerModelSource Source { get; set; }
+    
+    /// <summary>
+    /// Type/category of the model
+    /// </summary>
+    public ModelType Type { get; set; }
+    
+    /// <summary>
+    /// Tasks supported by this model
+    /// </summary>
+    public List<TransformerTask> SupportedTasks { get; set; } = new();
+    
+    /// <summary>
+    /// Model description
+    /// </summary>
+    public string? Description { get; set; }
+    
+    /// <summary>
+    /// Maximum input token limit
+    /// </summary>
+    public int MaxInputTokens { get; set; }
+    
+    /// <summary>
+    /// Maximum output token limit
+    /// </summary>
+    public int MaxOutputTokens { get; set; }
+    
+    /// <summary>
+    /// Cost per 1K input tokens (USD)
+    /// </summary>
+    public decimal CostPerInputToken { get; set; }
+    
+    /// <summary>
+    /// Cost per 1K output tokens (USD)
+    /// </summary>
+    public decimal CostPerOutputToken { get; set; }
+    
+    /// <summary>
+    /// Model capabilities and features
+    /// </summary>
+    public ModelCapabilities Capabilities { get; set; } = new();
+    
+    /// <summary>
+    /// Model creation/training date
+    /// </summary>
+    public DateTimeOffset? TrainingDate { get; set; }
+    
+    /// <summary>
+    /// Additional model metadata
+    /// </summary>
+    public Dictionary<string, object> Metadata { get; set; } = new();
+}</code></pre>
+                    </div>
+
+                    <h3>TokenUsage</h3>
+                    <div class="code-example">
+                        <h4>Token Usage Tracking</h4>
+                        <pre><code class="language-csharp">/// <summary>
+/// Token usage information for AI requests
+/// </summary>
+public class TokenUsage
+{
+    /// <summary>
+    /// Number of tokens in the prompt
+    /// </summary>
+    public int PromptTokens { get; set; }
+    
+    /// <summary>
+    /// Number of tokens in the completion
+    /// </summary>
+    public int CompletionTokens { get; set; }
+    
+    /// <summary>
+    /// Total tokens used (prompt + completion)
+    /// </summary>
+    public int TotalTokens => PromptTokens + CompletionTokens;
+    
+    /// <summary>
+    /// Cost for prompt tokens
+    /// </summary>
+    public decimal PromptCost { get; set; }
+    
+    /// <summary>
+    /// Cost for completion tokens
+    /// </summary>
+    public decimal CompletionCost { get; set; }
+    
+    /// <summary>
+    /// Total cost (prompt + completion)
+    /// </summary>
+    public decimal TotalCost => PromptCost + CompletionCost;
+    
+    /// <summary>
+    /// Currency code for costs
+    /// </summary>
+    public string Currency { get; set; } = "USD";
+    
+    /// <summary>
+    /// Cached tokens (if applicable)
+    /// </summary>
+    public int CachedTokens { get; set; }
+    
+    /// <summary>
+    /// Reasoning tokens (for reasoning models)
+    /// </summary>
+    public int ReasoningTokens { get; set; }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Configuration Models -->
+                <section class="section" id="configuration-models">
+                    <h2><i class="bi bi-gear"></i> Configuration Models</h2>
+                    
+                    <h3>TransformerPipelineConfig</h3>
+                    <div class="code-example">
+                        <h4>Pipeline Configuration</h4>
+                        <pre><code class="language-csharp">/// <summary>
+/// Configuration for transformer pipelines
+/// </summary>
+public class TransformerPipelineConfig : Dictionary<string, object>
+{
+    /// <summary>
+    /// Gets a configuration value with type conversion
+    /// </summary>
+    public T GetValue<T>(string key, T defaultValue = default!)
+    {
+        if (!TryGetValue(key, out var value))
+            return defaultValue;
+            
+        if (value is T directValue)
+            return directValue;
+            
+        try
+        {
+            return (T)Convert.ChangeType(value, typeof(T));
+        }
+        catch
+        {
+            return defaultValue;
+        }
+    }
+    
+    /// <summary>
+    /// Sets a configuration value
+    /// </summary>
+    public void SetValue<T>(string key, T value)
+    {
+        this[key] = value!;
+    }
+    
+    /// <summary>
+    /// Validates the configuration
+    /// </summary>
+    public List<string> Validate()
+    {
+        var errors = new List<string>();
+        
+        // Common validation rules
+        if (!ContainsKey("api_key") || string.IsNullOrEmpty(GetValue<string>("api_key")))
+            errors.Add("API key is required");
+            
+        var timeout = GetValue<int>("timeout", 60);
+        if (timeout <= 0 || timeout > 3600)
+            errors.Add("Timeout must be between 1 and 3600 seconds");
+            
+        return errors;
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>ConnectionConfig</h3>
+                    <div class="code-example">
+                        <h4>Provider Connection Configuration</h4>
+                        <pre><code class="language-csharp">/// <summary>
+/// Base class for provider connection configurations
+/// </summary>
+public abstract class ConnectionConfig
+{
+    /// <summary>
+    /// API endpoint URL
+    /// </summary>
+    public string BaseUrl { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Request timeout in seconds
+    /// </summary>
+    public int TimeoutSeconds { get; set; } = 60;
+    
+    /// <summary>
+    /// Maximum retry attempts
+    /// </summary>
+    public int MaxRetries { get; set; } = 3;
+    
+    /// <summary>
+    /// Retry delay in seconds
+    /// </summary>
+    public int RetryDelaySeconds { get; set; } = 2;
+    
+    /// <summary>
+    /// Authentication type
+    /// </summary>
+    public AuthenticationType AuthType { get; set; }
+    
+    /// <summary>
+    /// Additional HTTP headers
+    /// </summary>
+    public Dictionary<string, string> Headers { get; set; } = new();
+    
+    /// <summary>
+    /// Rate limiting configuration
+    /// </summary>
+    public RateLimitConfig? RateLimit { get; set; }
+    
+    /// <summary>
+    /// Proxy configuration
+    /// </summary>
+    public ProxyConfig? Proxy { get; set; }
+    
+    /// <summary>
+    /// Validates the connection configuration
+    /// </summary>
+    public abstract bool IsValid();
+}</code></pre>
+                    </div>
+
+                    <h3>OpenAIConnectionConfig</h3>
+                    <div class="code-example">
+                        <h4>OpenAI-Specific Configuration</h4>
+                        <pre><code class="language-csharp">/// <summary>
+/// OpenAI-specific connection configuration
+/// </summary>
+public class OpenAIConnectionConfig : ConnectionConfig
+{
+    /// <summary>
+    /// OpenAI API key
+    /// </summary>
+    public string ApiKey { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Organization ID (optional)
+    /// </summary>
+    public string? OrganizationId { get; set; }
+    
+    /// <summary>
+    /// Project ID (optional)
+    /// </summary>
+    public string? ProjectId { get; set; }
+    
+    /// <summary>
+    /// Default model to use
+    /// </summary>
+    public string? DefaultModel { get; set; }
+    
+    /// <summary>
+    /// Enable beta features
+    /// </summary>
+    public bool EnableBetaFeatures { get; set; }
+    
+    public override bool IsValid()
+    {
+        return !string.IsNullOrEmpty(ApiKey) && 
+               ApiKey.StartsWith("sk-") && 
+               !string.IsNullOrEmpty(BaseUrl);
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Request & Response Models -->
+                <section class="section" id="request-response-models">
+                    <h2><i class="bi bi-arrow-left-right"></i> Request & Response Models</h2>
+                    
+                    <h3>TextGenerationParameters</h3>
+                    <div class="code-example">
+                        <h4>Text Generation Parameters</h4>
+                        <pre><code class="language-csharp">/// <summary>
+/// Parameters for text generation requests
+/// </summary>
+public class TextGenerationParameters
+{
+    /// <summary>
+    /// Maximum number of tokens to generate
+    /// </summary>
+    public int MaxLength { get; set; } = 1000;
+    
+    /// <summary>
+    /// Sampling temperature (0.0 to 2.0)
+    /// </summary>
+    public double Temperature { get; set; } = 0.7;
+    
+    /// <summary>
+    /// Top-p (nucleus) sampling parameter
+    /// </summary>
+    public double TopP { get; set; } = 1.0;
+    
+    /// <summary>
+    /// Top-k sampling parameter
+    /// </summary>
+    public int TopK { get; set; } = 50;
+    
+    /// <summary>
+    /// Frequency penalty (-2.0 to 2.0)
+    /// </summary>
+    public double FrequencyPenalty { get; set; } = 0.0;
+    
+    /// <summary>
+    /// Presence penalty (-2.0 to 2.0)
+    /// </summary>
+    public double PresencePenalty { get; set; } = 0.0;
+    
+    /// <summary>
+    /// Stop sequences to end generation
+    /// </summary>
+    public List<string> StopSequences { get; set; } = new();
+    
+    /// <summary>
+    /// Number of completions to generate
+    /// </summary>
+    public int NumberOfCompletions { get; set; } = 1;
+    
+    /// <summary>
+    /// Whether to stream the response
+    /// </summary>
+    public bool Stream { get; set; } = false;
+    
+    /// <summary>
+    /// Include log probabilities
+    /// </summary>
+    public bool IncludeLogProbs { get; set; } = false;
+    
+    /// <summary>
+    /// Seed for reproducible outputs
+    /// </summary>
+    public int? Seed { get; set; }
+    
+    /// <summary>
+    /// Custom parameters for specific providers
+    /// </summary>
+    public Dictionary<string, object> CustomParameters { get; set; } = new();
+}</code></pre>
+                    </div>
+
+                    <h3>ClassificationResult</h3>
+                    <div class="code-example">
+                        <h4>Text Classification Result</h4>
+                        <pre><code class="language-csharp">/// <summary>
+/// Result of text classification operation
+/// </summary>
+public class ClassificationResult
+{
+    /// <summary>
+    /// List of classification predictions
+    /// </summary>
+    public List<ClassificationPrediction> Predictions { get; set; } = new();
+    
+    /// <summary>
+    /// The top prediction
+    /// </summary>
+    public ClassificationPrediction TopPrediction => 
+        Predictions.OrderByDescending(p => p.Confidence).FirstOrDefault() ?? 
+        new ClassificationPrediction();
+    
+    /// <summary>
+    /// Classification confidence threshold used
+    /// </summary>
+    public double ConfidenceThreshold { get; set; } = 0.5;
+    
+    /// <summary>
+    /// Whether the classification meets the confidence threshold
+    /// </summary>
+    public bool IsConfident => TopPrediction.Confidence >= ConfidenceThreshold;
+    
+    /// <summary>
+    /// Model used for classification
+    /// </summary>
+    public string? ModelName { get; set; }
+    
+    /// <summary>
+    /// Processing time in milliseconds
+    /// </summary>
+    public long ProcessingTimeMs { get; set; }
+}
+
+/// <summary>
+/// Individual classification prediction
+/// </summary>
+public class ClassificationPrediction
+{
+    /// <summary>
+    /// Predicted label/category
+    /// </summary>
+    public string Label { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Confidence score (0.0 to 1.0)
+    /// </summary>
+    public double Confidence { get; set; }
+    
+    /// <summary>
+    /// Raw score from the model
+    /// </summary>
+    public double RawScore { get; set; }
+    
+    /// <summary>
+    /// Additional prediction metadata
+    /// </summary>
+    public Dictionary<string, object> Metadata { get; set; } = new();
+}</code></pre>
+                    </div>
+
+                    <h3>EmbeddingParameters</h3>
+                    <div class="code-example">
+                        <h4>Embedding Generation Parameters</h4>
+                        <pre><code class="language-csharp">/// <summary>
+/// Parameters for embedding generation
+/// </summary>
+public class EmbeddingParameters
+{
+    /// <summary>
+    /// Type of input (document, query, etc.)
+    /// </summary>
+    public string InputType { get; set; } = "document";
+    
+    /// <summary>
+    /// Truncation strategy (start, end, none)
+    /// </summary>
+    public string Truncate { get; set; } = "end";
+    
+    /// <summary>
+    /// Normalize embeddings to unit length
+    /// </summary>
+    public bool Normalize { get; set; } = true;
+    
+    /// <summary>
+    /// Encoding format (float, base64, etc.)
+    /// </summary>
+    public string EncodingFormat { get; set; } = "float";
+    
+    /// <summary>
+    /// Dimensions for dimensionality reduction
+    /// </summary>
+    public int? Dimensions { get; set; }
+    
+    /// <summary>
+    /// Custom parameters for specific providers
+    /// </summary>
+    public Dictionary<string, object> CustomParameters { get; set; } = new();
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Multimodal Models -->
+                <section class="section" id="multimodal-models">
+                    <h2><i class="bi bi-collection"></i> Multimodal Models</h2>
+                    
+                    <h3>MultimodalRequest</h3>
+                    <div class="code-example">
+                        <h4>Multimodal Request</h4>
+                        <pre><code class="language-csharp">/// <summary>
+/// Request for multimodal AI processing
+/// </summary>
+public class MultimodalRequest
+{
+    /// <summary>
+    /// Text prompt or instruction
+    /// </summary>
+    public string TextPrompt { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// List of image files or URLs
+    /// </summary>
+    public List<string> Images { get; set; } = new();
+    
+    /// <summary>
+    /// List of audio file paths
+    /// </summary>
+    public List<string> AudioFiles { get; set; } = new();
+    
+    /// <summary>
+    /// List of video file paths
+    /// </summary>
+    public List<string> VideoFiles { get; set; } = new();
+    
+    /// <summary>
+    /// List of document file paths
+    /// </summary>
+    public List<string> Documents { get; set; } = new();
+    
+    /// <summary>
+    /// Base64 encoded images
+    /// </summary>
+    public List<ImageData> ImageData { get; set; } = new();
+    
+    /// <summary>
+    /// Request metadata
+    /// </summary>
+    public Dictionary<string, object> Metadata { get; set; } = new();
+    
+    /// <summary>
+    /// Validates the multimodal request
+    /// </summary>
+    public bool IsValid()
+    {
+        return !string.IsNullOrEmpty(TextPrompt) || 
+               Images.Any() || 
+               AudioFiles.Any() || 
+               VideoFiles.Any() || 
+               Documents.Any() ||
+               ImageData.Any();
+    }
+}
+
+/// <summary>
+/// Image data with metadata
+/// </summary>
+public class ImageData
+{
+    /// <summary>
+    /// Base64 encoded image content
+    /// </summary>
+    public string Base64Content { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// MIME type of the image
+    /// </summary>
+    public string MimeType { get; set; } = "image/jpeg";
+    
+    /// <summary>
+    /// Optional image description or alt text
+    /// </summary>
+    public string? Description { get; set; }
+    
+    /// <summary>
+    /// Image metadata
+    /// </summary>
+    public Dictionary<string, object> Metadata { get; set; } = new();
+}</code></pre>
+                    </div>
+
+                    <h3>MultimodalResponse</h3>
+                    <div class="code-example">
+                        <h4>Multimodal Response</h4>
+                        <pre><code class="language-csharp">/// <summary>
+/// Response from multimodal AI processing
+/// </summary>
+public class MultimodalResponse
+{
+    /// <summary>
+    /// Primary text response
+    /// </summary>
+    public string TextResponse { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Content summary
+    /// </summary>
+    public string Summary { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Extracted tables from documents
+    /// </summary>
+    public List<ExtractedTable> ExtractedTables { get; set; } = new();
+    
+    /// <summary>
+    /// Chart and graph analysis
+    /// </summary>
+    public List<ChartAnalysis> ChartAnalysis { get; set; } = new();
+    
+    /// <summary>
+    /// Image analysis results
+    /// </summary>
+    public List<ImageAnalysisResult> ImageAnalysis { get; set; } = new();
+    
+    /// <summary>
+    /// Audio transcription results
+    /// </summary>
+    public List<AudioTranscriptionResult> AudioTranscriptions { get; set; } = new();
+    
+    /// <summary>
+    /// Video analysis results
+    /// </summary>
+    public List<VideoAnalysisResult> VideoAnalysis { get; set; } = new();
+    
+    /// <summary>
+    /// Content safety analysis
+    /// </summary>
+    public SafetyAnalysis? SafetyAnalysis { get; set; }
+    
+    /// <summary>
+    /// Confidence score for the overall response
+    /// </summary>
+    public double ConfidenceScore { get; set; }
+    
+    /// <summary>
+    /// Processing metadata
+    /// </summary>
+    public Dictionary<string, object> Metadata { get; set; } = new();
+}
+
+/// <summary>
+/// Extracted table data
+/// </summary>
+public class ExtractedTable
+{
+    /// <summary>
+    /// Page number where table was found
+    /// </summary>
+    public int PageNumber { get; set; }
+    
+    /// <summary>
+    /// Table caption or title
+    /// </summary>
+    public string Caption { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Table data in CSV format
+    /// </summary>
+    public string CsvData { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Structured table data
+    /// </summary>
+    public List<Dictionary<string, string>> StructuredData { get; set; } = new();
+    
+    /// <summary>
+    /// Confidence score for extraction
+    /// </summary>
+    public double Confidence { get; set; }
+}</code></pre>
+                    </div>
+
+                    <h3>ImageAnalysisResult</h3>
+                    <div class="code-example">
+                        <h4>Image Analysis Result</h4>
+                        <pre><code class="language-csharp">/// <summary>
+/// Result of image analysis
+/// </summary>
+public class ImageAnalysisResult
+{
+    /// <summary>
+    /// Image file name or identifier
+    /// </summary>
+    public string ImageId { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Detailed description of the image
+    /// </summary>
+    public string Description { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Detected objects in the image
+    /// </summary>
+    public List<DetectedObject> DetectedObjects { get; set; } = new();
+    
+    /// <summary>
+    /// Extracted text (OCR)
+    /// </summary>
+    public string ExtractedText { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Image categories/tags
+    /// </summary>
+    public List<string> Categories { get; set; } = new();
+    
+    /// <summary>
+    /// Dominant colors in the image
+    /// </summary>
+    public List<ColorInfo> DominantColors { get; set; } = new();
+    
+    /// <summary>
+    /// Overall confidence score
+    /// </summary>
+    public double ConfidenceScore { get; set; }
+    
+    /// <summary>
+    /// Image dimensions
+    /// </summary>
+    public ImageDimensions? Dimensions { get; set; }
+    
+    /// <summary>
+    /// Analysis metadata
+    /// </summary>
+    public Dictionary<string, object> Metadata { get; set; } = new();
+}
+
+/// <summary>
+/// Detected object in an image
+/// </summary>
+public class DetectedObject
+{
+    /// <summary>
+    /// Object class/category
+    /// </summary>
+    public string Class { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Detection confidence
+    /// </summary>
+    public double Confidence { get; set; }
+    
+    /// <summary>
+    /// Bounding box coordinates
+    /// </summary>
+    public BoundingBox BoundingBox { get; set; } = new();
+}
+
+/// <summary>
+/// Bounding box coordinates
+/// </summary>
+public class BoundingBox
+{
+    public int X { get; set; }
+    public int Y { get; set; }
+    public int Width { get; set; }
+    public int Height { get; set; }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Monitoring Models -->
+                <section class="section" id="monitoring-models">
+                    <h2><i class="bi bi-graph-up"></i> Monitoring Models</h2>
+                    
+                    <h3>PerformanceMetrics</h3>
+                    <div class="code-example">
+                        <h4>Performance Metrics</h4>
+                        <pre><code class="language-csharp">/// <summary>
+/// Performance metrics for transformer operations
+/// </summary>
+public class PerformanceMetrics
+{
+    /// <summary>
+    /// Metric timestamp
+    /// </summary>
+    public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.UtcNow;
+    
+    /// <summary>
+    /// Request count
+    /// </summary>
+    public long RequestCount { get; set; }
+    
+    /// <summary>
+    /// Success count
+    /// </summary>
+    public long SuccessCount { get; set; }
+    
+    /// <summary>
+    /// Error count
+    /// </summary>
+    public long ErrorCount { get; set; }
+    
+    /// <summary>
+    /// Success rate (percentage)
+    /// </summary>
+    public double SuccessRate => RequestCount > 0 ? (double)SuccessCount / RequestCount * 100 : 0;
+    
+    /// <summary>
+    /// Average response time in milliseconds
+    /// </summary>
+    public double AverageResponseTime { get; set; }
+    
+    /// <summary>
+    /// 95th percentile response time
+    /// </summary>
+    public double P95ResponseTime { get; set; }
+    
+    /// <summary>
+    /// Total tokens processed
+    /// </summary>
+    public long TotalTokens { get; set; }
+    
+    /// <summary>
+    /// Total cost incurred
+    /// </summary>
+    public decimal TotalCost { get; set; }
+    
+    /// <summary>
+    /// Average cost per request
+    /// </summary>
+    public decimal AverageCostPerRequest => RequestCount > 0 ? TotalCost / RequestCount : 0;
+    
+    /// <summary>
+    /// Throughput (requests per second)
+    /// </summary>
+    public double Throughput { get; set; }
+    
+    /// <summary>
+    /// Error rate (percentage)
+    /// </summary>
+    public double ErrorRate => RequestCount > 0 ? (double)ErrorCount / RequestCount * 100 : 0;
+}
+
+/// <summary>
+/// Health check result
+/// </summary>
+public class HealthCheckResult
+{
+    /// <summary>
+    /// Overall health status
+    /// </summary>
+    public HealthStatus Status { get; set; }
+    
+    /// <summary>
+    /// Health check timestamp
+    /// </summary>
+    public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.UtcNow;
+    
+    /// <summary>
+    /// Individual component health checks
+    /// </summary>
+    public Dictionary<string, ComponentHealth> Components { get; set; } = new();
+    
+    /// <summary>
+    /// Overall health score (0-100)
+    /// </summary>
+    public int HealthScore { get; set; }
+    
+    /// <summary>
+    /// Health check duration
+    /// </summary>
+    public TimeSpan Duration { get; set; }
+}
+
+/// <summary>
+/// Health status enumeration
+/// </summary>
+public enum HealthStatus
+{
+    Healthy,
+    Degraded,
+    Unhealthy,
+    Unknown
+}
+
+/// <summary>
+/// Component health information
+/// </summary>
+public class ComponentHealth
+{
+    public HealthStatus Status { get; set; }
+    public string Description { get; set; } = string.Empty;
+    public Dictionary<string, object> Data { get; set; } = new();
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Security Models -->
+                <section class="section" id="security-models">
+                    <h2><i class="bi bi-shield-check"></i> Security Models</h2>
+                    
+                    <h3>SafetyAnalysis</h3>
+                    <div class="code-example">
+                        <h4>Content Safety Analysis</h4>
+                        <pre><code class="language-csharp">/// <summary>
+/// Content safety analysis result
+/// </summary>
+public class SafetyAnalysis
+{
+    /// <summary>
+    /// Overall safety score (0-1, higher is safer)
+    /// </summary>
+    public double OverallScore { get; set; }
+    
+    /// <summary>
+    /// Whether content is approved for use
+    /// </summary>
+    public bool IsApproved { get; set; }
+    
+    /// <summary>
+    /// List of safety concerns found
+    /// </summary>
+    public List<SafetyConcern> Concerns { get; set; } = new();
+    
+    /// <summary>
+    /// Safety analysis by modality
+    /// </summary>
+    public List<ModalitySafetyResult> ModalityResults { get; set; } = new();
+    
+    /// <summary>
+    /// Analysis timestamp
+    /// </summary>
+    public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.UtcNow;
+    
+    /// <summary>
+    /// Model used for safety analysis
+    /// </summary>
+    public string? SafetyModel { get; set; }
+}
+
+/// <summary>
+/// Individual safety concern
+/// </summary>
+public class SafetyConcern
+{
+    /// <summary>
+    /// Safety category
+    /// </summary>
+    public ContentSafetyCategory Category { get; set; }
+    
+    /// <summary>
+    /// Severity level
+    /// </summary>
+    public ErrorSeverity Severity { get; set; }
+    
+    /// <summary>
+    /// Confidence score for this concern
+    /// </summary>
+    public double Score { get; set; }
+    
+    /// <summary>
+    /// Explanation of the concern
+    /// </summary>
+    public string Explanation { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Recommended action
+    /// </summary>
+    public string RecommendedAction { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Safety result for specific modality
+/// </summary>
+public class ModalitySafetyResult
+{
+    /// <summary>
+    /// Content type (text, image, audio, video)
+    /// </summary>
+    public string Type { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Whether this modality is safe
+    /// </summary>
+    public bool IsSafe { get; set; }
+    
+    /// <summary>
+    /// Confidence in the safety assessment
+    /// </summary>
+    public double Confidence { get; set; }
+    
+    /// <summary>
+    /// Safety concerns for this modality
+    /// </summary>
+    public List<SafetyConcern> Concerns { get; set; } = new();
+}</code></pre>
+                    </div>
+
+                    <h3>AuditLogEntry</h3>
+                    <div class="code-example">
+                        <h4>Audit Logging</h4>
+                        <pre><code class="language-csharp">/// <summary>
+/// Audit log entry for security and compliance tracking
+/// </summary>
+public class AuditLogEntry
+{
+    /// <summary>
+    /// Unique event identifier
+    /// </summary>
+    public Guid EventId { get; set; } = Guid.NewGuid();
+    
+    /// <summary>
+    /// Event timestamp
+    /// </summary>
+    public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.UtcNow;
+    
+    /// <summary>
+    /// Event type/category
+    /// </summary>
+    public string EventType { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Event severity
+    /// </summary>
+    public ErrorSeverity Severity { get; set; }
+    
+    /// <summary>
+    /// User identifier
+    /// </summary>
+    public string? UserId { get; set; }
+    
+    /// <summary>
+    /// Session identifier
+    /// </summary>
+    public string? SessionId { get; set; }
+    
+    /// <summary>
+    /// Source IP address
+    /// </summary>
+    public string? IpAddress { get; set; }
+    
+    /// <summary>
+    /// User agent string
+    /// </summary>
+    public string? UserAgent { get; set; }
+    
+    /// <summary>
+    /// Resource being accessed
+    /// </summary>
+    public string? Resource { get; set; }
+    
+    /// <summary>
+    /// Action performed
+    /// </summary>
+    public string Action { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Result of the action
+    /// </summary>
+    public string Result { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Additional event details
+    /// </summary>
+    public Dictionary<string, object> Details { get; set; } = new();
+    
+    /// <summary>
+    /// Risk level assessment
+    /// </summary>
+    public RiskLevel Risk { get; set; }
+    
+    /// <summary>
+    /// Correlation ID for request tracking
+    /// </summary>
+    public string? CorrelationId { get; set; }
+}
+
+/// <summary>
+/// Risk level enumeration
+/// </summary>
+public enum RiskLevel
+{
+    Low = 0,
+    Medium = 1,
+    High = 2,
+    Critical = 3
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="enums.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> Enumerations
+                    </a>
+                    <a href="changelog.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> Changelog
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.AI.Transformers Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="../index.html">Home</a>
+                            <a href="../api/ITransformerPipeLine.html">API Reference</a>
+                            <a href="enums.html">Enumerations</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../assets/navigation.js"></script>
+</body>
+</html>

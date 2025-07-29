@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enumerations - Beep.Python.AI.Transformers</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="../assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="../index.html">Home</a>
+                    <span>›</span>
+                    <a href="../index.html#reference">Reference</a>
+                    <span>›</span>
+                    <span>Enumerations</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-list-ul"></i> Enumerations Reference</h1>
+                    <p class="page-subtitle">Complete reference for all enumeration types in Beep.Python.AI.Transformers</p>
+                </div>
+
+                <!-- Table of Contents -->
+                <div class="toc">
+                    <h3>?? Table of Contents</h3>
+                    <ul>
+                        <li><a href="#transformer-model-source">TransformerModelSource</a></li>
+                        <li><a href="#transformer-task">TransformerTask</a></li>
+                        <li><a href="#pipeline-status">PipelineStatus</a></li>
+                        <li><a href="#error-severity">ErrorSeverity</a></li>
+                        <li><a href="#data-classification">DataClassificationLevel</a></li>
+                        <li><a href="#content-safety">ContentSafetyCategory</a></li>
+                        <li><a href="#authentication-type">AuthenticationType</a></li>
+                        <li><a href="#model-type">ModelType</a></li>
+                    </ul>
+                </div>
+
+                <!-- TransformerModelSource -->
+                <section class="section" id="transformer-model-source">
+                    <h2><i class="bi bi-cloud"></i> TransformerModelSource</h2>
+                    <p>Specifies the AI provider or source for transformer models.</p>
+                    
+                    <div class="code-example">
+                        <h4>Enumeration Definition</h4>
+                        <pre><code class="language-csharp">public enum TransformerModelSource
+{
+    /// <summary>
+    /// OpenAI models (GPT-3.5, GPT-4, etc.)
+    /// </summary>
+    OpenAI = 0,
+    
+    /// <summary>
+    /// Azure OpenAI Service models
+    /// </summary>
+    Azure = 1,
+    
+    /// <summary>
+    /// HuggingFace Hub models
+    /// </summary>
+    HuggingFace = 2,
+    
+    /// <summary>
+    /// Google AI models (Gemini, PaLM, etc.)
+    /// </summary>
+    Google = 3,
+    
+    /// <summary>
+    /// Anthropic models (Claude series)
+    /// </summary>
+    Anthropic = 4,
+    
+    /// <summary>
+    /// Cohere models
+    /// </summary>
+    Cohere = 5,
+    
+    /// <summary>
+    /// Meta AI models (Llama series)
+    /// </summary>
+    Meta = 6,
+    
+    /// <summary>
+    /// Mistral AI models
+    /// </summary>
+    Mistral = 7,
+    
+    /// <summary>
+    /// Local models (on-premises or edge deployment)
+    /// </summary>
+    Local = 8,
+    
+    /// <summary>
+    /// Custom or third-party providers
+    /// </summary>
+    Custom = 9,
+    
+    /// <summary>
+    /// Amazon Bedrock models
+    /// </summary>
+    Bedrock = 10,
+    
+    /// <summary>
+    /// IBM Watson models
+    /// </summary>
+    Watson = 11
+}</code></pre>
+                    </div>
+
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4>?? Most Popular</h4>
+                            <ul>
+                                <li><strong>OpenAI:</strong> GPT-4, GPT-3.5-turbo</li>
+                                <li><strong>Azure:</strong> Enterprise OpenAI</li>
+                                <li><strong>HuggingFace:</strong> Open source models</li>
+                            </ul>
+                        </div>
+                        <div class="feature-card">
+                            <h4>?? Enterprise Ready</h4>
+                            <ul>
+                                <li><strong>Azure:</strong> SLA guarantees</li>
+                                <li><strong>Bedrock:</strong> AWS integration</li>
+                                <li><strong>Watson:</strong> IBM enterprise</li>
+                            </ul>
+                        </div>
+                        <div class="feature-card">
+                            <h4>?? Cost Effective</h4>
+                            <ul>
+                                <li><strong>HuggingFace:</strong> Free tier available</li>
+                                <li><strong>Local:</strong> No API costs</li>
+                                <li><strong>Cohere:</strong> Competitive pricing</li>
+                            </ul>
+                        </div>
+                        <div class="feature-card">
+                            <h4>?? Privacy Focused</h4>
+                            <ul>
+                                <li><strong>Local:</strong> Data stays on-premises</li>
+                                <li><strong>Azure:</strong> Private cloud options</li>
+                                <li><strong>Custom:</strong> Full control</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TransformerTask -->
+                <section class="section" id="transformer-task">
+                    <h2><i class="bi bi-gear"></i> TransformerTask</h2>
+                    <p>Defines the type of task or operation to be performed by the transformer model.</p>
+                    
+                    <div class="code-example">
+                        <h4>Enumeration Definition</h4>
+                        <pre><code class="language-csharp">public enum TransformerTask
+{
+    /// <summary>
+    /// Generate text based on a prompt
+    /// </summary>
+    TextGeneration = 0,
+    
+    /// <summary>
+    /// Classify text into categories
+    /// </summary>
+    TextClassification = 1,
+    
+    /// <summary>
+    /// Summarize long text content
+    /// </summary>
+    Summarization = 2,
+    
+    /// <summary>
+    /// Answer questions based on context
+    /// </summary>
+    QuestionAnswering = 3,
+    
+    /// <summary>
+    /// Translate text between languages
+    /// </summary>
+    Translation = 4,
+    
+    /// <summary>
+    /// Extract semantic features/embeddings
+    /// </summary>
+    FeatureExtraction = 5,
+    
+    /// <summary>
+    /// Identify and extract named entities
+    /// </summary>
+    NamedEntityRecognition = 6,
+    
+    /// <summary>
+    /// Analyze sentiment in text
+    /// </summary>
+    SentimentAnalysis = 7,
+    
+    /// <summary>
+    /// Interactive conversation
+    /// </summary>
+    Conversational = 8,
+    
+    /// <summary>
+    /// Vision and language understanding
+    /// </summary>
+    VisionLanguageModeling = 9,
+    
+    /// <summary>
+    /// Analyze images and extract information
+    /// </summary>
+    ImageAnalysis = 10,
+    
+    /// <summary>
+    /// Convert speech to text
+    /// </summary>
+    AudioTranscription = 11,
+    
+    /// <summary>
+    /// Analyze and process documents
+    /// </summary>
+    DocumentAnalysis = 12,
+    
+    /// <summary>
+    /// Code generation and completion
+    /// </summary>
+    CodeGeneration = 13,
+    
+    /// <summary>
+    /// Content moderation and safety
+    /// </summary>
+    ContentModeration = 14,
+    
+    /// <summary>
+    /// Semantic similarity comparison
+    /// </summary>
+    SimilarityComparison = 15,
+    
+    /// <summary>
+    /// Text rewriting and editing
+    /// </summary>
+    TextRewriting = 16,
+    
+    /// <summary>
+    /// Data extraction from text
+    /// </summary>
+    DataExtraction = 17,
+    
+    /// <summary>
+    /// Video content analysis
+    /// </summary>
+    VideoAnalysis = 18
+}</code></pre>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h4>?? Task Categories</h4>
+                        <ul>
+                            <li><strong>Text Tasks:</strong> Generation, Classification, Summarization, Translation</li>
+                            <li><strong>Understanding Tasks:</strong> Q&A, NER, Sentiment Analysis, Data Extraction</li>
+                            <li><strong>Multimodal Tasks:</strong> Vision-Language, Image Analysis, Audio Transcription</li>
+                            <li><strong>Interactive Tasks:</strong> Conversational, Code Generation, Text Rewriting</li>
+                            <li><strong>Analysis Tasks:</strong> Document Analysis, Content Moderation, Video Analysis</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- PipelineStatus -->
+                <section class="section" id="pipeline-status">
+                    <h2><i class="bi bi-activity"></i> PipelineStatus</h2>
+                    <p>Indicates the current operational status of a transformer pipeline.</p>
+                    
+                    <div class="code-example">
+                        <h4>Enumeration Definition</h4>
+                        <pre><code class="language-csharp">public enum PipelineStatus
+{
+    /// <summary>
+    /// Pipeline is not initialized
+    /// </summary>
+    NotInitialized = 0,
+    
+    /// <summary>
+    /// Pipeline is initializing
+    /// </summary>
+    Initializing = 1,
+    
+    /// <summary>
+    /// Pipeline is ready to process requests
+    /// </summary>
+    Ready = 2,
+    
+    /// <summary>
+    /// Pipeline is currently processing a request
+    /// </summary>
+    Processing = 3,
+    
+    /// <summary>
+    /// Pipeline is loading a model
+    /// </summary>
+    LoadingModel = 4,
+    
+    /// <summary>
+    /// Pipeline is temporarily unavailable
+    /// </summary>
+    Unavailable = 5,
+    
+    /// <summary>
+    /// Pipeline encountered an error
+    /// </summary>
+    Error = 6,
+    
+    /// <summary>
+    /// Pipeline is shutting down
+    /// </summary>
+    ShuttingDown = 7,
+    
+    /// <summary>
+    /// Pipeline is shut down
+    /// </summary>
+    Shutdown = 8,
+    
+    /// <summary>
+    /// Pipeline is in maintenance mode
+    /// </summary>
+    Maintenance = 9,
+    
+    /// <summary>
+    /// Pipeline is rate limited
+    /// </summary>
+    RateLimited = 10,
+    
+    /// <summary>
+    /// Pipeline is degraded but functional
+    /// </summary>
+    Degraded = 11
+}</code></pre>
+                    </div>
+
+                    <div class="status-indicators">
+                        <div class="status-group">
+                            <h4>?? Operational States</h4>
+                            <ul>
+                                <li><span class="status-indicator ready"></span> Ready</li>
+                                <li><span class="status-indicator processing"></span> Processing</li>
+                                <li><span class="status-indicator loading"></span> LoadingModel</li>
+                            </ul>
+                        </div>
+                        <div class="status-group">
+                            <h4>?? Warning States</h4>
+                            <ul>
+                                <li><span class="status-indicator degraded"></span> Degraded</li>
+                                <li><span class="status-indicator rate-limited"></span> RateLimited</li>
+                                <li><span class="status-indicator maintenance"></span> Maintenance</li>
+                            </ul>
+                        </div>
+                        <div class="status-group">
+                            <h4>?? Error States</h4>
+                            <ul>
+                                <li><span class="status-indicator error"></span> Error</li>
+                                <li><span class="status-indicator unavailable"></span> Unavailable</li>
+                                <li><span class="status-indicator shutdown"></span> Shutdown</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ErrorSeverity -->
+                <section class="section" id="error-severity">
+                    <h2><i class="bi bi-exclamation-triangle"></i> ErrorSeverity</h2>
+                    <p>Classifies the severity level of errors and exceptions.</p>
+                    
+                    <div class="code-example">
+                        <h4>Enumeration Definition</h4>
+                        <pre><code class="language-csharp">public enum ErrorSeverity
+{
+    /// <summary>
+    /// Informational message, not an error
+    /// </summary>
+    Information = 0,
+    
+    /// <summary>
+    /// Low severity warning
+    /// </summary>
+    Low = 1,
+    
+    /// <summary>
+    /// Medium severity warning
+    /// </summary>
+    Medium = 2,
+    
+    /// <summary>
+    /// High severity error
+    /// </summary>
+    High = 3,
+    
+    /// <summary>
+    /// Critical error requiring immediate attention
+    /// </summary>
+    Critical = 4,
+    
+    /// <summary>
+    /// Emergency - system is unusable
+    /// </summary>
+    Emergency = 5
+}</code></pre>
+                    </div>
+
+                    <div class="severity-levels">
+                        <div class="severity-item information">
+                            <h4><i class="bi bi-info-circle"></i> Information</h4>
+                            <p>General information, debugging messages</p>
+                        </div>
+                        <div class="severity-item low">
+                            <h4><i class="bi bi-exclamation-circle"></i> Low</h4>
+                            <p>Minor issues that don't affect functionality</p>
+                        </div>
+                        <div class="severity-item medium">
+                            <h4><i class="bi bi-exclamation-triangle"></i> Medium</h4>
+                            <p>Issues that may affect performance</p>
+                        </div>
+                        <div class="severity-item high">
+                            <h4><i class="bi bi-x-circle"></i> High</h4>
+                            <p>Serious errors affecting functionality</p>
+                        </div>
+                        <div class="severity-item critical">
+                            <h4><i class="bi bi-shield-exclamation"></i> Critical</h4>
+                            <p>Critical errors requiring immediate action</p>
+                        </div>
+                        <div class="severity-item emergency">
+                            <h4><i class="bi bi-fire"></i> Emergency</h4>
+                            <p>System failure, service unavailable</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- DataClassificationLevel -->
+                <section class="section" id="data-classification">
+                    <h2><i class="bi bi-shield-lock"></i> DataClassificationLevel</h2>
+                    <p>Defines data sensitivity levels for security and compliance purposes.</p>
+                    
+                    <div class="code-example">
+                        <h4>Enumeration Definition</h4>
+                        <pre><code class="language-csharp">public enum DataClassificationLevel
+{
+    /// <summary>
+    /// Public information, no restrictions
+    /// </summary>
+    Public = 0,
+    
+    /// <summary>
+    /// Internal use only
+    /// </summary>
+    Internal = 1,
+    
+    /// <summary>
+    /// Confidential information requiring protection
+    /// </summary>
+    Confidential = 2,
+    
+    /// <summary>
+    /// Restricted access, highest sensitivity
+    /// </summary>
+    Restricted = 3,
+    
+    /// <summary>
+    /// Top secret, requires special handling
+    /// </summary>
+    TopSecret = 4
+}</code></pre>
+                    </div>
+
+                    <div class="classification-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Level</th>
+                                    <th>Description</th>
+                                    <th>Examples</th>
+                                    <th>Allowed Providers</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="classification-badge public">Public</span></td>
+                                    <td>Information available to everyone</td>
+                                    <td>Marketing materials, public documentation</td>
+                                    <td>All providers</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="classification-badge internal">Internal</span></td>
+                                    <td>Company internal information</td>
+                                    <td>Internal procedures, company data</td>
+                                    <td>Most cloud providers</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="classification-badge confidential">Confidential</span></td>
+                                    <td>Sensitive business information</td>
+                                    <td>Customer data, financial records</td>
+                                    <td>Enterprise providers only</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="classification-badge restricted">Restricted</span></td>
+                                    <td>Highly sensitive information</td>
+                                    <td>PII, health records, trade secrets</td>
+                                    <td>Local/private cloud only</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="classification-badge top-secret">Top Secret</span></td>
+                                    <td>Most sensitive information</td>
+                                    <td>Government classified data</td>
+                                    <td>Air-gapped systems only</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- ContentSafetyCategory -->
+                <section class="section" id="content-safety">
+                    <h2><i class="bi bi-shield-exclamation"></i> ContentSafetyCategory</h2>
+                    <p>Categories for content safety and moderation classification.</p>
+                    
+                    <div class="code-example">
+                        <h4>Enumeration Definition</h4>
+                        <pre><code class="language-csharp">public enum ContentSafetyCategory
+{
+    /// <summary>
+    /// Content is safe and appropriate
+    /// </summary>
+    Safe = 0,
+    
+    /// <summary>
+    /// Hate speech or discriminatory content
+    /// </summary>
+    Hate = 1,
+    
+    /// <summary>
+    /// Violent or graphic content
+    /// </summary>
+    Violence = 2,
+    
+    /// <summary>
+    /// Sexual or adult content
+    /// </summary>
+    Sexual = 3,
+    
+    /// <summary>
+    /// Self-harm or suicide-related content
+    /// </summary>
+    SelfHarm = 4,
+    
+    /// <summary>
+    /// Harassment or bullying content
+    /// </summary>
+    Harassment = 5,
+    
+    /// <summary>
+    /// Illegal activities or content
+    /// </summary>
+    Illegal = 6,
+    
+    /// <summary>
+    /// Spam or misleading content
+    /// </summary>
+    Spam = 7,
+    
+    /// <summary>
+    /// Privacy violations or doxxing
+    /// </summary>
+    Privacy = 8,
+    
+    /// <summary>
+    /// Intellectual property violations
+    /// </summary>
+    Copyright = 9,
+    
+    /// <summary>
+    /// Misinformation or false claims
+    /// </summary>
+    Misinformation = 10,
+    
+    /// <summary>
+    /// Toxic or abusive language
+    /// </summary>
+    Toxic = 11
+}</code></pre>
+                    </div>
+
+                    <div class="safety-categories">
+                        <div class="safety-item severe">
+                            <h4>?? Severe Violations</h4>
+                            <ul>
+                                <li>Violence</li>
+                                <li>Self-harm</li>
+                                <li>Illegal activities</li>
+                            </ul>
+                        </div>
+                        <div class="safety-item moderate">
+                            <h4>?? Moderate Violations</h4>
+                            <ul>
+                                <li>Hate speech</li>
+                                <li>Harassment</li>
+                                <li>Sexual content</li>
+                            </ul>
+                        </div>
+                        <div class="safety-item minor">
+                            <h4>?? Minor Violations</h4>
+                            <ul>
+                                <li>Spam</li>
+                                <li>Toxic language</li>
+                                <li>Misinformation</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- AuthenticationType -->
+                <section class="section" id="authentication-type">
+                    <h2><i class="bi bi-key"></i> AuthenticationType</h2>
+                    <p>Specifies the authentication method used for AI provider connections.</p>
+                    
+                    <div class="code-example">
+                        <h4>Enumeration Definition</h4>
+                        <pre><code class="language-csharp">public enum AuthenticationType
+{
+    /// <summary>
+    /// No authentication required
+    /// </summary>
+    None = 0,
+    
+    /// <summary>
+    /// API Key authentication
+    /// </summary>
+    ApiKey = 1,
+    
+    /// <summary>
+    /// OAuth 2.0 authentication
+    /// </summary>
+    OAuth2 = 2,
+    
+    /// <summary>
+    /// Bearer token authentication
+    /// </summary>
+    BearerToken = 3,
+    
+    /// <summary>
+    /// Basic HTTP authentication
+    /// </summary>
+    Basic = 4,
+    
+    /// <summary>
+    /// Azure Active Directory authentication
+    /// </summary>
+    AzureAD = 5,
+    
+    /// <summary>
+    /// JWT token authentication
+    /// </summary>
+    JWT = 6,
+    
+    /// <summary>
+    /// Service account authentication
+    /// </summary>
+    ServiceAccount = 7,
+    
+    /// <summary>
+    /// Mutual TLS authentication
+    /// </summary>
+    MutualTLS = 8,
+    
+    /// <summary>
+    /// Custom authentication method
+    /// </summary>
+    Custom = 9
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- ModelType -->
+                <section class="section" id="model-type">
+                    <h2><i class="bi bi-cpu"></i> ModelType</h2>
+                    <p>Categorizes AI models by their architecture and capabilities.</p>
+                    
+                    <div class="code-example">
+                        <h4>Enumeration Definition</h4>
+                        <pre><code class="language-csharp">public enum ModelType
+{
+    /// <summary>
+    /// Large Language Model (text-only)
+    /// </summary>
+    LanguageModel = 0,
+    
+    /// <summary>
+    /// Vision-Language Model (text + images)
+    /// </summary>
+    VisionLanguageModel = 1,
+    
+    /// <summary>
+    /// Multimodal model (text, images, audio)
+    /// </summary>
+    MultimodalModel = 2,
+    
+    /// <summary>
+    /// Embedding model for feature extraction
+    /// </summary>
+    EmbeddingModel = 3,
+    
+    /// <summary>
+    /// Code generation model
+    /// </summary>
+    CodeModel = 4,
+    
+    /// <summary>
+    /// Audio processing model
+    /// </summary>
+    AudioModel = 5,
+    
+    /// <summary>
+    /// Image generation model
+    /// </summary>
+    ImageGenerationModel = 6,
+    
+    /// <summary>
+    /// Video processing model
+    /// </summary>
+    VideoModel = 7,
+    
+    /// <summary>
+    /// Fine-tuned specialist model
+    /// </summary>
+    FineTunedModel = 8,
+    
+    /// <summary>
+    /// Custom or proprietary model
+    /// </summary>
+    CustomModel = 9
+}</code></pre>
+                    </div>
+
+                    <div class="model-capabilities">
+                        <div class="capability-item">
+                            <h4>?? Text Models</h4>
+                            <p>Language models, embedding models, code models</p>
+                        </div>
+                        <div class="capability-item">
+                            <h4>??? Vision Models</h4>
+                            <p>Vision-language models, image generation</p>
+                        </div>
+                        <div class="capability-item">
+                            <h4>?? Audio Models</h4>
+                            <p>Speech recognition, audio analysis</p>
+                        </div>
+                        <div class="capability-item">
+                            <h4>?? Multimodal Models</h4>
+                            <p>Combined text, image, audio, video processing</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="../configuration/monitoring.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> Monitoring & Analytics
+                    </a>
+                    <a href="data-models.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> Data Models
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.AI.Transformers Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="../index.html">Home</a>
+                            <a href="../api/ITransformerPipeLine.html">API Reference</a>
+                            <a href="data-models.html">Data Models</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../assets/navigation.js"></script>
+
+    <style>
+        .status-indicators {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .status-group h4 {
+            margin-bottom: 0.5rem;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .status-indicator.ready { background-color: #28a745; }
+        .status-indicator.processing { background-color: #17a2b8; }
+        .status-indicator.loading { background-color: #6f42c1; }
+        .status-indicator.degraded { background-color: #ffc107; }
+        .status-indicator.rate-limited { background-color: #fd7e14; }
+        .status-indicator.maintenance { background-color: #6c757d; }
+        .status-indicator.error { background-color: #dc3545; }
+        .status-indicator.unavailable { background-color: #e83e8c; }
+        .status-indicator.shutdown { background-color: #495057; }
+        
+        .severity-levels {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .severity-item {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border-left: 4px solid;
+        }
+        
+        .severity-item.information { border-left-color: #17a2b8; background-color: #d1ecf1; }
+        .severity-item.low { border-left-color: #28a745; background-color: #d4edda; }
+        .severity-item.medium { border-left-color: #ffc107; background-color: #fff3cd; }
+        .severity-item.high { border-left-color: #fd7e14; background-color: #ffeaa7; }
+        .severity-item.critical { border-left-color: #dc3545; background-color: #f8d7da; }
+        .severity-item.emergency { border-left-color: #6f42c1; background-color: #e2d9f3; }
+        
+        .classification-table table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        .classification-table th,
+        .classification-table td {
+            padding: 0.75rem;
+            border: 1px solid #dee2e6;
+            text-align: left;
+        }
+        
+        .classification-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .classification-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .classification-badge.public { background-color: #28a745; }
+        .classification-badge.internal { background-color: #17a2b8; }
+        .classification-badge.confidential { background-color: #ffc107; color: #212529; }
+        .classification-badge.restricted { background-color: #fd7e14; }
+        .classification-badge.top-secret { background-color: #dc3545; }
+        
+        .safety-categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .safety-item {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid;
+        }
+        
+        .safety-item.severe { border-color: #dc3545; background-color: #f8d7da; }
+        .safety-item.moderate { border-color: #ffc107; background-color: #fff3cd; }
+        .safety-item.minor { border-color: #17a2b8; background-color: #d1ecf1; }
+        
+        .model-capabilities {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .capability-item {
+            padding: 1rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            text-align: center;
+        }
+    </style>
+</body>
+</html>

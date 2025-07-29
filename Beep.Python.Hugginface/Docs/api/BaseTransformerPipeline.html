@@ -42,9 +42,9 @@
 
                 <!-- Page Header -->
                 <div class="page-header">
-                    <h1><i class="bi bi-layers"></i> BaseTransformerPipeline Class</h1>
-                    <p class="page-subtitle">Abstract base class providing common functionality for all transformer pipeline
-                        implementations</p>
+                    <h1><i class="bi bi-layers"></i> BaseTransformerPipeline Abstract Class</h1>
+                    <p class="page-subtitle">Abstract base class providing core functionality for all transformer pipeline implementations
+                    </p>
                 </div>
 
                 <!-- Class Info -->
@@ -52,384 +52,282 @@
                     <div class="class-namespace">
                         <strong>Namespace:</strong> Beep.Python.AI.Transformers<br>
                         <strong>Assembly:</strong> Beep.Python.AI.Transformers.dll<br>
-                        <strong>Type:</strong> Abstract Class
+                        <strong>Package:</strong> Beep.Python.AI.Transformers
                     </div>
                     <div class="class-implements">
-                        <strong>Implements:</strong> ITransformerPipeLine, IDisposable
+                        <strong>Inheritance:</strong> Object → BaseTransformerPipeline<br>
+                        <strong>Implements:</strong> ITransformerPipeLine, IDisposable<br>
+                        <strong>Derived Types:</strong> OpenAITransformerPipeline, AzureTransformerPipeline, HuggingFaceTransformerPipeline, etc.
                     </div>
                 </div>
 
                 <!-- Overview Section -->
                 <section class="section" id="overview">
-                    <h2>Overview</h2>
+                    <h2>📋 Overview</h2>
                     <p>
-                        The <code>BaseTransformerPipeline</code> abstract class serves as the foundation for all transformer
-                        pipeline implementations in the Beep.Python.AI.Transformers library. It provides comprehensive
-                        shared functionality including session management, connection configuration, error handling,
-                        and common inference operations.
+                        The <code>BaseTransformerPipeline</code> abstract class serves as the foundation for all transformer pipeline implementations
+                        in the Beep.Python.AI.Transformers library. It provides common functionality, error handling, logging, and standardized
+                        patterns that all concrete pipeline implementations inherit and extend.
                     </p>
 
-                    <div class="highlight-box bg-light p-4 rounded">
-                        <h5><i class="bi bi-lightbulb"></i> Key Responsibilities</h5>
-                        <ul class="mb-0">
-                            <li><strong>Session Management</strong> - Multi-user isolation with virtual environments</li>
-                            <li><strong>Connection Configuration</strong> - Provider authentication and endpoint management
-                            </li>
-                            <li><strong>Common Operations</strong> - Shared inference methods and utilities</li>
-                            <li><strong>Error Handling</strong> - Consistent error management and event firing</li>
-                            <li><strong>Resource Management</strong> - Proper cleanup and disposal patterns</li>
-                        </ul>
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-gear"></i> Common Infrastructure</h4>
+                            <p>Shared logging, error handling, and configuration management</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-shield-check"></i> Validation Framework</h4>
+                            <p>Input validation, security checks, and data sanitization</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-stopwatch"></i> Performance Monitoring</h4>
+                            <p>Built-in timing, metrics collection, and performance tracking</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-arrow-repeat"></i> Retry Logic</h4>
+                            <p>Configurable retry mechanisms and circuit breaker patterns</p>
+                        </div>
                     </div>
-                </section>
 
-                <!-- Class Declaration Section -->
-                <section class="section" id="declaration">
-                    <h2>Class Declaration</h2>
-                    <div class="code-example">
-                        <h4>Class Definition</h4>
-                        <pre><code class="language-csharp">public abstract class BaseTransformerPipeline : ITransformerPipeLine
-{
-    // Protected Fields
-    protected bool _isInitialized;
-    protected bool _isModelLoaded;
-    protected string? _modelName;
-    protected TransformerModelSource _modelSource;
-    protected TransformerTask _taskType;
-    protected string? _device;
-    protected Dictionary&lt;string, object&gt; _modelConfig;
-    protected TransformerPipelineConfig? _pipelineConfig;
-    protected bool _disposed;
-
-    // Python runtime dependencies
-    protected readonly IPythonRunTimeManager _pythonRunTimeManager;
-    protected readonly IPythonCodeExecuteManager _executeManager;
-
-    // Connection configuration
-    protected TransformerConnectionConfig? _connectionConfig;
-    protected static readonly TransformerConnectionManager _connectionManager = new();
-}</code></pre>
+                    <div class="highlight-box">
+                        <h4>🏗️ Architecture Benefits</h4>
+                        <ul>
+                            <li><strong>Consistency:</strong> Standardized behavior across all pipeline implementations</li>
+                            <li><strong>Extensibility:</strong> Easy to add new AI providers with minimal code</li>
+                            <li><strong>Maintainability:</strong> Centralized common functionality reduces duplication</li>
+                            <li><strong>Reliability:</strong> Built-in error handling and recovery mechanisms</li>
+                            <li><strong>Observability:</strong> Comprehensive logging and monitoring capabilities</li>
+                        </ul>
                     </div>
                 </section>
 
                 <!-- Constructor Section -->
                 <section class="section" id="constructor">
-                    <h2>Constructor</h2>
+                    <h2>🔧 Constructor</h2>
 
-                    <h3>BaseTransformerPipeline</h3>
-                    <div class="api-signature">
-                        <code>protected BaseTransformerPipeline(IPythonRunTimeManager pythonRunTimeManager, IPythonCodeExecuteManager executeManager)</code>
-                    </div>
-                    <p>Initializes a new instance of the BaseTransformerPipeline class.</p>
-
-                    <div class="parameter-table">
+                    <div class="code-example">
+                        <h4>BaseTransformerPipeline(IPythonRunTimeManager, IPythonCodeExecuteManager)</h4>
+                        <pre><code class="language-csharp">protected BaseTransformerPipeline(
+    IPythonRunTimeManager pythonRunTimeManager,
+    IPythonCodeExecuteManager executeManager
+)</code></pre>
                         <h5>Parameters</h5>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Parameter</th>
-                                    <th>Type</th>
-                                    <th>Description</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><code>pythonRunTimeManager</code></td>
-                                    <td><code>IPythonRunTimeManager</code></td>
-                                    <td>Python runtime manager for execution context</td>
-                                </tr>
-                                <tr>
-                                    <td><code>executeManager</code></td>
-                                    <td><code>IPythonCodeExecuteManager</code></td>
-                                    <td>Python code execution manager</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <ul>
+                            <li><code>pythonRunTimeManager</code> - Python runtime management interface</li>
+                            <li><code>executeManager</code> - Python code execution interface</li>
+                        </ul>
+                        <p><strong>Note:</strong> This constructor is protected as the class is abstract and can only be called by derived classes.</p>
+                    </div>
+                </section>
+
+                <!-- Properties Section -->
+                <section class="section" id="properties">
+                    <h2>🏷️ Properties</h2>
+
+                    <div class="method">
+                        <h3>IsInitialized</h3>
+                        <pre><code class="language-csharp">public bool IsInitialized { get; protected set; }</code></pre>
+                        <p>Gets a value indicating whether the pipeline has been successfully initialized.</p>
                     </div>
 
-                    <div class="warning">
-                        <strong>⚠️ Exceptions</strong>
-                        <p><code>ArgumentNullException</code> - Thrown when either parameter is null</p>
+                    <div class="method">
+                        <h3>CurrentProvider</h3>
+                        <pre><code class="language-csharp">public TransformerModelSource CurrentProvider { get; protected set; }</code></pre>
+                        <p>Gets the current AI provider being used by the pipeline.</p>
+                    </div>
+
+                    <div class="method">
+                        <h3>CurrentModel</h3>
+                        <pre><code class="language-csharp">public TransformerModelInfo? CurrentModel { get; protected set; }</code></pre>
+                        <p>Gets information about the currently loaded model.</p>
+                    </div>
+
+                    <div class="method">
+                        <h3>SupportedTasks</h3>
+                        <pre><code class="language-csharp">public virtual List&lt;TransformerTask&gt; SupportedTasks { get; }</code></pre>
+                        <p>Gets the list of tasks supported by this pipeline implementation.</p>
+                    </div>
+
+                    <div class="method">
+                        <h3>Logger</h3>
+                        <pre><code class="language-csharp">protected ILogger Logger { get; }</code></pre>
+                        <p>Gets the logger instance for this pipeline.</p>
                     </div>
                 </section>
 
                 <!-- Abstract Methods Section -->
                 <section class="section" id="abstract-methods">
-                    <h2>Abstract Methods</h2>
-                    <p>These methods must be implemented by derived classes to provide provider-specific functionality.</p>
+                    <h2>🔨 Abstract Methods</h2>
+                    <p>These methods must be implemented by all derived pipeline classes:</p>
 
-                    <h3>InitializeAsync</h3>
-                    <div class="api-signature">
-                        <code>public abstract Task&lt;bool&gt; InitializeAsync(TransformerPipelineConfig config)</code>
-                    </div>
-                    <p>Initialize the pipeline with provider-specific configuration.</p>
-
-                    <h3>LoadModelAsync</h3>
-                    <div class="api-signature">
-                        <code>public abstract Task&lt;bool&gt; LoadModelAsync(TransformerModelInfo modelInfo, TransformerTask taskType, Dictionary&lt;string, object&gt;? modelConfig = null)</code>
-                    </div>
-                    <p>Load a model based on the model information and configuration.</p>
-
-                    <h3>GenerateTextAsync</h3>
-                    <div class="api-signature">
-                        <code>public abstract Task&lt;TransformerResult&lt;string&gt;&gt; GenerateTextAsync(string prompt, TextGenerationParameters? parameters = null)</code>
-                    </div>
-                    <p>Perform text generation with provider-specific implementation.</p>
-                </section>
-
-                <!-- Session Management Section -->
-                <section class="section" id="session-management">
-                    <h2>Session Management</h2>
-
-                    <h3>ConfigureSession</h3>
-                    <div class="api-signature">
-                        <code>public virtual bool ConfigureSession(PythonSessionInfo session, PythonVirtualEnvironment virtualEnvironment)</code>
-                    </div>
-                    <p>Configure the pipeline to use a specific Python session and virtual environment. This is the recommended
-                        approach for multi-user environments.</p>
-
-                    <div class="code-example">
-                        <h5>Example Usage</h5>
-                        <pre><code class="language-csharp">// Create session for user
-var session = sessionManager.CreateSession("alice", environmentId);
-var environment = virtualEnvManager.GetEnvironmentById(environmentId);
-
-// Configure pipeline to use this session
-var success = pipeline.ConfigureSession(session, environment);
-
-if (success)
-{
-    // Pipeline is now configured for user "alice"
-    var result = await pipeline.GenerateTextAsync("Hello world");
-}</code></pre>
+                    <div class="method">
+                        <h3>InitializeAsync</h3>
+                        <pre><code class="language-csharp">public abstract Task&lt;bool&gt; InitializeAsync(TransformerPipelineConfig config);</code></pre>
+                        <p>Initializes the pipeline with provider-specific configuration. Must be implemented by derived classes.</p>
                     </div>
 
-                    <h3>GetConfiguredSession</h3>
-                    <div class="api-signature">
-                        <code>public virtual PythonSessionInfo? GetConfiguredSession()</code>
-                    </div>
-                    <p>Get the currently configured session, if any.</p>
-
-                    <h3>GetConfiguredVirtualEnvironment</h3>
-                    <div class="api-signature">
-                        <code>public virtual PythonVirtualEnvironment? GetConfiguredVirtualEnvironment()</code>
-                    </div>
-                    <p>Get the currently configured virtual environment, if any.</p>
-                </section>
-
-                <!-- Connection Configuration Section -->
-                <section class="section" id="connection-config">
-                    <h2>Connection Configuration</h2>
-
-                    <h3>ConfigureConnection</h3>
-                    <div class="api-signature">
-                        <code>public virtual bool ConfigureConnection(TransformerConnectionConfig connectionConfig)</code>
-                    </div>
-                    <p>Configure connection for the transformer service provider.</p>
-
-                    <div class="code-example">
-                        <h5>Example Usage</h5>
-                        <pre><code class="language-csharp">// Configure OpenAI connection
-var openAIConfig = new OpenAIConnectionConfig
-{
-    ApiKey = "sk-your-api-key",
-    OrganizationId = "org-your-org",
-    TimeoutSeconds = 60,
-    MaxRetries = 3,
-    RateLimit = new RateLimitConfig
-    {
-        RequestsPerMinute = 100
-    }
-};
-
-var success = pipeline.ConfigureConnection(openAIConfig);
-if (success)
-{
-    Console.WriteLine("Connection configured successfully");
-}</code></pre>
+                    <div class="method">
+                        <h3>LoadModelAsync</h3>
+                        <pre><code class="language-csharp">public abstract Task&lt;bool&gt; LoadModelAsync(
+    TransformerModelInfo modelInfo, 
+    TransformerTask taskType, 
+    Dictionary&lt;string, object&gt;? modelConfig = null
+);</code></pre>
+                        <p>Loads a specific model for the given task type. Implementation varies by provider.</p>
                     </div>
 
-                    <h3>GetConnectionConfig</h3>
-                    <div class="api-signature">
-                        <code>public virtual TransformerConnectionConfig? GetConnectionConfig()</code>
+                    <div class="method">
+                        <h3>GetSupportedTasks</h3>
+                        <pre><code class="language-csharp">public abstract List&lt;TransformerTask&gt; GetSupportedTasks();</code></pre>
+                        <p>Returns the list of tasks supported by the specific provider implementation.</p>
                     </div>
-                    <p>Get the currently configured connection.</p>
-
-                    <h3>IsConnectionConfigured</h3>
-                    <div class="api-signature">
-                        <code>public virtual bool IsConnectionConfigured()</code>
-                    </div>
-                    <p>Check if connection is configured and valid.</p>
                 </section>
 
                 <!-- Virtual Methods Section -->
                 <section class="section" id="virtual-methods">
-                    <h2>Virtual Methods</h2>
-                    <p>These methods provide default implementations that can be overridden by derived classes.</p>
+                    <h2>🔄 Virtual Methods</h2>
+                    <p>These methods have default implementations but can be overridden by derived classes:</p>
 
-                    <h3>ClassifyTextAsync</h3>
-                    <div class="api-signature">
-                        <code>public virtual async Task&lt;TransformerResult&lt;ClassificationResult&gt;&gt; ClassifyTextAsync(string text, ClassificationParameters? parameters = null)</code>
-                    </div>
-                    <p>Perform text classification with base implementation.</p>
-
-                    <h3>ExtractEntitiesAsync</h3>
-                    <div class="api-signature">
-                        <code>public virtual async Task&lt;TransformerResult&lt;List&lt;EntityResult&gt;&gt;&gt; ExtractEntitiesAsync(string text, NERParameters? parameters = null)</code>
-                    </div>
-                    <p>Perform named entity recognition with base implementation.</p>
-
-                    <h3>GetEmbeddingsAsync</h3>
-                    <div class="api-signature">
-                        <code>public virtual async Task&lt;TransformerResult&lt;List&lt;float[]&gt;&gt;&gt; GetEmbeddingsAsync(List&lt;string&gt; texts, EmbeddingParameters? parameters = null)</code>
-                    </div>
-                    <p>Generate text embeddings with base implementation.</p>
-
-                    <h3>WarmUpAsync</h3>
-                    <div class="api-signature">
-                        <code>public virtual async Task&lt;bool&gt; WarmUpAsync(string? sampleInput = null)</code>
-                    </div>
-                    <p>Warm up the model with a sample input to improve first-request performance.</p>
-
-                    <div class="code-example">
-                        <h5>Example Usage</h5>
-                        <pre><code class="language-csharp">// Warm up the model after loading
-await pipeline.LoadModelAsync(modelInfo, TransformerTask.TextGeneration);
-await pipeline.WarmUpAsync("This is a warmup input.");
-
-// First real request will now be faster
-var result = await pipeline.GenerateTextAsync("Actual user prompt");</code></pre>
-                    </div>
-                </section>
-
-                <!-- Protected Helper Methods Section -->
-                <section class="section" id="protected-helpers">
-                    <h2>Protected Helper Methods</h2>
-                    <p>These methods are available to derived classes for implementing provider-specific functionality.</p>
-
-                    <h3>ExecutePythonCodeAsync</h3>
-                    <div class="api-signature">
-                        <code>protected async Task&lt;(bool Success, string? Result, string? ErrorMessage)&gt; ExecutePythonCodeAsync(string pythonCode, PythonSessionInfo? session = null)</code>
-                    </div>
-                    <p>Execute Python code asynchronously using configured session or creating a temporary one.</p>
-
-                    <h3>ParseInferenceResult&lt;T&gt;</h3>
-                    <div class="api-signature">
-                        <code>protected (bool success, T? data, string? error) ParseInferenceResult&lt;T&gt;(string jsonResult)</code>
-                    </div>
-                    <p>Parse inference result from JSON with proper error handling.</p>
-
-                    <h3>GetHuggingFaceTaskName</h3>
-                    <div class="api-signature">
-                        <code>protected string GetHuggingFaceTaskName(TransformerTask taskType)</code>
-                    </div>
-                    <p>Get HuggingFace task name from TransformerTask enum.</p>
-
-                    <h3>GetDeviceConfig</h3>
-                    <div class="api-signature">
-                        <code>protected string GetDeviceConfig()</code>
-                    </div>
-                    <p>Get device configuration string for Python execution.</p>
-
-                    <h3>UpdateModelState</h3>
-                    <div class="api-signature">
-                        <code>protected virtual void UpdateModelState(string modelName, TransformerModelSource modelSource, TransformerTask taskType, Dictionary&lt;string, object&gt;? modelConfig)</code>
-                    </div>
-                    <p>Update internal model state after successful loading.</p>
-                </section>
-
-                <!-- Event Handling Section -->
-                <section class="section" id="event-handling">
-                    <h2>Event Handling</h2>
-
-                    <div class="code-example">
-                        <h4>Subscribe to Events</h4>
-                        <pre><code class="language-csharp">// Subscribe to pipeline events
-pipeline.ModelLoadingStarted += (sender, args) => 
-    Console.WriteLine($"Loading model: {args.ModelName}");
-
-pipeline.ModelLoadingCompleted += (sender, args) => 
-    Console.WriteLine($"Model loaded: {args.ModelName}");
-
-pipeline.InferenceStarted += (sender, args) => 
-    Console.WriteLine($"Inference started for: {args.ModelName}");
-
-pipeline.InferenceCompleted += (sender, args) => 
-    Console.WriteLine($"Inference completed for: {args.ModelName}");
-
-pipeline.ErrorOccurred += (sender, args) => 
-    Console.WriteLine($"Error: {args.ErrorMessage}");
-
-pipeline.ProgressUpdated += (sender, args) => 
-    Console.WriteLine($"Progress: {args.ProgressPercentage}% - {args.Message}");</code></pre>
+                    <div class="method">
+                        <h3>GenerateTextAsync</h3>
+                        <pre><code class="language-csharp">public virtual async Task&lt;TransformerResult&lt;string&gt;&gt; GenerateTextAsync(
+    string prompt, 
+    TextGenerationParameters? parameters = null
+)</code></pre>
+                        <p>Base implementation for text generation with common validation and error handling.</p>
                     </div>
 
-                    <h3>Protected Event Methods</h3>
-                    <div class="parameter-table">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Method</th>
-                                    <th>Description</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><code>OnModelLoadingStarted</code></td>
-                                    <td>Fire model loading started event</td>
-                                </tr>
-                                <tr>
-                                    <td><code>OnModelLoadingCompleted</code></td>
-                                    <td>Fire model loading completed event</td>
-                                </tr>
-                                <tr>
-                                    <td><code>OnInferenceStarted</code></td>
-                                    <td>Fire inference started event</td>
-                                </tr>
-                                <tr>
-                                    <td><code>OnInferenceCompleted</code></td>
-                                    <td>Fire inference completed event</td>
-                                </tr>
-                                <tr>
-                                    <td><code>OnErrorOccurred</code></td>
-                                    <td>Fire error occurred event</td>
-                                </tr>
-                                <tr>
-                                    <td><code>OnProgressUpdated</code></td>
-                                    <td>Fire progress updated event</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div class="method">
+                        <h3>ClassifyTextAsync</h3>
+                        <pre><code class="language-csharp">public virtual async Task&lt;TransformerResult&lt;ClassificationResult&gt;&gt; ClassifyTextAsync(
+    string text, 
+    List&lt;string&gt; labels, 
+    ClassificationParameters? parameters = null
+)</code></pre>
+                        <p>Base implementation for text classification with validation and formatting.</p>
+                    </div>
+
+                    <div class="method">
+                        <h3>GetEmbeddingsAsync</h3>
+                        <pre><code class="language-csharp">public virtual async Task&lt;TransformerResult&lt;List&lt;float[]&gt;&gt;&gt; GetEmbeddingsAsync(
+    List&lt;string&gt; texts, 
+    EmbeddingParameters? parameters = null
+)</code></pre>
+                        <p>Base implementation for generating text embeddings.</p>
+                    </div>
+
+                    <div class="method">
+                        <h3>ValidateConfiguration</h3>
+                        <pre><code class="language-csharp">protected virtual bool ValidateConfiguration(TransformerPipelineConfig config)</code></pre>
+                        <p>Validates the pipeline configuration. Can be extended by derived classes for provider-specific validation.</p>
+                    </div>
+
+                    <div class="method">
+                        <h3>HandleError</h3>
+                        <pre><code class="language-csharp">protected virtual TransformerResult&lt;T&gt; HandleError&lt;T&gt;(Exception ex, string operation)</code></pre>
+                        <p>Handles errors and converts them to standardized result objects.</p>
                     </div>
                 </section>
 
-                <!-- Implementation Guide Section -->
-                <section class="section" id="implementation-guide">
-                    <h2>Implementation Guide</h2>
+                <!-- Helper Methods Section -->
+                <section class="section" id="helper-methods">
+                    <h2>🛠️ Helper Methods</h2>
 
-                    <h3>Creating a Custom Provider</h3>
+                    <div class="method">
+                        <h3>LogOperation</h3>
+                        <pre><code class="language-csharp">protected void LogOperation(string operation, Dictionary&lt;string, object&gt;? parameters = null)</code></pre>
+                        <p>Logs pipeline operations with structured data for monitoring and debugging.</p>
+                    </div>
+
+                    <div class="method">
+                        <h3>MeasureExecutionTime</h3>
+                        <pre><code class="language-csharp">protected async Task&lt;(T result, TimeSpan duration)&gt; MeasureExecutionTime&lt;T&gt;(Func&lt;Task&lt;T&gt;&gt; operation)</code></pre>
+                        <p>Measures execution time for operations and includes timing in results.</p>
+                    </div>
+
+                    <div class="method">
+                        <h3>ValidateInput</h3>
+                        <pre><code class="language-csharp">protected bool ValidateInput(string input, int maxLength = 0, bool allowEmpty = false)</code></pre>
+                        <p>Validates input text for common requirements like length limits and content filtering.</p>
+                    </div>
+
+                    <div class="method">
+                        <h3>SanitizePrompt</h3>
+                        <pre><code class="language-csharp">protected string SanitizePrompt(string prompt)</code></pre>
+                        <p>Sanitizes user input to prevent injection attacks and ensure safe processing.</p>
+                    </div>
+
+                    <div class="method">
+                        <h3>CreateSuccessResult</h3>
+                        <pre><code class="language-csharp">protected TransformerResult&lt;T&gt; CreateSuccessResult&lt;T&gt;(T data, Dictionary&lt;string, object&gt;? metadata = null)</code></pre>
+                        <p>Creates a successful result object with consistent formatting.</p>
+                    </div>
+
+                    <div class="method">
+                        <h3>CreateErrorResult</h3>
+                        <pre><code class="language-csharp">protected TransformerResult&lt;T&gt; CreateErrorResult&lt;T&gt;(string error, string? errorCode = null)</code></pre>
+                        <p>Creates an error result object with standardized error information.</p>
+                    </div>
+                </section>
+
+                <!-- Implementation Example -->
+                <section class="section" id="implementation-example">
+                    <h2>💡 Implementation Example</h2>
+                    <p>Here's how to create a custom pipeline by inheriting from BaseTransformerPipeline:</p>
+
                     <div class="code-example">
                         <h4>Custom Pipeline Implementation</h4>
-                        <pre><code class="language-csharp">public class CustomTransformerPipeline : BaseTransformerPipeline
+                        <pre><code class="language-csharp">public class CustomAITransformerPipeline : BaseTransformerPipeline
 {
-    public CustomTransformerPipeline(
+    private readonly ICustomAIClient _aiClient;
+    private CustomAIConfig _config;
+
+    public CustomAITransformerPipeline(
         IPythonRunTimeManager pythonRunTimeManager,
-        IPythonCodeExecuteManager executeManager)
+        IPythonCodeExecuteManager executeManager,
+        ICustomAIClient aiClient) 
         : base(pythonRunTimeManager, executeManager)
     {
+        _aiClient = aiClient;
     }
 
     public override async Task&lt;bool&gt; InitializeAsync(TransformerPipelineConfig config)
     {
         try
         {
-            // Provider-specific initialization
-            _pipelineConfig = config;
-            _isInitialized = true;
+            // Validate configuration using base class helper
+            if (!ValidateConfiguration(config))
+            {
+                Logger.LogError("Invalid configuration provided");
+                return false;
+            }
+
+            // Extract custom configuration
+            _config = new CustomAIConfig
+            {
+                ApiKey = config.GetValue&lt;string&gt;("api_key"),
+                BaseUrl = config.GetValue&lt;string&gt;("base_url") ?? "https://api.customai.com",
+                Timeout = config.GetValue&lt;int&gt;("timeout") ?? 60
+            };
+
+            // Initialize the AI client
+            await _aiClient.InitializeAsync(_config);
+
+            // Log successful initialization
+            LogOperation("Initialize", new Dictionary&lt;string, object&gt;
+            {
+                ["provider"] = "CustomAI",
+                ["base_url"] = _config.BaseUrl
+            });
+
+            IsInitialized = true;
+            CurrentProvider = TransformerModelSource.Custom;
+            
             return true;
         }
         catch (Exception ex)
         {
-            OnErrorOccurred("Initialization failed", ex);
+            Logger.LogError(ex, "Failed to initialize CustomAI pipeline");
             return false;
         }
     }
@@ -441,18 +339,40 @@ pipeline.ProgressUpdated += (sender, args) =>
     {
         try
         {
-            OnModelLoadingStarted(modelInfo.Name, taskType);
+            if (!IsInitialized)
+            {
+                throw new InvalidOperationException("Pipeline must be initialized before loading models");
+            }
+
+            // Validate model compatibility
+            if (!GetSupportedTasks().Contains(taskType))
+            {
+                throw new NotSupportedException($"Task {taskType} is not supported by CustomAI");
+            }
+
+            // Load model using provider-specific logic
+            var loadResult = await _aiClient.LoadModelAsync(modelInfo.Name, taskType);
             
-            // Provider-specific model loading logic
-            // ...
-            
-            UpdateModelState(modelInfo.Name, modelInfo.Source, taskType, modelConfig);
-            OnModelLoadingCompleted(modelInfo.Name, taskType);
-            return true;
+            if (loadResult.Success)
+            {
+                CurrentModel = modelInfo;
+                
+                LogOperation("LoadModel", new Dictionary&lt;string, object&gt;
+                {
+                    ["model"] = modelInfo.Name,
+                    ["task"] = taskType.ToString()
+                });
+                
+                return true;
+            }
+
+            Logger.LogError($"Failed to load model: {loadResult.Error}");
+            return false;
         }
         catch (Exception ex)
         {
-            OnErrorOccurred($"Failed to load model {modelInfo.Name}", ex);
+            Logger.LogError(ex, "Error loading model {ModelName} for task {TaskType}", 
+                modelInfo.Name, taskType);
             return false;
         }
     }
@@ -463,114 +383,183 @@ pipeline.ProgressUpdated += (sender, args) =>
     {
         try
         {
-            OnInferenceStarted(_modelName ?? "", _taskType);
-            
-            // Generate Python code for this provider
-            var pythonCode = GenerateProviderSpecificCode(prompt, parameters);
-            
-            // Execute using base class helper
-            var (success, result, error) = await ExecutePythonCodeAsync(pythonCode);
-            
-            if (success)
+            // Use base class input validation
+            if (!ValidateInput(prompt, maxLength: 10000))
             {
-                var parsedResult = ParseInferenceResult&lt;string&gt;(result);
-                OnInferenceCompleted(_modelName ?? "", _taskType);
-                
-                return new TransformerResult&lt;string&gt;
-                {
-                    Success = parsedResult.success,
-                    Data = parsedResult.data ?? "",
-                    ErrorMessage = parsedResult.error,
-                    ModelName = _modelName ?? "",
-                    TaskType = _taskType
-                };
+                return CreateErrorResult&lt;string&gt;("Invalid prompt provided", "INVALID_INPUT");
             }
-            else
+
+            // Sanitize the prompt using base class helper
+            var sanitizedPrompt = SanitizePrompt(prompt);
+
+            // Measure execution time using base class helper
+            var (result, duration) = await MeasureExecutionTime(async () =>
             {
-                return new TransformerResult&lt;string&gt;
+                return await _aiClient.GenerateTextAsync(sanitizedPrompt, parameters);
+            });
+
+            if (result.Success)
+            {
+                // Create success result with metadata
+                return CreateSuccessResult(result.Text, new Dictionary&lt;string, object&gt;
                 {
-                    Success = false,
-                    ErrorMessage = error ?? "Unknown error",
-                    ModelName = _modelName ?? "",
-                    TaskType = _taskType
-                };
+                    ["execution_time_ms"] = duration.TotalMilliseconds,
+                    ["model"] = CurrentModel?.Name ?? "unknown",
+                    ["provider"] = "CustomAI"
+                });
             }
+
+            return CreateErrorResult&lt;string&gt;(result.Error, "GENERATION_FAILED");
         }
         catch (Exception ex)
         {
-            OnErrorOccurred("Text generation failed", ex);
-            return new TransformerResult&lt;string&gt;
-            {
-                Success = false,
-                ErrorMessage = ex.Message,
-                ModelName = _modelName ?? "",
-                TaskType = _taskType
-            };
+            // Use base class error handling
+            return HandleError&lt;string&gt;(ex, "GenerateText");
         }
     }
 
-    private string GenerateProviderSpecificCode(string prompt, TextGenerationParameters? parameters)
+    public override List&lt;TransformerTask&gt; GetSupportedTasks()
     {
-        // Implementation specific to your provider
-        return $@"
-import your_provider_library
+        return new List&lt;TransformerTask&gt;
+        {
+            TransformerTask.TextGeneration,
+            TransformerTask.TextClassification,
+            TransformerTask.Summarization,
+            TransformerTask.QuestionAnswering
+        };
+    }
 
-# Your provider-specific code here
-result = your_provider_library.generate('{prompt}')
-print(result)
-";
+    protected override bool ValidateConfiguration(TransformerPipelineConfig config)
+    {
+        // Call base validation first
+        if (!base.ValidateConfiguration(config))
+            return false;
+
+        // Add custom validation
+        if (!config.ContainsKey("api_key") || string.IsNullOrEmpty(config["api_key"]?.ToString()))
+        {
+            Logger.LogError("API key is required for CustomAI pipeline");
+            return false;
+        }
+
+        return true;
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _aiClient?.Dispose();
+        }
+        
+        base.Dispose(disposing);
     }
 }</code></pre>
                     </div>
                 </section>
 
-                <!-- Best Practices Section -->
+                <!-- Error Handling Patterns -->
+                <section class="section" id="error-patterns">
+                    <h2>🛡️ Error Handling Patterns</h2>
+
+                    <div class="code-example">
+                        <h4>Standardized Error Handling</h4>
+                        <pre><code class="language-csharp">// Example of using base class error handling in derived classes
+public override async Task&lt;TransformerResult&lt;ClassificationResult&gt;&gt; ClassifyTextAsync(
+    string text, 
+    List&lt;string&gt; labels, 
+    ClassificationParameters? parameters = null)
+{
+    try
+    {
+        // Input validation using base class helpers
+        if (!ValidateInput(text))
+        {
+            return CreateErrorResult&lt;ClassificationResult&gt;(
+                "Input text is invalid or too long", 
+                "INVALID_INPUT");
+        }
+
+        if (labels == null || !labels.Any())
+        {
+            return CreateErrorResult&lt;ClassificationResult&gt;(
+                "Classification labels cannot be empty", 
+                "INVALID_LABELS");
+        }
+
+        // Provider-specific implementation
+        var result = await PerformClassification(text, labels, parameters);
+        
+        return CreateSuccessResult(result);
+    }
+    catch (TimeoutException ex)
+    {
+        Logger.LogWarning(ex, "Classification request timed out");
+        return CreateErrorResult&lt;ClassificationResult&gt;(
+            "Request timed out. Try again or reduce input size.", 
+            "TIMEOUT");
+    }
+    catch (UnauthorizedAccessException ex)
+    {
+        Logger.LogError(ex, "Authentication failed");
+        return CreateErrorResult&lt;ClassificationResult&gt;(
+            "Authentication failed. Check your API credentials.", 
+            "AUTH_FAILED");
+    }
+    catch (Exception ex)
+    {
+        // Use base class comprehensive error handling
+        return HandleError&lt;ClassificationResult&gt;(ex, "ClassifyText");
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Best Practices -->
                 <section class="section" id="best-practices">
-                    <h2>Best Practices</h2>
+                    <h2>✅ Best Practices for Implementation</h2>
 
                     <div class="tip">
-                        <strong>💡 Session Management</strong>
-                        <p>Use ConfigureSession for multi-user environments and avoid relying on temporary sessions in production.
-                        </p>
-                    </div>
-
-                    <div class="success">
-                        <strong>✅ Connection Configuration</strong>
-                        <p>Configure connections before initializing and never hard-code API keys in source code.</p>
+                        <h4>🏗️ Implementation Guidelines</h4>
+                        <ul>
+                            <li><strong>Always call base methods:</strong> Use base class validation and error handling</li>
+                            <li><strong>Consistent logging:</strong> Use the provided Logger for all operations</li>
+                            <li><strong>Error codes:</strong> Use standardized error codes for common scenarios</li>
+                            <li><strong>Resource management:</strong> Properly dispose of resources in derived classes</li>
+                            <li><strong>Configuration validation:</strong> Extend base validation with provider-specific checks</li>
+                        </ul>
                     </div>
 
                     <div class="warning">
-                        <strong>⚠️ Error Handling</strong>
-                        <p>Always implement proper error handling and subscribe to error events for monitoring.</p>
+                        <h4>⚠️ Common Pitfalls</h4>
+                        <ul>
+                            <li><strong>Skipping base validation:</strong> Always call base.ValidateConfiguration()</li>
+                            <li><strong>Inconsistent error handling:</strong> Use CreateErrorResult() for consistency</li>
+                            <li><strong>Missing disposal:</strong> Override Dispose() if you have additional resources</li>
+                            <li><strong>Blocking operations:</strong> Keep all operations async where possible</li>
+                        </ul>
                     </div>
 
                     <div class="note">
-                        <strong>📝 Resource Management</strong>
-                        <p>Always dispose pipeline instances properly to prevent resource leaks.</p>
+                        <h4>🎯 Performance Considerations</h4>
+                        <ul>
+                            <li><strong>Caching:</strong> Cache expensive operations like model loading</li>
+                            <li><strong>Connection pooling:</strong> Reuse connections where possible</li>
+                            <li><strong>Async patterns:</strong> Use ConfigureAwait(false) for library code</li>
+                            <li><strong>Memory management:</strong> Dispose of large objects promptly</li>
+                        </ul>
                     </div>
                 </section>
 
-                <!-- See Also Section -->
-                <section class="section" id="see-also">
-                    <h2>See Also</h2>
-                    <ul class="member-list">
-                        <li>
-                            <div class="member-name">ITransformerPipeLine</div>
-                            <div class="member-type">Interface</div>
-                            <div class="member-desc">Core interface definition</div>
-                        </li>
-                        <li>
-                            <div class="member-name">TransformerPipelineFactory</div>
-                            <div class="member-type">Static Class</div>
-                            <div class="member-desc">Factory for creating pipelines</div>
-                        </li>
-                        <li>
-                            <div class="member-name">TransformerConnectionConfig</div>
-                            <div class="member-type">Abstract Class</div>
-                            <div class="member-desc">Base configuration class for provider connections</div>
-                        </li>
-                    </ul>
-                </section>
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="ITransformerPipeLine.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> ITransformerPipeLine
+                    </a>
+                    <a href="TransformerPipelineFactory.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> TransformerPipelineFactory
+                    </a>
+                </div>
 
                 <!-- Footer -->
                 <footer class="documentation-footer">
@@ -581,7 +570,7 @@ print(result)
                         <div class="footer-links">
                             <a href="../index.html">Home</a>
                             <a href="ITransformerPipeLine.html">ITransformerPipeLine</a>
-                            <a href="TransformerPipelineFactory.html">TransformerPipelineFactory</a>
+                            <a href="TransformerPipelineFactory.html">Pipeline Factory</a>
                         </div>
                     </div>
                 </footer>

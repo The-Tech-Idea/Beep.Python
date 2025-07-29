@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation Link Tester</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .link-test { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .pending { background-color: #fff3cd; border-color: #ffeaa7; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .navigation-test { margin: 20px 0; padding: 15px; border: 2px solid #28a745; border-radius: 5px; background-color: #f8fff9; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Documentation Link Validator</h1>
+    <p>This page tests all the main documentation links to verify they work correctly.</p>
+    
+    <div class="info">
+        <h3>🚨 Navigation.js Fix Applied</h3>
+        <p><strong>Problem Resolved:</strong> Fixed the "api/api" duplicate path issue in navigation.js</p>
+        <p><strong>Solution:</strong> Implemented dynamic path resolution that detects current directory context</p>
+        <ul>
+            <li>✅ From root folder: Links use <code>api/file.html</code></li>
+            <li>✅ From api folder: Links use <code>../api/file.html</code></li>
+            <li>✅ From examples folder: Links use <code>../api/file.html</code></li>
+            <li>✅ From config folder: Links use <code>../api/file.html</code></li>
+        </ul>
+    </div>
+
+    <div class="navigation-test">
+        <h3>🔧 How the Fix Works</h3>
+        <p>The updated <code>navigation.js</code> now includes:</p>
+        <ol>
+            <li><strong>Path Detection:</strong> <code>getCurrentPath()</code> analyzes current URL location</li>
+            <li><strong>Dynamic Prefix:</strong> Calculates correct relative path prefix (<code>../</code>, <code>../../</code>, etc.)</li>
+            <li><strong>Context-Aware Links:</strong> All navigation links use <code>${basePath}api/file.html</code> format</li>
+            <li><strong>Debug Logging:</strong> Console shows current path and page for troubleshooting</li>
+        </ol>
+    </div>
+    
+    <div id="test-results">
+        <h2>Testing Links...</h2>
+    </div>
+
+    <script>
+        const links = [
+            { name: 'Home', url: 'index.html' },
+            { name: 'Getting Started', url: 'getting-started.html' },
+            { name: 'Installation', url: 'installation.html' },
+            { name: 'Configuration', url: 'configuration.html' },
+            
+            // Core API
+            { name: 'ITransformerPipeLine', url: 'api/ITransformerPipeLine.html' },
+            { name: 'BaseTransformerPipeline', url: 'api/BaseTransformerPipeline.html' },
+            { name: 'TransformerPipelineFactory', url: 'api/TransformerPipelineFactory.html' },
+            
+            // AI Providers
+            { name: 'HuggingFaceTransformerPipeline', url: 'api/HuggingFaceTransformerPipeline.html' },
+            { name: 'OpenAITransformerPipeline', url: 'api/OpenAITransformerPipeline.html' },
+            { name: 'AzureTransformerPipeline', url: 'api/AzureTransformerPipeline.html' },
+            { name: 'GoogleTransformerPipeline', url: 'api/GoogleTransformerPipeline.html' },
+            { name: 'AnthropicTransformerPipeline', url: 'api/AnthropicTransformerPipeline.html' },
+            { name: 'CohereTransformerPipeline', url: 'api/CohereTransformerPipeline.html' },
+            { name: 'MetaTransformerPipeline', url: 'api/MetaTransformerPipeline.html' },
+            { name: 'MistralTransformerPipeline', url: 'api/MistralTransformerPipeline.html' },
+            { name: 'LocalTransformerPipeline', url: 'api/LocalTransformerPipeline.html' },
+            { name: 'CustomTransformerPipeline', url: 'api/CustomTransformerPipeline.html' },
+            
+            // Multimodal AI
+            { name: 'MultimodalTransformerPipeline', url: 'api/MultimodalTransformerPipeline.html' },
+            { name: 'MultimodalPipelineFactory', url: 'api/MultimodalPipelineFactory.html' },
+            { name: 'Multimodal Examples', url: 'examples/multimodal-examples.html' },
+            
+            // Examples
+            { name: 'Basic Usage', url: 'examples/basic-usage.html' },
+            { name: 'Multi-Provider', url: 'examples/multi-provider.html' },
+            { name: 'Enterprise', url: 'examples/enterprise.html' },
+            
+            // Configuration
+            { name: 'Connection Config', url: 'configuration/connection-config.html' },
+            { name: 'Security', url: 'configuration/security.html' },
+            { name: 'Monitoring', url: 'configuration/monitoring.html' },
+            
+            // Reference
+            { name: 'Enums', url: 'reference/enums.html' },
+            { name: 'Data Models', url: 'reference/data-models.html' },
+            { name: 'Changelog', url: 'reference/changelog.html' }
+        ];
+
+        async function testLinks() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '<h2>Testing Links...</h2>';
+            
+            let passedCount = 0;
+            let failedCount = 0;
+            
+            for (const link of links) {
+                const testDiv = document.createElement('div');
+                testDiv.className = 'link-test pending';
+                testDiv.innerHTML = `<strong>${link.name}</strong>: Testing ${link.url}...`;
+                resultsDiv.appendChild(testDiv);
+                
+                try {
+                    const response = await fetch(link.url);
+                    if (response.ok) {
+                        testDiv.className = 'link-test success';
+                        testDiv.innerHTML = `<strong>${link.name}</strong>: ✅ ${link.url} - OK`;
+                        passedCount++;
+                    } else {
+                        testDiv.className = 'link-test error';
+                        testDiv.innerHTML = `<strong>${link.name}</strong>: ❌ ${link.url} - ${response.status} ${response.statusText}`;
+                        failedCount++;
+                    }
+                } catch (error) {
+                    testDiv.className = 'link-test error';
+                    testDiv.innerHTML = `<strong>${link.name}</strong>: ❌ ${link.url} - ${error.message}`;
+                    failedCount++;
+                }
+                
+                // Small delay to prevent overwhelming
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+            
+            // Summary
+            const summaryDiv = document.createElement('div');
+            summaryDiv.innerHTML = `
+                <h2>🎯 Test Results Summary</h2>
+                <div style="display: flex; gap: 20px; margin: 10px 0;">
+                    <div style="padding: 10px; background-color: #d4edda; border-radius: 5px;">
+                        <strong>✅ Passed: ${passedCount}</strong>
+                    </div>
+                    <div style="padding: 10px; background-color: #f8d7da; border-radius: 5px;">
+                        <strong>❌ Failed: ${failedCount}</strong>
+                    </div>
+                    <div style="padding: 10px; background-color: #e2e3e5; border-radius: 5px;">
+                        <strong>📊 Total: ${links.length}</strong>
+                    </div>
+                </div>
+                ${failedCount === 0 ? 
+                    '<div style="padding: 15px; background-color: #d4edda; border-radius: 5px; margin: 10px 0;"><strong>🎉 All tests passed! Navigation links are working correctly.</strong></div>' :
+                    '<div style="padding: 15px; background-color: #f8d7da; border-radius: 5px; margin: 10px 0;"><strong>⚠️ Some tests failed. Check the failed links above.</strong></div>'
+                }
+            `;
+            resultsDiv.insertBefore(summaryDiv, resultsDiv.firstChild);
+        }
+        
+        // Test navigation path resolution
+        function testNavigationPathResolution() {
+            const testCases = [
+                { url: 'file:///C:/docs/index.html', expected: '' },
+                { url: 'file:///C:/docs/api/file.html', expected: '../' },
+                { url: 'file:///C:/docs/examples/file.html', expected: '../' },
+                { url: 'file:///C:/docs/config/sub/file.html', expected: '../../' }
+            ];
+            
+            console.log('🔍 Testing Navigation Path Resolution:');
+            testCases.forEach(test => {
+                // Simulate the getCurrentPath logic
+                const pathParts = test.url.split('/');
+                const docIndex = pathParts.findIndex(part => part.toLowerCase() === 'docs');
+                let relativePath = '';
+                
+                if (docIndex !== -1 && docIndex < pathParts.length - 2) {
+                    const dirsAfterDocs = pathParts.length - docIndex - 2;
+                    relativePath = '../'.repeat(dirsAfterDocs);
+                }
+                
+                const passed = relativePath === test.expected;
+                console.log(`${passed ? '✅' : '❌'} ${test.url} → "${relativePath}" (expected: "${test.expected}")`);
+            });
+        }
+        
+        // Run tests when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            testNavigationPathResolution();
+            testLinks();
+        });
+    </script>
+</body>
+</html>

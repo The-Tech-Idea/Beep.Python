@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoring & Analytics - Beep.Python.AI.Transformers</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="../assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="../index.html">Home</a>
+                    <span>›</span>
+                    <a href="../configuration.html">Configuration</a>
+                    <span>›</span>
+                    <span>Monitoring & Analytics</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-graph-up"></i> Monitoring & Analytics</h1>
+                    <p class="page-subtitle">Comprehensive monitoring, observability, and analytics for AI transformer pipelines</p>
+                </div>
+
+                <!-- Table of Contents -->
+                <div class="toc">
+                    <h3>?? Table of Contents</h3>
+                    <ul>
+                        <li><a href="#overview">Monitoring Overview</a></li>
+                        <li><a href="#metrics">Performance Metrics</a></li>
+                        <li><a href="#logging">Structured Logging</a></li>
+                        <li><a href="#telemetry">OpenTelemetry Integration</a></li>
+                        <li><a href="#dashboards">Monitoring Dashboards</a></li>
+                        <li><a href="#alerting">Alerting & Notifications</a></li>
+                        <li><a href="#analytics">Analytics & Insights</a></li>
+                        <li><a href="#troubleshooting">Troubleshooting Guide</a></li>
+                    </ul>
+                </div>
+
+                <!-- Monitoring Overview -->
+                <section class="section" id="overview">
+                    <h2><i class="bi bi-eye"></i> Monitoring Overview</h2>
+                    
+                    <p>
+                        Effective monitoring and observability are crucial for maintaining reliable AI transformer pipelines in production. 
+                        This guide covers comprehensive monitoring strategies, from basic metrics collection to advanced analytics and alerting.
+                    </p>
+
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-speedometer2"></i> Performance Metrics</h4>
+                            <p>Response times, throughput, error rates, and resource utilization</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-file-text"></i> Structured Logging</h4>
+                            <p>Centralized logging with correlation IDs and structured data</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-diagram-3"></i> Distributed Tracing</h4>
+                            <p>End-to-end request tracing across microservices</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4><i class="bi bi-bell"></i> Smart Alerting</h4>
+                            <p>Intelligent alerts with context and automated escalation</p>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h4>?? Monitoring Pillars</h4>
+                        <ul>
+                            <li><strong>Golden Signals:</strong> Latency, traffic, errors, and saturation</li>
+                            <li><strong>Business Metrics:</strong> Token usage, costs, user satisfaction</li>
+                            <li><strong>Infrastructure:</strong> CPU, memory, network, and storage</li>
+                            <li><strong>Application:</strong> Request flows, dependencies, and health</li>
+                            <li><strong>Security:</strong> Authentication, authorization, and threats</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Performance Metrics -->
+                <section class="section" id="metrics">
+                    <h2><i class="bi bi-bar-chart"></i> Performance Metrics</h2>
+                    
+                    <h3>1. Core Application Metrics</h3>
+                    <div class="code-example">
+                        <h4>Metrics Collection Service</h4>
+                        <pre><code class="language-csharp">public class TransformerMetricsService
+{
+    private readonly IMetricsCollector _metrics;
+    private readonly ILogger<TransformerMetricsService> _logger;
+    
+    // Request metrics
+    public void RecordRequest(string provider, string model, TimeSpan duration, bool success)
+    {
+        _metrics.Increment("transformer.requests.total", new Dictionary<string, string>
+        {
+            ["provider"] = provider,
+            ["model"] = model,
+            ["status"] = success ? "success" : "error"
+        });
+        
+        _metrics.RecordValue("transformer.request.duration", duration.TotalMilliseconds, new Dictionary<string, string>
+        {
+            ["provider"] = provider,
+            ["model"] = model
+        });
+    }
+    
+    // Token usage metrics
+    public void RecordTokenUsage(string provider, string model, int inputTokens, int outputTokens, decimal cost)
+    {
+        _metrics.RecordValue("transformer.tokens.input", inputTokens, new Dictionary<string, string>
+        {
+            ["provider"] = provider,
+            ["model"] = model
+        });
+        
+        _metrics.RecordValue("transformer.tokens.output", outputTokens, new Dictionary<string, string>
+        {
+            ["provider"] = provider,
+            ["model"] = model
+        });
+        
+        _metrics.RecordValue("transformer.cost", (double)cost, new Dictionary<string, string>
+        {
+            ["provider"] = provider,
+            ["model"] = model
+        });
+    }
+    
+    // Queue metrics
+    public void RecordQueueMetrics(string queueName, int length, TimeSpan avgWaitTime)
+    {
+        _metrics.RecordValue("transformer.queue.length", length, new Dictionary<string, string>
+        {
+            ["queue"] = queueName
+        });
+        
+        _metrics.RecordValue("transformer.queue.wait_time", avgWaitTime.TotalMilliseconds, new Dictionary<string, string>
+        {
+            ["queue"] = queueName
+        });
+    }
+    
+    // Error metrics
+    public void RecordError(string provider, string model, string errorType, string errorCode)
+    {
+        _metrics.Increment("transformer.errors.total", new Dictionary<string, string>
+        {
+            ["provider"] = provider,
+            ["model"] = model,
+            ["error_type"] = errorType,
+            ["error_code"] = errorCode
+        });
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>2. Business Metrics Dashboard</h3>
+                    <div class="code-example">
+                        <h4>Business KPI Configuration</h4>
+                        <pre><code class="language-json">{
+  "BusinessMetrics": {
+    "Dashboards": {
+      "Executive": {
+        "RefreshInterval": "5m",
+        "Metrics": [
+          {
+            "Name": "Total API Calls",
+            "Query": "sum(rate(transformer_requests_total[5m]))",
+            "Type": "gauge",
+            "Format": "number"
+          },
+          {
+            "Name": "Success Rate",
+            "Query": "sum(rate(transformer_requests_total{status=\"success\"}[5m])) / sum(rate(transformer_requests_total[5m])) * 100",
+            "Type": "gauge",
+            "Format": "percentage"
+          },
+          {
+            "Name": "Average Response Time",
+            "Query": "avg(transformer_request_duration)",
+            "Type": "gauge",
+            "Format": "milliseconds"
+          },
+          {
+            "Name": "Daily Cost",
+            "Query": "sum(increase(transformer_cost[24h]))",
+            "Type": "gauge",
+            "Format": "currency"
+          }
+        ]
+      },
+      "Operations": {
+        "RefreshInterval": "30s",
+        "Metrics": [
+          {
+            "Name": "Error Rate by Provider",
+            "Query": "sum by (provider) (rate(transformer_errors_total[5m]))",
+            "Type": "timeseries",
+            "Format": "rate"
+          },
+          {
+            "Name": "Response Time P95",
+            "Query": "histogram_quantile(0.95, transformer_request_duration)",
+            "Type": "timeseries",
+            "Format": "milliseconds"
+          },
+          {
+            "Name": "Queue Depth",
+            "Query": "transformer_queue_length",
+            "Type": "timeseries",
+            "Format": "number"
+          }
+        ]
+      }
+    }
+  }
+}</code></pre>
+                    </div>
+
+                    <h3>3. Custom Metrics Implementation</h3>
+                    <div class="code-example">
+                        <h4>Custom Business Metrics</h4>
+                        <pre><code class="language-csharp">public class BusinessMetricsCollector
+{
+    private readonly IMetricsCollector _metrics;
+    private readonly IConfiguration _configuration;
+    
+    public async Task CollectUserSatisfactionMetrics()
+    {
+        // Collect user feedback metrics
+        var feedbackData = await _feedbackService.GetRecentFeedbackAsync();
+        
+        var avgSatisfaction = feedbackData.Average(f => f.SatisfactionScore);
+        _metrics.RecordValue("business.user_satisfaction", avgSatisfaction);
+        
+        var npsScore = CalculateNPS(feedbackData);
+        _metrics.RecordValue("business.nps_score", npsScore);
+    }
+    
+    public async Task CollectCostMetrics()
+    {
+        var providers = new[] { "OpenAI", "Azure", "Anthropic", "Google" };
+        
+        foreach (var provider in providers)
+        {
+            var dailyCost = await _costService.GetDailyCostAsync(provider);
+            var monthlyCost = await _costService.GetMonthlyCostAsync(provider);
+            
+            _metrics.RecordValue("business.daily_cost", (double)dailyCost, new Dictionary<string, string>
+            {
+                ["provider"] = provider,
+                ["period"] = "daily"
+            });
+            
+            _metrics.RecordValue("business.monthly_cost", (double)monthlyCost, new Dictionary<string, string>
+            {
+                ["provider"] = provider,
+                ["period"] = "monthly"
+            });
+        }
+    }
+    
+    public async Task CollectModelPerformanceMetrics()
+    {
+        var models = await _modelService.GetActiveModelsAsync();
+        
+        foreach (var model in models)
+        {
+            var accuracy = await _qualityService.GetModelAccuracyAsync(model.Id);
+            var reliability = await _qualityService.GetModelReliabilityAsync(model.Id);
+            
+            _metrics.RecordValue("model.accuracy", accuracy, new Dictionary<string, string>
+            {
+                ["model"] = model.Name,
+                ["provider"] = model.Provider
+            });
+            
+            _metrics.RecordValue("model.reliability", reliability, new Dictionary<string, string>
+            {
+                ["model"] = model.Name,
+                ["provider"] = model.Provider
+            });
+        }
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Structured Logging -->
+                <section class="section" id="logging">
+                    <h2><i class="bi bi-journal-code"></i> Structured Logging</h2>
+                    
+                    <h3>1. Centralized Logging Configuration</h3>
+                    <div class="code-example">
+                        <h4>Structured Logging Setup</h4>
+                        <pre><code class="language-csharp">// Program.cs - Logging configuration
+builder.Services.AddLogging(loggingBuilder =>
+{
+    loggingBuilder.ClearProviders();
+    
+    // Console logging for development
+    if (builder.Environment.IsDevelopment())
+    {
+        loggingBuilder.AddConsole();
+    }
+    
+    // Structured JSON logging for production
+    loggingBuilder.AddJsonConsole(options =>
+    {
+        options.JsonWriterOptions = new JsonWriterOptions
+        {
+            Indented = false
+        };
+        options.IncludeScopes = true;
+        options.TimestampFormat = "yyyy-MM-ddTHH:mm:ss.fffZ";
+    });
+    
+    // Application Insights
+    loggingBuilder.AddApplicationInsights();
+    
+    // Serilog integration
+    loggingBuilder.AddSerilog(new LoggerConfiguration()
+        .WriteTo.Console()
+        .WriteTo.File("logs/app-.log", rollingInterval: RollingInterval.Day)
+        .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri("http://localhost:9200"))
+        {
+            AutoRegisterTemplate = true,
+            IndexFormat = "beep-transformers-{0:yyyy.MM.dd}"
+        })
+        .CreateLogger());
+});
+
+// Configure log levels
+builder.Services.Configure<LoggerFilterOptions>(options =>
+{
+    options.MinLevel = LogLevel.Information;
+    options.AddFilter("Beep.Python.AI.Transformers", LogLevel.Debug);
+    options.AddFilter("Microsoft.AspNetCore", LogLevel.Warning);
+    options.AddFilter("System", LogLevel.Warning);
+});</code></pre>
+                    </div>
+
+                    <h3>2. Correlation and Context</h3>
+                    <div class="code-example">
+                        <h4>Request Correlation Middleware</h4>
+                        <pre><code class="language-csharp">public class CorrelationMiddleware
+{
+    private readonly RequestDelegate _next;
+    private readonly ILogger<CorrelationMiddleware> _logger;
+    
+    public async Task InvokeAsync(HttpContext context)
+    {
+        var correlationId = GetOrCreateCorrelationId(context);
+        var sessionId = GetSessionId(context);
+        var userId = GetUserId(context);
+        
+        using var scope = _logger.BeginScope(new Dictionary<string, object>
+        {
+            ["CorrelationId"] = correlationId,
+            ["SessionId"] = sessionId,
+            ["UserId"] = userId,
+            ["RequestPath"] = context.Request.Path,
+            ["UserAgent"] = context.Request.Headers["User-Agent"].ToString(),
+            ["RemoteIp"] = context.Connection.RemoteIpAddress?.ToString()
+        });
+        
+        // Add correlation ID to response headers
+        context.Response.Headers.Add("X-Correlation-ID", correlationId);
+        
+        _logger.LogInformation("Request started: {Method} {Path}", 
+            context.Request.Method, context.Request.Path);
+        
+        try
+        {
+            await _next(context);
+            
+            _logger.LogInformation("Request completed: {StatusCode} in {Duration}ms",
+                context.Response.StatusCode, 
+                (DateTimeOffset.UtcNow - context.Features.Get<RequestStartTimeFeature>()?.StartTime)?.TotalMilliseconds);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Request failed: {Method} {Path}", 
+                context.Request.Method, context.Request.Path);
+            throw;
+        }
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>3. Structured Event Logging</h3>
+                    <div class="code-example">
+                        <h4>Domain Event Logging</h4>
+                        <pre><code class="language-csharp">public class TransformerEventLogger
+{
+    private readonly ILogger<TransformerEventLogger> _logger;
+    
+    public void LogModelLoaded(string provider, string modelName, TimeSpan loadTime)
+    {
+        _logger.LogInformation("Model loaded successfully: {Provider}/{Model} in {LoadTime}ms", 
+            provider, modelName, loadTime.TotalMilliseconds);
+    }
+    
+    public void LogRequestStarted(string requestId, string provider, string model, string operation)
+    {
+        _logger.LogInformation("AI request started: {RequestId} using {Provider}/{Model} for {Operation}",
+            requestId, provider, model, operation);
+    }
+    
+    public void LogRequestCompleted(string requestId, bool success, TimeSpan duration, int inputTokens, int outputTokens, decimal cost)
+    {
+        if (success)
+        {
+            _logger.LogInformation("AI request completed: {RequestId} in {Duration}ms, " +
+                "tokens: {InputTokens}/{OutputTokens}, cost: ${Cost:F4}",
+                requestId, duration.TotalMilliseconds, inputTokens, outputTokens, cost);
+        }
+        else
+        {
+            _logger.LogWarning("AI request failed: {RequestId} after {Duration}ms",
+                requestId, duration.TotalMilliseconds);
+        }
+    }
+    
+    public void LogRateLimitExceeded(string provider, string operation, TimeSpan retryAfter)
+    {
+        _logger.LogWarning("Rate limit exceeded for {Provider} {Operation}, retry after {RetryAfter}s",
+            provider, operation, retryAfter.TotalSeconds);
+    }
+    
+    public void LogSecurityEvent(string eventType, string userId, string details)
+    {
+        _logger.LogWarning("Security event: {EventType} for user {UserId} - {Details}",
+            eventType, userId, details);
+    }
+    
+    public void LogCostAlert(string provider, decimal dailyCost, decimal threshold)
+    {
+        _logger.LogWarning("Cost alert: {Provider} daily cost ${DailyCost:F2} exceeded threshold ${Threshold:F2}",
+            provider, dailyCost, threshold);
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- OpenTelemetry Integration -->
+                <section class="section" id="telemetry">
+                    <h2><i class="bi bi-diagram-2"></i> OpenTelemetry Integration</h2>
+                    
+                    <h3>1. Distributed Tracing Setup</h3>
+                    <div class="code-example">
+                        <h4>OpenTelemetry Configuration</h4>
+                        <pre><code class="language-csharp">// Program.cs - OpenTelemetry setup
+services.AddOpenTelemetryTracing(builder =>
+{
+    builder
+        .SetSampler(new AlwaysOnSampler())
+        .AddSource("Beep.Python.AI.Transformers")
+        .AddAspNetCoreInstrumentation(options =>
+        {
+            options.RecordException = true;
+            options.EnableGrpcAspNetCoreSupport = true;
+        })
+        .AddHttpClientInstrumentation(options =>
+        {
+            options.RecordException = true;
+            options.SetHttpFlavor = true;
+        })
+        .AddSqlClientInstrumentation(options =>
+        {
+            options.RecordException = true;
+            options.SetDbStatementForText = true;
+        })
+        .AddJaegerExporter(options =>
+        {
+            options.AgentHost = "localhost";
+            options.AgentPort = 6831;
+        })
+        .AddConsoleExporter()
+        .AddOtlpExporter(options =>
+        {
+            options.Endpoint = new Uri("http://localhost:4317");
+        });
+});
+
+// Metrics
+services.AddOpenTelemetryMetrics(builder =>
+{
+    builder
+        .AddMeter("Beep.Python.AI.Transformers")
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddRuntimeInstrumentation()
+        .AddPrometheusExporter()
+        .AddConsoleExporter();
+});</code></pre>
+                    </div>
+
+                    <h3>2. Custom Tracing Implementation</h3>
+                    <div class="code-example">
+                        <h4>Custom Activity Sources</h4>
+                        <pre><code class="language-csharp">public class TransformerTracingService
+{
+    private static readonly ActivitySource ActivitySource = new("Beep.Python.AI.Transformers");
+    private readonly ILogger<TransformerTracingService> _logger;
+    
+    public async Task<T> TraceOperationAsync<T>(string operationName, 
+        Func<Activity?, Task<T>> operation, 
+        Dictionary<string, object>? tags = null)
+    {
+        using var activity = ActivitySource.StartActivity(operationName);
+        
+        // Add tags
+        if (tags != null)
+        {
+            foreach (var tag in tags)
+            {
+                activity?.SetTag(tag.Key, tag.Value.ToString());
+            }
+        }
+        
+        // Add common tags
+        activity?.SetTag("service.name", "beep-transformers");
+        activity?.SetTag("service.version", "1.0.0");
+        
+        try
+        {
+            var result = await operation(activity);
+            
+            activity?.SetStatus(ActivityStatusCode.Ok);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.RecordException(ex);
+            throw;
+        }
+    }
+    
+    public async Task<TransformerResult<string>> TraceAIRequestAsync(
+        string provider, 
+        string model, 
+        string prompt, 
+        Func<Task<TransformerResult<string>>> aiRequest)
+    {
+        return await TraceOperationAsync("ai.request", async activity =>
+        {
+            activity?.SetTag("ai.provider", provider);
+            activity?.SetTag("ai.model", model);
+            activity?.SetTag("ai.prompt.length", prompt.Length);
+            
+            var startTime = DateTimeOffset.UtcNow;
+            var result = await aiRequest();
+            var duration = DateTimeOffset.UtcNow - startTime;
+            
+            activity?.SetTag("ai.request.duration_ms", duration.TotalMilliseconds);
+            activity?.SetTag("ai.request.success", result.Success);
+            
+            if (result.Success)
+            {
+                activity?.SetTag("ai.response.length", result.Data?.Length ?? 0);
+                activity?.SetTag("ai.tokens.input", result.TokenUsage?.PromptTokens ?? 0);
+                activity?.SetTag("ai.tokens.output", result.TokenUsage?.CompletionTokens ?? 0);
+                activity?.SetTag("ai.tokens.total", result.TokenUsage?.TotalTokens ?? 0);
+            }
+            else
+            {
+                activity?.SetTag("ai.error.message", result.ErrorMessage);
+                activity?.SetTag("ai.error.code", result.ErrorCode);
+            }
+            
+            return result;
+        });
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>3. Custom Metrics</h3>
+                    <div class="code-example">
+                        <h4>OpenTelemetry Metrics</h4>
+                        <pre><code class="language-csharp">public class TransformerMetrics
+{
+    private static readonly Meter Meter = new("Beep.Python.AI.Transformers");
+    
+    // Counters
+    private static readonly Counter<long> RequestCounter = 
+        Meter.CreateCounter<long>("transformer.requests.total", "Total number of AI requests");
+    
+    private static readonly Counter<long> ErrorCounter = 
+        Meter.CreateCounter<long>("transformer.errors.total", "Total number of AI request errors");
+    
+    private static readonly Counter<long> TokenCounter = 
+        Meter.CreateCounter<long>("transformer.tokens.total", "Total number of tokens processed");
+    
+    // Histograms
+    private static readonly Histogram<double> RequestDuration = 
+        Meter.CreateHistogram<double>("transformer.request.duration", "Duration of AI requests in milliseconds");
+    
+    private static readonly Histogram<double> TokenCost = 
+        Meter.CreateHistogram<double>("transformer.token.cost", "Cost per token in USD");
+    
+    // Gauges (using UpDownCounter as approximation)
+    private static readonly UpDownCounter<long> ActiveRequests = 
+        Meter.CreateUpDownCounter<long>("transformer.requests.active", "Number of active AI requests");
+    
+    public void RecordRequest(string provider, string model, TimeSpan duration, bool success, int inputTokens, int outputTokens, decimal cost)
+    {
+        var tags = new TagList
+        {
+            ["provider"] = provider,
+            ["model"] = model,
+            ["status"] = success ? "success" : "error"
+        };
+        
+        RequestCounter.Add(1, tags);
+        RequestDuration.Record(duration.TotalMilliseconds, tags);
+        TokenCounter.Add(inputTokens + outputTokens, tags);
+        TokenCost.Record((double)cost, tags);
+        
+        if (!success)
+        {
+            ErrorCounter.Add(1, tags);
+        }
+    }
+    
+    public void StartRequest()
+    {
+        ActiveRequests.Add(1);
+    }
+    
+    public void EndRequest()
+    {
+        ActiveRequests.Add(-1);
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Monitoring Dashboards -->
+                <section class="section" id="dashboards">
+                    <h2><i class="bi bi-grid-3x3"></i> Monitoring Dashboards</h2>
+                    
+                    <h3>1. Grafana Dashboard Configuration</h3>
+                    <div class="code-example">
+                        <h4>Executive Dashboard JSON</h4>
+                        <pre><code class="language-json">{
+  "dashboard": {
+    "title": "Beep AI Transformers - Executive Overview",
+    "tags": ["beep", "transformers", "executive"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "title": "Request Volume",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(rate(transformer_requests_total[5m])) * 60",
+            "legendFormat": "Requests per minute"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqps",
+            "color": {
+              "mode": "palette-classic"
+            }
+          }
+        }
+      },
+      {
+        "title": "Success Rate",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(rate(transformer_requests_total{status=\"success\"}[5m])) / sum(rate(transformer_requests_total[5m])) * 100",
+            "legendFormat": "Success Rate %"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "steps": [
+                { "color": "red", "value": 0 },
+                { "color": "yellow", "value": 95 },
+                { "color": "green", "value": 99 }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "title": "Daily Cost by Provider",
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "sum by (provider) (increase(transformer_cost[24h]))",
+            "legendFormat": "{{provider}}"
+          }
+        ]
+      },
+      {
+        "title": "Response Time Trends",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(transformer_request_duration_bucket[5m]))",
+            "legendFormat": "P50"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(transformer_request_duration_bucket[5m]))",
+            "legendFormat": "P95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(transformer_request_duration_bucket[5m]))",
+            "legendFormat": "P99"
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+                    </div>
+
+                    <h3>2. Real-time Operations Dashboard</h3>
+                    <div class="code-example">
+                        <h4>Operations Dashboard Configuration</h4>
+                        <pre><code class="language-javascript">// Dashboard configuration for operations team
+const operationsDashboard = {
+  title: "AI Transformers Operations",
+  refresh: "5s",
+  panels: [
+    {
+      title: "System Health",
+      type: "table",
+      query: `
+        up{job="beep-transformers"} or 
+        transformer_pipeline_status or
+        transformer_model_health
+      `,
+      transformations: [
+        {
+          id: "organize",
+          options: {
+            includeByName: {
+              "instance": true,
+              "provider": true,
+              "model": true,
+              "status": true,
+              "last_check": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      title: "Error Rate by Provider",
+      type: "timeseries",
+      query: `
+        sum by (provider, error_type) (
+          rate(transformer_errors_total[5m])
+        )
+      `,
+      legend: {
+        displayMode: "table",
+        placement: "right",
+        values: ["last", "max", "mean"]
+      }
+    },
+    {
+      title: "Token Usage Heatmap",
+      type: "heatmap",
+      query: `
+        sum by (provider, model) (
+          rate(transformer_tokens_total[1h])
+        )
+      `,
+      heatmap: {
+        yAxis: {
+          unit: "short",
+          decimals: 0
+        }
+      }
+    },
+    {
+      title: "Queue Depth",
+      type: "timeseries",
+      query: `
+        transformer_queue_length
+      `,
+      thresholds: [
+        {
+          value: 100,
+          color: "yellow"
+        },
+        {
+          value: 500,
+          color: "red"
+        }
+      ]
+    }
+  ]
+};</code></pre>
+                    </div>
+                </section>
+
+                <!-- Alerting & Notifications -->
+                <section class="section" id="alerting">
+                    <h2><i class="bi bi-exclamation-triangle"></i> Alerting & Notifications</h2>
+                    
+                    <h3>1. Alerting Rules Configuration</h3>
+                    <div class="code-example">
+                        <h4>Prometheus Alerting Rules</h4>
+                        <pre><code class="language-yaml">groups:
+  - name: transformer.alerts
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(transformer_errors_total[5m])) /
+            sum(rate(transformer_requests_total[5m]))
+          ) * 100 > 5
+        for: 2m
+        labels:
+          severity: warning
+          team: ai-platform
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value }}% which is above the 5% threshold"
+          runbook_url: "https://wiki.company.com/runbooks/transformer-errors"
+
+      - alert: SlowResponseTime
+        expr: |
+          histogram_quantile(0.95, 
+            rate(transformer_request_duration_bucket[5m])
+          ) > 10000
+        for: 3m
+        labels:
+          severity: warning
+          team: ai-platform
+        annotations:
+          summary: "Slow response times detected"
+          description: "95th percentile response time is {{ $value }}ms"
+
+      - alert: ModelLoadFailure
+        expr: |
+          increase(transformer_model_load_failures_total[5m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          team: ai-platform
+        annotations:
+          summary: "Model failed to load"
+          description: "Model {{ $labels.model }} failed to load for provider {{ $labels.provider }}"
+
+      - alert: HighTokenCost
+        expr: |
+          sum(increase(transformer_cost[1h])) > 100
+        for: 0m
+        labels:
+          severity: warning
+          team: finance
+        annotations:
+          summary: "High hourly token cost"
+          description: "Hourly token cost is ${{ $value }}, exceeding $100 threshold"
+
+      - alert: ServiceDown
+        expr: up{job="beep-transformers"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: ai-platform
+        annotations:
+          summary: "Transformer service is down"
+          description: "Service {{ $labels.instance }} has been down for more than 1 minute"
+</code></pre>
+                    </div>
+
+                    <h3>2. Alert Manager Configuration</h3>
+                    <div class="code-example">
+                        <h4>Multi-channel Alerting</h4>
+                        <pre><code class="language-csharp">public class AlertingService
+{
+    private readonly INotificationService _notifications;
+    private readonly IConfiguration _configuration;
+    
+    public async Task ProcessAlertAsync(Alert alert)
+    {
+        var escalationPolicy = await GetEscalationPolicyAsync(alert.Severity, alert.Team);
+        
+        foreach (var step in escalationPolicy.Steps)
+        {
+            try
+            {
+                await SendNotificationAsync(alert, step);
+                
+                if (step.WaitForAcknowledgment)
+                {
+                    var acknowledged = await WaitForAcknowledgmentAsync(alert, step.Timeout);
+                    if (acknowledged)
+                    {
+                        break; // Stop escalation
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send alert notification for step {Step}", step.Name);
+            }
+        }
+    }
+    
+    private async Task SendNotificationAsync(Alert alert, EscalationStep step)
+    {
+        var message = FormatAlertMessage(alert);
+        
+        switch (step.Channel)
+        {
+            case NotificationChannel.Email:
+                await _notifications.SendEmailAsync(step.Recipients, alert.Summary, message);
+                break;
+                
+            case NotificationChannel.Slack:
+                await _notifications.SendSlackAsync(step.SlackChannel, message, alert.Severity);
+                break;
+                
+            case NotificationChannel.Teams:
+                await _notifications.SendTeamsAsync(step.TeamsWebhook, message, alert.Severity);
+                break;
+                
+            case NotificationChannel.PagerDuty:
+                await _notifications.SendPagerDutyAsync(step.PagerDutyKey, alert);
+                break;
+                
+            case NotificationChannel.SMS:
+                await _notifications.SendSmsAsync(step.PhoneNumbers, ShortenMessage(message));
+                break;
+        }
+    }
+    
+    private string FormatAlertMessage(Alert alert)
+    {
+        return $@"
+?? **{alert.Severity.ToUpper()} ALERT** ??
+
+**Service:** Beep AI Transformers
+**Alert:** {alert.Summary}
+**Description:** {alert.Description}
+**Severity:** {alert.Severity}
+**Time:** {alert.Timestamp:yyyy-MM-dd HH:mm:ss UTC}
+
+**Runbook:** {alert.RunbookUrl}
+**Dashboard:** {_configuration["Monitoring:DashboardUrl"]}
+
+**Labels:**
+{string.Join("\n", alert.Labels.Select(l => $"• {l.Key}: {l.Value}"))}
+        ";
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>3. Intelligent Alert Correlation</h3>
+                    <div class="code-example">
+                        <h4>Alert Correlation Engine</h4>
+                        <pre><code class="language-csharp">public class AlertCorrelationService
+{
+    public async Task<CorrelatedAlert> CorrelateAlertsAsync(List<Alert> recentAlerts)
+    {
+        // Group related alerts
+        var correlationGroups = new List<AlertCorrelationGroup>();
+        
+        // Temporal correlation (alerts within time window)
+        var timeWindow = TimeSpan.FromMinutes(5);
+        var temporalGroups = GroupAlertsByTime(recentAlerts, timeWindow);
+        
+        // Causal correlation (one alert likely caused another)
+        foreach (var group in temporalGroups)
+        {
+            var causalChains = FindCausalChains(group);
+            correlationGroups.AddRange(causalChains);
+        }
+        
+        // Service correlation (alerts from same service/provider)
+        var serviceGroups = GroupAlertsByService(recentAlerts);
+        correlationGroups.AddRange(serviceGroups);
+        
+        // Create correlated alert
+        var correlatedAlert = new CorrelatedAlert
+        {
+            RootCause = DetermineRootCause(correlationGroups),
+            RelatedAlerts = correlationGroups.SelectMany(g => g.Alerts).ToList(),
+            CorrelationScore = CalculateCorrelationScore(correlationGroups),
+            RecommendedActions = GenerateRecommendedActions(correlationGroups)
+        };
+        
+        return correlatedAlert;
+    }
+    
+    private AlertCorrelationGroup FindCausalChains(List<Alert> alerts)
+    {
+        // Define causal relationships
+        var causalRules = new Dictionary<string, List<string>>
+        {
+            ["ModelLoadFailure"] = new() { "HighErrorRate", "SlowResponseTime" },
+            ["HighTokenCost"] = new() { "RateLimitExceeded" },
+            ["ServiceDown"] = new() { "HighErrorRate", "NoResponse" }
+        };
+        
+        // Find causal chains
+        // Implementation details...
+        
+        return new AlertCorrelationGroup();
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Analytics & Insights -->
+                <section class="section" id="analytics">
+                    <h2><i class="bi bi-graph-up"></i> Analytics & Insights</h2>
+                    
+                    <h3>1. Performance Analytics</h3>
+                    <div class="code-example">
+                        <h4>Automated Performance Analysis</h4>
+                        <pre><code class="language-csharp">public class PerformanceAnalyticsService
+{
+    public async Task<PerformanceInsights> AnalyzePerformanceAsync(DateRange period)
+    {
+        var insights = new PerformanceInsights();
+        
+        // Trend analysis
+        insights.Trends = await AnalyzeTrendsAsync(period);
+        
+        // Anomaly detection
+        insights.Anomalies = await DetectAnomaliesAsync(period);
+        
+        // Capacity planning
+        insights.CapacityRecommendations = await AnalyzeCapacityAsync(period);
+        
+        // Cost optimization
+        insights.CostOptimizations = await AnalyzeCostOptimizationAsync(period);
+        
+        return insights;
+    }
+    
+    private async Task<List<Trend>> AnalyzeTrendsAsync(DateRange period)
+    {
+        var trends = new List<Trend>();
+        
+        // Request volume trend
+        var requestData = await GetRequestVolumeDataAsync(period);
+        var requestTrend = CalculateTrend(requestData);
+        trends.Add(new Trend
+        {
+            Metric = "RequestVolume",
+            Direction = requestTrend.Direction,
+            ChangeRate = requestTrend.ChangeRate,
+            Prediction = PredictFutureTrend(requestData, TimeSpan.FromDays(30))
+        });
+        
+        // Response time trend
+        var responseTimeData = await GetResponseTimeDataAsync(period);
+        var responseTimeTrend = CalculateTrend(responseTimeData);
+        trends.Add(new Trend
+        {
+            Metric = "ResponseTime",
+            Direction = responseTimeTrend.Direction,
+            ChangeRate = responseTimeTrend.ChangeRate,
+            Recommendations = GeneratePerformanceRecommendations(responseTimeTrend)
+        });
+        
+        return trends;
+    }
+    
+    private async Task<List<Anomaly>> DetectAnomaliesAsync(DateRange period)
+    {
+        var anomalies = new List<Anomaly>();
+        
+        // Use statistical methods for anomaly detection
+        var metrics = new[] { "response_time", "error_rate", "token_usage", "cost" };
+        
+        foreach (var metric in metrics)
+        {
+            var data = await GetMetricDataAsync(metric, period);
+            var anomalyResults = await _anomalyDetector.DetectAnomaliesAsync(data);
+            
+            anomalies.AddRange(anomalyResults.Select(a => new Anomaly
+            {
+                Metric = metric,
+                Timestamp = a.Timestamp,
+                Value = a.Value,
+                ExpectedRange = a.ExpectedRange,
+                Severity = CalculateAnomalySeverity(a),
+                PossibleCauses = DeterminePossibleCauses(metric, a)
+            }));
+        }
+        
+        return anomalies;
+    }
+}</code></pre>
+                    </div>
+
+                    <h3>2. Business Intelligence Dashboard</h3>
+                    <div class="code-example">
+                        <h4>BI Metrics Collection</h4>
+                        <pre><code class="language-csharp">public class BusinessIntelligenceService
+{
+    public async Task<BusinessReport> GenerateBusinessReportAsync(ReportType type, DateRange period)
+    {
+        return type switch
+        {
+            ReportType.Executive => await GenerateExecutiveReportAsync(period),
+            ReportType.Financial => await GenerateFinancialReportAsync(period),
+            ReportType.Operational => await GenerateOperationalReportAsync(period),
+            ReportType.Security => await GenerateSecurityReportAsync(period),
+            _ => throw new ArgumentException($"Unsupported report type: {type}")
+        };
+    }
+    
+    private async Task<ExecutiveReport> GenerateExecutiveReportAsync(DateRange period)
+    {
+        return new ExecutiveReport
+        {
+            Period = period,
+            Summary = new ExecutiveSummary
+            {
+                TotalRequests = await GetTotalRequestsAsync(period),
+                AverageResponseTime = await GetAverageResponseTimeAsync(period),
+                SuccessRate = await GetSuccessRateAsync(period),
+                TotalCost = await GetTotalCostAsync(period),
+                UserSatisfaction = await GetUserSatisfactionAsync(period)
+            },
+            KeyMetrics = new List<KeyMetric>
+            {
+                new() { Name = "API Uptime", Value = await GetUptimeAsync(period), Target = 99.9, Unit = "%" },
+                new() { Name = "Response Time P95", Value = await GetP95ResponseTimeAsync(period), Target = 2000, Unit = "ms" },
+                new() { Name = "Error Rate", Value = await GetErrorRateAsync(period), Target = 1, Unit = "%" },
+                new() { Name = "Cost per Request", Value = await GetCostPerRequestAsync(period), Target = 0.01, Unit = "$" }
+            },
+            Trends = await AnalyzeBusinessTrendsAsync(period),
+            Recommendations = await GenerateBusinessRecommendationsAsync(period)
+        };
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="security.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> Security & Compliance
+                    </a>
+                    <a href="../reference/enums.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> Reference Documentation
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.AI.Transformers Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="../index.html">Home</a>
+                            <a href="../configuration.html">Configuration</a>
+                            <a href="../api/ITransformerPipeLine.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../assets/navigation.js"></script>
+</body>
+</html>
