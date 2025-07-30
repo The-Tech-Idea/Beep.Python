@@ -1,17 +1,40 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
+    <LangVersion>13.0</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>Beep.Python.ML</PackageId>
+    <Version>1.0.44</Version>
+    <Authors>The Tech Idea</Authors>
+    <Description>Enhanced Python machine learning integration for .NET with session management, virtual environment support, and comprehensive ML operations.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/The-Tech-Idea/Beep.Python</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/The-Tech-Idea/Beep.Python</RepositoryUrl>
+    <PackageTags>Python;MachineLearning;ML;AI;SessionManagement;VirtualEnvironment;DataScience</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Beep.Python.Runtime.PythonNet" Version="1.0.43" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Beep.Python.Model\Beep.Python.Model.csproj" />
   </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Copy SourceFiles="$(TargetDir)$(PackageId).dll" DestinationFolder="$(ProjectDir)..\..\outputDLL\$(PackageId)\$(TargetFramework)" SkipUnchangedFiles="false" />
+  </Target>
 
+  <Target Name="CopyPackage" AfterTargets="Pack">
+    <Copy SourceFiles="$(OutputPath)$(PackageId).$(PackageVersion).nupkg" DestinationFolder="..\..\..\LocalNugetFiles" />
+  </Target>
+  <ItemGroup>
+    <None Include="..\..\InstallationScripts\LogoGFx\128\SimpleODM.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 </Project>

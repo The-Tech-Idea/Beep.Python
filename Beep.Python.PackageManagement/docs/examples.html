@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examples - Beep.Python.PackageManagement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="header-content">
+                        <h1><i class="bi bi-play-circle text-primary"></i> Examples</h1>
+                        <p class="lead">Comprehensive examples and tutorials for Beep.Python.PackageManagement</p>
+                        
+                        <div class="quick-start-buttons">
+                            <a href="#basic-setup" class="btn btn-primary btn-lg">
+                                <i class="bi bi-gear"></i> Basic Setup
+                            </a>
+                            <a href="#package-operations" class="btn btn-outline-primary btn-lg">
+                                <i class="bi bi-box"></i> Package Operations
+                            </a>
+                            <a href="#advanced-examples" class="btn btn-outline-primary btn-lg">
+                                <i class="bi bi-cpu"></i> Advanced Examples
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Reference -->
+                <section class="section" id="quick-reference">
+                    <h2>?? Quick Reference</h2>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-gear"></i> Basic Setup</h4>
+                            <p>Initialize package manager and configure sessions</p>
+                            <a href="#basic-setup" class="btn btn-outline-primary btn-sm">View Examples</a>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-download"></i> Package Installation</h4>
+                            <p>Install, upgrade, and manage Python packages</p>
+                            <a href="#package-installation" class="btn btn-outline-primary btn-sm">View Examples</a>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-file-text"></i> Requirements Files</h4>
+                            <p>Work with requirements.txt files and dependencies</p>
+                            <a href="#requirements-management" class="btn btn-outline-primary btn-sm">View Examples</a>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-tags"></i> Package Categories</h4>
+                            <p>Organize packages by categories and functionality</p>
+                            <a href="#category-management" class="btn btn-outline-primary btn-sm">View Examples</a>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-collection"></i> Package Sets</h4>
+                            <p>Use predefined package collections for common scenarios</p>
+                            <a href="#package-sets" class="btn btn-outline-primary btn-sm">View Examples</a>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-people"></i> Multi-User Setup</h4>
+                            <p>Configure package management for multiple users</p>
+                            <a href="#multi-user-examples" class="btn btn-outline-primary btn-sm">View Examples</a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Basic Setup -->
+                <section class="section" id="basic-setup">
+                    <h2>?? Basic Setup Examples</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Initialize Package Manager</h4>
+                        <pre><code class="language-csharp">using Beep.Python.PackageManagement;
+using Beep.Python.Model;
+using TheTechIdea.Beep.Container.Services;
+
+// Initialize required services
+var beepService = new BeepService();
+var pythonRuntime = new PythonNetRunTimeManager(beepService);
+var virtualEnvManager = new PythonVirtualEnvManager(beepService, pythonRuntime);
+var sessionManager = new PythonSessionManager(beepService, pythonRuntime);
+
+// Create the package manager
+var packageManager = new PythonPackageManager(
+    beepService, 
+    pythonRuntime, 
+    virtualEnvManager, 
+    sessionManager);</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Configure Session for User</h4>
+                        <pre><code class="language-csharp">// Configure session for a specific user and environment
+string username = "data-scientist";
+string environmentId = "ml-research"; // optional - can be null for auto-selection
+
+bool configured = packageManager.ConfigureSessionForUser(username, environmentId);
+if (!configured)
+{
+    throw new InvalidOperationException("Failed to configure session");
+}
+
+Console.WriteLine("? Session configured successfully");
+
+// Verify configuration
+if (packageManager.IsSessionConfigured())
+{
+    var session = packageManager.GetConfiguredSession();
+    var environment = packageManager.GetConfiguredVirtualEnvironment();
+    
+    Console.WriteLine($"?? User: {session?.Username}");
+    Console.WriteLine($"?? Environment: {environment?.EnvironmentName}");
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>3. Alternative: Configure with Existing Session</h4>
+                        <pre><code class="language-csharp">// If you already have session and environment objects
+var existingSession = sessionManager.CreateSession("researcher", "data-env");
+var existingEnvironment = virtualEnvManager.GetEnvironmentById("data-env");
+
+bool configured = packageManager.ConfigureSession(existingSession, existingEnvironment);
+Console.WriteLine($"Session configured: {configured}");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>4. Setup Progress Reporting</h4>
+                        <pre><code class="language-csharp">// Configure progress reporting for operations
+var progress = new Progress&lt;PassedArgs&gt;(args =>
+{
+    string timestamp = DateTime.Now.ToString("HH:mm:ss");
+    string icon = args.EventType == "Error" ? "?" : "??";
+    Console.WriteLine($"[{timestamp}] {icon} {args.Messege}");
+});
+
+packageManager.Progress = progress;</code></pre>
+                    </div>
+                </section>
+
+                <!-- Package Installation Examples -->
+                <section class="section" id="package-installation">
+                    <h2>?? Package Installation Examples</h2>
+                    
+                    <div class="code-example">
+                        <h4>Single Package Installation (Async)</h4>
+                        <pre><code class="language-csharp">using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+
+try
+{
+    // Install essential data science packages
+    bool pandasInstalled = await packageManager.InstallNewPackageWithSessionAsync("pandas", cts.Token);
+    bool numpyInstalled = await packageManager.InstallNewPackageWithSessionAsync("numpy", cts.Token);
+    bool matplotlibInstalled = await packageManager.InstallNewPackageWithSessionAsync("matplotlib", cts.Token);
+    
+    Console.WriteLine($"?? Pandas: {(pandasInstalled ? "? Installed" : "? Failed")}");
+    Console.WriteLine($"?? NumPy: {(numpyInstalled ? "? Installed" : "? Failed")}");
+    Console.WriteLine($"?? Matplotlib: {(matplotlibInstalled ? "? Installed" : "? Failed")}");
+}
+catch (OperationCanceledException)
+{
+    Console.WriteLine("? Installation timed out");
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Single Package Installation (Synchronous)</h4>
+                        <pre><code class="language-csharp">// Legacy synchronous method - still supported
+bool installed = packageManager.InstallNewPackageAsync("scikit-learn");
+if (installed)
+{
+    Console.WriteLine("? Scikit-learn installed successfully");
+    
+    // Refresh package information to get latest details
+    packageManager.RefreshPackageAsync("scikit-learn");
+}
+else
+{
+    Console.WriteLine("? Failed to install scikit-learn");
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Bulk Package Installation</h4>
+                        <pre><code class="language-csharp">// Install multiple packages for data science workflow
+var packagesToInstall = new[]
+{
+    "pandas", "numpy", "matplotlib", "seaborn", "jupyter",
+    "scikit-learn", "scipy", "plotly", "requests", "beautifulsoup4"
+};
+
+int successCount = 0;
+int totalPackages = packagesToInstall.Length;
+
+Console.WriteLine($"?? Installing {totalPackages} packages for data science setup...");
+
+using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(15));
+
+foreach (var package in packagesToInstall)
+{
+    try
+    {
+        Console.WriteLine($"?? Installing {package}...");
+        bool success = await packageManager.InstallNewPackageWithSessionAsync(package, cts.Token);
+        
+        if (success)
+        {
+            successCount++;
+            Console.WriteLine($"  ? {package} installed successfully");
+        }
+        else
+        {
+            Console.WriteLine($"  ? Failed to install {package}");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"  ?? Error installing {package}: {ex.Message}");
+    }
+}
+
+Console.WriteLine($"\n?? Installation Summary: {successCount}/{totalPackages} packages installed successfully");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Package Upgrade Operations</h4>
+                        <pre><code class="language-csharp">// Upgrade specific packages
+bool pipUpgraded = packageManager.InstallPipToolAsync();
+Console.WriteLine($"?? Pip upgrade: {(pipUpgraded ? "? Success" : "? Failed")}");
+
+bool pandasUpgraded = packageManager.UpgradePackageAsync("pandas");
+Console.WriteLine($"?? Pandas upgrade: {(pandasUpgraded ? "? Success" : "? Failed")}");
+
+// Upgrade all packages that have updates available
+Console.WriteLine("?? Checking for package updates...");
+bool allUpgraded = packageManager.UpgradeAllPackagesAsync();
+Console.WriteLine($"?? Bulk upgrade: {(allUpgraded ? "? All packages updated" : "?? Some packages failed to update")}");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Package Uninstallation</h4>
+                        <pre><code class="language-csharp">// Uninstall specific packages
+using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+
+try
+{
+    // Async uninstallation
+    bool uninstalled = await packageManager.UnInstallPackageWithSessionAsync("old-package", cts.Token);
+    Console.WriteLine($"??? Package removal: {(uninstalled ? "? Success" : "? Failed")}");
+    
+    // Synchronous uninstallation (legacy)
+    bool removed = packageManager.UnInstallPackageAsync("unused-library");
+    Console.WriteLine($"??? Library removal: {(removed ? "? Success" : "? Failed")}");
+}
+catch (OperationCanceledException)
+{
+    Console.WriteLine("? Uninstallation timed out");
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Requirements Management -->
+                <section class="section" id="requirements-management">
+                    <h2>?? Requirements File Management</h2>
+                    
+                    <div class="code-example">
+                        <h4>Install from Requirements File</h4>
+                        <pre><code class="language-csharp">// Create a sample requirements file
+string requirementsContent = @"
+# Data Science Stack
+pandas>=2.0.0
+numpy>=1.24.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+jupyter>=1.0.0
+
+# Machine Learning
+scikit-learn>=1.3.0
+scipy>=1.10.0
+
+# Web Scraping
+requests>=2.28.0
+beautifulsoup4>=4.11.0
+";
+
+string requirementsPath = "data-science-requirements.txt";
+await File.WriteAllTextAsync(requirementsPath, requirementsContent);
+
+// Install packages from requirements file
+using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
+
+bool installed = await packageManager.InstallFromRequirementsFileWithSessionAsync(
+    requirementsPath, 
+    cts.Token);
+
+Console.WriteLine($"?? Requirements installation: {(installed ? "? Success" : "? Failed")}");
+
+// Legacy synchronous method
+bool installedSync = packageManager.InstallFromRequirementsFile("requirements.txt");
+Console.WriteLine($"?? Sync installation: {(installedSync ? "? Success" : "? Failed")}");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Generate Requirements File</h4>
+                        <pre><code class="language-csharp">// Generate requirements file from current environment
+string outputPath = "generated-requirements.txt";
+
+// With version constraints
+bool generatedWithVersions = packageManager.GenerateRequirementsFile(
+    outputPath, 
+    includeVersions: true);
+
+if (generatedWithVersions)
+{
+    Console.WriteLine($"?? Requirements file generated: {outputPath}");
+    
+    // Read and display the generated file
+    string content = await File.ReadAllTextAsync(outputPath);
+    Console.WriteLine("Generated requirements:");
+    Console.WriteLine(content);
+}
+
+// Without version constraints (package names only)
+bool generatedNamesOnly = packageManager.GenerateRequirementsFile(
+    "requirements-names-only.txt", 
+    includeVersions: false);
+
+Console.WriteLine($"?? Names-only file: {(generatedNamesOnly ? "? Generated" : "? Failed")}");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Update Environment from Requirements</h4>
+                        <pre><code class="language-csharp">// Update environment with packages from its requirements file
+var environment = packageManager.GetConfiguredVirtualEnvironment();
+if (environment != null)
+{
+    bool updated = packageManager.UpdateVirtualEnvironmentWithRequirementsFile(environment);
+    Console.WriteLine($"?? Environment update: {(updated ? "? Success" : "? Failed")}");
+    
+    // Refresh package information after update
+    await packageManager.RefreshAllPackagesWithSessionAsync();
+    Console.WriteLine("?? Package information refreshed");
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Category Management -->
+                <section class="section" id="category-management">
+                    <h2>??? Package Category Management</h2>
+                    
+                    <div class="code-example">
+                        <h4>Auto-Categorize Packages</h4>
+                        <pre><code class="language-csharp">// Automatically categorize packages based on known patterns
+bool categorized = packageManager.PopulateCommonPackageCategories();
+Console.WriteLine($"??? Auto-categorization: {(categorized ? "? Complete" : "? Failed")}");
+
+// View categorized packages
+var dataPackages = packageManager.GetPackagesByCategory(PackageCategory.DataScience);
+var mlPackages = packageManager.GetPackagesByCategory(PackageCategory.MachineLearning);
+var webPackages = packageManager.GetPackagesByCategory(PackageCategory.WebDevelopment);
+
+Console.WriteLine($"?? Data Science packages: {dataPackages.Count}");
+Console.WriteLine($"?? Machine Learning packages: {mlPackages.Count}");
+Console.WriteLine($"?? Web Development packages: {webPackages.Count}");
+
+// List packages in each category
+Console.WriteLine("\n?? Data Science Packages:");
+foreach (var package in dataPackages)
+{
+    Console.WriteLine($"  ?? {package.PackageName} v{package.Version}");
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Manual Category Assignment</h4>
+                        <pre><code class="language-csharp">// Set category for specific packages
+packageManager.SetPackageCategory("tensorflow", PackageCategory.MachineLearning);
+packageManager.SetPackageCategory("django", PackageCategory.WebDevelopment);
+packageManager.SetPackageCategory("pandas", PackageCategory.DataScience);
+
+Console.WriteLine("? Manual categories assigned");
+
+// Bulk category updates
+var categoryUpdates = new Dictionary&lt;string, PackageCategory&gt;
+{
+    ["pytorch"] = PackageCategory.MachineLearning,
+    ["flask"] = PackageCategory.WebDevelopment,
+    ["numpy"] = PackageCategory.DataScience,
+    ["plotly"] = PackageCategory.Graphics,
+    ["pytest"] = PackageCategory.Testing,
+    ["cryptography"] = PackageCategory.Security
+};
+
+packageManager.UpdatePackageCategories(categoryUpdates);
+Console.WriteLine($"?? Bulk update applied to {categoryUpdates.Count} packages");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Get Category Suggestions</h4>
+                        <pre><code class="language-csharp">// Get category suggestions for new packages
+var packageNames = new[] { 
+    "transformers", "fastapi", "plotly", "opencv-python", 
+    "streamlit", "beautifulsoup4", "redis", "celery" 
+};
+
+var suggestions = await packageManager.SuggestCategoriesForPackages(packageNames);
+
+Console.WriteLine("?? Category Suggestions:");
+foreach (var suggestion in suggestions)
+{
+    Console.WriteLine($"  ?? {suggestion.Key} ? {suggestion.Value}");
+}
+
+// Apply suggestions
+foreach (var suggestion in suggestions)
+{
+    if (suggestion.Value != PackageCategory.Uncategorized)
+    {
+        packageManager.SetPackageCategory(suggestion.Key, suggestion.Value);
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Browse Packages by Category</h4>
+                        <pre><code class="language-csharp">// Get all available categories and their packages
+var categories = Enum.GetValues&lt;PackageCategory&gt;();
+
+Console.WriteLine("?? Package Categories Overview:");
+
+foreach (var category in categories)
+{
+    var packages = packageManager.GetPackagesByCategory(category);
+    if (packages.Count > 0)
+    {
+        Console.WriteLine($"\n??? {category} ({packages.Count} packages):");
+        
+        foreach (var package in packages.Take(5)) // Show first 5
+        {
+            string updateStatus = package.Buttondisplay == "Update" ? " (Update Available)" : "";
+            Console.WriteLine($"  ?? {package.PackageName} v{package.Version}{updateStatus}");
+        }
+        
+        if (packages.Count > 5)
+        {
+            Console.WriteLine($"  ... and {packages.Count - 5} more packages");
+        }
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Package Sets -->
+                <section class="section" id="package-sets">
+                    <h2>?? Package Sets Management</h2>
+                    
+                    <div class="code-example">
+                        <h4>View Available Package Sets</h4>
+                        <pre><code class="language-csharp">// Get all available package sets
+var availableSets = packageManager.GetAvailablePackageSets();
+
+Console.WriteLine("?? Available Package Sets:");
+foreach (var set in availableSets)
+{
+    Console.WriteLine($"\n?? {set.Key}:");
+    foreach (var package in set.Value.Take(5)) // Show first 5 packages
+    {
+        Console.WriteLine($"  ?? {package.PackageName}");
+    }
+    
+    if (set.Value.Count > 5)
+    {
+        Console.WriteLine($"  ... and {set.Value.Count - 5} more packages");
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Install Package Set</h4>
+                        <pre><code class="language-csharp">// Install a complete package set (example set names)
+string[] exampleSets = { 
+    "data-science-essentials", 
+    "web-development-basic", 
+    "machine-learning-starter" 
+};
+
+foreach (var setName in exampleSets)
+{
+    Console.WriteLine($"?? Installing package set: {setName}");
+    
+    bool setInstalled = packageManager.InstallPackageSet(setName);
+    Console.WriteLine($"  {(setInstalled ? "? Success" : "? Failed or not found")}");
+    
+    if (setInstalled)
+    {
+        // Refresh package information after set installation
+        await packageManager.RefreshAllPackagesWithSessionAsync();
+        Console.WriteLine("  ?? Package information refreshed");
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Create Custom Package Set</h4>
+                        <pre><code class="language-csharp">// Create a custom package set from current environment
+string customSetName = "my-data-analysis-setup";
+string description = "Complete package setup for my data analysis project";
+
+bool customSetSaved = packageManager.SavePackageSetFromCurrentEnvironment(
+    customSetName, 
+    description);
+
+Console.WriteLine($"?? Custom set '{customSetName}': {(customSetSaved ? "? Saved" : "? Failed")}");
+
+if (customSetSaved)
+{
+    // Verify the set was created
+    var updatedSets = packageManager.GetAvailablePackageSets();
+    if (updatedSets.ContainsKey(customSetName))
+    {
+        var customSet = updatedSets[customSetName];
+        Console.WriteLine($"?? Custom set contains {customSet.Count} packages");
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Multi-User Examples -->
+                <section class="section" id="multi-user-examples">
+                    <h2>?? Multi-User Environment Examples</h2>
+                    
+                    <div class="code-example">
+                        <h4>Multi-User Package Management</h4>
+                        <pre><code class="language-csharp">// Create package managers for different users
+var packageManager1 = new PythonPackageManager(beepService, pythonRuntime, virtualEnvManager, sessionManager);
+var packageManager2 = new PythonPackageManager(beepService, pythonRuntime, virtualEnvManager, sessionManager);
+
+// Configure sessions for different users with different environments
+bool alice_configured = packageManager1.ConfigureSessionForUser("alice", "ml-research");
+bool bob_configured = packageManager2.ConfigureSessionForUser("bob", "web-development");
+
+Console.WriteLine($"????? Alice session: {(alice_configured ? "? Configured" : "? Failed")}");
+Console.WriteLine($"????? Bob session: {(bob_configured ? "? Configured" : "? Failed")}");
+
+// Alice installs ML packages
+if (alice_configured)
+{
+    Console.WriteLine("\n????? Alice installing ML packages...");
+    await packageManager1.InstallNewPackageWithSessionAsync("tensorflow");
+    await packageManager1.InstallNewPackageWithSessionAsync("scikit-learn");
+    await packageManager1.InstallNewPackageWithSessionAsync("pandas");
+    
+    packageManager1.PopulateCommonPackageCategories();
+    var aliceMLPackages = packageManager1.GetPackagesByCategory(PackageCategory.MachineLearning);
+    Console.WriteLine($"  ?? Alice's ML packages: {aliceMLPackages.Count}");
+}
+
+// Bob installs web development packages
+if (bob_configured)
+{
+    Console.WriteLine("\n????? Bob installing web packages...");
+    await packageManager2.InstallNewPackageWithSessionAsync("django");
+    await packageManager2.InstallNewPackageWithSessionAsync("requests");
+    await packageManager2.InstallNewPackageWithSessionAsync("beautifulsoup4");
+    
+    packageManager2.PopulateCommonPackageCategories();
+    var bobWebPackages = packageManager2.GetPackagesByCategory(PackageCategory.WebDevelopment);
+    Console.WriteLine($"  ?? Bob's web packages: {bobWebPackages.Count}");
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Session Switching Example</h4>
+                        <pre><code class="language-csharp">// Single package manager handling multiple users
+var sharedPackageManager = new PythonPackageManager(beepService, pythonRuntime, virtualEnvManager, sessionManager);
+
+// Function to switch user context
+async Task SwitchToUser(string username, string environmentId)
+{
+    Console.WriteLine($"?? Switching to user: {username}");
+    
+    bool configured = sharedPackageManager.ConfigureSessionForUser(username, environmentId);
+    if (configured)
+    {
+        var session = sharedPackageManager.GetConfiguredSession();
+        var environment = sharedPackageManager.GetConfiguredVirtualEnvironment();
+        
+        Console.WriteLine($"  ?? Active user: {session?.Username}");
+        Console.WriteLine($"  ?? Environment: {environment?.EnvironmentName}");
+        
+        // Show current packages
+        var environment_obj = sharedPackageManager.GetConfiguredVirtualEnvironment();
+        if (environment_obj?.InstalledPackages != null)
+        {
+            Console.WriteLine($"  ?? Installed packages: {environment_obj.InstalledPackages.Count}");
+        }
+    }
+}
+
+// Switch between users
+await SwitchToUser("researcher", "analysis-env");
+await sharedPackageManager.InstallNewPackageWithSessionAsync("numpy");
+
+await SwitchToUser("developer", "web-env");
+await sharedPackageManager.InstallNewPackageWithSessionAsync("flask");
+
+await SwitchToUser("data-scientist", "ml-env");
+await sharedPackageManager.InstallNewPackageWithSessionAsync("tensorflow");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Advanced Examples -->
+                <section class="section" id="advanced-examples">
+                    <h2>?? Advanced Examples</h2>
+                    
+                    <div class="code-example">
+                        <h4>Complete Data Science Environment Setup</h4>
+                        <pre><code class="language-csharp">public class DataScienceEnvironmentSetup
+{
+    private readonly PythonPackageManager _packageManager;
+    
+    public DataScienceEnvironmentSetup(PythonPackageManager packageManager)
+    {
+        _packageManager = packageManager;
+    }
+    
+    public async Task&lt;bool&gt; SetupCompleteEnvironmentAsync(string username)
+    {
+        try
+        {
+            // Configure session
+            Console.WriteLine($"?? Setting up data science environment for {username}...");
+            
+            bool configured = _packageManager.ConfigureSessionForUser(username, "data-science");
+            if (!configured)
+            {
+                Console.WriteLine("? Failed to configure session");
+                return false;
+            }
+            
+            // Install core data science packages
+            var corePackages = new[]
+            {
+                "pandas", "numpy", "matplotlib", "seaborn", "jupyter",
+                "scikit-learn", "scipy", "plotly", "ipython"
+            };
+            
+            Console.WriteLine("?? Installing core data science packages...");
+            await InstallPackagesBatch(corePackages);
+            
+            // Install machine learning packages
+            var mlPackages = new[]
+            {
+                "tensorflow", "torch", "xgboost", "lightgbm"
+            };
+            
+            Console.WriteLine("?? Installing machine learning packages...");
+            await InstallPackagesBatch(mlPackages);
+            
+            // Install data visualization packages
+            var vizPackages = new[]
+            {
+                "bokeh", "altair", "dash", "streamlit"
+            };
+            
+            Console.WriteLine("?? Installing visualization packages...");
+            await InstallPackagesBatch(vizPackages);
+            
+            // Auto-categorize all packages
+            _packageManager.PopulateCommonPackageCategories();
+            
+            // Generate requirements file
+            _packageManager.GenerateRequirementsFile("data-science-requirements.txt", true);
+            
+            // Create package set
+            _packageManager.SavePackageSetFromCurrentEnvironment(
+                "complete-data-science-setup",
+                $"Complete data science environment for {username}");
+            
+            Console.WriteLine("? Data science environment setup complete!");
+            
+            // Print summary
+            await PrintEnvironmentSummary();
+            
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"? Setup failed: {ex.Message}");
+            return false;
+        }
+    }
+    
+    private async Task InstallPackagesBatch(string[] packages)
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
+        
+        foreach (var package in packages)
+        {
+            try
+            {
+                bool success = await _packageManager.InstallNewPackageWithSessionAsync(package, cts.Token);
+                Console.WriteLine($"  {(success ? "?" : "?")} {package}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"  ?? {package}: {ex.Message}");
+            }
+        }
+    }
+    
+    private async Task PrintEnvironmentSummary()
+    {
+        Console.WriteLine("\n?? Environment Summary:");
+        
+        var categories = new[]
+        {
+            PackageCategory.DataScience,
+            PackageCategory.MachineLearning,
+            PackageCategory.Graphics,
+            PackageCategory.Utilities
+        };
+        
+        foreach (var category in categories)
+        {
+            var packages = _packageManager.GetPackagesByCategory(category);
+            Console.WriteLine($"  ??? {category}: {packages.Count} packages");
+        }
+        
+        var environment = _packageManager.GetConfiguredVirtualEnvironment();
+        if (environment?.InstalledPackages != null)
+        {
+            Console.WriteLine($"  ?? Total packages: {environment.InstalledPackages.Count}");
+        }
+    }
+}
+
+// Usage
+var setupManager = new DataScienceEnvironmentSetup(packageManager);
+await setupManager.SetupCompleteEnvironmentAsync("research-team");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Error Handling and Retry Logic</h4>
+                        <pre><code class="language-csharp">public class RobustPackageInstaller
+{
+    private readonly PythonPackageManager _packageManager;
+    private readonly int _maxRetries;
+    private readonly TimeSpan _retryDelay;
+    
+    public RobustPackageInstaller(PythonPackageManager packageManager, int maxRetries = 3, TimeSpan? retryDelay = null)
+    {
+        _packageManager = packageManager;
+        _maxRetries = maxRetries;
+        _retryDelay = retryDelay ?? TimeSpan.FromSeconds(30);
+    }
+    
+    public async Task&lt;bool&gt; InstallWithRetryAsync(string packageName, CancellationToken cancellationToken = default)
+    {
+        for (int attempt = 1; attempt &lt;= _maxRetries; attempt++)
+        {
+            try
+            {
+                Console.WriteLine($"?? Installing {packageName} (attempt {attempt}/{_maxRetries})...");
+                
+                // Check if package manager is busy
+                if (_packageManager.IsBusy)
+                {
+                    Console.WriteLine("? Package manager is busy, waiting...");
+                    await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+                    continue;
+                }
+                
+                // Verify session is configured
+                if (!_packageManager.IsSessionConfigured())
+                {
+                    throw new InvalidOperationException("Session not configured");
+                }
+                
+                // Attempt installation
+                bool success = await _packageManager.InstallNewPackageWithSessionAsync(packageName, cancellationToken);
+                
+                if (success)
+                {
+                    Console.WriteLine($"? {packageName} installed successfully on attempt {attempt}");
+                    return true;
+                }
+                else
+                {
+                    Console.WriteLine($"? Installation failed on attempt {attempt}");
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                Console.WriteLine("? Installation cancelled");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"?? Error on attempt {attempt}: {ex.Message}");
+                
+                if (attempt == _maxRetries)
+                {
+                    Console.WriteLine($"? All {_maxRetries} attempts failed for {packageName}");
+                    throw;
+                }
+            }
+            
+            // Wait before retry (except on last attempt)
+            if (attempt &lt; _maxRetries)
+            {
+                Console.WriteLine($"? Waiting {_retryDelay.TotalSeconds} seconds before retry...");
+                await Task.Delay(_retryDelay, cancellationToken);
+            }
+        }
+        
+        return false;
+    }
+    
+    public async Task&lt;Dictionary&lt;string, bool&gt;&gt; InstallBatchWithRetryAsync(
+        IEnumerable&lt;string&gt; packageNames, 
+        CancellationToken cancellationToken = default)
+    {
+        var results = new Dictionary&lt;string, bool&gt;();
+        
+        foreach (var package in packageNames)
+        {
+            try
+            {
+                results[package] = await InstallWithRetryAsync(package, cancellationToken);
+            }
+            catch (Exception)
+            {
+                results[package] = false;
+            }
+        }
+        
+        return results;
+    }
+}
+
+// Usage
+var installer = new RobustPackageInstaller(packageManager, maxRetries: 3, TimeSpan.FromSeconds(30));
+
+var packages = new[] { "tensorflow", "torch", "scikit-learn" };
+var results = await installer.InstallBatchWithRetryAsync(packages);
+
+Console.WriteLine("?? Installation Results:");
+foreach (var result in results)
+{
+    Console.WriteLine($"  {(result.Value ? "?" : "?")} {result.Key}");
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Package Health Monitoring</h4>
+                        <pre><code class="language-csharp">public class PackageHealthMonitor
+{
+    private readonly PythonPackageManager _packageManager;
+    
+    public PackageHealthMonitor(PythonPackageManager packageManager)
+    {
+        _packageManager = packageManager;
+    }
+    
+    public async Task&lt;PackageHealthReport&gt; GenerateHealthReportAsync()
+    {
+        var report = new PackageHealthReport
+        {
+            Timestamp = DateTime.Now,
+            SessionConfigured = _packageManager.IsSessionConfigured()
+        };
+        
+        if (!report.SessionConfigured)
+        {
+            report.Issues.Add("? Session not configured");
+            return report;
+        }
+        
+        try
+        {
+            // Refresh all packages
+            Console.WriteLine("?? Refreshing package information...");
+            await _packageManager.RefreshAllPackagesWithSessionAsync();
+            
+            var environment = _packageManager.GetConfiguredVirtualEnvironment();
+            if (environment?.InstalledPackages != null)
+            {
+                report.TotalPackages = environment.InstalledPackages.Count;
+                
+                // Check for updates
+                var outdatedPackages = environment.InstalledPackages
+                    .Where(p => p.Buttondisplay == "Update")
+                    .ToList();
+                
+                report.OutdatedPackages = outdatedPackages.Count;
+                
+                // Categorize packages
+                var categoryStats = new Dictionary&lt;PackageCategory, int&gt;();
+                foreach (PackageCategory category in Enum.GetValues&lt;PackageCategory&gt;())
+                {
+                    var packages = _packageManager.GetPackagesByCategory(category);
+                    categoryStats[category] = packages.Count;
+                }
+                
+                report.CategoryBreakdown = categoryStats;
+                
+                // Check for issues
+                if (outdatedPackages.Any())
+                {
+                    report.Issues.Add($"?? {outdatedPackages.Count} packages have updates available");
+                }
+                
+                // Check for uncategorized packages
+                var uncategorized = categoryStats.GetValueOrDefault(PackageCategory.Uncategorized, 0);
+                if (uncategorized > 0)
+                {
+                    report.Issues.Add($"??? {uncategorized} packages are uncategorized");
+                }
+                
+                // Performance check
+                if (report.TotalPackages > 100)
+                {
+                    report.Issues.Add($"?? Large number of packages ({report.TotalPackages}) may impact performance");
+                }
+                
+                Console.WriteLine("? Health report generated successfully");
+            }
+        }
+        catch (Exception ex)
+        {
+            report.Issues.Add($"? Error generating report: {ex.Message}");
+        }
+        
+        return report;
+    }
+    
+    public void PrintHealthReport(PackageHealthReport report)
+    {
+        Console.WriteLine($"\n?? Package Health Report - {report.Timestamp:yyyy-MM-dd HH:mm:ss}");
+        Console.WriteLine($"?? Total Packages: {report.TotalPackages}");
+        Console.WriteLine($"?? Outdated Packages: {report.OutdatedPackages}");
+        Console.WriteLine($"?? Session Configured: {(report.SessionConfigured ? "? Yes" : "? No")}");
+        
+        if (report.CategoryBreakdown.Any())
+        {
+            Console.WriteLine("\n??? Category Breakdown:");
+            foreach (var category in report.CategoryBreakdown.Where(c => c.Value > 0))
+            {
+                Console.WriteLine($"  {category.Key}: {category.Value} packages");
+            }
+        }
+        
+        if (report.Issues.Any())
+        {
+            Console.WriteLine("\n?? Issues Found:");
+            foreach (var issue in report.Issues)
+            {
+                Console.WriteLine($"  {issue}");
+            }
+        }
+        else
+        {
+            Console.WriteLine("\n? No issues found - environment is healthy!");
+        }
+    }
+}
+
+public class PackageHealthReport
+{
+    public DateTime Timestamp { get; set; }
+    public bool SessionConfigured { get; set; }
+    public int TotalPackages { get; set; }
+    public int OutdatedPackages { get; set; }
+    public Dictionary&lt;PackageCategory, int&gt; CategoryBreakdown { get; set; } = new();
+    public List&lt;string&gt; Issues { get; set; } = new();
+}
+
+// Usage
+var healthMonitor = new PackageHealthMonitor(packageManager);
+var report = await healthMonitor.GenerateHealthReportAsync();
+healthMonitor.PrintHealthReport(report);</code></pre>
+                    </div>
+                </section>
+
+                <!-- Error Handling Best Practices -->
+                <section class="section" id="error-handling">
+                    <h2>??? Error Handling Best Practices</h2>
+                    
+                    <div class="code-example">
+                        <h4>Comprehensive Error Handling</h4>
+                        <pre><code class="language-csharp">public async Task&lt;bool&gt; SafePackageOperationAsync(string packageName, string operation)
+{
+    try
+    {
+        // Validate inputs
+        if (string.IsNullOrWhiteSpace(packageName))
+        {
+            throw new ArgumentException("Package name cannot be empty");
+        }
+        
+        // Check session configuration
+        if (!packageManager.IsSessionConfigured())
+        {
+            Console.WriteLine("? Session not configured. Attempting to configure...");
+            
+            // Try to configure with default user
+            bool configured = packageManager.ConfigureSessionForUser("default-user");
+            if (!configured)
+            {
+                throw new InvalidOperationException("Failed to configure session");
+            }
+            
+            Console.WriteLine("? Session configured successfully");
+        }
+        
+        // Check if package manager is busy
+        if (packageManager.IsBusy)
+        {
+            Console.WriteLine("? Package manager is busy. Waiting...");
+            
+            // Wait with timeout
+            var timeout = TimeSpan.FromSeconds(30);
+            var startTime = DateTime.Now;
+            
+            while (packageManager.IsBusy && DateTime.Now - startTime &lt; timeout)
+            {
+                await Task.Delay(1000);
+            }
+            
+            if (packageManager.IsBusy)
+            {
+                throw new TimeoutException("Package manager remained busy after timeout");
+            }
+        }
+        
+        // Perform operation with timeout
+        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
+        
+        bool result = operation.ToLower() switch
+        {
+            "install" => await packageManager.InstallNewPackageWithSessionAsync(packageName, cts.Token),
+            "uninstall" => await packageManager.UnInstallPackageWithSessionAsync(packageName, cts.Token),
+            "refresh" => await packageManager.RefreshPackageWithSessionAsync(packageName, cts.Token),
+            _ => throw new ArgumentException($"Unknown operation: {operation}")
+        };
+        
+        if (result)
+        {
+            Console.WriteLine($"? {operation} operation successful for {packageName}");
+        }
+        else
+        {
+            Console.WriteLine($"? {operation} operation failed for {packageName}");
+        }
+        
+        return result;
+    }
+    catch (OperationCanceledException)
+    {
+        Console.WriteLine($"? {operation} operation was cancelled (timeout)");
+        return false;
+    }
+    catch (InvalidOperationException ex) when (ex.Message.Contains("Session"))
+    {
+        Console.WriteLine($"?? Session configuration error: {ex.Message}");
+        return false;
+    }
+    catch (ArgumentException ex)
+    {
+        Console.WriteLine($"?? Invalid argument: {ex.Message}");
+        return false;
+    }
+    catch (TimeoutException ex)
+    {
+        Console.WriteLine($"? Timeout error: {ex.Message}");
+        return false;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"? Unexpected error during {operation}: {ex.Message}");
+        return false;
+    }
+}
+
+// Usage examples
+await SafePackageOperationAsync("pandas", "install");
+await SafePackageOperationAsync("old-package", "uninstall");
+await SafePackageOperationAsync("numpy", "refresh");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="index.html" class="btn-beep">
+                        <i class="bi bi-house"></i> Documentation Home
+                    </a>
+                    <a href="getting-started.html" class="btn-beep">
+                        <i class="bi bi-rocket"></i> Getting Started
+                    </a>
+                    <a href="api-reference.html" class="btn-beep">
+                        <i class="bi bi-book"></i> API Reference
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.PackageManagement Examples</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="index.html">Home</a>
+                            <a href="#basic-setup">Basic Setup</a>
+                            <a href="#package-operations">Package Operations</a>
+                            <a href="#advanced-examples">Advanced Examples</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="assets/navigation.js"></script>
+</body>
+</html>

@@ -16,19 +16,19 @@ namespace Beep.Python.RuntimeEngine.PackageManagement
     public class PackageSetManager
     {
         private readonly IBeepService _beepService;
-        private readonly PackageOperationManager _packageOperations;
+        private readonly PythonPackageManager _packageManager;
         private readonly RequirementsFileManager _requirementsManager;
         private readonly IProgress<PassedArgs> _progress;
         private Dictionary<string, PackageSet> _packageSets;
 
         public PackageSetManager(
             IBeepService beepService,
-            PackageOperationManager packageOperations,
+            PythonPackageManager packageManager,
             RequirementsFileManager requirementsManager,
             IProgress<PassedArgs> progress = null)
         {
             _beepService = beepService ?? throw new ArgumentNullException(nameof(beepService));
-            _packageOperations = packageOperations ?? throw new ArgumentNullException(nameof(packageOperations));
+            _packageManager = packageManager ?? throw new ArgumentNullException(nameof(packageManager));
             _requirementsManager = requirementsManager ?? throw new ArgumentNullException(nameof(requirementsManager));
             _progress = progress;
             
@@ -104,7 +104,7 @@ namespace Beep.Python.RuntimeEngine.PackageManagement
                     }
 
                     ReportProgress($"Installing {packageSpec} ({current}/{totalPackages})");
-                    bool installResult = await _packageOperations.InstallPackageAsync(packageSpec, environment);
+                    bool installResult = await _packageManager.InstallPackageAsync(packageSpec, environment);
 
                     if (!installResult)
                     {
@@ -153,7 +153,7 @@ namespace Beep.Python.RuntimeEngine.PackageManagement
             try
             {
                 // Ensure we have the latest package data
-                var packages = await _packageOperations.GetAllPackagesAsync(environment);
+                var packages = await _packageManager.GetAllPackagesAsync(environment);
                 if (packages == null || packages.Count == 0)
                 {
                     ReportError("No packages found in environment to save as a package set");

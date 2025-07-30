@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Reference - Beep.Python.PackageManagement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="header-content">
+                        <h1><i class="bi bi-book text-primary"></i> API Reference</h1>
+                        <p class="lead">Complete API documentation for Beep.Python.PackageManagement v1.0.16</p>
+                    </div>
+                </div>
+
+                <!-- PythonPackageManager -->
+                <section class="section" id="python-package-manager">
+                    <h2>?? PythonPackageManager</h2>
+                    <p>The main package management class with consolidated functionality and enhanced session management.</p>
+                    
+                    <div class="info-box">
+                        <h5><i class="bi bi-info-circle"></i> Class Information</h5>
+                        <ul>
+                            <li><strong>Namespace:</strong> <code>Beep.Python.RuntimeEngine.PackageManagement</code></li>
+                            <li><strong>Assembly:</strong> <code>Beep.Python.PackageManagement.dll</code></li>
+                            <li><strong>Implements:</strong> <code>IPythonPackageManager</code>, <code>IDisposable</code></li>
+                            <li><strong>Thread Safety:</strong> Thread-safe with internal locking mechanisms</li>
+                        </ul>
+                    </div>
+
+                    <h3>Constructor</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public PythonPackageManager(
+    IBeepService beepService,
+    IPythonRunTimeManager pythonRuntime,
+    IPythonVirtualEnvManager virtualEnvManager,
+    IPythonSessionManager sessionManager)</code></pre>
+                    </div>
+
+                    <h3>Key Properties</h3>
+                    <div class="api-table">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Property</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>Editor</code></td>
+                                    <td><code>IDMEEditor</code></td>
+                                    <td>Gets the DME editor instance for logging and configuration access</td>
+                                </tr>
+                                <tr>
+                                    <td><code>UnitofWork</code></td>
+                                    <td><code>UnitofWork&lt;PackageDefinition&gt;</code></td>
+                                    <td>Gets or sets the unit of work for tracking package changes</td>
+                                </tr>
+                                <tr>
+                                    <td><code>Progress</code></td>
+                                    <td><code>IProgress&lt;PassedArgs&gt;</code></td>
+                                    <td>Gets or sets the progress reporter for operations</td>
+                                </tr>
+                                <tr>
+                                    <td><code>Token</code></td>
+                                    <td><code>CancellationToken</code></td>
+                                    <td>Gets the cancellation token for stopping operations</td>
+                                </tr>
+                                <tr>
+                                    <td><code>IsBusy</code></td>
+                                    <td><code>bool</code></td>
+                                    <td>Gets whether the manager is currently performing an operation</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3>Session Management Methods</h3>
+                    <div class="api-table">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Return Type</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>ConfigureSession(session, environment)</code></td>
+                                    <td><code>bool</code></td>
+                                    <td>Configure the package manager to use a specific Python session and virtual environment</td>
+                                </tr>
+                                <tr>
+                                    <td><code>ConfigureSessionForUser(username, environmentId)</code></td>
+                                    <td><code>bool</code></td>
+                                    <td>Configure session using username and optional environment ID</td>
+                                </tr>
+                                <tr>
+                                    <td><code>IsSessionConfigured()</code></td>
+                                    <td><code>bool</code></td>
+                                    <td>Check if session is properly configured</td>
+                                </tr>
+                                <tr>
+                                    <td><code>GetConfiguredSession()</code></td>
+                                    <td><code>PythonSessionInfo?</code></td>
+                                    <td>Get the currently configured session, if any</td>
+                                </tr>
+                                <tr>
+                                    <td><code>GetConfiguredVirtualEnvironment()</code></td>
+                                    <td><code>PythonVirtualEnvironment?</code></td>
+                                    <td>Get the currently configured virtual environment, if any</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3>Package Installation Methods</h3>
+                    <div class="api-table">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Return Type</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>InstallNewPackageAsync(packageName)</code></td>
+                                    <td><code>bool</code></td>
+                                    <td>Installs a new package in the current environment (synchronous)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>InstallNewPackageWithSessionAsync(packageName, cancellationToken)</code></td>
+                                    <td><code>Task&lt;bool&gt;</code></td>
+                                    <td>Installs a new package asynchronously with session support</td>
+                                </tr>
+                                <tr>
+                                    <td><code>InstallPackageAsync(packageName, environment)</code></td>
+                                    <td><code>Task&lt;bool&gt;</code></td>
+                                    <td>Installs a package in the specified environment with session support</td>
+                                </tr>
+                                <tr>
+                                    <td><code>InstallPipToolAsync()</code></td>
+                                    <td><code>bool</code></td>
+                                    <td>Installs or upgrades the pip package manager</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3>Package Update Methods</h3>
+                    <div class="api-table">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Return Type</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>UpgradePackageAsync(packageName)</code></td>
+                                    <td><code>bool</code></td>
+                                    <td>Upgrades a specific package in the current environment</td>
+                                </tr>
+                                <tr>
+                                    <td><code>UpgradePackageAsync(packageName, environment)</code></td>
+                                    <td><code>Task&lt;bool&gt;</code></td>
+                                    <td>Upgrades a package in the specified environment with session support</td>
+                                </tr>
+                                <tr>
+                                    <td><code>UpgradeAllPackagesAsync()</code></td>
+                                    <td><code>bool</code></td>
+                                    <td>Upgrades all packages in the current environment</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3>Package Information Methods</h3>
+                    <div class="api-table">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Return Type</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>GetPackageInfoAsync(packageName, environment)</code></td>
+                                    <td><code>Task&lt;PackageDefinition&gt;</code></td>
+                                    <td>Gets information about an installed package with session support</td>
+                                </tr>
+                                <tr>
+                                    <td><code>GetAllPackagesAsync(environment)</code></td>
+                                    <td><code>Task&lt;List&lt;PackageDefinition&gt;&gt;</code></td>
+                                    <td>Gets information about all installed packages with session support</td>
+                                </tr>
+                                <tr>
+                                    <td><code>CheckIfPackageExistsAsync(packageName)</code></td>
+                                    <td><code>Task&lt;PackageDefinition&gt;</code></td>
+                                    <td>Checks the PyPI repository for information about a package</td>
+                                </tr>
+                                <tr>
+                                    <td><code>RefreshAllPackagesAsync()</code></td>
+                                    <td><code>bool</code></td>
+                                    <td>Refreshes information for all packages in the current environment</td>
+                                </tr>
+                                <tr>
+                                    <td><code>RefreshAllPackagesWithSessionAsync(cancellationToken)</code></td>
+                                    <td><code>Task&lt;bool&gt;</code></td>
+                                    <td>Refreshes information for all packages asynchronously with session support</td>
+                                </tr>
+                                <tr>
+                                    <td><code>RefreshPackageAsync(packageName)</code></td>
+                                    <td><code>bool</code></td>
+                                    <td>Refreshes information for a specific package in the current environment</td>
+                                </tr>
+                                <tr>
+                                    <td><code>RefreshPackageWithSessionAsync(packageName, cancellationToken)</code></td>
+                                    <td><code>Task&lt;bool&gt;</code></td>
+                                    <td>Refreshes information for a specific package asynchronously with session support</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- PackageCategoryManager -->
+                <section class="section" id="package-category-manager">
+                    <h2>??? PackageCategoryManager</h2>
+                    <p>Enhanced package category manager with session management and intelligent categorization.</p>
+                    
+                    <div class="info-box">
+                        <h5><i class="bi bi-info-circle"></i> Class Information</h5>
+                        <ul>
+                            <li><strong>Namespace:</strong> <code>Beep.Python.RuntimeEngine.PackageManagement</code></li>
+                            <li><strong>Assembly:</strong> <code>Beep.Python.PackageManagement.dll</code></li>
+                            <li><strong>Implements:</strong> <code>IDisposable</code></li>
+                            <li><strong>Dependencies:</strong> <code>PythonPackageManager</code></li>
+                        </ul>
+                    </div>
+
+                    <h3>Constructor</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public PackageCategoryManager(
+    IBeepService beepService,
+    PythonPackageManager packageManager,
+    IProgress&lt;PassedArgs&gt; progress = null)</code></pre>
+                    </div>
+
+                    <h3>Key Methods</h3>
+                    <div class="api-table">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Return Type</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>ConfigureSession(session, environment)</code></td>
+                                    <td><code>bool</code></td>
+                                    <td>Configure the category manager to use a specific session and environment</td>
+                                </tr>
+                                <tr>
+                                    <td><code>GetPackagesByCategory(environment, category)</code></td>
+                                    <td><code>List&lt;PackageDefinition&gt;</code></td>
+                                    <td>Gets packages in a specific category with session support</td>
+                                </tr>
+                                <tr>
+                                    <td><code>SetPackageCategory(environment, packageName, category)</code></td>
+                                    <td><code>void</code></td>
+                                    <td>Sets the category for a specific package with session support</td>
+                                </tr>
+                                <tr>
+                                    <td><code>UpdatePackageCategories(environment, packageCategories)</code></td>
+                                    <td><code>void</code></td>
+                                    <td>Updates categories for multiple packages at once with session support</td>
+                                </tr>
+                                <tr>
+                                    <td><code>PopulateCommonPackageCategories(environment)</code></td>
+                                    <td><code>bool</code></td>
+                                    <td>Populates common package categories based on known package names</td>
+                                </tr>
+                                <tr>
+                                    <td><code>SuggestCategoriesForPackagesAsync(packageNames, environment)</code></td>
+                                    <td><code>Task&lt;Dictionary&lt;string, PackageCategory&gt;&gt;</code></td>
+                                    <td>Suggests categories for packages based on their names and descriptions</td>
+                                </tr>
+                                <tr>
+                                    <td><code>GetCategoryStatistics(environment)</code></td>
+                                    <td><code>Dictionary&lt;PackageCategory, int&gt;</code></td>
+                                    <td>Gets category statistics for an environment</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- RequirementsFileManager -->
+                <section class="section" id="requirements-file-manager">
+                    <h2>?? RequirementsFileManager</h2>
+                    <p>Enhanced requirements file manager with session management and comprehensive requirements file operations.</p>
+                    
+                    <div class="info-box">
+                        <h5><i class="bi bi-info-circle"></i> Class Information</h5>
+                        <ul>
+                            <li><strong>Namespace:</strong> <code>Beep.Python.RuntimeEngine.PackageManagement</code></li>
+                            <li><strong>Assembly:</strong> <code>Beep.Python.PackageManagement.dll</code></li>
+                            <li><strong>Implements:</strong> <code>IDisposable</code></li>
+                            <li><strong>Dependencies:</strong> <code>PythonPackageManager</code></li>
+                        </ul>
+                    </div>
+
+                    <h3>Constructor</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public RequirementsFileManager(
+    IBeepService beepService,
+    IPythonRunTimeManager pythonRuntime,
+    PythonPackageManager packageManager,
+    IProgress&lt;PassedArgs&gt; progress = null)</code></pre>
+                    </div>
+
+                    <h3>Key Methods</h3>
+                    <div class="api-table">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Return Type</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>ConfigureSession(session, environment)</code></td>
+                                    <td><code>bool</code></td>
+                                    <td>Configure the requirements manager to use a specific session and environment</td>
+                                </tr>
+                                <tr>
+                                    <td><code>InstallFromRequirementsFileAsync(filePath, environment)</code></td>
+                                    <td><code>Task&lt;bool&gt;</code></td>
+                                    <td>Installs packages from a requirements file with enhanced session support</td>
+                                </tr>
+                                <tr>
+                                    <td><code>GenerateRequirementsFileAsync(filePath, environment, includeVersions)</code></td>
+                                    <td><code>Task&lt;bool&gt;</code></td>
+                                    <td>Generates a requirements file from an environment's installed packages</td>
+                                </tr>
+                                <tr>
+                                    <td><code>UpdateEnvironmentWithRequirementsFileAsync(environment)</code></td>
+                                    <td><code>Task&lt;bool&gt;</code></td>
+                                    <td>Updates a virtual environment with packages from its associated requirements file</td>
+                                </tr>
+                                <tr>
+                                    <td><code>GetDefaultRequirementsDirectory()</code></td>
+                                    <td><code>string</code></td>
+                                    <td>Gets the default path for storing requirements files</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- PackageSetManager -->
+                <section class="section" id="package-set-manager">
+                    <h2>?? PackageSetManager</h2>
+                    <p>Manages predefined sets of Python packages for specific use cases and project templates.</p>
+                    
+                    <div class="info-box">
+                        <h5><i class="bi bi-info-circle"></i> Class Information</h5>
+                        <ul>
+                            <li><strong>Namespace:</strong> <code>Beep.Python.RuntimeEngine.PackageManagement</code></li>
+                            <li><strong>Assembly:</strong> <code>Beep.Python.PackageManagement.dll</code></li>
+                            <li><strong>Dependencies:</strong> <code>PythonPackageManager</code>, <code>RequirementsFileManager</code></li>
+                        </ul>
+                    </div>
+
+                    <h3>Constructor</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public PackageSetManager(
+    IBeepService beepService,
+    PythonPackageManager packageManager,
+    RequirementsFileManager requirementsManager,
+    IProgress&lt;PassedArgs&gt; progress = null)</code></pre>
+                    </div>
+
+                    <h3>Key Methods</h3>
+                    <div class="api-table">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Return Type</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>GetAllPackageSets()</code></td>
+                                    <td><code>Dictionary&lt;string, PackageSet&gt;</code></td>
+                                    <td>Gets a dictionary of all available package sets</td>
+                                </tr>
+                                <tr>
+                                    <td><code>GetAvailablePackageSets()</code></td>
+                                    <td><code>Dictionary&lt;string, List&lt;PackageDefinition&gt;&gt;</code></td>
+                                    <td>Gets information about all available package sets</td>
+                                </tr>
+                                <tr>
+                                    <td><code>InstallPackageSetAsync(setName, environment)</code></td>
+                                    <td><code>Task&lt;bool&gt;</code></td>
+                                    <td>Installs all packages from a predefined package set</td>
+                                </tr>
+                                <tr>
+                                    <td><code>SavePackageSetFromEnvironmentAsync(setName, environment, description)</code></td>
+                                    <td><code>Task&lt;bool&gt;</code></td>
+                                    <td>Creates a new package set from the currently installed packages in an environment</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Enums and Data Models -->
+                <section class="section" id="data-models">
+                    <h2>?? Data Models and Enums</h2>
+                    
+                    <h3>PackageCategory Enum</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public enum PackageCategory
+{
+    Uncategorized,
+    MachineLearning,
+    DataScience,
+    WebDevelopment,
+    Database,
+    Graphics,
+    UserInterface,
+    Testing,
+    Utilities,
+    Security,
+    DevTools,
+    VectorDB,
+    Embedding,
+    Scientific,
+    Math,
+    AudioVideo,
+    FileProcessing,
+    Networking,
+    Documentation
+}</code></pre>
+                    </div>
+
+                    <h3>PackageDefinition Class</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public class PackageDefinition
+{
+    public string PackageName { get; set; }
+    public string Version { get; set; }
+    public string Updateversion { get; set; }
+    public string Description { get; set; }
+    public string Installpath { get; set; }
+    public PackageStatus Status { get; set; }
+    public PackageCategory Category { get; set; }
+    public string Buttondisplay { get; set; }
+}</code></pre>
+                    </div>
+
+                    <h3>PythonSessionInfo Class</h3>
+                    <div class="code-example">
+                        <pre><code class="language-csharp">public class PythonSessionInfo
+{
+    public string SessionId { get; set; }
+    public string Username { get; set; }
+    public string VirtualEnvironmentId { get; set; }
+    public PythonSessionStatus Status { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime LastActivity { get; set; }
+    // Additional session management properties...
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Usage Examples -->
+                <section class="section" id="usage-examples">
+                    <h2>?? Usage Examples</h2>
+                    
+                    <div class="code-example">
+                        <h4>Complete Session-Based Package Management</h4>
+                        <pre><code class="language-csharp">// Initialize all required services
+var beepService = new BeepService();
+var pythonRuntime = new PythonNetRunTimeManager(beepService);
+var virtualEnvManager = new PythonVirtualEnvManager(beepService, pythonRuntime);
+var sessionManager = new PythonSessionManager(beepService, pythonRuntime);
+
+// Create the package manager
+using var packageManager = new PythonPackageManager(
+    beepService, 
+    pythonRuntime, 
+    virtualEnvManager, 
+    sessionManager);
+
+// Configure session for user
+if (!packageManager.ConfigureSessionForUser("data-scientist", "ml-environment"))
+{
+    throw new InvalidOperationException("Failed to configure session");
+}
+
+// Install packages with progress reporting
+var progress = new Progress&lt;PassedArgs&gt;(args => 
+    Console.WriteLine($"[{args.EventType}] {args.Messege}"));
+packageManager.Progress = progress;
+
+// Perform package operations
+await packageManager.InstallNewPackageWithSessionAsync("tensorflow");
+await packageManager.InstallNewPackageWithSessionAsync("pandas");
+await packageManager.InstallNewPackageWithSessionAsync("scikit-learn");
+
+// Auto-categorize packages
+packageManager.PopulateCommonPackageCategories();
+
+// Get categorized packages
+var mlPackages = packageManager.GetPackagesByCategory(PackageCategory.MachineLearning);
+var dataPackages = packageManager.GetPackagesByCategory(PackageCategory.DataScience);
+
+Console.WriteLine($"ML Packages: {mlPackages.Count}");
+Console.WriteLine($"Data Science Packages: {dataPackages.Count}");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="index.html" class="btn-beep">
+                        <i class="bi bi-house"></i> Home
+                    </a>
+                    <a href="#python-package-manager" class="btn-beep">
+                        <i class="bi bi-gear"></i> PythonPackageManager
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.PackageManagement API Reference</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="index.html">Documentation Home</a>
+                            <a href="#python-package-manager">PythonPackageManager</a>
+                            <a href="#data-models">Data Models</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="assets/navigation.js"></script>
+</body>
+</html>

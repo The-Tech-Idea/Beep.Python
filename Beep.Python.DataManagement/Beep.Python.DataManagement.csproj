@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- Target .NET 8 for optimal performance and modern features -->
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
@@ -21,21 +21,17 @@
     <Version>1.0.44</Version>
     <AssemblyVersion>1.0.44.0</AssemblyVersion>
     <FileVersion>1.0.44.0</FileVersion>
-    
-    <!-- .NET 8 specific optimizations -->
-    <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
+ 
   </PropertyGroup>
 
-  <!-- Build output organization -->
+
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Copy SourceFiles="$(TargetDir)$(PackageId).dll" DestinationFolder="$(ProjectDir)..\..\outputDLL\$(PackageId)\$(TargetFramework)" SkipUnchangedFiles="false" />
   </Target>
-  
+
   <Target Name="CopyPackage" AfterTargets="Pack">
     <Copy SourceFiles="$(OutputPath)$(PackageId).$(PackageVersion).nupkg" DestinationFolder="..\..\..\LocalNugetFiles" />
   </Target>
-
-  <!-- Package content -->
   <ItemGroup>
     <None Include="..\..\InstallationScripts\LogoGFx\128\SimpleODM.png">
       <Pack>True</Pack>
