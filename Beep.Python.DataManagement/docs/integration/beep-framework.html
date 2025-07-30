@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BEEP Framework Integration - Beep.Python.DataManagement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="../assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="../index.html">Home</a>
+                    <span>?</span>
+                    <a href="../index.html#integration">Integration</a>
+                    <span>?</span>
+                    <span>BEEP Framework</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-diagram-3"></i> BEEP Framework Integration</h1>
+                    <p class="page-subtitle">Seamless integration with the BEEP enterprise framework for data management, workflow orchestration, and business intelligence</p>
+                </div>
+
+                <!-- Overview -->
+                <section class="section" id="overview">
+                    <h2>?? Integration Overview</h2>
+                    
+                    <div class="note">
+                        <h4>?? What is BEEP Framework Integration?</h4>
+                        <p>
+                            The <strong>BEEP (Business Enterprise Execution Platform)</strong> framework provides a comprehensive 
+                            enterprise-grade platform for data management, workflow orchestration, and business process automation. 
+                            Beep.Python.DataManagement integrates seamlessly to provide Python-powered data analytics capabilities 
+                            within the broader BEEP ecosystem.
+                        </p>
+                    </div>
+
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-diagram-2"></i> Workflow Integration</h4>
+                            <p>Embed pandas operations as workflow steps in BEEP workflow engines</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-database"></i> Data Source Management</h4>
+                            <p>Access BEEP-managed data sources and connection configurations</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-shield-check"></i> Security & Governance</h4>
+                            <p>Inherit BEEP's security model and data governance policies</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-speedometer2"></i> Monitoring & Logging</h4>
+                            <p>Integrated monitoring, logging, and performance tracking</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Architecture -->
+                <section class="section" id="architecture">
+                    <h2>??? Integration Architecture</h2>
+                    
+                    <div class="code-example">
+                        <h4>BEEP Framework Stack</h4>
+                        <pre><code class="language-text">???????????????????????????????????????????????????????????????
+?                    BEEP Framework Layer                        ?
+???????????????????????????????????????????????????????????????
+?  Business Intelligence ?  Workflow Engine  ?  Data Governance ?
+?  - Executive Dashboards ?  - Process Steps   ?  - Access Control?
+?  - KPI Monitoring       ?  - Orchestration   ?  - Data Privacy  ?
+?  - Report Generation    ?  - Scheduling      ?  - Audit Trails  ?
+???????????????????????????????????????????????????????????????
+?                  Data Management Layer                        ?
+???????????????????????????????????????????????????????????????
+?  Connection Management ?  Session Management ?  Resource Pool   ?
+?  - Database Connections?  - User Sessions    ?  - Memory Mgmt   ?
+?  - API Integrations    ?  - Security Context ?  - CPU Resources ?
+?  - File Systems        ?  - Environment Vars ?  - Disk Storage  ?
+???????????????????????????????????????????????????????????????
+?              Beep.Python.DataManagement                      ?
+???????????????????????????????????????????????????????????????
+?  PythonPandasManager   ?  Virtual Environments ?  Analytics   ?
+?  - DataFrame Operations?  - Package Management  ?  - ML Models ?
+?  - Data Transformation ?  - Environment Isolation? - Statistics?
+?  - Statistical Analysis?  - Dependency Control  ?  - Reporting ?
+???????????????????????????????????????????????????????????????</code></pre>
+                    </div>
+                </section>
+
+                <!-- Basic Integration -->
+                <section class="section" id="basic-integration">
+                    <h2>?? Basic BEEP Integration Setup</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. BEEP Service Configuration</h4>
+                        <pre><code class="language-csharp">// Program.cs or Startup.cs - BEEP Framework Integration
+public class Startup
+{
+    public void ConfigureServices(IServiceCollection services)
+    {
+        // Configure BEEP Core Services
+        services.AddBeepFramework(configuration =>
+        {
+            configuration.ConnectionString = "Data Source=BeepDB;Initial Catalog=BEEP;Integrated Security=true";
+            configuration.EnableAuditLogging = true;
+            configuration.EnableDataGovernance = true;
+            configuration.MaxConcurrentSessions = 50;
+        });
+        
+        // Configure Python Runtime with BEEP integration
+        services.AddSingleton&lt;IPythonRunTimeManager&gt;(provider =>
+        {
+            var beepService = provider.GetRequiredService&lt;IBeepService&gt;();
+            var runtimeManager = new PythonRunTimeManager(beepService);
+            
+            // Initialize with BEEP-managed Python configuration
+            var pythonConfig = beepService.GetPythonConfiguration();
+            runtimeManager.Initialize(pythonConfig, null, null, PythonEngineMode.MultiUser);
+            
+            return runtimeManager;
+        });
+        
+        // Configure DataManagement with BEEP integration
+        services.AddTransient&lt;IPythonPandasManager&gt;(provider =>
+        {
+            var beepService = provider.GetRequiredService&lt;IBeepService&gt;();
+            var runtimeManager = provider.GetRequiredService&lt;IPythonRunTimeManager&gt;();
+            var executeManager = provider.GetRequiredService&lt;IPythonCodeExecuteManager&gt;();
+            
+            return new PythonPandasManager(beepService, runtimeManager, executeManager);
+        });
+        
+        // Configure BEEP-aware logging
+        services.AddLogging(builder =>
+        {
+            builder.AddBeepLogger();
+            builder.SetMinimumLevel(LogLevel.Information);
+        });
+        
+        // Configure BEEP security
+        services.AddBeepSecurity(options =>
+        {
+            options.EnableRoleBasedAccess = true;
+            options.RequireUserAuthentication = true;
+            options.EnableDataRowLevelSecurity = true;
+        });
+    }
+    
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        // Enable BEEP middleware
+        app.UseBeepAuthentication();
+        app.UseBeepAuthorization();
+        app.UseBeepAuditLogging();
+        
+        // Configure endpoints
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapControllers();
+            endpoints.MapBeepHealthChecks();
+        });
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. BEEP Data Source Integration</h4>
+                        <pre><code class="language-csharp">public class BeepDataSourceService
+{
+    private readonly IBeepService _beepService;
+    private readonly IPythonPandasManager _pandasManager;
+    
+    public BeepDataSourceService(IBeepService beepService, IPythonPandasManager pandasManager)
+    {
+        _beepService = beepService;
+        _pandasManager = pandasManager;
+    }
+    
+    public async Task&lt;bool&gt; LoadDataFromBeepSource(string dataSourceName, string dataFrameName, string userId)
+    {
+        try
+        {
+            // Configure session with BEEP security context
+            var userContext = await _beepService.GetUserSecurityContext(userId);
+            bool sessionConfigured = _pandasManager.ConfigureSessionForUser(userId);
+            
+            if (!sessionConfigured)
+            {
+                throw new InvalidOperationException("Failed to configure pandas session");
+            }
+            
+            // Get BEEP-managed data source
+            var dataSource = await _beepService.GetDataSource(dataSourceName);
+            if (dataSource == null)
+            {
+                throw new ArgumentException($"Data source '{dataSourceName}' not found in BEEP configuration");
+            }
+            
+            // Validate user access to data source
+            bool hasAccess = await _beepService.ValidateDataSourceAccess(userId, dataSourceName);
+            if (!hasAccess)
+            {
+                throw new UnauthorizedAccessException($"User '{userId}' does not have access to data source '{dataSourceName}'");
+            }
+            
+            // Load data based on data source type
+            switch (dataSource.Type)
+            {
+                case DataSourceType.SqlServer:
+                    await LoadFromSqlServer(dataSource, dataFrameName, userContext);
+                    break;
+                    
+                case DataSourceType.Oracle:
+                    await LoadFromOracle(dataSource, dataFrameName, userContext);
+                    break;
+                    
+                case DataSourceType.PostgreSQL:
+                    await LoadFromPostgreSQL(dataSource, dataFrameName, userContext);
+                    break;
+                    
+                case DataSourceType.FileSystem:
+                    await LoadFromFileSystem(dataSource, dataFrameName, userContext);
+                    break;
+                    
+                case DataSourceType.WebService:
+                    await LoadFromWebService(dataSource, dataFrameName, userContext);
+                    break;
+                    
+                default:
+                    throw new NotSupportedException($"Data source type '{dataSource.Type}' is not supported");
+            }
+            
+            // Log the data access for audit purposes
+            await _beepService.LogDataAccess(userId, dataSourceName, dataFrameName, "LOAD");
+            
+            return true;
+        }
+        catch (Exception ex)
+        {
+            await _beepService.LogError($"Failed to load data from BEEP source '{dataSourceName}'", ex, userId);
+            throw;
+        }
+    }
+    
+    private async Task LoadFromSqlServer(BeepDataSource dataSource, string dataFrameName, UserSecurityContext userContext)
+    {
+        // Apply row-level security filters
+        string baseQuery = dataSource.Query;
+        string secureQuery = await ApplyRowLevelSecurity(baseQuery, userContext);
+        
+        // Use BEEP-managed connection string
+        string connectionString = await _beepService.GetConnectionString(dataSource.ConnectionId, userContext);
+        
+        // Load data with security context
+        _pandasManager.ReadSql(dataFrameName, secureQuery, connectionString);
+    }
+    
+    private async Task&lt;string&gt; ApplyRowLevelSecurity(string baseQuery, UserSecurityContext userContext)
+    {
+        // Apply user-specific filters based on BEEP security policies
+        var securityFilters = await _beepService.GetRowLevelSecurityFilters(userContext);
+        
+        if (!securityFilters.Any())
+            return baseQuery;
+        
+        string whereClause = string.Join(" AND ", securityFilters.Select(f => f.FilterExpression));
+        
+        // Add WHERE clause or append to existing WHERE clause
+        if (baseQuery.ToUpper().Contains("WHERE"))
+        {
+            return $"{baseQuery} AND ({whereClause})";
+        }
+        else
+        {
+            return $"{baseQuery} WHERE {whereClause}";
+        }
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Workflow Integration -->
+                <section class="section" id="workflow-integration">
+                    <h2>?? BEEP Workflow Integration</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Custom Workflow Step Implementation</h4>
+                        <pre><code class="language-csharp">// Custom workflow step for pandas operations
+[BeepWorkflowStep("PandasDataAnalysis")]
+public class PandasAnalysisWorkflowStep : BaseBeepWorkflowStep
+{
+    private readonly IPythonPandasManager _pandasManager;
+    
+    public PandasAnalysisWorkflowStep(IPythonPandasManager pandasManager)
+    {
+        _pandasManager = pandasManager;
+    }
+    
+    public override async Task&lt;WorkflowStepResult&gt; ExecuteAsync(WorkflowStepContext context)
+    {
+        try
+        {
+            // Extract step parameters
+            var stepParams = context.GetParameters&lt;PandasAnalysisParameters&gt;();
+            var userId = context.UserId;
+            var workflowId = context.WorkflowId;
+            
+            // Configure pandas session for workflow user
+            bool sessionConfigured = _pandasManager.ConfigureSessionForUser(userId, $"workflow-{workflowId}");
+            if (!sessionConfigured)
+            {
+                return WorkflowStepResult.Failed("Failed to configure pandas session");
+            }
+            
+            // Load input data
+            await LoadWorkflowInputData(stepParams, context);
+            
+            // Execute pandas operations
+            var results = await ExecutePandasAnalysis(stepParams, context);
+            
+            // Save output data
+            await SaveWorkflowOutputData(results, stepParams, context);
+            
+            // Return success with results
+            return WorkflowStepResult.Success(results);
+        }
+        catch (Exception ex)
+        {
+            await LogWorkflowError(ex, context);
+            return WorkflowStepResult.Failed(ex.Message);
+        }
+        finally
+        {
+            // Cleanup resources
+            _pandasManager.CleanupIdleDataFrames();
+        }
+    }
+    
+    private async Task LoadWorkflowInputData(PandasAnalysisParameters stepParams, WorkflowStepContext context)
+    {
+        foreach (var inputSource in stepParams.InputSources)
+        {
+            switch (inputSource.Type)
+            {
+                case WorkflowDataSourceType.PreviousStep:
+                    await LoadFromPreviousStep(inputSource, context);
+                    break;
+                    
+                case WorkflowDataSourceType.BeepDataSource:
+                    await LoadFromBeepDataSource(inputSource, context);
+                    break;
+                    
+                case WorkflowDataSourceType.FileUpload:
+                    await LoadFromWorkflowFile(inputSource, context);
+                    break;
+            }
+        }
+    }
+    
+    private async Task&lt;Dictionary&lt;string, object&gt;&gt; ExecutePandasAnalysis(PandasAnalysisParameters stepParams, WorkflowStepContext context)
+    {
+        var results = new Dictionary&lt;string, object&gt;();
+        
+        foreach (var operation in stepParams.Operations)
+        {
+            switch (operation.Type)
+            {
+                case PandasOperationType.DataCleaning:
+                    await ExecuteDataCleaning(operation, results);
+                    break;
+                    
+                case PandasOperationType.Aggregation:
+                    await ExecuteAggregation(operation, results);
+                    break;
+                    
+                case PandasOperationType.Transformation:
+                    await ExecuteTransformation(operation, results);
+                    break;
+                    
+                case PandasOperationType.Analysis:
+                    await ExecuteAnalysis(operation, results);
+                    break;
+                    
+                case PandasOperationType.CustomCode:
+                    await ExecuteCustomCode(operation, results, context);
+                    break;
+            }
+        }
+        
+        return results;
+    }
+    
+    private async Task ExecuteDataCleaning(PandasOperation operation, Dictionary&lt;string, object&gt; results)
+    {
+        string inputDataFrame = operation.InputDataFrame;
+        string outputDataFrame = operation.OutputDataFrame;
+        
+        // Apply cleaning operations
+        if (operation.Parameters.ContainsKey("dropNA") && (bool)operation.Parameters["dropNA"])
+        {
+            _pandasManager.DropNA(inputDataFrame, $"{outputDataFrame}_no_na");
+            inputDataFrame = $"{outputDataFrame}_no_na";
+        }
+        
+        if (operation.Parameters.ContainsKey("removeDuplicates") && (bool)operation.Parameters["removeDuplicates"])
+        {
+            _pandasManager.DropDuplicates(inputDataFrame, $"{outputDataFrame}_no_dup");
+            inputDataFrame = $"{outputDataFrame}_no_dup";
+        }
+        
+        if (operation.Parameters.ContainsKey("optimizeMemory") && (bool)operation.Parameters["optimizeMemory"])
+        {
+            _pandasManager.OptimizeMemory(inputDataFrame);
+        }
+        
+        // Store cleaning summary
+        string summary = _pandasManager.Describe(inputDataFrame);
+        results[$"{outputDataFrame}_summary"] = summary;
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Workflow Configuration</h4>
+                        <pre><code class="language-csharp">// BEEP Workflow Definition for Data Analytics Pipeline
+public class DataAnalyticsWorkflowDefinition : IBeepWorkflowDefinition
+{
+    public string WorkflowId => "DataAnalyticsPipeline";
+    public string Name => "Comprehensive Data Analytics Pipeline";
+    public string Description => "End-to-end data analytics using pandas operations";
+    
+    public IEnumerable&lt;WorkflowStepDefinition&gt; GetSteps()
+    {
+        return new[]
+        {
+            // Step 1: Data Ingestion
+            new WorkflowStepDefinition
+            {
+                StepId = "data-ingestion",
+                StepType = "PandasDataIngestion",
+                Name = "Load Raw Data",
+                Parameters = new Dictionary&lt;string, object&gt;
+                {
+                    ["dataSources"] = new[]
+                    {
+                        new { name = "sales_data", source = "SalesDatabase", query = "SELECT * FROM Sales WHERE SaleDate >= @StartDate" },
+                        new { name = "customer_data", source = "CRMDatabase", query = "SELECT * FROM Customers WHERE IsActive = 1" }
+                    }
+                },
+                OnSuccess = new[] { "data-validation" },
+                OnFailure = new[] { "error-notification" }
+            },
+            
+            // Step 2: Data Validation
+            new WorkflowStepDefinition
+            {
+                StepId = "data-validation",
+                StepType = "PandasDataValidation",
+                Name = "Validate Data Quality",
+                Parameters = new Dictionary&lt;string, object&gt;
+                {
+                    ["validationRules"] = new[]
+                    {
+                        new { dataFrame = "sales_data", rule = "check_null_percentage", threshold = 0.05 },
+                        new { dataFrame = "customer_data", rule = "check_duplicate_keys", column = "CustomerID" }
+                    }
+                },
+                OnSuccess = new[] { "data-cleaning" },
+                OnFailure = new[] { "data-quality-alert" }
+            },
+            
+            // Step 3: Data Cleaning
+            new WorkflowStepDefinition
+            {
+                StepId = "data-cleaning",
+                StepType = "PandasDataAnalysis",
+                Name = "Clean and Prepare Data",
+                Parameters = new Dictionary&lt;string, object&gt;
+                {
+                    ["operations"] = new[]
+                    {
+                        new
+                        {
+                            type = "DataCleaning",
+                            inputDataFrame = "sales_data",
+                            outputDataFrame = "clean_sales",
+                            parameters = new { dropNA = true, removeDuplicates = true, optimizeMemory = true }
+                        },
+                        new
+                        {
+                            type = "DataCleaning", 
+                            inputDataFrame = "customer_data",
+                            outputDataFrame = "clean_customers",
+                            parameters = new { dropNA = false, removeDuplicates = true, optimizeMemory = true }
+                        }
+                    }
+                },
+                OnSuccess = new[] { "data-transformation" },
+                OnFailure = new[] { "cleaning-error-handler" }
+            },
+            
+            // Step 4: Data Transformation
+            new WorkflowStepDefinition
+            {
+                StepId = "data-transformation",
+                StepType = "PandasDataAnalysis",
+                Name = "Transform Data for Analysis",
+                Parameters = new Dictionary&lt;string, object&gt;
+                {
+                    ["operations"] = new[]
+                    {
+                        new
+                        {
+                            type = "Transformation",
+                            inputDataFrame = "clean_sales",
+                            outputDataFrame = "transformed_sales",
+                            parameters = new
+                            {
+                                addColumns = new[]
+                                {
+                                    new { name = "SaleMonth", expression = "pd.to_datetime(SaleDate).dt.to_period('M')" },
+                                    new { name = "Profit", expression = "Amount - Cost" },
+                                    new { name = "ProfitMargin", expression = "(Profit / Amount) * 100" }
+                                }
+                            }
+                        }
+                    }
+                },
+                OnSuccess = new[] { "business-analysis" },
+                OnFailure = new[] { "transformation-error-handler" }
+            },
+            
+            // Step 5: Business Analysis
+            new WorkflowStepDefinition
+            {
+                StepId = "business-analysis",
+                StepType = "PandasDataAnalysis",
+                Name = "Generate Business Insights",
+                Parameters = new Dictionary&lt;string, object&gt;
+                {
+                    ["operations"] = new[]
+                    {
+                        new
+                        {
+                            type = "Aggregation",
+                            inputDataFrame = "transformed_sales",
+                            outputDataFrame = "monthly_summary",
+                            parameters = new { groupBy = "SaleMonth", aggregateFunction = "sum" }
+                        },
+                        new
+                        {
+                            type = "Analysis",
+                            inputDataFrame = "transformed_sales",
+                            outputDataFrame = "customer_analysis",
+                            parameters = new { analysisType = "customer_segmentation" }
+                        }
+                    }
+                },
+                OnSuccess = new[] { "report-generation" },
+                OnFailure = new[] { "analysis-error-handler" }
+            },
+            
+            // Step 6: Report Generation
+            new WorkflowStepDefinition
+            {
+                StepId = "report-generation",
+                StepType = "PandasReportGeneration",
+                Name = "Generate Business Reports",
+                Parameters = new Dictionary&lt;string, object&gt;
+                {
+                    ["reports"] = new[]
+                    {
+                        new
+                        {
+                            name = "Monthly Sales Report",
+                            dataFrame = "monthly_summary",
+                            format = "excel",
+                            template = "monthly_sales_template.xlsx"
+                        },
+                        new
+                        {
+                            name = "Customer Analysis Dashboard",
+                            dataFrame = "customer_analysis", 
+                            format = "html",
+                            template = "customer_dashboard_template.html"
+                        }
+                    }
+                },
+                OnSuccess = new[] { "workflow-completion" },
+                OnFailure = new[] { "report-error-handler" }
+            }
+        };
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Data Governance -->
+                <section class="section" id="data-governance">
+                    <h2>??? Data Governance Integration</h2>
+                    
+                    <div class="code-example">
+                        <h4>BEEP Data Governance Integration</h4>
+                        <pre><code class="language-csharp">public class BeepDataGovernanceService
+{
+    private readonly IBeepService _beepService;
+    private readonly IPythonPandasManager _pandasManager;
+    
+    public async Task&lt;bool&gt; ApplyDataGovernancePolicies(string dataFrameName, string userId, DataOperation operation)
+    {
+        try
+        {
+            // Get user's data governance context
+            var governanceContext = await _beepService.GetDataGovernanceContext(userId);
+            
+            // Get data classification for the DataFrame
+            var dataClassification = await _beepService.GetDataClassification(dataFrameName);
+            
+            // Apply classification-based policies
+            await ApplyClassificationPolicies(dataFrameName, dataClassification, governanceContext);
+            
+            // Apply field-level security
+            await ApplyFieldLevelSecurity(dataFrameName, governanceContext);
+            
+            // Log data access for compliance
+            await LogDataGovernanceEvent(userId, dataFrameName, operation, governanceContext);
+            
+            // Apply data masking if required
+            await ApplyDataMasking(dataFrameName, governanceContext);
+            
+            return true;
+        }
+        catch (Exception ex)
+        {
+            await _beepService.LogGovernanceViolation(userId, dataFrameName, operation.ToString(), ex.Message);
+            throw;
+        }
+    }
+    
+    private async Task ApplyClassificationPolicies(string dataFrameName, DataClassification classification, DataGovernanceContext context)
+    {
+        switch (classification.Level)
+        {
+            case ClassificationLevel.Public:
+                // No restrictions
+                break;
+                
+            case ClassificationLevel.Internal:
+                // Apply internal access controls
+                if (!context.HasInternalAccess)
+                {
+                    throw new UnauthorizedAccessException("User does not have internal data access");
+                }
+                break;
+                
+            case ClassificationLevel.Confidential:
+                // Apply confidential data restrictions
+                if (!context.HasConfidentialAccess)
+                {
+                    throw new UnauthorizedAccessException("User does not have confidential data access");
+                }
+                await ApplyConfidentialDataControls(dataFrameName);
+                break;
+                
+            case ClassificationLevel.Restricted:
+                // Apply restricted data controls
+                if (!context.HasRestrictedAccess)
+                {
+                    throw new UnauthorizedAccessException("User does not have restricted data access");
+                }
+                await ApplyRestrictedDataControls(dataFrameName);
+                break;
+        }
+    }
+    
+    private async Task ApplyFieldLevelSecurity(string dataFrameName, DataGovernanceContext context)
+    {
+        // Get field-level security policies
+        var fieldPolicies = await _beepService.GetFieldLevelPolicies(dataFrameName);
+        
+        foreach (var policy in fieldPolicies)
+        {
+            if (!context.HasFieldAccess(policy.FieldName))
+            {
+                // Remove or mask the field
+                if (policy.Action == FieldSecurityAction.Remove)
+                {
+                    _pandasManager.DropColumn(dataFrameName, policy.FieldName);
+                }
+                else if (policy.Action == FieldSecurityAction.Mask)
+                {
+                    await MaskField(dataFrameName, policy.FieldName, policy.MaskingType);
+                }
+            }
+        }
+    }
+    
+    private async Task MaskField(string dataFrameName, string fieldName, MaskingType maskingType)
+    {
+        string maskingCode = maskingType switch
+        {
+            MaskingType.FullMask => $"{dataFrameName}['{fieldName}'] = '***MASKED***'",
+            MaskingType.PartialMask => $"{dataFrameName}['{fieldName}'] = {dataFrameName}['{fieldName}'].astype(str).str.slice(0, 3) + '***'",
+            MaskingType.EmailMask => $"{dataFrameName}['{fieldName}'] = {dataFrameName}['{fieldName}'].str.replace(r'([^@]+)@', 'xxx@', regex=True)",
+            MaskingType.PhoneMask => $"{dataFrameName}['{fieldName}'] = {dataFrameName}['{fieldName}'].str.replace(r'\\d{{4}}$', 'XXXX', regex=True)",
+            _ => $"{dataFrameName}['{fieldName}'] = 'MASKED'"
+        };
+        
+        await _pandasManager.ExecutePythonCodeAsync(maskingCode);
+    }
+    
+    private async Task LogDataGovernanceEvent(string userId, string dataFrameName, DataOperation operation, DataGovernanceContext context)
+    {
+        var auditEvent = new DataGovernanceAuditEvent
+        {
+            UserId = userId,
+            DataFrameName = dataFrameName,
+            Operation = operation.ToString(),
+            Timestamp = DateTime.UtcNow,
+            ClassificationLevel = context.AccessedClassificationLevel,
+            ComplianceFlags = context.ApplicableComplianceFlags,
+            AccessJustification = context.AccessJustification
+        };
+        
+        await _beepService.LogDataGovernanceEvent(auditEvent);
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Monitoring and Performance -->
+                <section class="section" id="monitoring">
+                    <h2>?? Monitoring and Performance Integration</h2>
+                    
+                    <div class="code-example">
+                        <h4>BEEP Performance Monitoring</h4>
+                        <pre><code class="language-csharp">public class BeepPerformanceMonitor
+{
+    private readonly IBeepService _beepService;
+    private readonly IPythonPandasManager _pandasManager;
+    
+    public async Task&lt;PerformanceReport&gt; MonitorDataFrameOperations(string sessionId, TimeSpan monitoringPeriod)
+    {
+        var report = new PerformanceReport
+        {
+            SessionId = sessionId,
+            StartTime = DateTime.UtcNow.Subtract(monitoringPeriod),
+            EndTime = DateTime.UtcNow,
+            Metrics = new List&lt;PerformanceMetric&gt;()
+        };
+        
+        // Memory usage metrics
+        string memoryReport = _pandasManager.GetMemoryUsageReport();
+        report.Metrics.Add(new PerformanceMetric
+        {
+            Name = "Memory Usage",
+            Value = ParseMemoryUsage(memoryReport),
+            Unit = "MB",
+            Timestamp = DateTime.UtcNow
+        });
+        
+        // Session statistics from BEEP
+        var sessionStats = await _beepService.GetSessionStatistics(sessionId);
+        foreach (var stat in sessionStats)
+        {
+            report.Metrics.Add(new PerformanceMetric
+            {
+                Name = stat.MetricName,
+                Value = stat.Value,
+                Unit = stat.Unit,
+                Timestamp = stat.Timestamp
+            });
+        }
+        
+        // Python environment health
+        var environmentHealth = await CheckEnvironmentHealth();
+        report.EnvironmentHealth = environmentHealth;
+        
+        // Performance recommendations
+        report.Recommendations = GeneratePerformanceRecommendations(report);
+        
+        // Store metrics in BEEP monitoring system
+        await _beepService.StorePerformanceMetrics(report);
+        
+        return report;
+    }
+    
+    private async Task&lt;EnvironmentHealthStatus&gt; CheckEnvironmentHealth()
+    {
+        var session = _pandasManager.GetConfiguredSession();
+        var environment = _pandasManager.GetConfiguredVirtualEnvironment();
+        
+        if (session == null || environment == null)
+        {
+            return EnvironmentHealthStatus.Critical;
+        }
+        
+        // Check memory pressure
+        string memoryReport = _pandasManager.GetMemoryUsageReport();
+        double memoryUsage = ParseMemoryUsage(memoryReport);
+        
+        if (memoryUsage > 4000) // 4GB threshold
+        {
+            return EnvironmentHealthStatus.Warning;
+        }
+        
+        // Check active DataFrames count
+        var activeDataFrames = await GetActiveDataFrameCount();
+        if (activeDataFrames > 50)
+        {
+            return EnvironmentHealthStatus.Warning;
+        }
+        
+        return EnvironmentHealthStatus.Healthy;
+    }
+    
+    private List&lt;string&gt; GeneratePerformanceRecommendations(PerformanceReport report)
+    {
+        var recommendations = new List&lt;string&gt;();
+        
+        var memoryMetric = report.Metrics.FirstOrDefault(m => m.Name == "Memory Usage");
+        if (memoryMetric != null && memoryMetric.Value > 2000) // 2GB
+        {
+            recommendations.Add("Consider optimizing DataFrame memory usage with OptimizeMemory()");
+            recommendations.Add("Clean up idle DataFrames with CleanupIdleDataFrames()");
+        }
+        
+        if (report.EnvironmentHealth == EnvironmentHealthStatus.Warning)
+        {
+            recommendations.Add("Environment is under stress - consider scaling or optimization");
+        }
+        
+        var operationMetrics = report.Metrics.Where(m => m.Name.Contains("Operation")).ToList();
+        if (operationMetrics.Any(m => m.Value > 30000)) // 30 seconds
+        {
+            recommendations.Add("Some operations are taking longer than expected - review query efficiency");
+        }
+        
+        return recommendations;
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Best Practices -->
+                <section class="section" id="best-practices">
+                    <h2>? BEEP Integration Best Practices</h2>
+                    
+                    <div class="tip">
+                        <h4>?? Configuration Best Practices</h4>
+                        <ul>
+                            <li><strong>Centralized Configuration:</strong> Use BEEP's configuration management for all Python settings</li>
+                            <li><strong>Environment Consistency:</strong> Ensure development, testing, and production use the same BEEP configurations</li>
+                            <li><strong>Security Integration:</strong> Always inherit BEEP's security context for user sessions</li>
+                            <li><strong>Resource Limits:</strong> Configure appropriate resource limits through BEEP's resource manager</li>
+                        </ul>
+                    </div>
+
+                    <div class="tip">
+                        <h4>?? Security Best Practices</h4>
+                        <ul>
+                            <li><strong>Authentication:</strong> Use BEEP's authentication system for all user sessions</li>
+                            <li><strong>Authorization:</strong> Implement BEEP's role-based access control</li>
+                            <li><strong>Data Classification:</strong> Respect BEEP's data classification and governance policies</li>
+                            <li><strong>Audit Logging:</strong> Ensure all pandas operations are logged through BEEP's audit system</li>
+                        </ul>
+                    </div>
+
+                    <div class="warning">
+                        <h4>?? Common Integration Issues</h4>
+                        <ul>
+                            <li><strong>Session Conflicts:</strong> Don't create pandas sessions outside of BEEP's session manager</li>
+                            <li><strong>Configuration Drift:</strong> Avoid hardcoded configurations that bypass BEEP settings</li>
+                            <li><strong>Resource Leaks:</strong> Always use BEEP's resource cleanup mechanisms</li>
+                            <li><strong>Security Bypass:</strong> Never skip BEEP's security validation for performance</li>
+                        </ul>
+                    </div>
+
+                    <div class="note">
+                        <h4>?? Monitoring and Maintenance</h4>
+                        <ul>
+                            <li><strong>Health Checks:</strong> Implement BEEP health check endpoints for pandas services</li>
+                            <li><strong>Performance Metrics:</strong> Use BEEP's metrics collection for pandas operations</li>
+                            <li><strong>Error Handling:</strong> Integrate with BEEP's error handling and notification systems</li>
+                            <li><strong>Scaling:</strong> Use BEEP's auto-scaling capabilities for high-load scenarios</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="../configuration/security.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> Security Configuration
+                    </a>
+                    <a href="dependency-injection.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> Dependency Injection
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.DataManagement Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="../index.html">Home</a>
+                            <a href="../getting-started.html">Getting Started</a>
+                            <a href="../api/PythonPandasManager.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../assets/navigation.js"></script>
+</body>
+</html>

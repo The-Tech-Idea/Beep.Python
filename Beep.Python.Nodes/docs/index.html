@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beep.Python.Nodes - Visual Node System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="header-content">
+                        <h1><i class="bi bi-diagram-3 text-info"></i> Beep.Python.Nodes</h1>
+                        <p class="lead">Visual node-based system for Python integration with drag-and-drop workflow creation, visual programming, and enterprise node management</p>
+                        
+                        <div class="quick-start-buttons">
+                            <a href="#installation" class="btn btn-primary btn-lg">
+                                <i class="bi bi-download"></i> Installation
+                            </a>
+                            <a href="#node-types" class="btn btn-outline-primary btn-lg">
+                                <i class="bi bi-collection"></i> Node Types
+                            </a>
+                            <a href="#examples" class="btn btn-outline-primary btn-lg">
+                                <i class="bi bi-play-circle"></i> Examples
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Overview -->
+                <section class="section" id="overview">
+                    <h2>?? Overview</h2>
+                    <p>Beep.Python.Nodes provides a comprehensive visual node-based system for Python integration, enabling users to create complex Python workflows through an intuitive drag-and-drop interface. The system supports visual programming, data flow management, and enterprise-grade node orchestration.</p>
+                    
+                    <div class="info-box">
+                        <h5><i class="bi bi-info-circle"></i> Key Features</h5>
+                        <ul>
+                            <li><strong>Visual Programming:</strong> Drag-and-drop interface for creating Python workflows</li>
+                            <li><strong>Node Libraries:</strong> Comprehensive collection of pre-built Python integration nodes</li>
+                            <li><strong>Custom Nodes:</strong> Create and deploy custom nodes for specific use cases</li>
+                            <li><strong>Data Flow Management:</strong> Visual data flow with type checking and validation</li>
+                            <li><strong>Runtime Integration:</strong> Seamless integration with Python runtime environments</li>
+                            <li><strong>Enterprise Features:</strong> Node versioning, deployment, and management capabilities</li>
+                            <li><strong>AI Integration:</strong> Specialized nodes for AI and machine learning workflows</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Node Architecture -->
+                <section class="section" id="architecture">
+                    <h2>??? Node Architecture</h2>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-cpu"></i> PythonRuntimeNode</h4>
+                            <p>Core node for Python runtime management, environment initialization, and execution context</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-layers"></i> PythonVirtualEnvNode</h4>
+                            <p>Virtual environment management node for isolated Python environments and package management</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-robot"></i> AICPythonNode</h4>
+                            <p>Specialized AI node for machine learning workflows, model training, and inference operations</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-puzzle"></i> Custom Nodes</h4>
+                            <p>Extensible architecture for creating domain-specific nodes and custom workflow components</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Installation -->
+                <section class="section" id="installation">
+                    <h2>?? Installation</h2>
+                    
+                    <div class="code-example">
+                        <h4>Package Manager Console</h4>
+                        <pre><code class="language-powershell">Install-Package Beep.Python.Nodes</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>.NET CLI</h4>
+                        <pre><code class="language-bash">dotnet add package Beep.Python.Nodes</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Package Reference</h4>
+                        <pre><code class="language-xml">&lt;PackageReference Include="Beep.Python.Nodes" Version="1.0.0" /&gt;</code></pre>
+                    </div>
+                </section>
+
+                <!-- Node Types -->
+                <section class="section" id="node-types">
+                    <h2>?? Node Types</h2>
+                    
+                    <!-- PythonRuntimeNode -->
+                    <div class="method" id="python-runtime-node">
+                        <h3><i class="bi bi-gear-wide-connected"></i> PythonRuntimeNode</h3>
+                        <p>Core node responsible for Python runtime management, environment initialization, and execution orchestration.</p>
+                        
+                        <div class="code-example">
+                            <h4>Runtime Node Configuration</h4>
+                            <pre><code class="language-csharp">public class PythonRuntimeNode : IWorkFlowStepNode
+{
+    // Node Properties
+    public string NodeName { get; set; } = "Python Runtime";
+    public string NodeType { get; set; } = "Runtime";
+    public string NodeCategory { get; set; } = "Python";
+    
+    // Runtime Configuration
+    public string PythonPath { get; set; }
+    public string VirtualEnvironmentPath { get; set; }
+    public Dictionary&lt;string, object&gt; EnvironmentVariables { get; set; }
+    
+    // Execution Properties
+    public bool IsInitialized { get; private set; }
+    public RuntimeStatus Status { get; private set; }
+    public TimeSpan ExecutionTimeout { get; set; } = TimeSpan.FromMinutes(30);
+    
+    // Input/Output Ports
+    public List&lt;NodePort&gt; InputPorts { get; set; }
+    public List&lt;NodePort&gt; OutputPorts { get; set; }
+    
+    // Node Methods
+    public async Task&lt;NodeExecutionResult&gt; ExecuteAsync(NodeExecutionContext context)
+    {
+        try
+        {
+            // Initialize Python runtime if needed
+            if (!IsInitialized)
+            {
+                await InitializeRuntimeAsync();
+            }
+            
+            // Execute Python code or workflow
+            var result = await ExecutePythonWorkflowAsync(context);
+            
+            return new NodeExecutionResult
+            {
+                Success = true,
+                OutputData = result,
+                ExecutionTime = DateTime.UtcNow,
+                Message = "Python runtime executed successfully"
+            };
+        }
+        catch (Exception ex)
+        {
+            return new NodeExecutionResult
+            {
+                Success = false,
+                Error = ex,
+                Message = $"Runtime execution failed: {ex.Message}"
+            };
+        }
+    }
+    
+    private async Task InitializeRuntimeAsync()
+    {
+        // Initialize Python.NET
+        var runtimeManager = ServiceLocator.GetService&lt;IPythonRuntimeManager&gt;();
+        
+        // Configure environment
+        if (!string.IsNullOrEmpty(VirtualEnvironmentPath))
+        {
+            await runtimeManager.SetVirtualEnvironmentAsync(VirtualEnvironmentPath);
+        }
+        
+        // Set environment variables
+        foreach (var envVar in EnvironmentVariables)
+        {
+            Environment.SetEnvironmentVariable(envVar.Key, envVar.Value.ToString());
+        }
+        
+        // Initialize runtime
+        IsInitialized = await runtimeManager.InitializeAsync();
+        Status = IsInitialized ? RuntimeStatus.Ready : RuntimeStatus.Error;
+    }
+}</code></pre>
+                        </div>
+
+                        <div class="code-example">
+                            <h4>Node Usage in Workflow</h4>
+                            <pre><code class="language-csharp">// Create and configure runtime node
+var runtimeNode = new PythonRuntimeNode
+{
+    NodeName = "Main Python Runtime",
+    PythonPath = @"C:\Python39\python.exe",
+    VirtualEnvironmentPath = @"C:\Projects\MyProject\venv",
+    EnvironmentVariables = new Dictionary&lt;string, object&gt;
+    {
+        ["PYTHONPATH"] = @"C:\Projects\MyProject\src",
+        ["OMP_NUM_THREADS"] = 4
+    },
+    ExecutionTimeout = TimeSpan.FromMinutes(60)
+};
+
+// Add input ports
+runtimeNode.InputPorts.Add(new NodePort
+{
+    Name = "PythonCode",
+    DataType = typeof(string),
+    IsRequired = true,
+    Description = "Python code to execute"
+});
+
+runtimeNode.InputPorts.Add(new NodePort
+{
+    Name = "InputData",
+    DataType = typeof(Dictionary&lt;string, object&gt;),
+    IsRequired = false,
+    Description = "Input data for Python script"
+});
+
+// Add output ports
+runtimeNode.OutputPorts.Add(new NodePort
+{
+    Name = "Result",
+    DataType = typeof(object),
+    Description = "Execution result"
+});
+
+runtimeNode.OutputPorts.Add(new NodePort
+{
+    Name = "Output",
+    DataType = typeof(string),
+    Description = "Python output/print statements"
+});
+
+// Execute node
+var context = new NodeExecutionContext
+{
+    InputData = new Dictionary&lt;string, object&gt;
+    {
+        ["PythonCode"] = @"
+import pandas as pd
+import numpy as np
+
+# Load and process data
+df = pd.read_csv('data.csv')
+result = df.groupby('category').mean()
+print(f'Processed {len(df)} rows')
+result.to_csv('output.csv')
+",
+        ["InputData"] = new { FilePath = "data.csv" }
+    }
+};
+
+var result = await runtimeNode.ExecuteAsync(context);</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- PythonVirtualEnvNode -->
+                    <div class="method" id="python-virtualenv-node">
+                        <h3><i class="bi bi-box"></i> PythonVirtualEnvNode</h3>
+                        <p>Specialized node for virtual environment management, package installation, and environment isolation.</p>
+                        
+                        <div class="code-example">
+                            <h4>Virtual Environment Node</h4>
+                            <pre><code class="language-csharp">public class PythonVirtualEnvNode : IWorkFlowStepNode
+{
+    // Node Configuration
+    public string NodeName { get; set; } = "Virtual Environment";
+    public string EnvironmentName { get; set; }
+    public string BasePythonPath { get; set; }
+    public string EnvironmentPath { get; set; }
+    
+    // Package Management
+    public List&lt;string&gt; RequiredPackages { get; set; } = new();
+    public string RequirementsFile { get; set; }
+    public bool AutoInstallPackages { get; set; } = true;
+    public bool UpgradePackages { get; set; } = false;
+    
+    // Environment Operations
+    public EnvironmentOperation Operation { get; set; }
+    
+    public async Task&lt;NodeExecutionResult&gt; ExecuteAsync(NodeExecutionContext context)
+    {
+        var envManager = ServiceLocator.GetService&lt;IPythonVirtualEnvManager&gt;();
+        
+        try
+        {
+            switch (Operation)
+            {
+                case EnvironmentOperation.Create:
+                    return await CreateEnvironmentAsync(envManager);
+                    
+                case EnvironmentOperation.Activate:
+                    return await ActivateEnvironmentAsync(envManager);
+                    
+                case EnvironmentOperation.InstallPackages:
+                    return await InstallPackagesAsync(envManager);
+                    
+                case EnvironmentOperation.UpdatePackages:
+                    return await UpdatePackagesAsync(envManager);
+                    
+                case EnvironmentOperation.Delete:
+                    return await DeleteEnvironmentAsync(envManager);
+                    
+                default:
+                    throw new InvalidOperationException($"Unknown operation: {Operation}");
+            }
+        }
+        catch (Exception ex)
+        {
+            return new NodeExecutionResult
+            {
+                Success = false,
+                Error = ex,
+                Message = $"Virtual environment operation failed: {ex.Message}"
+            };
+        }
+    }
+    
+    private async Task&lt;NodeExecutionResult&gt; CreateEnvironmentAsync(IPythonVirtualEnvManager envManager)
+    {
+        var success = await envManager.CreateVirtualEnvironmentAsync(
+            EnvironmentName, 
+            BasePythonPath, 
+            EnvironmentPath);
+            
+        if (success && AutoInstallPackages)
+        {
+            await InstallRequiredPackagesAsync(envManager);
+        }
+        
+        return new NodeExecutionResult
+        {
+            Success = success,
+            OutputData = new { EnvironmentPath = EnvironmentPath },
+            Message = success ? "Virtual environment created successfully" : "Failed to create virtual environment"
+        };
+    }
+    
+    private async Task InstallRequiredPackagesAsync(IPythonVirtualEnvManager envManager)
+    {
+        // Install from requirements file
+        if (!string.IsNullOrEmpty(RequirementsFile) && File.Exists(RequirementsFile))
+        {
+            await envManager.InstallFromRequirementsAsync(RequirementsFile);
+        }
+        
+        // Install individual packages
+        foreach (var package in RequiredPackages)
+        {
+            await envManager.InstallPackageAsync(package, upgradeIfExists: UpgradePackages);
+        }
+    }
+}
+
+public enum EnvironmentOperation
+{
+    Create,
+    Activate,
+    InstallPackages,
+    UpdatePackages,
+    Delete
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- AICPythonNode -->
+                    <div class="method" id="aic-python-node">
+                        <h3><i class="bi bi-robot"></i> AICPythonNode</h3>
+                        <p>Advanced AI-focused node for machine learning workflows, model operations, and intelligent data processing.</p>
+                        
+                        <div class="code-example">
+                            <h4>AI Python Node</h4>
+                            <pre><code class="language-csharp">public class AICPythonNode : IWorkFlowStepNode
+{
+    // AI Configuration
+    public string NodeName { get; set; } = "AI Python Node";
+    public AIOperation Operation { get; set; }
+    public string ModelType { get; set; }
+    public string ModelPath { get; set; }
+    
+    // ML Framework Configuration
+    public MLFramework Framework { get; set; } = MLFramework.ScikitLearn;
+    public Dictionary&lt;string, object&gt; ModelParameters { get; set; } = new();
+    
+    // Data Configuration
+    public string InputDataPath { get; set; }
+    public string OutputDataPath { get; set; }
+    public string TargetColumn { get; set; }
+    public List&lt;string&gt; FeatureColumns { get; set; } = new();
+    
+    // Training Configuration
+    public double TestSize { get; set; } = 0.2;
+    public int RandomState { get; set; } = 42;
+    public bool CrossValidate { get; set; } = true;
+    public int CVFolds { get; set; } = 5;
+    
+    public async Task&lt;NodeExecutionResult&gt; ExecuteAsync(NodeExecutionContext context)
+    {
+        var mlManager = ServiceLocator.GetService&lt;IPythonMLManager&gt;();
+        
+        try
+        {
+            switch (Operation)
+            {
+                case AIOperation.TrainModel:
+                    return await TrainModelAsync(mlManager, context);
+                    
+                case AIOperation.PredictModel:
+                    return await PredictAsync(mlManager, context);
+                    
+                case AIOperation.EvaluateModel:
+                    return await EvaluateModelAsync(mlManager, context);
+                    
+                case AIOperation.PreprocessData:
+                    return await PreprocessDataAsync(mlManager, context);
+                    
+                case AIOperation.FeatureEngineering:
+                    return await FeatureEngineeringAsync(mlManager, context);
+                    
+                default:
+                    throw new InvalidOperationException($"Unknown AI operation: {Operation}");
+            }
+        }
+        catch (Exception ex)
+        {
+            return new NodeExecutionResult
+            {
+                Success = false,
+                Error = ex,
+                Message = $"AI operation failed: {ex.Message}"
+            };
+        }
+    }
+    
+    private async Task&lt;NodeExecutionResult&gt; TrainModelAsync(IPythonMLManager mlManager, NodeExecutionContext context)
+    {
+        // Load data
+        await mlManager.LoadDataAsync(InputDataPath);
+        
+        // Prepare data
+        await mlManager.PrepareDataAsync(new DataPreparationOptions
+        {
+            TargetColumn = TargetColumn,
+            FeatureColumns = FeatureColumns,
+            TestSize = TestSize,
+            RandomState = RandomState
+        });
+        
+        // Configure algorithm
+        var algorithm = mlManager.GetAlgorithm(ModelType);
+        algorithm.SetParameters(ModelParameters);
+        
+        // Train model
+        var trainingResult = await mlManager.TrainModelAsync(algorithm);
+        
+        // Cross-validate if requested
+        CrossValidationResult cvResult = null;
+        if (CrossValidate)
+        {
+            cvResult = await mlManager.CrossValidateAsync(algorithm, CVFolds);
+        }
+        
+        // Save model
+        if (!string.IsNullOrEmpty(ModelPath))
+        {
+            await mlManager.SaveModelAsync(algorithm.Name, ModelPath);
+        }
+        
+        return new NodeExecutionResult
+        {
+            Success = trainingResult.Success,
+            OutputData = new
+            {
+                TrainingScore = trainingResult.TrainingScore,
+                ValidationScore = trainingResult.ValidationScore,
+                TrainingTime = trainingResult.TrainingTime,
+                CrossValidationScore = cvResult?.MeanScore,
+                ModelPath = ModelPath
+            },
+            Message = $"Model training completed. Training score: {trainingResult.TrainingScore:F4}"
+        };
+    }
+    
+    private async Task&lt;NodeExecutionResult&gt; PredictAsync(IPythonMLManager mlManager, NodeExecutionContext context)
+    {
+        // Load model
+        if (!string.IsNullOrEmpty(ModelPath))
+        {
+            await mlManager.LoadModelAsync(ModelType, ModelPath);
+        }
+        
+        // Load input data
+        var inputData = context.GetInputData&lt;double[][]&gt;("InputData");
+        if (inputData == null && !string.IsNullOrEmpty(InputDataPath))
+        {
+            await mlManager.LoadDataAsync(InputDataPath);
+            inputData = await mlManager.GetDataForPredictionAsync();
+        }
+        
+        // Make predictions
+        var predictions = await mlManager.PredictAsync(inputData);
+        
+        // Save predictions if output path specified
+        if (!string.IsNullOrEmpty(OutputDataPath))
+        {
+            await mlManager.SavePredictionsAsync(predictions, OutputDataPath);
+        }
+        
+        return new NodeExecutionResult
+        {
+            Success = true,
+            OutputData = new
+            {
+                Predictions = predictions,
+                PredictionCount = predictions.Length,
+                OutputPath = OutputDataPath
+            },
+            Message = $"Generated {predictions.Length} predictions"
+        };
+    }
+}
+
+public enum AIOperation
+{
+    TrainModel,
+    PredictModel,
+    EvaluateModel,
+    PreprocessData,
+    FeatureEngineering,
+    HyperparameterTuning
+}
+
+public enum MLFramework
+{
+    ScikitLearn,
+    TensorFlow,
+    PyTorch,
+    XGBoost,
+    LightGBM
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Visual Workflow Designer -->
+                <section class="section" id="visual-designer">
+                    <h2>?? Visual Workflow Designer</h2>
+                    
+                    <div class="code-example">
+                        <h4>Node-Based Workflow Creation</h4>
+                        <pre><code class="language-csharp">public class PythonWorkflowDesigner
+{
+    private readonly NodeRegistry _nodeRegistry;
+    private readonly WorkflowEngine _workflowEngine;
+    
+    public PythonWorkflowDesigner()
+    {
+        _nodeRegistry = new NodeRegistry();
+        _workflowEngine = new WorkflowEngine();
+        
+        // Register built-in nodes
+        RegisterBuiltInNodes();
+    }
+    
+    private void RegisterBuiltInNodes()
+    {
+        _nodeRegistry.RegisterNode&lt;PythonRuntimeNode&gt;("Python Runtime", "Runtime");
+        _nodeRegistry.RegisterNode&lt;PythonVirtualEnvNode&gt;("Virtual Environment", "Environment");
+        _nodeRegistry.RegisterNode&lt;AICPythonNode&gt;("AI Python", "AI/ML");
+        _nodeRegistry.RegisterNode&lt;DataLoaderNode&gt;("Data Loader", "Data");
+        _nodeRegistry.RegisterNode&lt;DataProcessorNode&gt;("Data Processor", "Data");
+        _nodeRegistry.RegisterNode&lt;ModelTrainerNode&gt;("Model Trainer", "AI/ML");
+        _nodeRegistry.RegisterNode&lt;PredictionNode&gt;("Prediction", "AI/ML");
+        _nodeRegistry.RegisterNode&lt;OutputNode&gt;("Output", "Output");
+    }
+    
+    public WorkflowDefinition CreateMLWorkflow()
+    {
+        var workflow = new WorkflowDefinition("ML Pipeline");
+        
+        // Create nodes
+        var envNode = _nodeRegistry.CreateNode&lt;PythonVirtualEnvNode&gt;("setup-env");
+        envNode.EnvironmentName = "ml-pipeline";
+        envNode.RequiredPackages = new List&lt;string&gt; { "pandas", "scikit-learn", "numpy" };
+        envNode.Operation = EnvironmentOperation.Create;
+        
+        var dataLoader = _nodeRegistry.CreateNode&lt;DataLoaderNode&gt;("load-data");
+        dataLoader.DataSource = "data/training_data.csv";
+        dataLoader.DataFormat = DataFormat.CSV;
+        
+        var dataProcessor = _nodeRegistry.CreateNode&lt;DataProcessorNode&gt;("process-data");
+        dataProcessor.Operations = new[]
+        {
+            DataOperation.HandleMissingValues,
+            DataOperation.ScaleFeatures,
+            DataOperation.EncodeCategorical
+        };
+        
+        var trainer = _nodeRegistry.CreateNode&lt;AICPythonNode&gt;("train-model");
+        trainer.Operation = AIOperation.TrainModel;
+        trainer.ModelType = "RandomForestClassifier";
+        trainer.Framework = MLFramework.ScikitLearn;
+        trainer.CrossValidate = true;
+        
+        var evaluator = _nodeRegistry.CreateNode&lt;AICPythonNode&gt;("evaluate-model");
+        evaluator.Operation = AIOperation.EvaluateModel;
+        
+        var output = _nodeRegistry.CreateNode&lt;OutputNode&gt;("save-results");
+        output.OutputPath = "results/model_results.json";
+        
+        // Add nodes to workflow
+        workflow.AddNode(envNode);
+        workflow.AddNode(dataLoader);
+        workflow.AddNode(dataProcessor);
+        workflow.AddNode(trainer);
+        workflow.AddNode(evaluator);
+        workflow.AddNode(output);
+        
+        // Create connections
+        workflow.ConnectNodes(envNode, "EnvironmentReady", dataLoader, "Environment");
+        workflow.ConnectNodes(dataLoader, "Data", dataProcessor, "InputData");
+        workflow.ConnectNodes(dataProcessor, "ProcessedData", trainer, "TrainingData");
+        workflow.ConnectNodes(trainer, "TrainedModel", evaluator, "Model");
+        workflow.ConnectNodes(evaluator, "EvaluationResults", output, "Data");
+        
+        return workflow;
+    }
+    
+    public async Task&lt;WorkflowExecutionResult&gt; ExecuteWorkflowAsync(WorkflowDefinition workflow)
+    {
+        return await _workflowEngine.ExecuteAsync(workflow);
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Custom Node Development</h4>
+                        <pre><code class="language-csharp">// Create custom data visualization node
+public class DataVisualizationNode : IWorkFlowStepNode
+{
+    public string NodeName { get; set; } = "Data Visualization";
+    public string NodeType { get; set; } = "Visualization";
+    public string NodeCategory { get; set; } = "Data";
+    
+    // Configuration
+    public VisualizationType ChartType { get; set; }
+    public string XColumn { get; set; }
+    public string YColumn { get; set; }
+    public string ColorColumn { get; set; }
+    public string OutputPath { get; set; }
+    
+    // Visualization settings
+    public ChartSettings Settings { get; set; } = new();
+    
+    public async Task&lt;NodeExecutionResult&gt; ExecuteAsync(NodeExecutionContext context)
+    {
+        var plotManager = ServiceLocator.GetService&lt;IPythonPlotManager&gt;();
+        
+        try
+        {
+            // Get input data
+            var dataFrame = context.GetInputData&lt;string&gt;("DataFrame");
+            
+            // Create visualization based on type
+            string plotCode = GeneratePlotCode();
+            
+            // Execute visualization
+            await plotManager.ExecutePlotCodeAsync(plotCode);
+            
+            // Save plot
+            if (!string.IsNullOrEmpty(OutputPath))
+            {
+                await plotManager.SavePlotAsync(OutputPath);
+            }
+            
+            return new NodeExecutionResult
+            {
+                Success = true,
+                OutputData = new { PlotPath = OutputPath },
+                Message = $"Visualization created: {ChartType}"
+            };
+        }
+        catch (Exception ex)
+        {
+            return new NodeExecutionResult
+            {
+                Success = false,
+                Error = ex,
+                Message = $"Visualization failed: {ex.Message}"
+            };
+        }
+    }
+    
+    private string GeneratePlotCode()
+    {
+        return ChartType switch
+        {
+            VisualizationType.Scatter => GenerateScatterPlot(),
+            VisualizationType.Line => GenerateLinePlot(),
+            VisualizationType.Bar => GenerateBarPlot(),
+            VisualizationType.Histogram => GenerateHistogram(),
+            VisualizationType.Heatmap => GenerateHeatmap(),
+            _ => throw new NotSupportedException($"Chart type {ChartType} not supported")
+        };
+    }
+}
+
+public enum VisualizationType
+{
+    Scatter,
+    Line,
+    Bar,
+    Histogram,
+    Heatmap,
+    BoxPlot,
+    ViolinPlot
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Enterprise Features -->
+                <section class="section" id="enterprise-features">
+                    <h2>?? Enterprise Features</h2>
+                    
+                    <div class="feature-card">
+                        <h4><i class="bi bi-shield-check"></i> Node Security & Governance</h4>
+                        <p>Enterprise security features including node validation, access control, and audit logging.</p>
+                        
+                        <div class="code-example">
+                            <h4>Node Security Configuration</h4>
+                            <pre><code class="language-csharp">public class NodeSecurityManager
+{
+    public async Task&lt;bool&gt; ValidateNodeSecurityAsync(IWorkFlowStepNode node, NodeExecutionContext context)
+    {
+        // Check node permissions
+        if (!await CheckNodePermissionsAsync(node, context.User))
+        {
+            throw new UnauthorizedAccessException($"User {context.User} not authorized to execute node {node.NodeName}");
+        }
+        
+        // Validate node configuration
+        var validationResult = await ValidateNodeConfigurationAsync(node);
+        if (!validationResult.IsValid)
+        {
+            throw new InvalidOperationException($"Node configuration invalid: {string.Join(", ", validationResult.Errors)}");
+        }
+        
+        // Check resource limits
+        if (!await CheckResourceLimitsAsync(node, context))
+        {
+            throw new InvalidOperationException("Node execution would exceed resource limits");
+        }
+        
+        // Audit log
+        await LogNodeExecutionAsync(node, context, "AUTHORIZED");
+        
+        return true;
+    }
+    
+    private async Task&lt;bool&gt; CheckNodePermissionsAsync(IWorkFlowStepNode node, string user)
+    {
+        var permissions = await GetUserPermissionsAsync(user);
+        return permissions.CanExecuteNodeType(node.NodeType) && 
+               permissions.CanAccessNodeCategory(node.NodeCategory);
+    }
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <h4><i class="bi bi-graph-up"></i> Performance Monitoring</h4>
+                        <p>Comprehensive monitoring of node execution, resource usage, and performance metrics.</p>
+                        
+                        <div class="code-example">
+                            <h4>Node Performance Monitoring</h4>
+                            <pre><code class="language-csharp">public class NodePerformanceMonitor
+{
+    private readonly IMetricsCollector _metricsCollector;
+    
+    public async Task&lt;NodeExecutionResult&gt; MonitorNodeExecutionAsync(
+        IWorkFlowStepNode node, 
+        NodeExecutionContext context)
+    {
+        var stopwatch = Stopwatch.StartNew();
+        var startMemory = GC.GetTotalMemory(false);
+        
+        try
+        {
+            // Record execution start
+            await _metricsCollector.RecordNodeStartAsync(node.NodeName, context.WorkflowId);
+            
+            // Execute node
+            var result = await node.ExecuteAsync(context);
+            
+            stopwatch.Stop();
+            var endMemory = GC.GetTotalMemory(false);
+            
+            // Record performance metrics
+            var metrics = new NodeExecutionMetrics
+            {
+                NodeName = node.NodeName,
+                NodeType = node.NodeType,
+                ExecutionTime = stopwatch.Elapsed,
+                MemoryUsed = endMemory - startMemory,
+                Success = result.Success,
+                Timestamp = DateTime.UtcNow
+            };
+            
+            await _metricsCollector.RecordNodeMetricsAsync(metrics);
+            
+            return result;
+        }
+        catch (Exception ex)
+        {
+            stopwatch.Stop();
+            
+            // Record error metrics
+            await _metricsCollector.RecordNodeErrorAsync(node.NodeName, ex, stopwatch.Elapsed);
+            
+            throw;
+        }
+    }
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Best Practices -->
+                <section class="section" id="best-practices">
+                    <h2>? Best Practices</h2>
+                    
+                    <div class="tip">
+                        <h5><i class="bi bi-lightbulb"></i> Node Development Best Practices</h5>
+                        <ul>
+                            <li><strong>Error Handling:</strong> Always implement comprehensive error handling in nodes</li>
+                            <li><strong>Resource Management:</strong> Properly dispose of resources and clean up after execution</li>
+                            <li><strong>Configuration Validation:</strong> Validate all node configuration before execution</li>
+                            <li><strong>Progress Reporting:</strong> Provide progress updates for long-running operations</li>
+                            <li><strong>Logging:</strong> Implement detailed logging for debugging and monitoring</li>
+                            <li><strong>Testing:</strong> Create comprehensive unit tests for custom nodes</li>
+                        </ul>
+                    </div>
+
+                    <div class="warning">
+                        <h5><i class="bi bi-exclamation-triangle"></i> Common Pitfalls</h5>
+                        <ul>
+                            <li><strong>Memory Leaks:</strong> Ensure proper cleanup of Python objects and resources</li>
+                            <li><strong>Thread Safety:</strong> Consider thread safety when accessing shared resources</li>
+                            <li><strong>Exception Propagation:</strong> Handle exceptions gracefully without breaking the workflow</li>
+                            <li><strong>Data Validation:</strong> Always validate input data before processing</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Examples -->
+                <section class="section" id="examples">
+                    <h2>?? Complete Examples</h2>
+                    
+                    <div class="code-example">
+                        <h4>Complete ML Pipeline</h4>
+                        <pre><code class="language-csharp">public async Task CreateMLPipelineWorkflow()
+{
+    var designer = new PythonWorkflowDesigner();
+    
+    // Create comprehensive ML pipeline
+    var workflow = new WorkflowDefinition("Customer Churn Prediction Pipeline");
+    
+    // Environment setup
+    var envSetup = new PythonVirtualEnvNode
+    {
+        NodeName = "ML Environment",
+        EnvironmentName = "churn-prediction",
+        RequiredPackages = new List&lt;string&gt;
+        {
+            "pandas>=1.5.0",
+            "scikit-learn>=1.2.0",
+            "numpy>=1.21.0",
+            "matplotlib>=3.6.0",
+            "seaborn>=0.12.0"
+        },
+        Operation = EnvironmentOperation.Create
+    };
+    
+    // Data loading
+    var dataLoader = new DataLoaderNode
+    {
+        NodeName = "Load Customer Data",
+        DataSource = "data/customer_data.csv",
+        DataFormat = DataFormat.CSV
+    };
+    
+    // Data preprocessing
+    var preprocessor = new DataProcessorNode
+    {
+        NodeName = "Preprocess Data",
+        Operations = new[]
+        {
+            DataOperation.HandleMissingValues,
+            DataOperation.EncodeCategorical,
+            DataOperation.ScaleFeatures,
+            DataOperation.FeatureSelection
+        }
+    };
+    
+    // Model training
+    var trainer = new AICPythonNode
+    {
+        NodeName = "Train Churn Model",
+        Operation = AIOperation.TrainModel,
+        ModelType = "RandomForestClassifier",
+        Framework = MLFramework.ScikitLearn,
+        TargetColumn = "churn",
+        CrossValidate = true,
+        CVFolds = 5,
+        ModelParameters = new Dictionary&lt;string, object&gt;
+        {
+            ["n_estimators"] = 100,
+            ["max_depth"] = 10,
+            ["random_state"] = 42
+        }
+    };
+    
+    // Model evaluation
+    var evaluator = new AICPythonNode
+    {
+        NodeName = "Evaluate Model",
+        Operation = AIOperation.EvaluateModel
+    };
+    
+    // Visualization
+    var visualizer = new DataVisualizationNode
+    {
+        NodeName = "Generate Reports",
+        ChartType = VisualizationType.Heatmap,
+        OutputPath = "reports/feature_importance.png"
+    };
+    
+    // Build workflow
+    workflow.AddNode(envSetup);
+    workflow.AddNode(dataLoader);
+    workflow.AddNode(preprocessor);
+    workflow.AddNode(trainer);
+    workflow.AddNode(evaluator);
+    workflow.AddNode(visualizer);
+    
+    // Connect nodes
+    workflow.ConnectNodes(envSetup, "Ready", dataLoader, "Environment");
+    workflow.ConnectNodes(dataLoader, "Data", preprocessor, "InputData");
+    workflow.ConnectNodes(preprocessor, "ProcessedData", trainer, "TrainingData");
+    workflow.ConnectNodes(trainer, "Model", evaluator, "TrainedModel");
+    workflow.ConnectNodes(evaluator, "Results", visualizer, "Data");
+    
+    // Execute workflow
+    var result = await designer.ExecuteWorkflowAsync(workflow);
+    
+    if (result.Success)
+    {
+        Console.WriteLine("ML Pipeline completed successfully!");
+        Console.WriteLine($"Model accuracy: {result.GetOutput&lt;double&gt;("Accuracy"):F4}");
+    }
+    else
+    {
+        Console.WriteLine($"Pipeline failed: {result.ErrorMessage}");
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="#node-types" class="btn-beep">
+                        <i class="bi bi-collection"></i> Node Types
+                    </a>
+                    <a href="#examples" class="btn-beep">
+                        <i class="bi bi-play-circle"></i> Examples
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.Nodes Documentation</p>
+                            <p>Supporting .NET 6, 7, 8, and 9 | Visual Python Integration</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="#installation">Installation</a>
+                            <a href="#node-types">Node Types</a>
+                            <a href="#examples">Examples</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="assets/navigation.js"></script>
+</body>
+</html>

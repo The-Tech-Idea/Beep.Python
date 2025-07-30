@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dependency Injection Integration - Beep.Python.DataManagement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="../assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="../index.html">Home</a>
+                    <span>?</span>
+                    <a href="../index.html#integration">Integration</a>
+                    <span>?</span>
+                    <span>Dependency Injection</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-diagram-3-fill"></i> Dependency Injection Integration</h1>
+                    <p class="page-subtitle">Complete guide to integrating Beep.Python.DataManagement with .NET dependency injection containers across different .NET versions</p>
+                </div>
+
+                <!-- Overview -->
+                <section class="section" id="overview">
+                    <h2>?? Integration Overview</h2>
+                    
+                    <div class="note">
+                        <h4>?? Supported Frameworks and Versions</h4>
+                        <p>
+                            Beep.Python.DataManagement is designed to work seamlessly with all major .NET dependency injection containers 
+                            and supports <strong>.NET 6, .NET 7, .NET 8, and .NET 9</strong> with both minimal APIs and traditional patterns.
+                        </p>
+                    </div>
+
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-microsoft"></i> Microsoft.Extensions.DI</h4>
+                            <p>Built-in .NET dependency injection container integration</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-box"></i> Autofac</h4>
+                            <p>Advanced IoC container with advanced features and BEEP integration</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-cpu"></i> Multiple .NET Versions</h4>
+                            <p>Support for .NET 6, 7, 8, and 9 with framework-specific optimizations</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-gear"></i> Flexible Configuration</h4>
+                            <p>Configuration through appsettings.json, environment variables, or code</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- .NET 6+ Integration -->
+                <section class="section" id="net6-integration">
+                    <h2>?? .NET 6+ Integration (Minimal APIs)</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Program.cs Configuration (.NET 6/7/8/9)</h4>
+                        <pre><code class="language-csharp">using Beep.Python.DataManagement;
+using Beep.Python.Runtime;
+using Beep.Python.Model;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// Configure Python DataManagement Services
+builder.Services.AddPythonDataManagement(options =>
+{
+    // Basic configuration
+    options.PythonDllPath = builder.Configuration.GetValue&lt;string&gt;("Python:DllPath");
+    options.PythonHomePath = builder.Configuration.GetValue&lt;string&gt;("Python:HomePath");
+    options.VirtualEnvironmentPath = builder.Configuration.GetValue&lt;string&gt;("Python:VirtualEnvironmentPath");
+    
+    // Session management
+    options.DefaultSessionTimeout = TimeSpan.FromMinutes(30);
+    options.MaxConcurrentSessions = 10;
+    options.EnableAutoCleanup = true;
+    options.CleanupInterval = TimeSpan.FromMinutes(5);
+    
+    // Performance settings
+    options.EnableMemoryOptimization = true;
+    options.MaxMemoryUsagePercent = 80;
+    options.EnableDataFrameCaching = true;
+    options.CacheExpirationMinutes = 15;
+    
+    // Security settings
+    options.EnableUserIsolation = true;
+    options.AllowedPythonModules = new[] { "pandas", "numpy", "matplotlib", "seaborn", "scipy" };
+    options.RestrictedOperations = new[] { "eval", "exec", "import os", "import subprocess" };
+});
+
+// Configure BEEP Services (if using BEEP framework)
+builder.Services.AddBeepFramework(beepOptions =>
+{
+    beepOptions.ConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    beepOptions.EnableAuditLogging = true;
+    beepOptions.EnableDataGovernance = true;
+});
+
+// Add logging
+builder.Services.AddLogging(logging =>
+{
+    logging.AddConsole();
+    logging.AddDebug();
+    logging.SetMinimumLevel(LogLevel.Information);
+});
+
+// Add health checks
+builder.Services.AddHealthChecks()
+    .AddPythonDataManagementHealthCheck()
+    .AddCheck("python-runtime", () => 
+    {
+        // Custom health check for Python runtime
+        var runtimeManager = builder.Services.BuildServiceProvider()
+            .GetRequiredService&lt;IPythonRunTimeManager&gt;();
+        return runtimeManager.IsInitialized ? HealthCheckResult.Healthy() : HealthCheckResult.Unhealthy();
+    });
+
+// Build the app
+var app = builder.Build();
+
+// Configure the HTTP request pipeline
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+    app.UseDeveloperExceptionPage();
+}
+
+app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
+
+// Map controllers
+app.MapControllers();
+
+// Map health checks
+app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/detailed", new HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+
+// Initialize Python runtime on startup
+await app.Services.InitializePythonDataManagementAsync();
+
+app.Run();</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Extension Methods for Service Registration</h4>
+                        <pre><code class="language-csharp">// Create extension methods for clean service registration
+public static class ServiceCollectionExtensions
+{
+    public static IServiceCollection AddPythonDataManagement(
+        this IServiceCollection services, 
+        Action&lt;PythonDataManagementOptions&gt; configureOptions)
+    {
+        // Configure options
+        services.Configure(configureOptions);
+        
+        // Register core services
+        services.AddSingleton&lt;IPythonRunTimeManager, PythonRunTimeManager&gt;();
+        services.AddSingleton&lt;IPythonCodeExecuteManager, PythonCodeExecuteManager&gt;();
+        services.AddSingleton&lt;IPythonPackageManager, PythonPackageManager&gt;();
+        services.AddSingleton&lt;IPythonVirtualEnvManager, PythonVirtualEnvManager&gt;();
+        
+        // Register DataManagement services
+        services.AddTransient&lt;IPythonPandasManager, PythonPandasManager&gt;();
+        services.AddTransient&lt;IDataAnalysisService, DataAnalysisService&gt;();
+        services.AddTransient&lt;IETLPipelineService, ETLPipelineService&gt;();
+        
+        // Register session management
+        services.AddSingleton&lt;IPythonSessionManager, PythonSessionManager&gt;();
+        services.AddScoped&lt;IPythonSessionContext, PythonSessionContext&gt;();
+        
+        // Register monitoring and health checks
+        services.AddSingleton&lt;IPythonPerformanceMonitor, PythonPerformanceMonitor&gt;();
+        services.AddTransient&lt;IPythonHealthChecker, PythonHealthChecker&gt;();
+        
+        // Register factory services
+        services.AddTransient&lt;IPandasManagerFactory, PandasManagerFactory&gt;();
+        services.AddTransient&lt;IDataAnalysisFactory, DataAnalysisFactory&gt;();
+        
+        // Register background services
+        services.AddHostedService&lt;PythonCleanupService&gt;();
+        services.AddHostedService&lt;PythonMonitoringService&gt;();
+        
+        return services;
+    }
+    
+    public static IServiceCollection AddPythonDataManagementHealthCheck(this IServiceCollection services)
+    {
+        services.AddHealthChecks()
+            .AddCheck&lt;PythonRuntimeHealthCheck&gt;("python-runtime")
+            .AddCheck&lt;PythonMemoryHealthCheck&gt;("python-memory")
+            .AddCheck&lt;PythonSessionHealthCheck&gt;("python-sessions");
+            
+        return services;
+    }
+}
+
+// Service provider extensions for initialization
+public static class ServiceProviderExtensions
+{
+    public static async Task InitializePythonDataManagementAsync(this IServiceProvider serviceProvider)
+    {
+        using var scope = serviceProvider.CreateScope();
+        var logger = scope.ServiceProvider.GetRequiredService&lt;ILogger&lt;Program&gt;&gt;();
+        
+        try
+        {
+            logger.LogInformation("Initializing Python Data Management services...");
+            
+            // Initialize Python runtime
+            var runtimeManager = scope.ServiceProvider.GetRequiredService&lt;IPythonRunTimeManager&gt;();
+            var options = scope.ServiceProvider.GetRequiredService&lt;IOptions&lt;PythonDataManagementOptions&gt;&gt;().Value;
+            
+            var pythonConfig = new PythonNetConfig
+            {
+                PythonDLL = options.PythonDllPath,
+                PythonHome = options.PythonHomePath,
+                VirtualEnvironment = options.VirtualEnvironmentPath
+            };
+            
+            runtimeManager.Initialize(pythonConfig, null, null, PythonEngineMode.MultiUser);
+            
+            // Initialize session manager
+            var sessionManager = scope.ServiceProvider.GetRequiredService&lt;IPythonSessionManager&gt;();
+            await sessionManager.InitializeAsync();
+            
+            // Warm up pandas manager
+            var pandasManager = scope.ServiceProvider.GetRequiredService&lt;IPythonPandasManager&gt;();
+            pandasManager.ConfigureSessionForUser("system", "initialization");
+            
+            logger.LogInformation("Python Data Management services initialized successfully");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to initialize Python Data Management services");
+            throw;
+        }
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Configuration Options -->
+                <section class="section" id="configuration">
+                    <h2>?? Configuration Options</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Configuration Classes</h4>
+                        <pre><code class="language-csharp">// Configuration options class
+public class PythonDataManagementOptions
+{
+    public string PythonDllPath { get; set; } = string.Empty;
+    public string PythonHomePath { get; set; } = string.Empty;
+    public string VirtualEnvironmentPath { get; set; } = string.Empty;
+    
+    // Session Management
+    public TimeSpan DefaultSessionTimeout { get; set; } = TimeSpan.FromMinutes(30);
+    public int MaxConcurrentSessions { get; set; } = 10;
+    public bool EnableAutoCleanup { get; set; } = true;
+    public TimeSpan CleanupInterval { get; set; } = TimeSpan.FromMinutes(5);
+    
+    // Performance Settings
+    public bool EnableMemoryOptimization { get; set; } = true;
+    public int MaxMemoryUsagePercent { get; set; } = 80;
+    public bool EnableDataFrameCaching { get; set; } = true;
+    public int CacheExpirationMinutes { get; set; } = 15;
+    
+    // Security Settings
+    public bool EnableUserIsolation { get; set; } = true;
+    public string[] AllowedPythonModules { get; set; } = Array.Empty&lt;string&gt;();
+    public string[] RestrictedOperations { get; set; } = Array.Empty&lt;string&gt;();
+    
+    // Logging and Monitoring
+    public bool EnableDetailedLogging { get; set; } = false;
+    public bool EnablePerformanceMetrics { get; set; } = true;
+    public string MetricsOutputPath { get; set; } = string.Empty;
+    
+    // BEEP Integration
+    public bool EnableBeepIntegration { get; set; } = false;
+    public string BeepConnectionString { get; set; } = string.Empty;
+    public bool EnableBeepAuditLogging { get; set; } = false;
+}
+
+// appsettings.json structure
+public class AppSettingsExample
+{
+    public static string GetExampleConfiguration()
+    {
+        return @"{
+  ""Python"": {
+    ""DllPath"": ""C:\\Python39\\python39.dll"",
+    ""HomePath"": ""C:\\Python39"",
+    ""VirtualEnvironmentPath"": ""C:\\Environments""
+  },
+  ""PythonDataManagement"": {
+    ""DefaultSessionTimeout"": ""00:30:00"",
+    ""MaxConcurrentSessions"": 10,
+    ""EnableAutoCleanup"": true,
+    ""CleanupInterval"": ""00:05:00"",
+    ""EnableMemoryOptimization"": true,
+    ""MaxMemoryUsagePercent"": 80,
+    ""EnableDataFrameCaching"": true,
+    ""CacheExpirationMinutes"": 15,
+    ""EnableUserIsolation"": true,
+    ""AllowedPythonModules"": [
+      ""pandas"",
+      ""numpy"",
+      ""matplotlib"",
+      ""seaborn"",
+      ""scipy"",
+      ""scikit-learn""
+    ],
+    ""RestrictedOperations"": [
+      ""eval"",
+      ""exec"",
+      ""import os"",
+      ""import subprocess""
+    ],
+    ""EnableDetailedLogging"": false,
+    ""EnablePerformanceMetrics"": true,
+    ""MetricsOutputPath"": ""C:\\Logs\\PythonMetrics"",
+    ""EnableBeepIntegration"": true,
+    ""BeepConnectionString"": ""Data Source=localhost;Initial Catalog=BEEP;Integrated Security=true"",
+    ""EnableBeepAuditLogging"": true
+  },
+  ""ConnectionStrings"": {
+    ""DefaultConnection"": ""Data Source=localhost;Initial Catalog=MyApp;Integrated Security=true"",
+    ""DataWarehouse"": ""Data Source=dw.company.com;Initial Catalog=DW;Integrated Security=true""
+  },
+  ""Logging"": {
+    ""LogLevel"": {
+      ""Default"": ""Information"",
+      ""Beep.Python"": ""Debug"",
+      ""Microsoft.AspNetCore"": ""Warning""
+    }
+  }
+}";
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Environment-Specific Configuration</h4>
+                        <pre><code class="language-csharp">// Environment-specific configuration loading
+public static class ConfigurationExtensions
+{
+    public static WebApplicationBuilder ConfigurePythonDataManagement(
+        this WebApplicationBuilder builder)
+    {
+        var environment = builder.Environment;
+        
+        // Load base configuration
+        builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+        
+        // Load environment-specific configuration
+        builder.Configuration.AddJsonFile($"appsettings.{environment.EnvironmentName}.json", 
+            optional: true, reloadOnChange: true);
+        
+        // Load user secrets in development
+        if (environment.IsDevelopment())
+        {
+            builder.Configuration.AddUserSecrets&lt;Program&gt;();
+        }
+        
+        // Load environment variables
+        builder.Configuration.AddEnvironmentVariables("PYTHON_");
+        
+        // Load Azure Key Vault in production
+        if (environment.IsProduction())
+        {
+            var keyVaultUrl = builder.Configuration["KeyVault:Url"];
+            if (!string.IsNullOrEmpty(keyVaultUrl))
+            {
+                builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUrl), 
+                    new DefaultAzureCredential());
+            }
+        }
+        
+        return builder;
+    }
+    
+    public static IServiceCollection ConfigurePythonDataManagementFromConfiguration(
+        this IServiceCollection services, 
+        IConfiguration configuration)
+    {
+        // Bind configuration
+        services.Configure&lt;PythonDataManagementOptions&gt;(
+            configuration.GetSection("PythonDataManagement"));
+        
+        // Validate configuration
+        services.AddSingleton&lt;IValidateOptions&lt;PythonDataManagementOptions&gt;, 
+            PythonDataManagementOptionsValidator&gt;();
+        
+        return services;
+    }
+}
+
+// Configuration validation
+public class PythonDataManagementOptionsValidator : IValidateOptions&lt;PythonDataManagementOptions&gt;
+{
+    public ValidateOptionsResult Validate(string name, PythonDataManagementOptions options)
+    {
+        var failures = new List&lt;string&gt;();
+        
+        if (string.IsNullOrEmpty(options.PythonDllPath))
+        {
+            failures.Add("PythonDllPath is required");
+        }
+        else if (!File.Exists(options.PythonDllPath))
+        {
+            failures.Add($"Python DLL not found at: {options.PythonDllPath}");
+        }
+        
+        if (string.IsNullOrEmpty(options.PythonHomePath))
+        {
+            failures.Add("PythonHomePath is required");
+        }
+        else if (!Directory.Exists(options.PythonHomePath))
+        {
+            failures.Add($"Python home directory not found at: {options.PythonHomePath}");
+        }
+        
+        if (options.MaxConcurrentSessions <= 0)
+        {
+            failures.Add("MaxConcurrentSessions must be greater than 0");
+        }
+        
+        if (options.MaxMemoryUsagePercent <= 0 || options.MaxMemoryUsagePercent > 100)
+        {
+            failures.Add("MaxMemoryUsagePercent must be between 1 and 100");
+        }
+        
+        return failures.Any() 
+            ? ValidateOptionsResult.Fail(failures)
+            : ValidateOptionsResult.Success;
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Autofac Integration -->
+                <section class="section" id="autofac-integration">
+                    <h2>?? Autofac Container Integration</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Autofac Module Registration</h4>
+                        <pre><code class="language-csharp">using Autofac;
+using Autofac.Extensions.DependencyInjection;
+
+// Autofac module for Python DataManagement
+public class PythonDataManagementModule : Module
+{
+    private readonly PythonDataManagementOptions _options;
+    
+    public PythonDataManagementModule(PythonDataManagementOptions options)
+    {
+        _options = options;
+    }
+    
+    protected override void Load(ContainerBuilder builder)
+    {
+        // Register configuration
+        builder.RegisterInstance(_options).AsSelf().SingleInstance();
+        
+        // Register core Python services as singletons
+        builder.RegisterType&lt;PythonRunTimeManager&gt;()
+            .As&lt;IPythonRunTimeManager&gt;()
+            .SingleInstance()
+            .OnActivated(context => 
+            {
+                var instance = context.Instance;
+                var config = context.Resolve&lt;PythonDataManagementOptions&gt;();
+                
+                var pythonConfig = new PythonNetConfig
+                {
+                    PythonDLL = config.PythonDllPath,
+                    PythonHome = config.PythonHomePath,
+                    VirtualEnvironment = config.VirtualEnvironmentPath
+                };
+                
+                instance.Initialize(pythonConfig, null, null, PythonEngineMode.MultiUser);
+            });
+        
+        builder.RegisterType&lt;PythonCodeExecuteManager&gt;()
+            .As&lt;IPythonCodeExecuteManager&gt;()
+            .SingleInstance();
+        
+        builder.RegisterType&lt;PythonPackageManager&gt;()
+            .As&lt;IPythonPackageManager&gt;()
+            .SingleInstance();
+        
+        builder.RegisterType&lt;PythonVirtualEnvManager&gt;()
+            .As&lt;IPythonVirtualEnvManager&gt;()
+            .SingleInstance();
+        
+        // Register session management
+        builder.RegisterType&lt;PythonSessionManager&gt;()
+            .As&lt;IPythonSessionManager&gt;()
+            .SingleInstance();
+        
+        builder.RegisterType&lt;PythonSessionContext&gt;()
+            .As&lt;IPythonSessionContext&gt;()
+            .InstancePerLifetimeScope();
+        
+        // Register DataManagement services as transient (per-request)
+        builder.RegisterType&lt;PythonPandasManager&gt;()
+            .As&lt;IPythonPandasManager&gt;()
+            .InstancePerLifetimeScope()
+            .PropertiesAutowired();
+        
+        // Register analysis services
+        builder.RegisterType&lt;DataAnalysisService&gt;()
+            .As&lt;IDataAnalysisService&gt;()
+            .InstancePerLifetimeScope();
+        
+        builder.RegisterType&lt;ETLPipelineService&gt;()
+            .As&lt;IETLPipelineService&gt;()
+            .InstancePerLifetimeScope();
+        
+        builder.RegisterType&lt;StatisticalAnalysisService&gt;()
+            .As&lt;IStatisticalAnalysisService&gt;()
+            .InstancePerLifetimeScope();
+        
+        // Register factories
+        builder.RegisterType&lt;PandasManagerFactory&gt;()
+            .As&lt;IPandasManagerFactory&gt;()
+            .InstancePerLifetimeScope();
+        
+        // Register monitoring services
+        builder.RegisterType&lt;PythonPerformanceMonitor&gt;()
+            .As&lt;IPythonPerformanceMonitor&gt;()
+            .SingleInstance();
+        
+        builder.RegisterType&lt;PythonHealthChecker&gt;()
+            .As&lt;IPythonHealthChecker&gt;()
+            .InstancePerLifetimeScope();
+        
+        // Register decorators for cross-cutting concerns
+        builder.RegisterDecorator&lt;LoggingPandasManagerDecorator, IPythonPandasManager&gt;();
+        builder.RegisterDecorator&lt;PerformanceMonitoringPandasManagerDecorator, IPythonPandasManager&gt;();
+        
+        // Register named instances for different scenarios
+        builder.RegisterType&lt;PythonPandasManager&gt;()
+            .Named&lt;IPythonPandasManager&gt;("analytics")
+            .WithParameter("sessionPrefix", "analytics")
+            .InstancePerLifetimeScope();
+        
+        builder.RegisterType&lt;PythonPandasManager&gt;()
+            .Named&lt;IPythonPandasManager&gt;("etl")
+            .WithParameter("sessionPrefix", "etl")
+            .InstancePerLifetimeScope();
+    }
+}
+
+// Program.cs with Autofac
+var builder = WebApplication.CreateBuilder(args);
+
+// Configure Autofac as the service provider factory
+builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
+
+// Configure Autofac container
+builder.Host.ConfigureContainer&lt;ContainerBuilder&gt;(containerBuilder =>
+{
+    var options = builder.Configuration
+        .GetSection("PythonDataManagement")
+        .Get&lt;PythonDataManagementOptions&gt;();
+    
+    containerBuilder.RegisterModule(new PythonDataManagementModule(options));
+    
+    // Register BEEP modules if enabled
+    if (options.EnableBeepIntegration)
+    {
+        containerBuilder.RegisterModule&lt;BeepFrameworkModule&gt;();
+    }
+});
+
+var app = builder.Build();
+
+// Initialize services
+await app.Services.GetRequiredService&lt;IPythonRunTimeManager&gt;().InitializeAsync();</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Advanced Autofac Features</h4>
+                        <pre><code class="language-csharp">// Advanced Autofac configuration with interceptors and decorators
+public class AdvancedPythonDataManagementModule : Module
+{
+    protected override void Load(ContainerBuilder builder)
+    {
+        // Register interceptors for AOP
+        builder.RegisterType&lt;LoggingInterceptor&gt;();
+        builder.RegisterType&lt;PerformanceInterceptor&gt;();
+        builder.RegisterType&lt;ExceptionHandlingInterceptor&gt;();
+        
+        // Register services with interceptors
+        builder.RegisterType&lt;PythonPandasManager&gt;()
+            .As&lt;IPythonPandasManager&gt;()
+            .EnableInterfaceInterceptors()
+            .InterceptedBy(typeof(LoggingInterceptor))
+            .InterceptedBy(typeof(PerformanceInterceptor))
+            .InterceptedBy(typeof(ExceptionHandlingInterceptor))
+            .InstancePerLifetimeScope();
+        
+        // Register conditional services based on configuration
+        builder.Register(context =>
+        {
+            var options = context.Resolve&lt;PythonDataManagementOptions&gt;();
+            
+            if (options.EnableBeepIntegration)
+            {
+                return new BeepIntegratedPandasManager(
+                    context.Resolve&lt;IPythonRunTimeManager&gt;(),
+                    context.Resolve&lt;IBeepService&gt;());
+            }
+            else
+            {
+                return new PythonPandasManager(
+                    context.Resolve&lt;IPythonRunTimeManager&gt;(),
+                    context.Resolve&lt;IPythonCodeExecuteManager&gt;());
+            }
+        }).As&lt;IPythonPandasManager&gt;().InstancePerLifetimeScope();
+        
+        // Register factory with lambda
+        builder.Register&lt;Func&lt;string, IPythonPandasManager&gt;&gt;(context =>
+        {
+            var componentContext = context.Resolve&lt;IComponentContext&gt;();
+            
+            return sessionType =>
+            {
+                return componentContext.ResolveNamed&lt;IPythonPandasManager&gt;(sessionType);
+            };
+        });
+        
+        // Register open generic types
+        builder.RegisterGeneric(typeof(Repository&lt;&gt;))
+            .As(typeof(IRepository&lt;&gt;))
+            .InstancePerLifetimeScope();
+        
+        // Register assemblies
+        builder.RegisterAssemblyTypes(typeof(PythonPandasManager).Assembly)
+            .Where(t => t.Name.EndsWith("Service"))
+            .AsImplementedInterfaces()
+            .InstancePerLifetimeScope();
+    }
+}
+
+// Interceptor examples
+public class LoggingInterceptor : IInterceptor
+{
+    private readonly ILogger&lt;LoggingInterceptor&gt; _logger;
+    
+    public LoggingInterceptor(ILogger&lt;LoggingInterceptor&gt; logger)
+    {
+        _logger = logger;
+    }
+    
+    public void Intercept(IInvocation invocation)
+    {
+        var methodName = $"{invocation.TargetType.Name}.{invocation.Method.Name}";
+        var parameters = string.Join(", ", invocation.Arguments.Select(a => a?.ToString() ?? "null"));
+        
+        _logger.LogDebug("Calling method: {MethodName} with parameters: {Parameters}", 
+            methodName, parameters);
+        
+        var stopwatch = Stopwatch.StartNew();
+        
+        try
+        {
+            invocation.Proceed();
+            
+            stopwatch.Stop();
+            _logger.LogDebug("Method {MethodName} completed in {Duration}ms", 
+                methodName, stopwatch.ElapsedMilliseconds);
+        }
+        catch (Exception ex)
+        {
+            stopwatch.Stop();
+            _logger.LogError(ex, "Method {MethodName} failed after {Duration}ms", 
+                methodName, stopwatch.ElapsedMilliseconds);
+            throw;
+        }
+    }
+}
+
+public class PerformanceInterceptor : IInterceptor
+{
+    private readonly IPythonPerformanceMonitor _performanceMonitor;
+    
+    public PerformanceInterceptor(IPythonPerformanceMonitor performanceMonitor)
+    {
+        _performanceMonitor = performanceMonitor;
+    }
+    
+    public void Intercept(IInvocation invocation)
+    {
+        var methodName = $"{invocation.TargetType.Name}.{invocation.Method.Name}";
+        
+        using var activity = _performanceMonitor.StartActivity(methodName);
+        
+        invocation.Proceed();
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Scoped Services -->
+                <section class="section" id="scoped-services">
+                    <h2>?? Service Lifetimes and Scoping</h2>
+                    
+                    <div class="code-example">
+                        <h4>Service Lifetime Management</h4>
+                        <pre><code class="language-csharp">// Service lifetime configuration
+public static class ServiceLifetimeConfiguration
+{
+    public static IServiceCollection ConfigureServiceLifetimes(this IServiceCollection services)
+    {
+        // Singleton services (application lifetime)
+        // - Shared across all requests and users
+        // - Expensive to create, stateless or thread-safe
+        services.AddSingleton&lt;IPythonRunTimeManager, PythonRunTimeManager&gt;();
+        services.AddSingleton&lt;IPythonPackageManager, PythonPackageManager&gt;();
+        services.AddSingleton&lt;IPythonVirtualEnvManager, PythonVirtualEnvManager&gt;();
+        services.AddSingleton&lt;IPythonSessionManager, PythonSessionManager&gt;();
+        services.AddSingleton&lt;IPythonPerformanceMonitor, PythonPerformanceMonitor&gt;();
+        
+        // Scoped services (per HTTP request)
+        // - Maintains state during a single request
+        // - Good for user-specific operations
+        services.AddScoped&lt;IPythonSessionContext, PythonSessionContext&gt;();
+        services.AddScoped&lt;IPythonPandasManager, PythonPandasManager&gt;();
+        services.AddScoped&lt;IDataAnalysisService, DataAnalysisService&gt;();
+        services.AddScoped&lt;IETLPipelineService, ETLPipelineService&gt;();
+        
+        // Transient services (per injection)
+        // - Lightweight, stateless services
+        // - Created fresh each time they're requested
+        services.AddTransient&lt;IPythonHealthChecker, PythonHealthChecker&gt;();
+        services.AddTransient&lt;IDataValidator, DataValidator&gt;();
+        services.AddTransient&lt;IReportGenerator, ReportGenerator&gt;();
+        
+        return services;
+    }
+}
+
+// Custom service scope for long-running operations
+public class LongRunningAnalysisService
+{
+    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ILogger&lt;LongRunningAnalysisService&gt; _logger;
+    
+    public LongRunningAnalysisService(
+        IServiceScopeFactory scopeFactory,
+        ILogger&lt;LongRunningAnalysisService&gt; logger)
+    {
+        _scopeFactory = scopeFactory;
+        _logger = logger;
+    }
+    
+    public async Task&lt;AnalysisResult&gt; RunLongAnalysisAsync(string userId, AnalysisRequest request)
+    {
+        // Create a dedicated scope for this long-running operation
+        using var scope = _scopeFactory.CreateScope();
+        
+        try
+        {
+            // Get services from the dedicated scope
+            var pandasManager = scope.ServiceProvider.GetRequiredService&lt;IPythonPandasManager&gt;();
+            var analysisService = scope.ServiceProvider.GetRequiredService&lt;IDataAnalysisService&gt;();
+            
+            // Configure session for this user
+            var sessionConfigured = pandasManager.ConfigureSessionForUser(userId, $"long-analysis-{Guid.NewGuid()}");
+            if (!sessionConfigured)
+            {
+                throw new InvalidOperationException("Failed to configure session");
+            }
+            
+            _logger.LogInformation("Starting long-running analysis for user: {UserId}", userId);
+            
+            // Perform the analysis
+            var result = await analysisService.PerformAdvancedAnalysisAsync(request);
+            
+            _logger.LogInformation("Completed long-running analysis for user: {UserId}", userId);
+            
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Long-running analysis failed for user: {UserId}", userId);
+            throw;
+        }
+        // Scope is automatically disposed, cleaning up resources
+    }
+}
+
+// Session context service for user-specific state
+public class PythonSessionContext : IPythonSessionContext, IDisposable
+{
+    private readonly IPythonSessionManager _sessionManager;
+    private readonly ILogger&lt;PythonSessionContext&gt; _logger;
+    private readonly string _sessionId;
+    private bool _disposed = false;
+    
+    public string UserId { get; private set; }
+    public string SessionId =&gt; _sessionId;
+    public DateTime CreatedAt { get; private set; }
+    
+    public PythonSessionContext(
+        IPythonSessionManager sessionManager,
+        ILogger&lt;PythonSessionContext&gt; logger)
+    {
+        _sessionManager = sessionManager;
+        _logger = logger;
+        _sessionId = Guid.NewGuid().ToString();
+        CreatedAt = DateTime.UtcNow;
+    }
+    
+    public async Task InitializeForUserAsync(string userId)
+    {
+        UserId = userId;
+        await _sessionManager.CreateSessionAsync(_sessionId, userId);
+        _logger.LogDebug("Initialized session context for user: {UserId}, Session: {SessionId}", 
+            userId, _sessionId);
+    }
+    
+    public void Dispose()
+    {
+        if (!_disposed)
+        {
+            try
+            {
+                _sessionManager.CloseSession(_sessionId);
+                _logger.LogDebug("Disposed session context for user: {UserId}, Session: {SessionId}", 
+                    UserId, _sessionId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error disposing session context: {SessionId}", _sessionId);
+            }
+            
+            _disposed = true;
+        }
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Factory Patterns -->
+                <section class="section" id="factory-patterns">
+                    <h2>?? Factory Patterns and Advanced DI</h2>
+                    
+                    <div class="code-example">
+                        <h4>Factory Pattern Implementation</h4>
+                        <pre><code class="language-csharp">// Factory interfaces
+public interface IPandasManagerFactory
+{
+    IPythonPandasManager CreateForUser(string userId, string sessionType = "default");
+    IPythonPandasManager CreateForETL(string pipelineName);
+    IPythonPandasManager CreateForAnalytics(string analysisType);
+    Task&lt;IPythonPandasManager&gt; CreateAsync(PandasManagerOptions options);
+}
+
+public interface IDataAnalysisFactory
+{
+    IDataAnalysisService CreateForBusinessIntelligence();
+    IDataAnalysisService CreateForStatisticalAnalysis();
+    IDataAnalysisService CreateForMachineLearning();
+}
+
+// Factory implementations
+public class PandasManagerFactory : IPandasManagerFactory
+{
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger&lt;PandasManagerFactory&gt; _logger;
+    private readonly PythonDataManagementOptions _options;
+    
+    public PandasManagerFactory(
+        IServiceProvider serviceProvider,
+        ILogger&lt;PandasManagerFactory&gt; logger,
+        IOptions&lt;PythonDataManagementOptions&gt; options)
+    {
+        _serviceProvider = serviceProvider;
+        _logger = logger;
+        _options = options.Value;
+    }
+    
+    public IPythonPandasManager CreateForUser(string userId, string sessionType = "default")
+    {
+        using var scope = _serviceProvider.CreateScope();
+        
+        var runtimeManager = scope.ServiceProvider.GetRequiredService&lt;IPythonRunTimeManager&gt;();
+        var executeManager = scope.ServiceProvider.GetRequiredService&lt;IPythonCodeExecuteManager&gt;();
+        
+        var pandasManager = new PythonPandasManager(runtimeManager, executeManager);
+        
+        // Configure session with user-specific settings
+        var sessionId = $"{sessionType}-{userId}-{DateTime.UtcNow:yyyyMMddHHmmss}";
+        var configured = pandasManager.ConfigureSessionForUser(userId, sessionId);
+        
+        if (!configured)
+        {
+            throw new InvalidOperationException($"Failed to configure pandas manager for user: {userId}");
+        }
+        
+        _logger.LogDebug("Created pandas manager for user: {UserId}, Session: {SessionId}", 
+            userId, sessionId);
+        
+        return pandasManager;
+    }
+    
+    public IPythonPandasManager CreateForETL(string pipelineName)
+    {
+        var manager = CreateForUser("system", "etl");
+        
+        // Configure for ETL operations
+        manager.SetPandasOption("display.max_columns", "None");
+        manager.SetPandasOption("display.max_rows", "None");
+        
+        // Set up ETL-specific environment
+        var etlEnvironment = _serviceProvider.GetRequiredService&lt;IPythonVirtualEnvManager&gt;()
+            .GetEnvironmentByName("etl-environment");
+        
+        if (etlEnvironment != null)
+        {
+            manager.SetVirtualEnvironment(etlEnvironment);
+        }
+        
+        _logger.LogDebug("Created ETL pandas manager for pipeline: {PipelineName}", pipelineName);
+        
+        return manager;
+    }
+    
+    public IPythonPandasManager CreateForAnalytics(string analysisType)
+    {
+        var manager = CreateForUser("system", "analytics");
+        
+        // Configure for analytics operations
+        manager.SetPandasOption("display.precision", "4");
+        manager.SetPandasOption("display.float_format", "'{:.4f}'.format");
+        
+        // Load analytics-specific libraries
+        var analyticsEnvironment = _serviceProvider.GetRequiredService&lt;IPythonVirtualEnvManager&gt;()
+            .GetEnvironmentByName("analytics-environment");
+        
+        if (analyticsEnvironment != null)
+        {
+            manager.SetVirtualEnvironment(analyticsEnvironment);
+        }
+        
+        _logger.LogDebug("Created analytics pandas manager for analysis: {AnalysisType}", analysisType);
+        
+        return manager;
+    }
+    
+    public async Task&lt;IPythonPandasManager&gt; CreateAsync(PandasManagerOptions options)
+    {
+        var manager = CreateForUser(options.UserId, options.SessionType);
+        
+        // Apply custom configuration
+        if (options.CustomPandasOptions?.Any() == true)
+        {
+            foreach (var option in options.CustomPandasOptions)
+            {
+                manager.SetPandasOption(option.Key, option.Value);
+            }
+        }
+        
+        // Set up custom virtual environment if specified
+        if (!string.IsNullOrEmpty(options.VirtualEnvironmentName))
+        {
+            var envManager = _serviceProvider.GetRequiredService&lt;IPythonVirtualEnvManager&gt;();
+            var environment = await envManager.GetOrCreateEnvironmentAsync(options.VirtualEnvironmentName);
+            manager.SetVirtualEnvironment(environment);
+        }
+        
+        return manager;
+    }
+}
+
+// Factory registration with DI
+public static class FactoryRegistrationExtensions
+{
+    public static IServiceCollection AddPythonDataManagementFactories(this IServiceCollection services)
+    {
+        // Register factories
+        services.AddTransient&lt;IPandasManagerFactory, PandasManagerFactory&gt;();
+        services.AddTransient&lt;IDataAnalysisFactory, DataAnalysisFactory&gt;();
+        
+        // Register factory delegates
+        services.AddTransient&lt;Func&lt;string, IPythonPandasManager&gt;&gt;(serviceProvider =&gt;
+        {
+            var factory = serviceProvider.GetRequiredService&lt;IPandasManagerFactory&gt;();
+            return userId =&gt; factory.CreateForUser(userId);
+        });
+        
+        services.AddTransient&lt;Func&lt;string, string, IPythonPandasManager&gt;&gt;(serviceProvider =&gt;
+        {
+            var factory = serviceProvider.GetRequiredService&lt;IPandasManagerFactory&gt;();
+            return (userId, sessionType) =&gt; factory.CreateForUser(userId, sessionType);
+        });
+        
+        // Register named service factories
+        services.AddKeyedTransient&lt;IPythonPandasManager&gt;("etl", (serviceProvider, key) =&gt;
+        {
+            var factory = serviceProvider.GetRequiredService&lt;IPandasManagerFactory&gt;();
+            return factory.CreateForETL("default");
+        });
+        
+        services.AddKeyedTransient&lt;IPythonPandasManager&gt;("analytics", (serviceProvider, key) =&gt;
+        {
+            var factory = serviceProvider.GetRequiredService&lt;IPandasManagerFactory&gt;();
+            return factory.CreateForAnalytics("default");
+        });
+        
+        return services;
+    }
+}
+
+// Usage in controllers
+[ApiController]
+[Route("api/[controller]")]
+public class DataAnalysisController : ControllerBase
+{
+    private readonly IPandasManagerFactory _pandasFactory;
+    private readonly Func&lt;string, IPythonPandasManager&gt; _pandasManagerFunc;
+    
+    public DataAnalysisController(
+        IPandasManagerFactory pandasFactory,
+        Func&lt;string, IPythonPandasManager&gt; pandasManagerFunc)
+    {
+        _pandasFactory = pandasFactory;
+        _pandasManagerFunc = pandasManagerFunc;
+    }
+    
+    [HttpPost("analyze")]
+    public async Task&lt;IActionResult&gt; Analyze([FromBody] AnalysisRequest request)
+    {
+        var userId = User.Identity.Name;
+        
+        // Create manager using factory
+        using var pandasManager = _pandasFactory.CreateForAnalytics("statistical");
+        
+        // Or using delegate
+        // using var pandasManager = _pandasManagerFunc(userId);
+        
+        // Perform analysis
+        var result = await PerformAnalysis(pandasManager, request);
+        
+        return Ok(result);
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Best Practices -->
+                <section class="section" id="best-practices">
+                    <h2>? Dependency Injection Best Practices</h2>
+                    
+                    <div class="tip">
+                        <h4>?? Service Registration Guidelines</h4>
+                        <ul>
+                            <li><strong>Singleton for Expensive Services:</strong> Use singleton lifetime for Python runtime and package managers</li>
+                            <li><strong>Scoped for User Operations:</strong> Use scoped lifetime for user-specific pandas managers</li>
+                            <li><strong>Transient for Stateless Services:</strong> Use transient for lightweight, stateless services</li>
+                            <li><strong>Factory for Complex Creation:</strong> Use factories when service creation requires complex logic</li>
+                        </ul>
+                    </div>
+
+                    <div class="tip">
+                        <h4>?? Configuration Management</h4>
+                        <ul>
+                            <li><strong>Environment-Specific Settings:</strong> Use different configurations for development, staging, and production</li>
+                            <li><strong>Validation:</strong> Validate configuration options at startup</li>
+                            <li><strong>Hot Reload:</strong> Enable configuration hot reloading for development</li>
+                            <li><strong>Security:</strong> Use Azure Key Vault or similar for production secrets</li>
+                        </ul>
+                    </div>
+
+                    <div class="warning">
+                        <h4>?? Common Pitfalls</h4>
+                        <ul>
+                            <li><strong>Captive Dependencies:</strong> Don't inject singleton services into scoped services</li>
+                            <li><strong>Disposal Issues:</strong> Ensure proper disposal of Python resources in scoped services</li>
+                            <li><strong>Thread Safety:</strong> Be careful with singleton services that manage mutable state</li>
+                            <li><strong>Resource Leaks:</strong> Always dispose of Python sessions and DataFrames</li>
+                        </ul>
+                    </div>
+
+                    <div class="note">
+                        <h4>?? Performance Considerations</h4>
+                        <ul>
+                            <li><strong>Warm-up:</strong> Initialize Python runtime during application startup</li>
+                            <li><strong>Connection Pooling:</strong> Use singleton lifetime for connection managers</li>
+                            <li><strong>Caching:</strong> Implement caching for frequently accessed DataFrames</li>
+                            <li><strong>Monitoring:</strong> Track service creation and disposal for optimization</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="beep-framework.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> BEEP Framework
+                    </a>
+                    <a href="workflow-steps.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> Workflow Steps
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.DataManagement Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="../index.html">Home</a>
+                            <a href="../getting-started.html">Getting Started</a>
+                            <a href="../api/PythonPandasManager.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../assets/navigation.js"></script>
+</body>
+</html>

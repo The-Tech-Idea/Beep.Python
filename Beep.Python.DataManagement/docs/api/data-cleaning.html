@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Cleaning Operations - Beep.Python.DataManagement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="../assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="../index.html">Home</a>
+                    <span>?</span>
+                    <a href="../index.html#operations">Data Operations</a>
+                    <span>?</span>
+                    <span>Data Cleaning</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-droplet"></i> Data Cleaning Operations</h1>
+                    <p class="page-subtitle">Comprehensive data quality management, missing value handling, outlier detection, and data validation using pandas operations</p>
+                </div>
+
+                <!-- Quick Reference -->
+                <section class="section" id="quick-reference">
+                    <h2>? Quick Reference</h2>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-x-circle"></i> Missing Data</h4>
+                            <p>Handle null values, interpolation, and forward/backward fill</p>
+                            <small>IsNull, DropNA, FillNA, interpolation methods</small>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-copy"></i> Duplicates</h4>
+                            <p>Identify and remove duplicate records with various strategies</p>
+                            <small>DropDuplicates, duplicate detection, deduplication logic</small>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-exclamation-triangle"></i> Outliers</h4>
+                            <p>Detect and handle outliers using statistical methods</p>
+                            <small>IQR method, Z-score, percentile-based detection</small>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-check-circle"></i> Validation</h4>
+                            <p>Data type validation, range checks, and business rules</p>
+                            <small>Type conversion, constraint validation, quality metrics</small>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Data Quality Assessment -->
+                <section class="section" id="data-quality">
+                    <h2>?? Data Quality Assessment</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Comprehensive Data Quality Analysis</h4>
+                        <pre><code class="language-csharp">public class DataQualityService
+{
+    private readonly IPythonPandasManager _pandasManager;
+    private readonly ILogger&lt;DataQualityService&gt; _logger;
+    
+    public DataQualityService(IPythonPandasManager pandasManager, ILogger&lt;DataQualityService&gt; logger)
+    {
+        _pandasManager = pandasManager;
+        _logger = logger;
+    }
+    
+    public async Task&lt;DataQualityReport&gt; AssessDataQuality(string dataFrameName, DataQualityConfig config = null)
+    {
+        _logger.LogInformation("Starting data quality assessment for: {DataFrameName}", dataFrameName);
+        
+        var report = new DataQualityReport
+        {
+            DataFrameName = dataFrameName,
+            AssessmentDate = DateTime.UtcNow
+        };
+        
+        try
+        {
+            // Basic data profiling
+            await PerformBasicProfiling(dataFrameName, report);
+            
+            // Missing value analysis
+            await AnalyzeMissingValues(dataFrameName, report);
+            
+            // Duplicate analysis
+            await AnalyzeDuplicates(dataFrameName, report);
+            
+            // Data type consistency
+            await AnalyzeDataTypes(dataFrameName, report);
+            
+            // Outlier detection
+            await DetectOutliers(dataFrameName, report);
+            
+            // Business rule validation
+            if (config?.BusinessRules?.Any() == true)
+            {
+                await ValidateBusinessRules(dataFrameName, report, config.BusinessRules);
+            }
+            
+            // Calculate overall quality score
+            report.OverallQualityScore = CalculateQualityScore(report);
+            
+            _logger.LogInformation("Data quality assessment completed. Score: {Score:F2}", 
+                report.OverallQualityScore);
+            
+            return report;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Data quality assessment failed");
+            throw;
+        }
+    }
+    
+    private async Task PerformBasicProfiling(string dataFrameName, DataQualityReport report)
+    {
+        string profilingCode = $@"
+import pandas as pd
+import numpy as np
+
+# Basic dataset information
+df = {dataFrameName}
+basic_info = {{
+    'row_count': len(df),
+    'column_count': len(df.columns),
+    'memory_usage_mb': df.memory_usage(deep=True).sum() / 1024 / 1024,
+    'dtypes': df.dtypes.value_counts().to_dict()
+}}
+
+# Column-level profiling
+column_profiles = {{}}
+for col in df.columns:
+    col_data = df[col]
+    profile = {{
+        'dtype': str(col_data.dtype),
+        'non_null_count': col_data.count(),
+        'null_count': col_data.isnull().sum(),
+        'unique_count': col_data.nunique(),
+        'memory_usage': col_data.memory_usage(deep=True)
+    }}
+    
+    # Add numeric-specific stats
+    if pd.api.types.is_numeric_dtype(col_data):
+        profile.update({{
+            'min': col_data.min(),
+            'max': col_data.max(),
+            'mean': col_data.mean(),
+            'std': col_data.std(),
+            'zeros_count': (col_data == 0).sum()
+        }})
+    
+    # Add string-specific stats
+    elif pd.api.types.is_string_dtype(col_data):
+        profile.update({{
+            'avg_length': col_data.str.len().mean() if col_data.count() > 0 else 0,
+            'max_length': col_data.str.len().max() if col_data.count() > 0 else 0,
+            'empty_strings': (col_data == '').sum()
+        }})
+    
+    column_profiles[col] = profile
+
+profiling_results = {{
+    'basic_info': basic_info,
+    'column_profiles': column_profiles
+}}
+";
+        
+        await _pandasManager.ExecutePythonCodeAsync(profilingCode);
+        
+        // Extract results (simplified - would need actual implementation)
+        report.RowCount = 10000; // Would extract from Python
+        report.ColumnCount = 15;
+        report.MemoryUsageMB = 45.2m;
+        report.ColumnProfiles = new Dictionary&lt;string, ColumnProfile&gt;();
+    }
+    
+    private async Task AnalyzeMissingValues(string dataFrameName, DataQualityReport report)
+    {
+        string missingAnalysisCode = $@"
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+df = {dataFrameName}
+
+# Missing value analysis
+missing_analysis = {{}}
+
+# Overall missing statistics
+total_cells = df.size
+missing_cells = df.isnull().sum().sum()
+missing_percentage = (missing_cells / total_cells) * 100
+
+missing_analysis['overall'] = {{
+    'total_cells': total_cells,
+    'missing_cells': missing_cells,
+    'missing_percentage': missing_percentage
+}}
+
+# Column-wise missing analysis
+column_missing = {{}}
+for col in df.columns:
+    missing_count = df[col].isnull().sum()
+    missing_pct = (missing_count / len(df)) * 100
+    
+    # Identify missing patterns
+    if missing_count > 0:
+        # Check if missing values are random or have patterns
+        missing_mask = df[col].isnull()
+        
+        # Check correlation with other columns' missing values
+        missing_correlations = {{}}
+        for other_col in df.columns:
+            if other_col != col:
+                other_missing = df[other_col].isnull()
+                if other_missing.sum() > 0:
+                    correlation = missing_mask.corr(other_missing)
+                    if abs(correlation) > 0.5:  # Strong correlation
+                        missing_correlations[other_col] = correlation
+        
+        column_missing[col] = {{
+            'count': missing_count,
+            'percentage': missing_pct,
+            'patterns': 'random' if len(missing_correlations) == 0 else 'structured',
+            'correlated_columns': missing_correlations
+        }}
+
+missing_analysis['by_column'] = column_missing
+
+# Missing value patterns across rows
+rows_with_missing = df.isnull().any(axis=1).sum()
+complete_rows = len(df) - rows_with_missing
+missing_analysis['row_patterns'] = {{
+    'complete_rows': complete_rows,
+    'rows_with_missing': rows_with_missing,
+    'complete_percentage': (complete_rows / len(df)) * 100
+}}
+
+# Identify columns with high missing rates (>20%)
+high_missing_columns = [col for col, stats in column_missing.items() 
+                       if stats['percentage'] > 20]
+missing_analysis['high_missing_columns'] = high_missing_columns
+";
+        
+        await _pandasManager.ExecutePythonCodeAsync(missingAnalysisCode);
+        
+        // Extract and populate missing value analysis
+        report.MissingValueAnalysis = new MissingValueAnalysis
+        {
+            TotalMissingCells = 250,
+            MissingPercentage = 2.5m,
+            ColumnsWithMissingData = 5,
+            HighMissingColumns = new[] { "optional_field", "notes" }
+        };
+    }
+    
+    private async Task AnalyzeDuplicates(string dataFrameName, DataQualityReport report)
+    {
+        string duplicateAnalysisCode = $@"
+import pandas as pd
+
+df = {dataFrameName}
+
+# Duplicate analysis
+duplicate_analysis = {{}}
+
+# Full row duplicates
+full_duplicates = df.duplicated().sum()
+full_duplicate_pct = (full_duplicates / len(df)) * 100
+
+duplicate_analysis['full_duplicates'] = {{
+    'count': full_duplicates,
+    'percentage': full_duplicate_pct
+}}
+
+# Identify key columns for partial duplicate detection
+# (in practice, this would be configurable)
+key_columns = []
+for col in df.columns:
+    if df[col].nunique() / len(df) < 0.95:  # Less than 95% unique
+        key_columns.append(col)
+
+# Partial duplicates (based on key columns)
+if key_columns:
+    partial_duplicates = df.duplicated(subset=key_columns).sum()
+    partial_duplicate_pct = (partial_duplicates / len(df)) * 100
+    
+    duplicate_analysis['partial_duplicates'] = {{
+        'count': partial_duplicates,
+        'percentage': partial_duplicate_pct,
+        'key_columns': key_columns
+    }}
+
+# Near-duplicate detection for string columns
+near_duplicates = {{}}
+string_columns = df.select_dtypes(include=['object', 'string']).columns
+
+for col in string_columns:
+    if df[col].count() > 0:  # Has non-null values
+        # Simple near-duplicate detection using string similarity
+        # (in practice, would use more sophisticated methods)
+        value_counts = df[col].value_counts()
+        
+        # Find values that are very similar
+        similar_groups = []
+        processed = set()
+        
+        for val1 in value_counts.index:
+            if val1 in processed:
+                continue
+                
+            similar = [val1]
+            for val2 in value_counts.index:
+                if val2 != val1 and val2 not in processed:
+                    # Simple similarity check (length and character overlap)
+                    if isinstance(val1, str) and isinstance(val2, str):
+                        if abs(len(val1) - len(val2)) <= 2:  # Similar length
+                            # Basic character overlap check
+                            overlap = len(set(val1.lower()) & set(val2.lower()))
+                            if overlap / max(len(val1), len(val2)) > 0.8:
+                                similar.append(val2)
+                                processed.add(val2)
+            
+            if len(similar) > 1:
+                similar_groups.append(similar)
+                processed.update(similar)
+        
+        if similar_groups:
+            near_duplicates[col] = {{
+                'groups': similar_groups,
+                'count': len(similar_groups)
+            }}
+
+duplicate_analysis['near_duplicates'] = near_duplicates
+";
+        
+        await _pandasManager.ExecutePythonCodeAsync(duplicateAnalysisCode);
+        
+        report.DuplicateAnalysis = new DuplicateAnalysis
+        {
+            FullDuplicates = 25,
+            PartialDuplicates = 45,
+            NearDuplicateGroups = 8
+        };
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Automated Data Type Validation</h4>
+                        <pre><code class="language-csharp">private async Task AnalyzeDataTypes(string dataFrameName, DataQualityReport report)
+{
+    string typeAnalysisCode = $@"
+import pandas as pd
+import numpy as np
+import re
+from datetime import datetime
+
+df = {dataFrameName}
+
+# Data type analysis and suggestions
+type_analysis = {{}}
+
+for col in df.columns:
+    col_data = df[col].dropna()  # Exclude null values for analysis
+    current_type = str(df[col].dtype)
+    
+    analysis = {{
+        'current_type': current_type,
+        'suggested_type': current_type,
+        'conversion_issues': [],
+        'sample_values': col_data.head(5).tolist() if len(col_data) > 0 else []
+    }}
+    
+    if len(col_data) == 0:
+        analysis['suggested_type'] = 'object'  # Default for empty columns
+        type_analysis[col] = analysis
+        continue
+    
+    # Auto-detect better data types
+    if current_type == 'object':
+        # Check if it should be numeric
+        try:
+            numeric_converted = pd.to_numeric(col_data, errors='coerce')
+            null_after_conversion = numeric_converted.isnull().sum()
+            null_before = col_data.isnull().sum()
+            
+            if null_after_conversion == null_before:  # No conversion errors
+                if all(numeric_converted.dropna() == numeric_converted.dropna().astype(int)):
+                    analysis['suggested_type'] = 'int64'
+                else:
+                    analysis['suggested_type'] = 'float64'
+            elif null_after_conversion - null_before < len(col_data) * 0.1:  # <10% conversion errors
+                analysis['suggested_type'] = 'float64'
+                analysis['conversion_issues'].append(f'{{null_after_conversion - null_before}} values cannot be converted to numeric')
+        except:
+            pass
+        
+        # Check if it should be datetime
+        if analysis['suggested_type'] == 'object':  # Still object after numeric check
+            try:
+                date_converted = pd.to_datetime(col_data, errors='coerce', infer_datetime_format=True)
+                null_after_conversion = date_converted.isnull().sum()
+                null_before = col_data.isnull().sum()
+                
+                if null_after_conversion == null_before:  # No conversion errors
+                    analysis['suggested_type'] = 'datetime64[ns]'
+                elif null_after_conversion - null_before < len(col_data) * 0.1:  # <10% conversion errors
+                    analysis['suggested_type'] = 'datetime64[ns]'
+                    analysis['conversion_issues'].append(f'{{null_after_conversion - null_before}} values cannot be converted to datetime')
+            except:
+                pass
+        
+        # Check if it should be boolean
+        if analysis['suggested_type'] == 'object':
+            unique_values = set(col_data.str.lower()) if hasattr(col_data, 'str') else set(col_data)
+            bool_values = {{'true', 'false', 't', 'f', 'yes', 'no', 'y', 'n', '1', '0'}}
+            
+            if unique_values.issubset(bool_values):
+                analysis['suggested_type'] = 'boolean'
+        
+        # Check if it should be category
+        if analysis['suggested_type'] == 'object':
+            unique_ratio = col_data.nunique() / len(col_data)
+            if unique_ratio < 0.5:  # Less than 50% unique values
+                analysis['suggested_type'] = 'category'
+    
+    # Validate current numeric types
+    elif current_type in ['int64', 'float64']:
+        # Check if int64 could be smaller int type
+        if current_type == 'int64':
+            min_val, max_val = col_data.min(), col_data.max()
+            if -128 <= min_val and max_val <= 127:
+                analysis['suggested_type'] = 'int8'
+            elif -32768 <= min_val and max_val <= 32767:
+                analysis['suggested_type'] = 'int16'
+            elif -2147483648 <= min_val and max_val <= 2147483647:
+                analysis['suggested_type'] = 'int32'
+        
+        # Check for unnecessary precision in float
+        elif current_type == 'float64':
+            if all(col_data.dropna() == col_data.dropna().astype(int)):
+                analysis['suggested_type'] = 'int64'
+                analysis['conversion_issues'].append('Contains only integer values but stored as float')
+    
+    # Add data quality checks for each type
+    if current_type in ['int64', 'float64']:
+        # Check for outliers
+        Q1 = col_data.quantile(0.25)
+        Q3 = col_data.quantile(0.75)
+        IQR = Q3 - Q1
+        outliers = col_data[(col_data < Q1 - 1.5 * IQR) | (col_data > Q3 + 1.5 * IQR)]
+        if len(outliers) > 0:
+            analysis['conversion_issues'].append(f'{{len(outliers)}} potential outliers detected')
+    
+    elif current_type == 'object':
+        # Check for inconsistent formatting
+        if hasattr(col_data, 'str'):
+            # Check for leading/trailing whitespace
+            whitespace_issues = col_data.str.strip() != col_data
+            if whitespace_issues.any():
+                analysis['conversion_issues'].append(f'{{whitespace_issues.sum()}} values have leading/trailing whitespace')
+            
+            # Check for case inconsistencies
+            case_variations = col_data.str.lower().nunique() < col_data.nunique()
+            if case_variations:
+                analysis['conversion_issues'].append('Inconsistent case formatting detected')
+    
+    type_analysis[col] = analysis
+
+data_type_analysis = type_analysis
+";
+    
+    await _pandasManager.ExecutePythonCodeAsync(typeAnalysisCode);
+    
+    report.DataTypeAnalysis = new DataTypeAnalysis
+    {
+        TypeMismatches = 3,
+        SuggestedConversions = new Dictionary&lt;string, string&gt;
+        {
+            ["customer_id"] = "int32",
+            ["is_active"] = "boolean",
+            ["category"] = "category"
+        }
+    };
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Missing Value Handling -->
+                <section class="section" id="missing-values">
+                    <h2>??? Missing Value Handling Strategies</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Strategic Missing Value Treatment</h4>
+                        <pre><code class="language-csharp">public class MissingValueHandler
+{
+    private readonly IPythonPandasManager _pandasManager;
+    
+    public async Task&lt;MissingValueTreatmentResult&gt; HandleMissingValues(
+        string dataFrameName, 
+        MissingValueStrategy strategy,
+        MissingValueConfig config = null)
+    {
+        var result = new MissingValueTreatmentResult();
+        
+        // Analyze missing patterns first
+        await AnalyzeMissingPatterns(dataFrameName, result);
+        
+        switch (strategy)
+        {
+            case MissingValueStrategy.DropRows:
+                await DropRowsWithMissingValues(dataFrameName, result, config);
+                break;
+                
+            case MissingValueStrategy.DropColumns:
+                await DropColumnsWithMissingValues(dataFrameName, result, config);
+                break;
+                
+            case MissingValueStrategy.FillWithStatistics:
+                await FillWithStatisticalValues(dataFrameName, result, config);
+                break;
+                
+            case MissingValueStrategy.ForwardFill:
+                await ForwardFillMissingValues(dataFrameName, result);
+                break;
+                
+            case MissingValueStrategy.Interpolation:
+                await InterpolateMissingValues(dataFrameName, result, config);
+                break;
+                
+            case MissingValueStrategy.PredictiveImputation:
+                await PredictiveImputation(dataFrameName, result, config);
+                break;
+                
+            case MissingValueStrategy.Smart:
+                await SmartMissingValueHandling(dataFrameName, result, config);
+                break;
+        }
+        
+        return result;
+    }
+    
+    private async Task DropRowsWithMissingValues(string dataFrameName, MissingValueTreatmentResult result, MissingValueConfig config)
+    {
+        string dropCode;
+        
+        if (config?.CriticalColumns?.Any() == true)
+        {
+            // Drop rows missing critical columns only
+            var criticalCols = string.Join("', '", config.CriticalColumns);
+            dropCode = $@"
+import pandas as pd
+
+original_count = len({dataFrameName})
+{dataFrameName}_clean = {dataFrameName}.dropna(subset=['{criticalCols}'])
+rows_dropped = original_count - len({dataFrameName}_clean)
+
+print(f'Dropped {{rows_dropped}} rows missing critical data')
+";
+        }
+        else
+        {
+            // Drop rows with any missing values
+            dropCode = $@"
+import pandas as pd
+
+original_count = len({dataFrameName})
+{dataFrameName}_clean = {dataFrameName}.dropna()
+rows_dropped = original_count - len({dataFrameName}_clean)
+
+print(f'Dropped {{rows_dropped}} rows with any missing values')
+";
+        }
+        
+        await _pandasManager.ExecutePythonCodeAsync(dropCode);
+        result.RowsAffected = 150; // Would extract from Python
+        result.Method = "Row Deletion";
+    }
+    
+    private async Task FillWithStatisticalValues(string dataFrameName, MissingValueTreatmentResult result, MissingValueConfig config)
+    {
+        string fillCode = $@"
+import pandas as pd
+import numpy as np
+
+df = {dataFrameName}.copy()
+fill_values = {{}}
+
+for col in df.columns:
+    missing_count = df[col].isnull().sum()
+    if missing_count > 0:
+        if pd.api.types.is_numeric_dtype(df[col]):
+            # Numeric columns: use mean, median, or mode based on distribution
+            skewness = df[col].skew()
+            
+            if abs(skewness) > 1:  # Highly skewed - use median
+                fill_value = df[col].median()
+                fill_method = 'median'
+            else:  # Normal distribution - use mean
+                fill_value = df[col].mean()
+                fill_method = 'mean'
+            
+            df[col] = df[col].fillna(fill_value)
+            fill_values[col] = {{'value': fill_value, 'method': fill_method}}
+            
+        elif pd.api.types.is_datetime64_any_dtype(df[col]):
+            # Datetime columns: use forward fill or median date
+            fill_value = df[col].median()
+            df[col] = df[col].fillna(fill_value)
+            fill_values[col] = {{'value': str(fill_value), 'method': 'median_date'}}
+            
+        else:
+            # Categorical/text columns: use mode
+            mode_value = df[col].mode()
+            if len(mode_value) > 0:
+                fill_value = mode_value.iloc[0]
+                df[col] = df[col].fillna(fill_value)
+                fill_values[col] = {{'value': fill_value, 'method': 'mode'}}
+
+{dataFrameName}_filled = df
+print(f'Filled missing values using statistical methods')
+print(f'Fill values used: {{fill_values}}')
+";
+        
+        await _pandasManager.ExecutePythonCodeAsync(fillCode);
+        result.Method = "Statistical Fill";
+        result.ColumnsAffected = 8;
+    }
+    
+    private async Task InterpolateMissingValues(string dataFrameName, MissingValueTreatmentResult result, MissingValueConfig config)
+    {
+        string interpolationCode = $@"
+import pandas as pd
+import numpy as np
+
+df = {dataFrameName}.copy()
+interpolation_methods = {{}}
+
+for col in df.columns:
+    missing_count = df[col].isnull().sum()
+    if missing_count > 0 and pd.api.types.is_numeric_dtype(df[col]):
+        # Choose interpolation method based on data characteristics
+        col_data = df[col].dropna()
+        
+        if len(col_data) < 3:
+            # Not enough data for interpolation
+            continue
+            
+        # Check if data has trend
+        correlation_with_index = col_data.corr(pd.Series(col_data.index))
+        
+        if abs(correlation_with_index) > 0.5:
+            # Strong trend - use linear interpolation
+            df[col] = df[col].interpolate(method='linear')
+            interpolation_methods[col] = 'linear'
+        else:
+            # No clear trend - check for seasonality or use polynomial
+            if len(col_data) > 10:
+                # Use polynomial interpolation for larger datasets
+                df[col] = df[col].interpolate(method='polynomial', order=2)
+                interpolation_methods[col] = 'polynomial'
+            else:
+                # Use nearest neighbor for small datasets
+                df[col] = df[col].interpolate(method='nearest')
+                interpolation_methods[col] = 'nearest'
+
+# Handle datetime columns with time-based interpolation
+for col in df.columns:
+    if pd.api.types.is_datetime64_any_dtype(df[col]) and df[col].isnull().any():
+        df[col] = df[col].interpolate(method='time')
+        interpolation_methods[col] = 'time-based'
+
+{dataFrameName}_interpolated = df
+print(f'Applied interpolation methods: {{interpolation_methods}}')
+";
+        
+        await _pandasManager.ExecutePythonCodeAsync(interpolationCode);
+        result.Method = "Interpolation";
+        result.ColumnsAffected = 5;
+    }
+    
+    private async Task SmartMissingValueHandling(string dataFrameName, MissingValueTreatmentResult result, MissingValueConfig config)
+    {
+        string smartHandlingCode = $@"
+import pandas as pd
+import numpy as np
+
+df = {dataFrameName}.copy()
+treatment_log = []
+
+# Smart missing value handling strategy
+for col in df.columns:
+    missing_count = df[col].isnull().sum()
+    missing_pct = (missing_count / len(df)) * 100
+    
+    if missing_count == 0:
+        continue
+    
+    treatment = None
+    
+    # Decision tree for missing value treatment
+    if missing_pct > 50:
+        # More than 50% missing - consider dropping column
+        treatment = 'DROP_COLUMN'
+        treatment_log.append(f'{{col}}: Dropped ({{missing_pct:.1f}}% missing)')
+        df = df.drop(columns=[col])
+        
+    elif missing_pct > 20:
+        # 20-50% missing - use advanced imputation
+        if pd.api.types.is_numeric_dtype(df[col]):
+            # For numeric: use median if skewed, mean if normal
+            skewness = df[col].skew()
+            if abs(skewness) > 1:
+                fill_value = df[col].median()
+                treatment = 'MEDIAN_FILL'
+            else:
+                fill_value = df[col].mean()
+                treatment = 'MEAN_FILL'
+            df[col] = df[col].fillna(fill_value)
+        else:
+            # For categorical: use mode or create 'Unknown' category
+            mode_values = df[col].mode()
+            if len(mode_values) > 0 and len(mode_values) < len(df[col].dropna()) * 0.1:
+                # Mode represents less than 10% - might be too dominant
+                df[col] = df[col].fillna('Unknown')
+                treatment = 'UNKNOWN_CATEGORY'
+            else:
+                df[col] = df[col].fillna(mode_values.iloc[0])
+                treatment = 'MODE_FILL'
+        
+        treatment_log.append(f'{{col}}: {{treatment}} ({{missing_pct:.1f}}% missing)')
+    
+    elif missing_pct > 5:
+        # 5-20% missing - use contextual imputation
+        if pd.api.types.is_numeric_dtype(df[col]):
+            # Check if missing values correlate with other columns
+            # Use group-based imputation if patterns exist
+            correlations = []
+            for other_col in df.columns:
+                if other_col != col and not df[other_col].isnull().all():
+                    try:
+                        corr = df[col].corr(df[other_col])
+                        if abs(corr) > 0.5:
+                            correlations.append((other_col, corr))
+                    except:
+                        pass
+            
+            if correlations:
+                # Use regression imputation based on correlated column
+                strongest_corr_col = max(correlations, key=lambda x: abs(x[1]))[0]
+                # Simplified regression imputation
+                mask = df[col].notnull() & df[strongest_corr_col].notnull()
+                if mask.sum() > 5:  # Enough data points
+                    correlation = df.loc[mask, col].corr(df.loc[mask, strongest_corr_col])
+                    mean_col = df[col].mean()
+                    mean_corr = df[strongest_corr_col].mean()
+                    std_col = df[col].std()
+                    std_corr = df[strongest_corr_col].std()
+                    
+                    missing_mask = df[col].isnull()
+                    predicted_values = mean_col + correlation * (std_col / std_corr) * (df.loc[missing_mask, strongest_corr_col] - mean_corr)
+                    df.loc[missing_mask, col] = predicted_values
+                    treatment = f'REGRESSION_{{strongest_corr_col[:10]}}'
+                else:
+                    # Fall back to statistical imputation
+                    df[col] = df[col].fillna(df[col].median())
+                    treatment = 'MEDIAN_FILL'
+            else:
+                # No strong correlations - use interpolation if data is sequential
+                df[col] = df[col].interpolate(method='linear')
+                treatment = 'INTERPOLATION'
+        else:
+            # Categorical with moderate missing - use mode
+            mode_value = df[col].mode()
+            if len(mode_value) > 0:
+                df[col] = df[col].fillna(mode_value.iloc[0])
+                treatment = 'MODE_FILL'
+        
+        treatment_log.append(f'{{col}}: {{treatment}} ({{missing_pct:.1f}}% missing)')
+    
+    else:
+        # Less than 5% missing - use simple strategies
+        if pd.api.types.is_numeric_dtype(df[col]):
+            df[col] = df[col].fillna(df[col].median())
+            treatment = 'MEDIAN_FILL'
+        else:
+            mode_value = df[col].mode()
+            if len(mode_value) > 0:
+                df[col] = df[col].fillna(mode_value.iloc[0])
+                treatment = 'MODE_FILL'
+        
+        treatment_log.append(f'{{col}}: {{treatment}} ({{missing_pct:.1f}}% missing)')
+
+{dataFrameName}_smart_cleaned = df
+smart_treatment_log = treatment_log
+print('Smart missing value treatment completed:')
+for log_entry in treatment_log:
+    print(f'  {{log_entry}}')
+";
+        
+        await _pandasManager.ExecutePythonCodeAsync(smartHandlingCode);
+        result.Method = "Smart Treatment";
+        result.TreatmentLog = new[] { "amount: MEDIAN_FILL (3.2% missing)", "category: MODE_FILL (1.8% missing)" };
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Outlier Detection -->
+                <section class="section" id="outlier-detection">
+                    <h2>?? Outlier Detection and Treatment</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Multiple Outlier Detection Methods</h4>
+                        <pre><code class="language-csharp">public class OutlierDetectionService
+{
+    private readonly IPythonPandasManager _pandasManager;
+    
+    public async Task&lt;OutlierDetectionResult&gt; DetectOutliers(
+        string dataFrameName, 
+        OutlierDetectionConfig config)
+    {
+        var result = new OutlierDetectionResult();
+        
+        // Apply multiple detection methods
+        await DetectIQROutliers(dataFrameName, result, config);
+        await DetectZScoreOutliers(dataFrameName, result, config);
+        await DetectIsolationForestOutliers(dataFrameName, result, config);
+        await DetectLocalOutlierFactor(dataFrameName, result, config);
+        
+        // Consensus outlier detection
+        await CreateConsensusOutliers(dataFrameName, result);
+        
+        return result;
+    }
+    
+    private async Task DetectIQROutliers(string dataFrameName, OutlierDetectionResult result, OutlierDetectionConfig config)
+    {
+        string iqrCode = $@"
+import pandas as pd
+import numpy as np
+
+df = {dataFrameName}
+iqr_outliers = {{}}
+
+# IQR method for each numeric column
+numeric_columns = df.select_dtypes(include=[np.number]).columns
+
+for col in numeric_columns:
+    col_data = df[col].dropna()
+    
+    if len(col_data) < 4:  # Need at least 4 points for quartiles
+        continue
+    
+    Q1 = col_data.quantile(0.25)
+    Q3 = col_data.quantile(0.75)
+    IQR = Q3 - Q1
+    
+    # Configurable IQR multiplier (default 1.5)
+    iqr_multiplier = {config?.IQRMultiplier ?? 1.5}
+    lower_bound = Q1 - iqr_multiplier * IQR
+    upper_bound = Q3 + iqr_multiplier * IQR
+    
+    # Find outliers
+    outlier_mask = (df[col] < lower_bound) | (df[col] > upper_bound)
+    outlier_indices = df[outlier_mask].index.tolist()
+    
+    if len(outlier_indices) > 0:
+        iqr_outliers[col] = {{
+            'indices': outlier_indices,
+            'count': len(outlier_indices),
+            'percentage': (len(outlier_indices) / len(df)) * 100,
+            'lower_bound': lower_bound,
+            'upper_bound': upper_bound,
+            'Q1': Q1,
+            'Q3': Q3,
+            'IQR': IQR
+        }}
+
+# Create overall IQR outlier mask
+iqr_outlier_rows = set()
+for col_outliers in iqr_outliers.values():
+    iqr_outlier_rows.update(col_outliers['indices'])
+
+iqr_detection_result = {{
+    'method': 'IQR',
+    'outliers_by_column': iqr_outliers,
+    'total_outlier_rows': len(iqr_outlier_rows),
+    'outlier_row_indices': list(iqr_outlier_rows)
+}}
+";
+        
+        await _pandasManager.ExecutePythonCodeAsync(iqrCode);
+        
+        result.IQROutliers = new OutlierMethodResult
+        {
+            Method = "IQR",
+            OutlierCount = 45,
+            OutlierPercentage = 4.5m
+        };
+    }
+    
+    private async Task DetectZScoreOutliers(string dataFrameName, OutlierDetectionResult result, OutlierDetectionConfig config)
+    {
+        string zScoreCode = $@"
+import pandas as pd
+import numpy as np
+from scipy import stats
+
+df = {dataFrameName}
+zscore_outliers = {{}}
+
+# Z-score method for each numeric column
+numeric_columns = df.select_dtypes(include=[np.number]).columns
+
+for col in numeric_columns:
+    col_data = df[col].dropna()
+    
+    if len(col_data) < 3:  # Need at least 3 points for z-score
+        continue
+    
+    # Calculate z-scores
+    z_scores = np.abs(stats.zscore(col_data))
+    
+    # Configurable z-score threshold (default 3)
+    z_threshold = {config?.ZScoreThreshold ?? 3.0}
+    
+    # Find outliers
+    outlier_mask = z_scores > z_threshold
+    outlier_indices = col_data[outlier_mask].index.tolist()
+    
+    if len(outlier_indices) > 0:
+        zscore_outliers[col] = {{
+            'indices': outlier_indices,
+            'count': len(outlier_indices),
+            'percentage': (len(outlier_indices) / len(df)) * 100,
+            'max_zscore': z_scores.max(),
+            'threshold': z_threshold,
+            'mean': col_data.mean(),
+            'std': col_data.std()
+        }}
+
+# Create overall Z-score outlier mask
+zscore_outlier_rows = set()
+for col_outliers in zscore_outliers.values():
+    zscore_outlier_rows.update(col_outliers['indices'])
+
+zscore_detection_result = {{
+    'method': 'Z-Score',
+    'outliers_by_column': zscore_outliers,
+    'total_outlier_rows': len(zscore_outlier_rows),
+    'outlier_row_indices': list(zscore_outlier_rows)
+}}
+";
+        
+        await _pandasManager.ExecutePythonCodeAsync(zScoreCode);
+        
+        result.ZScoreOutliers = new OutlierMethodResult
+        {
+            Method = "Z-Score",
+            OutlierCount = 38,
+            OutlierPercentage = 3.8m
+        };
+    }
+    
+    private async Task DetectIsolationForestOutliers(string dataFrameName, OutlierDetectionResult result, OutlierDetectionConfig config)
+    {
+        string isolationForestCode = $@"
+import pandas as pd
+import numpy as np
+from sklearn.ensemble import IsolationForest
+from sklearn.preprocessing import StandardScaler
+
+df = {dataFrameName}
+
+# Prepare data for Isolation Forest
+numeric_data = df.select_dtypes(include=[np.number])
+
+if len(numeric_data.columns) > 0 and len(numeric_data) > 10:
+    # Handle missing values for the algorithm
+    numeric_data_clean = numeric_data.fillna(numeric_data.median())
+    
+    # Standardize the data
+    scaler = StandardScaler()
+    scaled_data = scaler.fit_transform(numeric_data_clean)
+    
+    # Apply Isolation Forest
+    contamination_rate = {config?.IsolationForestContamination ?? 0.1}  # Expected outlier percentage
+    isolation_forest = IsolationForest(
+        contamination=contamination_rate,
+        random_state=42,
+        n_estimators=100
+    )
+    
+    outlier_predictions = isolation_forest.fit_predict(scaled_data)
+    
+    # Get outlier indices (-1 indicates outlier)
+    outlier_indices = df.index[outlier_predictions == -1].tolist()
+    
+    # Calculate anomaly scores
+    anomaly_scores = isolation_forest.decision_function(scaled_data)
+    
+    isolation_result = {{
+        'method': 'Isolation Forest',
+        'outlier_indices': outlier_indices,
+        'outlier_count': len(outlier_indices),
+        'outlier_percentage': (len(outlier_indices) / len(df)) * 100,
+        'contamination_rate': contamination_rate,
+        'anomaly_scores': anomaly_scores.tolist(),
+        'features_used': numeric_data.columns.tolist()
+    }}
+else:
+    isolation_result = {{
+        'method': 'Isolation Forest',
+        'outlier_indices': [],
+        'outlier_count': 0,
+        'outlier_percentage': 0,
+        'error': 'Insufficient numeric data for Isolation Forest'
+    }}
+";
+        
+        await _pandasManager.ExecutePythonCodeAsync(isolationForestCode);
+        
+        result.IsolationForestOutliers = new OutlierMethodResult
+        {
+            Method = "Isolation Forest",
+            OutlierCount = 42,
+            OutlierPercentage = 4.2m
+        };
+    }
+    
+    public async Task&lt;OutlierTreatmentResult&gt; TreatOutliers(
+        string dataFrameName, 
+        OutlierTreatmentStrategy strategy,
+        List&lt;int&gt; outlierIndices)
+    {
+        var result = new OutlierTreatmentResult();
+        
+        switch (strategy)
+        {
+            case OutlierTreatmentStrategy.Remove:
+                await RemoveOutliers(dataFrameName, outlierIndices, result);
+                break;
+                
+            case OutlierTreatmentStrategy.Cap:
+                await CapOutliers(dataFrameName, result);
+                break;
+                
+            case OutlierTreatmentStrategy.Transform:
+                await TransformOutliers(dataFrameName, result);
+                break;
+                
+            case OutlierTreatmentStrategy.Impute:
+                await ImputeOutliers(dataFrameName, outlierIndices, result);
+                break;
+        }
+        
+        return result;
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Data Validation -->
+                <section class="section" id="data-validation">
+                    <h2>? Data Validation and Business Rules</h2>
+                    
+                    <div class="code-example">
+                        <h4>Comprehensive Validation Framework</h4>
+                        <pre><code class="language-csharp">public class DataValidationService
+{
+    private readonly IPythonPandasManager _pandasManager;
+    
+    public async Task&lt;ValidationResult&gt; ValidateData(string dataFrameName, List&lt;ValidationRule&gt; rules)
+    {
+        var result = new ValidationResult { DataFrameName = dataFrameName };
+        
+        foreach (var rule in rules)
+        {
+            var ruleResult = await ExecuteValidationRule(dataFrameName, rule);
+            result.RuleResults.Add(ruleResult);
+            
+            if (!ruleResult.Passed)
+            {
+                result.OverallValid = false;
+            }
+        }
+        
+        return result;
+    }
+    
+    private async Task&lt;RuleResult&gt; ExecuteValidationRule(string dataFrameName, ValidationRule rule)
+    {
+        string validationCode = $@"
+import pandas as pd
+import numpy as np
+
+df = {dataFrameName}
+validation_result = {{
+    'rule_name': '{rule.Name}',
+    'rule_type': '{rule.Type}',
+    'passed': True,
+    'violations': [],
+    'violation_count': 0,
+    'total_checked': len(df)
+}}
+
+try:";
+        
+        switch (rule.Type)
+        {
+            case ValidationRuleType.NotNull:
+                validationCode += $@"
+    # Check for null values in specified columns
+    columns_to_check = {GetColumnsList(rule.Columns)}
+    for col in columns_to_check:
+        if col in df.columns:
+            null_mask = df[col].isnull()
+            if null_mask.any():
+                null_indices = df[null_mask].index.tolist()
+                validation_result['passed'] = False
+                validation_result['violations'].extend([{{'column': col, 'index': idx, 'issue': 'null_value'}} for idx in null_indices])
+";
+                break;
+                
+            case ValidationRuleType.Range:
+                validationCode += $@"
+    # Check numeric ranges
+    column = '{rule.Column}'
+    if column in df.columns and pd.api.types.is_numeric_dtype(df[column]):
+        min_val = {rule.MinValue ?? "float('-inf')"}
+        max_val = {rule.MaxValue ?? "float('inf')"}
+        
+        range_violations = df[(df[column] < min_val) | (df[column] > max_val)]
+        if len(range_violations) > 0:
+            validation_result['passed'] = False
+            for idx, row in range_violations.iterrows():
+                validation_result['violations'].append({{
+                    'column': column,
+                    'index': idx,
+                    'value': row[column],
+                    'issue': f'value {{row[column]}} outside range [{{min_val}}, {{max_val}}]'
+                }})
+";
+                break;
+                
+            case ValidationRuleType.Pattern:
+                validationCode += $@"
+    # Check regex patterns
+    import re
+    column = '{rule.Column}'
+    pattern = r'{rule.Pattern}'
+    
+    if column in df.columns:
+        mask = df[column].astype(str).str.match(pattern, na=False)
+        pattern_violations = df[~mask & df[column].notna()]
+        
+        if len(pattern_violations) > 0:
+            validation_result['passed'] = False
+            for idx, row in pattern_violations.iterrows():
+                validation_result['violations'].append({{
+                    'column': column,
+                    'index': idx,
+                    'value': row[column],
+                    'issue': f'value does not match pattern {{pattern}}'
+                }})
+";
+                break;
+                
+            case ValidationRuleType.UniqueKey:
+                validationCode += $@"
+    # Check uniqueness
+    columns_to_check = {GetColumnsList(rule.Columns)}
+    duplicate_mask = df.duplicated(subset=columns_to_check, keep=False)
+    
+    if duplicate_mask.any():
+        validation_result['passed'] = False
+        duplicate_rows = df[duplicate_mask]
+        for idx, row in duplicate_rows.iterrows():
+            validation_result['violations'].append({{
+                'columns': columns_to_check,
+                'index': idx,
+                'issue': 'duplicate key'
+            }})
+";
+                break;
+                
+            case ValidationRuleType.ReferentialIntegrity:
+                validationCode += $@"
+    # Check foreign key constraints
+    foreign_key_col = '{rule.ForeignKeyColumn}'
+    reference_values = set({GetReferenceValuesList(rule.ReferenceValues)})
+    
+    if foreign_key_col in df.columns:
+        missing_references = df[~df[foreign_key_col].isin(reference_values) & df[foreign_key_col].notna()]
+        
+        if len(missing_references) > 0:
+            validation_result['passed'] = False
+            for idx, row in missing_references.iterrows():
+                validation_result['violations'].append({{
+                    'column': foreign_key_col,
+                    'index': idx,
+                    'value': row[foreign_key_col],
+                    'issue': 'reference not found'
+                }})
+";
+                break;
+                
+            case ValidationRuleType.BusinessRule:
+                validationCode += $@"
+    # Execute custom business rule
+    {rule.CustomValidationCode}
+";
+                break;
+        }
+        
+        validationCode += $@"
+    
+    validation_result['violation_count'] = len(validation_result['violations'])
+    
+except Exception as e:
+    validation_result['passed'] = False
+    validation_result['error'] = str(e)
+";
+        
+        await _pandasManager.ExecutePythonCodeAsync(validationCode);
+        
+        // Extract results (simplified)
+        return new RuleResult
+        {
+            RuleName = rule.Name,
+            Passed = true, // Would extract from Python
+            ViolationCount = 0,
+            Violations = new List&lt;ValidationViolation&gt;()
+        };
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="statistical-analysis.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> Statistical Analysis
+                    </a>
+                    <a href="time-series.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> Time Series Operations
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.DataManagement Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="../index.html">Home</a>
+                            <a href="../getting-started.html">Getting Started</a>
+                            <a href="PythonPandasManager.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../assets/navigation.js"></script>
+</body>
+</html>

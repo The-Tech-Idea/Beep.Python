@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PythonPandasManager API - Beep.Python.DataManagement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="../assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="../index.html">Home</a>
+                    <span>?</span>
+                    <a href="../index.html#core-api">Core API</a>
+                    <span>?</span>
+                    <span>PythonPandasManager</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-table"></i> PythonPandasManager Class</h1>
+                    <p class="page-subtitle">Enterprise-grade pandas DataFrame operations with session management, virtual environment support, and comprehensive data analysis capabilities</p>
+                </div>
+
+                <!-- Class Info -->
+                <div class="class-info">
+                    <div class="class-namespace">
+                        <strong>Namespace:</strong> Beep.Python.DataManagement<br>
+                        <strong>Assembly:</strong> Beep.Python.DataManagement.dll<br>
+                        <strong>Package:</strong> Beep.Python.DataManagement
+                    </div>
+                    <div class="class-implements">
+                        <strong>Inheritance:</strong> Object ? PythonPandasManager<br>
+                        <strong>Implements:</strong> IPythonPandasManager, IDisposable
+                    </div>
+                </div>
+
+                <!-- Overview Section -->
+                <section class="section" id="overview">
+                    <h2>?? Overview</h2>
+                    <p>
+                        The <strong>PythonPandasManager</strong> class provides comprehensive pandas DataFrame operations 
+                        and data manipulation capabilities within the Beep.Python framework. It offers enterprise-grade
+                        session management, virtual environment support, and a complete suite of data analysis tools.
+                    </p>
+                    
+                    <div class="note">
+                        <strong>?? Key Features</strong>
+                        <ul>
+                            <li><strong>40+ DataFrame Operations:</strong> Complete pandas functionality exposure</li>
+                            <li><strong>Session Management:</strong> Multi-user isolation with virtual environment support</li>
+                            <li><strong>Enterprise Architecture:</strong> Thread-safe operations with proper error handling</li>
+                            <li><strong>Async Support:</strong> Key operations available in async variants</li>
+                            <li><strong>Memory Management:</strong> Automatic cleanup and optimization utilities</li>
+                            <li><strong>Comprehensive I/O:</strong> Support for CSV, Excel, JSON, SQL, and web data sources</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Constructor -->
+                <section class="section" id="constructor">
+                    <h2>??? Constructor</h2>
+                    
+                    <div class="method">
+                        <h3>PythonPandasManager</h3>
+                        <div class="api-signature">
+                            <code>public PythonPandasManager(
+    IBeepService beepservice, 
+    IPythonRunTimeManager pythonRuntimeManager, 
+    IPythonCodeExecuteManager executeManager
+)</code>
+                        </div>
+                        
+                        <h4>Parameters</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>beepservice</code></td>
+                                    <td>IBeepService</td>
+                                    <td>BEEP service for application integration and logging</td>
+                                </tr>
+                                <tr>
+                                    <td><code>pythonRuntimeManager</code></td>
+                                    <td>IPythonRunTimeManager</td>
+                                    <td>Python runtime manager for execution context</td>
+                                </tr>
+                                <tr>
+                                    <td><code>executeManager</code></td>
+                                    <td>IPythonCodeExecuteManager</td>
+                                    <td>Python code execution manager for async operations</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <h4>Example</h4>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Initialize with dependency injection
+var pandasManager = new PythonPandasManager(
+    beepService, 
+    runtimeManager, 
+    executeManager
+);
+
+// Configure for a specific user
+pandasManager.ConfigureSessionForUser("john.doe", "analytics-env");</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Session Management -->
+                <section class="section" id="session-management">
+                    <h2>?? Session Management</h2>
+                    
+                    <div class="method">
+                        <h3>ConfigureSession</h3>
+                        <div class="api-signature">
+                            <code>public bool ConfigureSession(
+    PythonSessionInfo session, 
+    PythonVirtualEnvironment virtualEnvironment
+)</code>
+                        </div>
+                        <p>Configure the pandas manager to use a specific Python session and virtual environment. This is the recommended approach for multi-user environments.</p>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Configure with existing session
+var session = sessionManager.GetSession("analytics-session");
+var environment = envManager.GetEnvironment("data-env");
+
+bool configured = pandasManager.ConfigureSession(session, environment);
+if (configured) {
+    Console.WriteLine("Pandas manager configured successfully");
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="method">
+                        <h3>ConfigureSessionForUser</h3>
+                        <div class="api-signature">
+                            <code>public bool ConfigureSessionForUser(
+    string username, 
+    string? environmentId = null
+)</code>
+                        </div>
+                        <p>Configure session using username and optional environment ID. This method will create or reuse a session for the specified user.</p>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Auto-configure for user with default environment
+pandasManager.ConfigureSessionForUser("alice.smith");
+
+// Configure with specific environment
+pandasManager.ConfigureSessionForUser("bob.jones", "ml-environment");</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="method">
+                        <h3>IsSessionConfigured</h3>
+                        <div class="api-signature">
+                            <code>public bool IsSessionConfigured()</code>
+                        </div>
+                        <p>Check if session is properly configured before performing operations.</p>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">if (!pandasManager.IsSessionConfigured()) {
+    pandasManager.ConfigureSessionForUser("default-user");
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- DataFrame I/O Operations -->
+                <section class="section" id="dataframe-io">
+                    <h2>?? DataFrame I/O Operations</h2>
+                    
+                    <div class="feature-section">
+                        <h3>Data Loading Methods</h3>
+                        <p>Load data from various sources with comprehensive error handling and validation.</p>
+                    </div>
+
+                    <div class="method">
+                        <h3>ReadCsv / ReadCsvAsync</h3>
+                        <div class="api-signature">
+                            <code>public void ReadCsv(string dataFrameName, string filePath)
+public async Task ReadCsvAsync(string dataFrameName, string filePath, CancellationToken cancellationToken = default)</code>
+                        </div>
+                        <p>Read CSV files into DataFrame with automatic error handling and progress reporting.</p>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Synchronous loading
+pandasManager.ReadCsv("sales_data", @"C:\Data\sales.csv");
+
+// Asynchronous loading with cancellation support
+using var cts = new CancellationTokenSource();
+await pandasManager.ReadCsvAsync("large_dataset", @"C:\BigData\data.csv", cts.Token);</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="method">
+                        <h3>ReadExcel</h3>
+                        <div class="api-signature">
+                            <code>public void ReadExcel(string dataFrameName, string filePath)</code>
+                        </div>
+                        <p>Read Excel files with support for multiple sheets and complex formatting.</p>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Load Excel data
+pandasManager.ReadExcel("financial_data", @"C:\Reports\quarterly_results.xlsx");
+
+// Get summary of loaded data
+string summary = pandasManager.Describe("financial_data");
+Console.WriteLine(summary);</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="method">
+                        <h3>ReadSql</h3>
+                        <div class="api-signature">
+                            <code>public void ReadSql(string dataFrameName, string sql, string connectionString)</code>
+                        </div>
+                        <p>Execute SQL queries and load results directly into DataFrame.</p>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Load from database
+string connectionString = "Server=localhost;Database=SalesDB;Trusted_Connection=true;";
+string query = @"
+    SELECT CustomerID, OrderDate, TotalAmount, Region 
+    FROM Orders 
+    WHERE OrderDate >= '2024-01-01'
+    ORDER BY OrderDate DESC";
+
+pandasManager.ReadSql("recent_orders", query, connectionString);</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="method">
+                        <h3>ReadFromWeb</h3>
+                        <div class="api-signature">
+                            <code>public void ReadFromWeb(string dataFrameName, string url)</code>
+                        </div>
+                        <p>Load data directly from web APIs and JSON endpoints.</p>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Load from REST API
+pandasManager.ReadFromWeb("api_data", "https://api.example.com/data.json");
+
+// Process the loaded data
+pandasManager.FilterRows("api_data", "recent_data", "timestamp > '2024-01-01'");</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Data Export Operations -->
+                <section class="section" id="export-operations">
+                    <h2>?? Export Operations</h2>
+                    
+                    <div class="method">
+                        <h3>ToCsv / ToCsvAsync</h3>
+                        <div class="api-signature">
+                            <code>public void ToCsv(string dataFrameName, string filePath)
+public async Task ToCsvAsync(string dataFrameName, string filePath, CancellationToken cancellationToken = default)</code>
+                        </div>
+                        <p>Export DataFrame to CSV format with configurable options.</p>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Export processed data
+pandasManager.ToCsv("processed_sales", @"C:\Output\sales_analysis.csv");
+
+// Async export for large datasets
+await pandasManager.ToCsvAsync("large_result", @"C:\Output\big_analysis.csv");</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="method">
+                        <h3>ExportDataFrame</h3>
+                        <div class="api-signature">
+                            <code>public void ExportDataFrame(string dataFrameName, string filePath, string format)</code>
+                        </div>
+                        <p>Generic export method supporting multiple formats: CSV, Excel, JSON, Parquet.</p>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Export to different formats
+pandasManager.ExportDataFrame("results", @"C:\Output\data.csv", "csv");
+pandasManager.ExportDataFrame("results", @"C:\Output\data.xlsx", "excel");
+pandasManager.ExportDataFrame("results", @"C:\Output\data.json", "json");
+pandasManager.ExportDataFrame("results", @"C:\Output\data.parquet", "parquet");</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Data Manipulation -->
+                <section class="section" id="data-manipulation">
+                    <h2>??? Data Manipulation</h2>
+                    
+                    <div class="method">
+                        <h3>FilterRows</h3>
+                        <div class="api-signature">
+                            <code>public void FilterRows(string dataFrameName, string newFrameName, string condition)</code>
+                        </div>
+                        <p>Filter rows based on pandas-style conditions with full expression support.</p>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Basic filtering
+pandasManager.FilterRows("sales", "high_value", "amount > 1000");
+
+// Complex conditions
+pandasManager.FilterRows("customers", "premium_customers", 
+    "(total_spent > 5000) & (region == 'North') & (active == True)");
+
+// Date-based filtering
+pandasManager.FilterRows("orders", "recent_orders", 
+    "order_date >= '2024-01-01'");</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="method">
+                        <h3>AddColumn</h3>
+                        <div class="api-signature">
+                            <code>public void AddColumn(string dataFrameName, string columnName, dynamic columnData)</code>
+                        </div>
+                        <p>Add new columns with calculated values or transformations.</p>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Add calculated columns
+pandasManager.AddColumn("sales", "profit", "revenue - cost");
+pandasManager.AddColumn("sales", "profit_margin", "(revenue - cost) / revenue * 100");
+
+// Add constant values
+pandasManager.AddColumn("sales", "processed_date", "pd.Timestamp.now()");
+
+// Add conditional values
+pandasManager.AddColumn("customers", "segment", 
+    "np.where(total_spent > 1000, 'Premium', 'Standard')");</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="method">
+                        <h3>GroupBy / GroupByAsync</h3>
+                        <div class="api-signature">
+                            <code>public void GroupBy(string dataFrameName, string newFrameName, string groupByColumn, string aggFunc)
+public async Task GroupByAsync(string dataFrameName, string newFrameName, string groupByColumn, string aggFunc, CancellationToken cancellationToken = default)</code>
+                        </div>
+                        <p>Perform group-by operations with various aggregation functions.</p>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Basic grouping
+pandasManager.GroupBy("sales", "sales_by_region", "region", "sum");
+pandasManager.GroupBy("orders", "avg_order_by_customer", "customer_id", "mean");
+
+// Async grouping for large datasets
+await pandasManager.GroupByAsync("transactions", "monthly_totals", "month", "sum");</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="method">
+                        <h3>PivotTable</h3>
+                        <div class="api-signature">
+                            <code>public void PivotTable(string dataFrameName, string newFrameName, string index, string columns, string values)</code>
+                        </div>
+                        <p>Create pivot tables for cross-tabular data analysis.</p>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Create sales pivot by region and month
+pandasManager.PivotTable("sales", "sales_pivot", "region", "month", "total_sales");
+
+// Product performance analysis
+pandasManager.PivotTable("orders", "product_performance", "product_category", "quarter", "revenue");</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Statistical Analysis -->
+                <section class="section" id="statistical-analysis">
+                    <h2>?? Statistical Analysis</h2>
+                    
+                    <div class="method">
+                        <h3>Describe</h3>
+                        <div class="api-signature">
+                            <code>public string Describe(string dataFrameName)</code>
+                        </div>
+                        <p>Get comprehensive descriptive statistics for numeric columns.</p>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Get full statistical summary
+string stats = pandasManager.Describe("sales_data");
+Console.WriteLine("Sales Data Statistics:");
+Console.WriteLine(stats);
+
+// Will output: count, mean, std, min, 25%, 50%, 75%, max for each numeric column</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="method">
+                        <h3>Correlation</h3>
+                        <div class="api-signature">
+                            <code>public string Correlation(string dataFrameName)</code>
+                        </div>
+                        <p>Calculate correlation matrix for numeric columns.</p>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Analyze relationships between variables
+string correlations = pandasManager.Correlation("financial_data");
+Console.WriteLine("Correlation Matrix:");
+Console.WriteLine(correlations);</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="method">
+                        <h3>Statistical Functions</h3>
+                        <div class="api-signature">
+                            <code>public string CalculateMean(string dataFrameName, string columnName)
+public string CalculateMedian(string dataFrameName, string columnName)
+public string ValueCounts(string dataFrameName, string columnName)
+public string UniqueValues(string dataFrameName, string columnName)</code>
+                        </div>
+                        <p>Individual statistical calculations for specific columns.</p>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Calculate specific statistics
+string avgSales = pandasManager.CalculateMean("sales", "amount");
+string medianAge = pandasManager.CalculateMedian("customers", "age");
+
+// Analyze categorical data
+string categoryDistribution = pandasManager.ValueCounts("products", "category");
+string uniqueRegions = pandasManager.UniqueValues("sales", "region");
+
+Console.WriteLine($"Average Sale: ${avgSales}");
+Console.WriteLine($"Median Customer Age: {medianAge}");
+Console.WriteLine($"Product Categories:\n{categoryDistribution}");</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Data Cleaning -->
+                <section class="section" id="data-cleaning">
+                    <h2>?? Data Cleaning</h2>
+                    
+                    <div class="method">
+                        <h3>Missing Value Handling</h3>
+                        <div class="api-signature">
+                            <code>public void DropNA(string dataFrameName, string newFrameName)
+public void FillNA(string dataFrameName, string newFrameName, dynamic value)
+public string IsNull(string dataFrameName)</code>
+                        </div>
+                        <p>Comprehensive missing value detection and handling.</p>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Check for missing values
+string missingReport = pandasManager.IsNull("raw_data");
+Console.WriteLine("Missing Values Report:");
+Console.WriteLine(missingReport);
+
+// Handle missing values
+pandasManager.DropNA("raw_data", "clean_data");           // Remove rows with any NA
+pandasManager.FillNA("raw_data", "filled_data", 0);       // Fill with zero
+pandasManager.FillNA("customer_data", "complete_data", "Unknown"); // Fill with default</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="method">
+                        <h3>DropDuplicates</h3>
+                        <div class="api-signature">
+                            <code>public void DropDuplicates(string dataFrameName, string newFrameName)</code>
+                        </div>
+                        <p>Remove duplicate rows to ensure data quality.</p>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Remove duplicates
+pandasManager.DropDuplicates("raw_customers", "unique_customers");
+
+// Check the results
+string originalShape = pandasManager.GetShape("raw_customers");
+string cleanShape = pandasManager.GetShape("unique_customers");
+Console.WriteLine($"Original: {originalShape}, After deduplication: {cleanShape}");</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="method">
+                        <h3>OptimizeMemory</h3>
+                        <div class="api-signature">
+                            <code>public void OptimizeMemory(string dataFrameName)</code>
+                        </div>
+                        <p>Optimize DataFrame memory usage by converting to optimal data types.</p>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Optimize memory usage for large datasets
+pandasManager.OptimizeMemory("large_dataset");
+
+// Get memory usage report
+string memoryReport = pandasManager.GetMemoryUsageReport();
+Console.WriteLine("Memory Optimization Report:");
+Console.WriteLine(memoryReport);</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Time Series Operations -->
+                <section class="section" id="time-series">
+                    <h2>? Time Series Operations</h2>
+                    
+                    <div class="method">
+                        <h3>ConvertToDateTime</h3>
+                        <div class="api-signature">
+                            <code>public void ConvertToDateTime(string dataFrameName, string columnName)</code>
+                        </div>
+                        <p>Convert string columns to datetime format for time-based analysis.</p>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Convert date columns
+pandasManager.ConvertToDateTime("sales", "order_date");
+pandasManager.ConvertToDateTime("events", "timestamp");
+
+// Now you can perform time-based operations
+pandasManager.FilterRows("sales", "recent_sales", "order_date >= '2024-01-01'");</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="method">
+                        <h3>Resample</h3>
+                        <div class="api-signature">
+                            <code>public void Resample(string dataFrameName, string newFrameName, string rule, string aggFunc)</code>
+                        </div>
+                        <p>Resample time series data to different frequencies (daily, weekly, monthly, etc.).</p>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Resample to different time frequencies
+pandasManager.Resample("daily_sales", "weekly_sales", "W", "sum");     // Weekly totals
+pandasManager.Resample("hourly_data", "daily_avg", "D", "mean");       // Daily averages
+pandasManager.Resample("daily_orders", "monthly_count", "M", "count"); // Monthly counts</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="method">
+                        <h3>RollingWindow</h3>
+                        <div class="api-signature">
+                            <code>public void RollingWindow(string dataFrameName, string newFrameName, int windowSize, string operation)</code>
+                        </div>
+                        <p>Calculate rolling window statistics for trend analysis.</p>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Calculate moving averages
+pandasManager.RollingWindow("stock_prices", "ma_7", 7, "mean");     // 7-day moving average
+pandasManager.RollingWindow("sales_data", "rolling_sum", 30, "sum"); // 30-period rolling sum
+pandasManager.RollingWindow("temperature", "rolling_max", 5, "max"); // 5-period rolling max</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Data Merging -->
+                <section class="section" id="merging-joining">
+                    <h2>?? Data Merging & Joining</h2>
+                    
+                    <div class="method">
+                        <h3>MergeDataFrames</h3>
+                        <div class="api-signature">
+                            <code>public void MergeDataFrames(string leftFrameName, string rightFrameName, string newFrameName, string onColumn)</code>
+                        </div>
+                        <p>Merge two DataFrames based on common columns (similar to SQL JOIN).</p>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Merge customer data with orders
+pandasManager.MergeDataFrames("customers", "orders", "customer_orders", "customer_id");
+
+// Merge product information with sales
+pandasManager.MergeDataFrames("products", "sales", "product_sales", "product_id");
+
+// Analyze the merged data
+string mergedSummary = pandasManager.Describe("customer_orders");
+Console.WriteLine("Merged Data Summary:");
+Console.WriteLine(mergedSummary);</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="method">
+                        <h3>ConcatDataFrames</h3>
+                        <div class="api-signature">
+                            <code>public void ConcatDataFrames(string[] dataFrameNames, string newFrameName)</code>
+                        </div>
+                        <p>Concatenate multiple DataFrames vertically (stack rows).</p>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Combine quarterly data
+string[] quarters = {"q1_sales", "q2_sales", "q3_sales", "q4_sales"};
+pandasManager.ConcatDataFrames(quarters, "yearly_sales");
+
+// Combine regional data
+string[] regions = {"north_data", "south_data", "east_data", "west_data"};
+pandasManager.ConcatDataFrames(regions, "national_data");</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Utility Methods -->
+                <section class="section" id="utilities">
+                    <h2>??? Utility Methods</h2>
+                    
+                    <div class="method">
+                        <h3>Data Information</h3>
+                        <div class="api-signature">
+                            <code>public string GetDataFrameAsJson(string dataFrameName)
+public void ResetIndex(string dataFrameName)
+public void SetPandasOption(string optionName, string value)</code>
+                        </div>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Export DataFrame as JSON string
+string jsonData = pandasManager.GetDataFrameAsJson("results");
+
+// Reset index after operations
+pandasManager.ResetIndex("processed_data");
+
+// Configure pandas display options
+pandasManager.SetPandasOption("display.max_rows", "100");
+pandasManager.SetPandasOption("display.precision", "2");</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="method">
+                        <h3>Memory Management</h3>
+                        <div class="api-signature">
+                            <code>public string GetMemoryUsageReport()
+public void CleanupIdleDataFrames(int maxIdleMinutes = 30)</code>
+                        </div>
+                        
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Monitor memory usage
+string memoryReport = pandasManager.GetMemoryUsageReport();
+Console.WriteLine("Current Memory Usage:");
+Console.WriteLine(memoryReport);
+
+// Cleanup old DataFrames (30 minutes idle by default)
+pandasManager.CleanupIdleDataFrames();
+
+// Cleanup more aggressively (10 minutes idle)
+pandasManager.CleanupIdleDataFrames(10);</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Complete Example -->
+                <section class="section" id="complete-example">
+                    <h2>?? Complete Data Analysis Example</h2>
+                    
+                    <div class="code-example">
+                        <h4>End-to-End Data Analysis Pipeline</h4>
+                        <pre><code class="language-csharp">// Initialize and configure
+var pandasManager = new PythonPandasManager(beepService, runtimeManager, executeManager);
+pandasManager.ConfigureSessionForUser("data-analyst", "analytics-env");
+
+try
+{
+    // 1. Load data from multiple sources
+    Console.WriteLine("Loading data...");
+    pandasManager.ReadCsv("sales", @"C:\Data\sales_2024.csv");
+    pandasManager.ReadExcel("products", @"C:\Data\product_catalog.xlsx");
+    pandasManager.ReadSql("customers", 
+        "SELECT * FROM customers WHERE active = 1", 
+        connectionString);
+
+    // 2. Data quality check
+    Console.WriteLine("Checking data quality...");
+    string salesMissing = pandasManager.IsNull("sales");
+    Console.WriteLine($"Missing values in sales: {salesMissing}");
+    
+    // Clean the data
+    pandasManager.DropNA("sales", "sales_clean");
+    pandasManager.DropDuplicates("customers", "customers_unique");
+
+    // 3. Data transformation
+    Console.WriteLine("Transforming data...");
+    pandasManager.ConvertToDateTime("sales_clean", "order_date");
+    pandasManager.AddColumn("sales_clean", "profit", "revenue - cost");
+    pandasManager.AddColumn("sales_clean", "month", "order_date.dt.month");
+
+    // 4. Merge datasets
+    Console.WriteLine("Merging datasets...");
+    pandasManager.MergeDataFrames("sales_clean", "products", "sales_products", "product_id");
+    pandasManager.MergeDataFrames("sales_products", "customers_unique", "full_data", "customer_id");
+
+    // 5. Analysis
+    Console.WriteLine("Performing analysis...");
+    
+    // Monthly sales trends
+    pandasManager.GroupBy("full_data", "monthly_sales", "month", "sum");
+    
+    // Product performance
+    pandasManager.GroupBy("full_data", "product_performance", "product_category", "sum");
+    
+    // Customer segmentation
+    pandasManager.PivotTable("full_data", "customer_segment", 
+        "customer_type", "region", "profit");
+
+    // Statistical analysis
+    string profitStats = pandasManager.Describe("full_data");
+    string correlations = pandasManager.Correlation("full_data");
+    
+    Console.WriteLine("Profit Statistics:");
+    Console.WriteLine(profitStats);
+
+    // 6. Export results
+    Console.WriteLine("Exporting results...");
+    pandasManager.ToCsv("monthly_sales", @"C:\Output\monthly_trends.csv");
+    pandasManager.ToExcel("product_performance", @"C:\Output\product_analysis.xlsx");
+    pandasManager.ExportDataFrame("customer_segment", @"C:\Output\segments.json", "json");
+
+    // 7. Memory cleanup
+    pandasManager.CleanupIdleDataFrames();
+    
+    Console.WriteLine("Analysis completed successfully!");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Analysis failed: {ex.Message}");
+}
+finally
+{
+    // Always dispose to clean up resources
+    pandasManager.Dispose();
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Best Practices -->
+                <section class="section" id="best-practices">
+                    <h2>? Best Practices</h2>
+                    
+                    <div class="tip">
+                        <h4>?? Session Management</h4>
+                        <ul>
+                            <li>Always configure sessions before performing operations</li>
+                            <li>Use user-specific sessions for multi-user environments</li>
+                            <li>Check session status with <code>IsSessionConfigured()</code></li>
+                            <li>Handle session failures gracefully</li>
+                        </ul>
+                    </div>
+
+                    <div class="tip">
+                        <h4>?? Data Operations</h4>
+                        <ul>
+                            <li>Validate data immediately after loading with <code>Describe()</code></li>
+                            <li>Use descriptive DataFrame names for better tracking</li>
+                            <li>Check for missing values before analysis</li>
+                            <li>Optimize memory usage for large datasets</li>
+                        </ul>
+                    </div>
+
+                    <div class="tip">
+                        <h4>? Performance</h4>
+                        <ul>
+                            <li>Use async methods for large data operations</li>
+                            <li>Clean up idle DataFrames regularly</li>
+                            <li>Monitor memory usage with reports</li>
+                            <li>Configure pandas options for optimal display</li>
+                        </ul>
+                    </div>
+
+                    <div class="warning">
+                        <h4>?? Important Notes</h4>
+                        <ul>
+                            <li>Always dispose of the manager when finished</li>
+                            <li>Handle Python exceptions appropriately</li>
+                            <li>Validate file paths before loading data</li>
+                            <li>Use proper error handling in production code</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="../getting-started.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> Getting Started
+                    </a>
+                    <a href="../examples/data-analysis-pipeline.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> Examples
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.DataManagement Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="../index.html">Home</a>
+                            <a href="../getting-started.html">Getting Started</a>
+                            <a href="../examples/data-analysis-pipeline.html">Examples</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../assets/navigation.js"></script>
+</body>
+</html>

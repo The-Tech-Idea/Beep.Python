@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Troubleshooting Guide - Beep.Python.DataManagement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-tools"></i> Troubleshooting Guide</h1>
+                    <p class="page-subtitle">Common issues, solutions, and diagnostic tools for Beep.Python.DataManagement</p>
+                </div>
+
+                <!-- Quick Diagnostics -->
+                <section class="section" id="quick-diagnostics">
+                    <h2>?? Quick Diagnostics</h2>
+                    
+                    <div class="code-example">
+                        <h4>Health Check Script</h4>
+                        <pre><code class="language-csharp">public static class PandasHealthCheck
+{
+    public static void RunDiagnostics(IPythonPandasManager pandasManager)
+    {
+        Console.WriteLine("?? Beep.Python.DataManagement Health Check");
+        Console.WriteLine("========================================");
+
+        // 1. Check session configuration
+        CheckSessionConfiguration(pandasManager);
+        
+        // 2. Check Python environment
+        CheckPythonEnvironment(pandasManager);
+        
+        // 3. Check memory usage
+        CheckMemoryUsage(pandasManager);
+        
+        // 4. Test basic operations
+        TestBasicOperations(pandasManager);
+    }
+
+    private static void CheckSessionConfiguration(IPythonPandasManager pandasManager)
+    {
+        Console.WriteLine("\n1. Session Configuration:");
+        
+        bool isConfigured = pandasManager.IsSessionConfigured();
+        Console.WriteLine($"   Session Configured: {(isConfigured ? "?" : "?")}");
+        
+        if (isConfigured)
+        {
+            var session = pandasManager.GetConfiguredSession();
+            var environment = pandasManager.GetConfiguredVirtualEnvironment();
+            
+            Console.WriteLine($"   Session ID: {session?.SessionId ?? "Unknown"}");
+            Console.WriteLine($"   Username: {session?.Username ?? "Unknown"}");
+            Console.WriteLine($"   Environment: {environment?.Name ?? "Unknown"}");
+        }
+        else
+        {
+            Console.WriteLine("   ??  No session configured - this will cause operation failures");
+        }
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Common Issues -->
+                <section class="section" id="common-issues">
+                    <h2>? Common Issues and Solutions</h2>
+                    
+                    <div class="warning">
+                        <h4>?? Session Configuration Failed</h4>
+                        <p><strong>Error:</strong> <code>ConfigureSessionForUser</code> returns false</p>
+                        
+                        <h5>Possible Causes:</h5>
+                        <ul>
+                            <li>Python runtime not initialized</li>
+                            <li>Virtual environment doesn't exist</li>
+                            <li>Insufficient permissions</li>
+                            <li>Python.NET issues</li>
+                        </ul>
+                        
+                        <h5>Solutions:</h5>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Check Python runtime status
+var runtimeManager = serviceProvider.GetService&lt;IPythonRunTimeManager&gt;();
+if (!runtimeManager.IsInitialized)
+{
+    Console.WriteLine("? Python runtime not initialized");
+    
+    // Initialize runtime
+    var pythonConfig = new PythonRunTime
+    {
+        PythonDLLPath = @"C:\Python39\python39.dll",
+        PythonHomePath = @"C:\Python39"
+    };
+    
+    bool initialized = runtimeManager.Initialize(pythonConfig, null, null, PythonEngineMode.MultiUser);
+    if (!initialized)
+    {
+        throw new InvalidOperationException("Failed to initialize Python runtime");
+    }
+}
+
+// Create default environment if none exists
+var envManager = runtimeManager.VirtualEnvmanager;
+var environment = envManager.GetEnvironmentById("default-env");
+if (environment == null)
+{
+    environment = envManager.CreateEnvironmentForUser(
+        pythonConfig, 
+        @"C:\Environments", 
+        "system", 
+        "default-env"
+    );
+}
+
+// Now try session configuration
+bool configured = pandasManager.ConfigureSessionForUser("user", environment.ID);</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="warning">
+                        <h4>?? Out of Memory Errors</h4>
+                        <p><strong>Error:</strong> Memory exceptions when working with large DataFrames</p>
+                        
+                        <h5>Solutions:</h5>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Monitor memory usage
+string memoryReport = pandasManager.GetMemoryUsageReport();
+Console.WriteLine($"Current memory usage:\n{memoryReport}");
+
+// Clean up idle DataFrames
+pandasManager.CleanupIdleDataFrames(5); // Clean DataFrames older than 5 minutes
+
+// Optimize large DataFrames
+pandasManager.OptimizeMemory("large_dataset");
+
+// Process data in chunks for very large files
+// Instead of loading entire file:
+// pandasManager.ReadCsv("huge_data", "huge_file.csv");
+
+// Use sampling for exploration:
+pandasManager.ReadCsv("full_data", "large_file.csv");
+pandasManager.SampleDataFrame("full_data", "sample_data", 0.1); // 10% sample
+string sampleStats = pandasManager.Describe("sample_data");
+Console.WriteLine(sampleStats);</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="warning">
+                        <h4>?? File Access Errors</h4>
+                        <p><strong>Error:</strong> FileNotFoundException or access denied when reading files</p>
+                        
+                        <h5>Solutions:</h5>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public static bool SafeReadCsv(IPythonPandasManager pandasManager, string dataFrameName, string filePath)
+{
+    try
+    {
+        // Check if file exists
+        if (!File.Exists(filePath))
+        {
+            Console.WriteLine($"? File not found: {filePath}");
+            return false;
+        }
+
+        // Check file permissions
+        var fileInfo = new FileInfo(filePath);
+        if (!fileInfo.CanRead())
+        {
+            Console.WriteLine($"? No read permission for file: {filePath}");
+            return false;
+        }
+
+        // Check file size
+        if (fileInfo.Length > 100 * 1024 * 1024) // 100MB
+        {
+            Console.WriteLine($"?? Large file detected: {fileInfo.Length / (1024 * 1024)}MB");
+            Console.WriteLine("Consider using async method or sampling");
+        }
+
+        // Attempt to read
+        pandasManager.ReadCsv(dataFrameName, filePath);
+        Console.WriteLine($"? Successfully loaded: {filePath}");
+        return true;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"? Failed to load {filePath}: {ex.Message}");
+        return false;
+    }
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="warning">
+                        <h4>?? Python Package Missing</h4>
+                        <p><strong>Error:</strong> Python errors about missing packages (pandas, numpy, etc.)</p>
+                        
+                        <h5>Solutions:</h5>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Check if pandas is available in the environment
+var environment = pandasManager.GetConfiguredVirtualEnvironment();
+if (environment != null)
+{
+    // This would typically be done through the package manager
+    Console.WriteLine($"Environment: {environment.Name}");
+    Console.WriteLine($"Python Version: {environment.PythonVersion}");
+    Console.WriteLine($"Environment Path: {environment.EnvironmentPath}");
+    
+    // Install required packages if missing
+    var packageManager = serviceProvider.GetService&lt;IPythonPackageManager&gt;();
+    if (packageManager != null)
+    {
+        // Check if pandas is installed
+        bool pandasInstalled = await packageManager.IsPackageInstalledAsync("pandas", environment);
+        if (!pandasInstalled)
+        {
+            Console.WriteLine("Installing pandas...");
+            bool installed = await packageManager.InstallPackageAsync("pandas", environment);
+            if (!installed)
+            {
+                throw new InvalidOperationException("Failed to install pandas package");
+            }
+        }
+    }
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Performance Issues -->
+                <section class="section" id="performance-issues">
+                    <h2>? Performance Issues</h2>
+                    
+                    <div class="tip">
+                        <h4>?? Slow DataFrame Operations</h4>
+                        
+                        <h5>Common Causes:</h5>
+                        <ul>
+                            <li>Large DataFrames without optimization</li>
+                            <li>Inefficient data types</li>
+                            <li>Memory fragmentation</li>
+                            <li>Multiple unnecessary copies</li>
+                        </ul>
+                        
+                        <h5>Solutions:</h5>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Performance optimization workflow
+public static void OptimizeDataFramePerformance(IPythonPandasManager pandasManager, string dataFrameName)
+{
+    Console.WriteLine($"?? Optimizing DataFrame: {dataFrameName}");
+    
+    // 1. Get initial statistics
+    string initialStats = pandasManager.Describe(dataFrameName);
+    Console.WriteLine($"Initial statistics:\n{initialStats}");
+    
+    // 2. Check memory usage
+    string memoryBefore = pandasManager.GetMemoryUsageReport();
+    Console.WriteLine($"Memory before optimization:\n{memoryBefore}");
+    
+    // 3. Optimize data types and memory
+    pandasManager.OptimizeMemory(dataFrameName);
+    
+    // 4. Check memory usage after optimization
+    string memoryAfter = pandasManager.GetMemoryUsageReport();
+    Console.WriteLine($"Memory after optimization:\n{memoryAfter}");
+    
+    // 5. For very large datasets, consider sampling for exploration
+    int rowCount = GetRowCount(pandasManager, dataFrameName);
+    if (rowCount > 1000000) // More than 1M rows
+    {
+        Console.WriteLine($"?? Large dataset detected ({rowCount} rows)");
+        Console.WriteLine("Creating sample for faster exploration...");
+        
+        pandasManager.SampleDataFrame(dataFrameName, $"{dataFrameName}_sample", 0.1);
+        Console.WriteLine("? Sample created for faster operations");
+    }
+}
+
+private static int GetRowCount(IPythonPandasManager pandasManager, string dataFrameName)
+{
+    // This would be implemented to get actual row count
+    // For now, return a placeholder
+    return 500000;
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Environment Issues -->
+                <section class="section" id="environment-issues">
+                    <h2>?? Environment Issues</h2>
+                    
+                    <div class="warning">
+                        <h4>?? Virtual Environment Problems</h4>
+                        
+                        <div class="code-example">
+                            <h5>Environment Validation Script</h5>
+                            <pre><code class="language-csharp">public static async Task ValidateEnvironment(IPythonRunTimeManager runtimeManager, string environmentId)
+{
+    Console.WriteLine($"?? Validating environment: {environmentId}");
+    
+    try
+    {
+        var envManager = runtimeManager.VirtualEnvmanager;
+        var environment = envManager.GetEnvironmentById(environmentId);
+        
+        if (environment == null)
+        {
+            Console.WriteLine($"? Environment '{environmentId}' not found");
+            Console.WriteLine("Available environments:");
+            
+            var allEnvironments = envManager.GetAllEnvironments();
+            foreach (var env in allEnvironments)
+            {
+                Console.WriteLine($"  - {env.Name} (ID: {env.ID})");
+            }
+            return;
+        }
+        
+        Console.WriteLine($"? Environment found: {environment.Name}");
+        Console.WriteLine($"   Path: {environment.EnvironmentPath}");
+        Console.WriteLine($"   Python Version: {environment.PythonVersion}");
+        Console.WriteLine($"   Created: {environment.CreatedDate}");
+        Console.WriteLine($"   Active: {environment.IsActive}");
+        
+        // Check if environment directory exists
+        if (Directory.Exists(environment.EnvironmentPath))
+        {
+            Console.WriteLine("? Environment directory exists");
+            
+            // Check for Python executable
+            string pythonExePath = Path.Combine(environment.EnvironmentPath, "Scripts", "python.exe");
+            if (File.Exists(pythonExePath))
+            {
+                Console.WriteLine("? Python executable found");
+            }
+            else
+            {
+                Console.WriteLine("? Python executable not found");
+            }
+        }
+        else
+        {
+            Console.WriteLine("? Environment directory does not exist");
+        }
+        
+        // Test package availability
+        var packageManager = runtimeManager.PackageManager;
+        if (packageManager != null)
+        {
+            Console.WriteLine("\n?? Checking required packages:");
+            string[] requiredPackages = { "pandas", "numpy" };
+            
+            foreach (string package in requiredPackages)
+            {
+                bool isInstalled = await packageManager.IsPackageInstalledAsync(package, environment);
+                Console.WriteLine($"   {package}: {(isInstalled ? "?" : "?")}");
+                
+                if (!isInstalled)
+                {
+                    Console.WriteLine($"   Installing {package}...");
+                    bool installed = await packageManager.InstallPackageAsync(package, environment);
+                    Console.WriteLine($"   Installation {(installed ? "successful" : "failed")}");
+                }
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"? Environment validation failed: {ex.Message}");
+    }
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Data Issues -->
+                <section class="section" id="data-issues">
+                    <h2>?? Data-Related Issues</h2>
+                    
+                    <div class="tip">
+                        <h4>?? Data Quality Checks</h4>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public static void PerformDataQualityCheck(IPythonPandasManager pandasManager, string dataFrameName)
+{
+    Console.WriteLine($"?? Data Quality Check for: {dataFrameName}");
+    Console.WriteLine("=====================================");
+    
+    try
+    {
+        // 1. Basic information
+        string description = pandasManager.Describe(dataFrameName);
+        Console.WriteLine("?? Basic Statistics:");
+        Console.WriteLine(description);
+        
+        // 2. Check for missing values
+        string missingValues = pandasManager.IsNull(dataFrameName);
+        Console.WriteLine("\n? Missing Values:");
+        Console.WriteLine(missingValues);
+        
+        // 3. Check for duplicates
+        // Note: We'll create a copy to check duplicates without modifying original
+        pandasManager.CreateDataFrame($"{dataFrameName}_copy", $"{dataFrameName}.copy()");
+        pandasManager.DropDuplicates($"{dataFrameName}_copy", $"{dataFrameName}_dedup");
+        
+        // Compare sizes (this would need actual implementation)
+        Console.WriteLine("\n?? Duplicate Check:");
+        Console.WriteLine("Original vs Deduplicated size comparison would go here");
+        
+        // 4. Data type information
+        Console.WriteLine("\n?? Data Types and Memory Usage:");
+        string memoryUsage = pandasManager.GetMemoryUsageReport();
+        Console.WriteLine(memoryUsage);
+        
+        // 5. Recommendations
+        Console.WriteLine("\n?? Recommendations:");
+        Console.WriteLine("? Check missing value patterns");
+        Console.WriteLine("? Consider data type optimization");
+        Console.WriteLine("? Validate data ranges and outliers");
+        Console.WriteLine("? Review duplicate handling strategy");
+        
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"? Data quality check failed: {ex.Message}");
+    }
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Integration Issues -->
+                <section class="section" id="integration-issues">
+                    <h2>?? Integration Issues</h2>
+                    
+                    <div class="warning">
+                        <h4>?? Dependency Injection Problems</h4>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Common DI registration issues and solutions
+
+// ? Incorrect registration
+services.AddSingleton&lt;PythonPandasManager&gt;(); // Missing interface
+
+// ? Correct registration
+services.AddSingleton&lt;IBeepService, BeepService&gt;();
+services.AddSingleton&lt;IPythonRunTimeManager, PythonRunTimeManager&gt;();
+services.AddSingleton&lt;IPythonCodeExecuteManager, PythonCodeExecuteManager&gt;();
+services.AddTransient&lt;IPythonPandasManager, PythonPandasManager&gt;();
+
+// ? Incorrect usage - not configuring session
+public class BadDataService
+{
+    private readonly IPythonPandasManager _pandasManager;
+    
+    public BadDataService(IPythonPandasManager pandasManager)
+    {
+        _pandasManager = pandasManager;
+    }
+    
+    public void AnalyzeData()
+    {
+        // This will fail - no session configured
+        _pandasManager.ReadCsv("data", "file.csv");
+    }
+}
+
+// ? Correct usage - proper session management
+public class GoodDataService
+{
+    private readonly IPythonPandasManager _pandasManager;
+    
+    public GoodDataService(IPythonPandasManager pandasManager)
+    {
+        _pandasManager = pandasManager;
+    }
+    
+    public void AnalyzeData(string userId)
+    {
+        // Always configure session first
+        if (!_pandasManager.ConfigureSessionForUser(userId))
+        {
+            throw new InvalidOperationException("Failed to configure session");
+        }
+        
+        _pandasManager.ReadCsv("data", "file.csv");
+    }
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Debugging Tools -->
+                <section class="section" id="debugging-tools">
+                    <h2>?? Debugging Tools</h2>
+                    
+                    <div class="code-example">
+                        <h4>Comprehensive Debug Information</h4>
+                        <pre><code class="language-csharp">public static class PandasDebugTools
+{
+    public static void PrintDebugInfo(IPythonPandasManager pandasManager)
+    {
+        Console.WriteLine("?? Pandas Debug Information");
+        Console.WriteLine("===========================");
+        
+        // Session information
+        Console.WriteLine("\n?? Session Information:");
+        PrintSessionInfo(pandasManager);
+        
+        // Memory information
+        Console.WriteLine("\n?? Memory Information:");
+        PrintMemoryInfo(pandasManager);
+        
+        // Environment information
+        Console.WriteLine("\n?? Environment Information:");
+        PrintEnvironmentInfo(pandasManager);
+        
+        // Test basic operations
+        Console.WriteLine("\n?? Operation Tests:");
+        TestBasicOperations(pandasManager);
+    }
+    
+    private static void PrintSessionInfo(IPythonPandasManager pandasManager)
+    {
+        try
+        {
+            bool configured = pandasManager.IsSessionConfigured();
+            Console.WriteLine($"   Session Configured: {configured}");
+            
+            if (configured)
+            {
+                var session = pandasManager.GetConfiguredSession();
+                var environment = pandasManager.GetConfiguredVirtualEnvironment();
+                
+                Console.WriteLine($"   Session ID: {session?.SessionId}");
+                Console.WriteLine($"   Username: {session?.Username}");
+                Console.WriteLine($"   Environment: {environment?.Name}");
+                Console.WriteLine($"   Python Version: {environment?.PythonVersion}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"   ? Error getting session info: {ex.Message}");
+        }
+    }
+    
+    private static void PrintMemoryInfo(IPythonPandasManager pandasManager)
+    {
+        try
+        {
+            string memoryReport = pandasManager.GetMemoryUsageReport();
+            Console.WriteLine($"   {memoryReport}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"   ? Error getting memory info: {ex.Message}");
+        }
+    }
+    
+    private static void TestBasicOperations(IPythonPandasManager pandasManager)
+    {
+        string testDataFrameName = "debug_test_df";
+        
+        try
+        {
+            // Test DataFrame creation
+            Console.Write("   Creating test DataFrame... ");
+            pandasManager.CreateDataFrame(testDataFrameName, "pd.DataFrame({'test': [1, 2, 3], 'value': [10, 20, 30]})");
+            Console.WriteLine("?");
+            
+            // Test describe operation
+            Console.Write("   Testing describe operation... ");
+            string description = pandasManager.Describe(testDataFrameName);
+            Console.WriteLine(string.IsNullOrEmpty(description) ? "?" : "?");
+            
+            // Test filtering
+            Console.Write("   Testing filter operation... ");
+            pandasManager.FilterRows(testDataFrameName, "filtered_test", "test > 1");
+            Console.WriteLine("?");
+            
+            // Cleanup test data
+            Console.Write("   Cleaning up test data... ");
+            pandasManager.CleanupIdleDataFrames(0); // Clean immediately
+            Console.WriteLine("?");
+            
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"\n   ? Operation test failed: {ex.Message}");
+        }
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Getting Help -->
+                <section class="section" id="getting-help">
+                    <h2>?? Getting Help</h2>
+                    
+                    <div class="note">
+                        <h4>?? Support Resources</h4>
+                        <ul>
+                            <li><strong>Documentation:</strong> Check the <a href="api/PythonPandasManager.html">API Reference</a> for detailed method information</li>
+                            <li><strong>Examples:</strong> Review <a href="examples/basic-usage.html">Basic Usage</a> and <a href="examples/data-analysis-pipeline.html">Complete Examples</a></li>
+                            <li><strong>Configuration:</strong> See <a href="configuration/session-management.html">Session Management</a> for setup issues</li>
+                            <li><strong>GitHub Issues:</strong> Report bugs and request features on the project repository</li>
+                            <li><strong>Community:</strong> Join discussions and ask questions in the community forums</li>
+                        </ul>
+                    </div>
+
+                    <div class="tip">
+                        <h4>?? When Reporting Issues</h4>
+                        <p>Please include the following information:</p>
+                        <ul>
+                            <li>.NET version (6, 7, 8, or 9)</li>
+                            <li>Python version and environment details</li>
+                            <li>Full error message and stack trace</li>
+                            <li>Minimal code example that reproduces the issue</li>
+                            <li>Expected vs actual behavior</li>
+                            <li>Output from the debug tools above</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="configuration/session-management.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> Session Management
+                    </a>
+                    <a href="changelog.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> Changelog
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.DataManagement Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="index.html">Home</a>
+                            <a href="getting-started.html">Getting Started</a>
+                            <a href="api/PythonPandasManager.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="assets/navigation.js"></script>
+</body>
+</html>

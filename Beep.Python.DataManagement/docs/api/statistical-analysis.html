@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistical Analysis Operations - Beep.Python.DataManagement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="../assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="../index.html">Home</a>
+                    <span>?</span>
+                    <a href="../index.html#operations">Data Operations</a>
+                    <span>?</span>
+                    <span>Statistical Analysis</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-graph-up"></i> Statistical Analysis Operations</h1>
+                    <p class="page-subtitle">Comprehensive statistical analysis using pandas for descriptive statistics, correlation analysis, hypothesis testing, and advanced analytics</p>
+                </div>
+
+                <!-- Quick Reference -->
+                <section class="section" id="quick-reference">
+                    <h2>? Quick Reference</h2>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-bar-chart"></i> Descriptive Statistics</h4>
+                            <p>Mean, median, mode, standard deviation, quartiles</p>
+                            <small>Describe, CalculateMean, CalculateMedian, CalculateStdDev</small>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-arrow-through-heart"></i> Correlation Analysis</h4>
+                            <p>Pearson, Spearman correlations and covariance matrices</p>
+                            <small>Correlation, Covariance, correlation heatmaps</small>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-collection"></i> Distribution Analysis</h4>
+                            <p>Histograms, percentiles, skewness, kurtosis</p>
+                            <small>ValueCounts, percentile calculations, distribution shapes</small>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-calculator"></i> Hypothesis Testing</h4>
+                            <p>T-tests, chi-square, ANOVA, confidence intervals</p>
+                            <small>Statistical tests and significance analysis</small>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Descriptive Statistics -->
+                <section class="section" id="descriptive-statistics">
+                    <h2>?? Descriptive Statistics</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Basic Statistical Measures</h4>
+                        <pre><code class="language-csharp">// Basic statistical analysis
+public class StatisticalAnalysisService
+{
+    private readonly IPythonPandasManager _pandasManager;
+    
+    public StatisticalAnalysisService(IPythonPandasManager pandasManager)
+    {
+        _pandasManager = pandasManager;
+    }
+    
+    public async Task&lt;DescriptiveStatistics&gt; GetDescriptiveStatistics(string dataFrameName, string[] columns = null)
+    {
+        var stats = new DescriptiveStatistics();
+        
+        // Overall summary statistics
+        stats.Summary = _pandasManager.Describe(dataFrameName);
+        
+        // Calculate specific measures for each column
+        if (columns == null)
+        {
+            // Get numeric columns
+            string getColumnsCode = $@"
+numeric_columns = {dataFrameName}.select_dtypes(include=['number']).columns.tolist()
+";
+            await _pandasManager.ExecutePythonCodeAsync(getColumnsCode);
+            
+            // Get the column names (simplified - would need actual implementation)
+            columns = new[] { "Amount", "Quantity", "Price" }; // Placeholder
+        }
+        
+        foreach (var column in columns)
+        {
+            var columnStats = new ColumnStatistics
+            {
+                ColumnName = column,
+                Mean = decimal.Parse(_pandasManager.CalculateMean(dataFrameName, column)),
+                Median = decimal.Parse(_pandasManager.CalculateMedian(dataFrameName, column)),
+                Mode = _pandasManager.CalculateMode(dataFrameName, column),
+                StandardDeviation = decimal.Parse(_pandasManager.CalculateStdDev(dataFrameName, column)),
+                Variance = decimal.Parse(_pandasManager.CalculateVariance(dataFrameName, column)),
+                Min = decimal.Parse(_pandasManager.CalculateMin(dataFrameName, column)),
+                Max = decimal.Parse(_pandasManager.CalculateMax(dataFrameName, column))
+            };
+            
+            // Calculate additional measures
+            await CalculateAdvancedStatistics(dataFrameName, column, columnStats);
+            
+            stats.ColumnStatistics.Add(columnStats);
+        }
+        
+        return stats;
+    }
+    
+    private async Task CalculateAdvancedStatistics(string dataFrameName, string column, ColumnStatistics stats)
+    {
+        string advancedStatsCode = $@"
+import pandas as pd
+import numpy as np
+from scipy import stats as scipy_stats
+
+# Get the column data
+column_data = {dataFrameName}['{column}'].dropna()
+
+# Calculate percentiles
+percentiles = [5, 10, 25, 50, 75, 90, 95]
+percentile_values = {{}}
+for p in percentiles:
+    percentile_values[p] = column_data.quantile(p / 100)
+
+# Calculate skewness and kurtosis
+skewness = column_data.skew()
+kurtosis = column_data.kurtosis()
+
+# Calculate interquartile range
+q1 = column_data.quantile(0.25)
+q3 = column_data.quantile(0.75)
+iqr = q3 - q1
+
+# Calculate coefficient of variation
+cv = (column_data.std() / column_data.mean()) * 100 if column_data.mean() != 0 else 0
+
+# Calculate range
+data_range = column_data.max() - column_data.min()
+
+# Count of values
+count = len(column_data)
+null_count = {dataFrameName}['{column}'].isnull().sum()
+
+# Store results
+advanced_stats = {{
+    'percentiles': percentile_values,
+    'skewness': skewness,
+    'kurtosis': kurtosis,
+    'iqr': iqr,
+    'cv': cv,
+    'range': data_range,
+    'count': count,
+    'null_count': null_count
+}}
+";
+        
+        await _pandasManager.ExecutePythonCodeAsync(advancedStatsCode);
+        
+        // Extract results (simplified - would need actual implementation)
+        stats.Skewness = 0.5m; // Would get from Python
+        stats.Kurtosis = 2.1m;
+        stats.InterquartileRange = 150m;
+        stats.CoefficientOfVariation = 15.5m;
+        stats.Range = 500m;
+        stats.Count = 1000;
+        stats.NullCount = 5;
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Distribution Analysis</h4>
+                        <pre><code class="language-csharp">public async Task&lt;DistributionAnalysis&gt; AnalyzeDistribution(string dataFrameName, string column)
+{
+    var analysis = new DistributionAnalysis { ColumnName = column };
+    
+    string distributionCode = $@"
+import pandas as pd
+import numpy as np
+from scipy import stats as scipy_stats
+import matplotlib.pyplot as plt
+
+# Get column data
+data = {dataFrameName}['{column}'].dropna()
+
+# Value counts for categorical or discrete data
+value_counts = data.value_counts().head(20)
+
+# For continuous data, create bins
+if data.dtype in ['int64', 'float64'] and data.nunique() > 20:
+    # Create histogram bins
+    hist_counts, bin_edges = np.histogram(data, bins=20)
+    bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+    
+    # Create distribution summary
+    histogram_data = list(zip(bin_centers, hist_counts))
+else:
+    histogram_data = list(zip(value_counts.index, value_counts.values))
+
+# Test for normality (Shapiro-Wilk test for sample size < 5000)
+if len(data) < 5000:
+    shapiro_stat, shapiro_p = scipy_stats.shapiro(data)
+    is_normal = shapiro_p > 0.05
+else:
+    # Use Kolmogorov-Smirnov test for larger samples
+    ks_stat, ks_p = scipy_stats.kstest(data, 'norm', args=(data.mean(), data.std()))
+    is_normal = ks_p > 0.05
+    shapiro_stat, shapiro_p = None, None
+
+# Calculate quartiles and outliers
+q1 = data.quantile(0.25)
+q3 = data.quantile(0.75)
+iqr = q3 - q1
+lower_bound = q1 - 1.5 * iqr
+upper_bound = q3 + 1.5 * iqr
+
+outliers = data[(data < lower_bound) | (data > upper_bound)]
+outlier_count = len(outliers)
+outlier_percentage = (outlier_count / len(data)) * 100
+
+# Distribution shape analysis
+skewness = data.skew()
+kurtosis = data.kurtosis()
+
+# Classify distribution shape
+if abs(skewness) < 0.5:
+    skew_interpretation = 'Approximately Symmetric'
+elif skewness > 0:
+    skew_interpretation = 'Right-skewed (Positive skew)'
+else:
+    skew_interpretation = 'Left-skewed (Negative skew)'
+
+if kurtosis > 3:
+    kurtosis_interpretation = 'Leptokurtic (Heavy-tailed)'
+elif kurtosis < 3:
+    kurtosis_interpretation = 'Platykurtic (Light-tailed)'
+else:
+    kurtosis_interpretation = 'Mesokurtic (Normal-like tails)'
+
+distribution_results = {{
+    'histogram_data': histogram_data,
+    'is_normal': is_normal,
+    'shapiro_stat': shapiro_stat,
+    'shapiro_p': shapiro_p,
+    'outlier_count': outlier_count,
+    'outlier_percentage': outlier_percentage,
+    'skewness': skewness,
+    'kurtosis': kurtosis,
+    'skew_interpretation': skew_interpretation,
+    'kurtosis_interpretation': kurtosis_interpretation,
+    'unique_values': data.nunique(),
+    'most_frequent': data.mode().iloc[0] if len(data.mode()) > 0 else None
+}}
+";
+    
+    await _pandasManager.ExecutePythonCodeAsync(distributionCode);
+    
+    // Extract results (simplified)
+    analysis.IsNormal = true; // Would extract from Python
+    analysis.OutlierCount = 15;
+    analysis.OutlierPercentage = 1.5m;
+    analysis.UniqueValues = 145;
+    analysis.SkewnessInterpretation = "Approximately Symmetric";
+    analysis.KurtosisInterpretation = "Mesokurtic (Normal-like tails)";
+    
+    return analysis;
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Correlation Analysis -->
+                <section class="section" id="correlation-analysis">
+                    <h2>?? Correlation and Covariance Analysis</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Correlation Matrix Analysis</h4>
+                        <pre><code class="language-csharp">public async Task&lt;CorrelationAnalysis&gt; AnalyzeCorrelations(string dataFrameName, string[] columns = null)
+{
+    var analysis = new CorrelationAnalysis();
+    
+    string correlationCode = @"
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Select numeric columns for correlation analysis
+if columns is None:
+    numeric_data = data_frame.select_dtypes(include=[np.number])
+else:
+    numeric_data = data_frame[columns]
+
+# Calculate Pearson correlation matrix
+pearson_corr = numeric_data.corr(method='pearson')
+
+# Calculate Spearman correlation matrix (rank-based)
+spearman_corr = numeric_data.corr(method='spearman')
+
+# Calculate Kendall's tau correlation
+kendall_corr = numeric_data.corr(method='kendall')
+
+# Covariance matrix
+covariance_matrix = numeric_data.cov()
+
+# Find highly correlated pairs (absolute correlation > 0.7)
+high_corr_pairs = []
+for i in range(len(pearson_corr.columns)):
+    for j in range(i+1, len(pearson_corr.columns)):
+        col1 = pearson_corr.columns[i]
+        col2 = pearson_corr.columns[j]
+        corr_value = pearson_corr.iloc[i, j]
+        
+        if abs(corr_value) > 0.7:
+            high_corr_pairs.append({
+                'variable1': col1,
+                'variable2': col2,
+                'correlation': corr_value,
+                'strength': 'Strong' if abs(corr_value) > 0.8 else 'Moderate'
+            })
+
+# Find variables with highest average correlation
+avg_correlations = {}
+for col in pearson_corr.columns:
+    # Exclude self-correlation (diagonal = 1)
+    other_corrs = pearson_corr[col].drop(col)
+    avg_correlations[col] = abs(other_corrs).mean()
+
+# Sort by highest average correlation
+sorted_avg_corr = sorted(avg_correlations.items(), key=lambda x: x[1], reverse=True)
+
+correlation_results = {
+    'pearson_matrix': pearson_corr.to_dict(),
+    'spearman_matrix': spearman_corr.to_dict(),
+    'kendall_matrix': kendall_corr.to_dict(),
+    'covariance_matrix': covariance_matrix.to_dict(),
+    'high_corr_pairs': high_corr_pairs,
+    'avg_correlations': sorted_avg_corr
+}
+";
+    
+    // Replace data_frame with actual DataFrame name
+    correlationCode = correlationCode.Replace("data_frame", dataFrameName);
+    await _pandasManager.ExecutePythonCodeAsync(correlationCode);
+    
+    // Get correlation matrix as string (would be parsed in real implementation)
+    analysis.PearsonCorrelationMatrix = _pandasManager.Correlation(dataFrameName);
+    
+    // Extract highly correlated pairs (simplified)
+    analysis.HighlyCorrelatedPairs = new List&lt;CorrelationPair&gt;
+    {
+        new() { Variable1 = "Amount", Variable2 = "Quantity", Correlation = 0.85m, Strength = "Strong" },
+        new() { Variable1 = "Price", Variable2 = "Amount", Correlation = 0.72m, Strength = "Moderate" }
+    };
+    
+    return analysis;
+}
+
+public async Task&lt;PartialCorrelationAnalysis&gt; CalculatePartialCorrelations(string dataFrameName, string targetVariable, string[] controlVariables)
+{
+    string partialCorrCode = $@"
+import pandas as pd
+import numpy as np
+from scipy import stats
+from scipy.linalg import inv
+
+def partial_correlation(data, target_var, control_vars):
+    # Select relevant variables
+    variables = [target_var] + list(control_vars)
+    data_subset = data[variables].dropna()
+    
+    # Calculate correlation matrix
+    corr_matrix = data_subset.corr().values
+    
+    # Calculate partial correlations using matrix inversion
+    precision_matrix = inv(corr_matrix)
+    
+    # Partial correlation between target and each other variable
+    partial_corrs = {{}}
+    target_idx = 0  # target variable is first
+    
+    for i, var in enumerate(variables[1:], 1):  # Skip target variable
+        # Partial correlation formula: -P_ij / sqrt(P_ii * P_jj)
+        partial_corr = -precision_matrix[target_idx, i] / np.sqrt(
+            precision_matrix[target_idx, target_idx] * precision_matrix[i, i]
+        )
+        partial_corrs[var] = partial_corr
+    
+    return partial_corrs
+
+# Calculate partial correlations
+target_var = '{targetVariable}'
+control_vars = {System.Text.Json.JsonSerializer.Serialize(controlVariables)}
+
+partial_correlations = partial_correlation({dataFrameName}, target_var, control_vars)
+
+# Calculate significance tests for partial correlations
+n = len({dataFrameName})
+df = n - len(control_vars) - 2  # degrees of freedom
+
+partial_corr_results = {{}}
+for var, corr in partial_correlations.items():
+    # Calculate t-statistic for partial correlation
+    t_stat = corr * np.sqrt(df / (1 - corr**2)) if abs(corr) < 1 else np.inf
+    p_value = 2 * (1 - stats.t.cdf(abs(t_stat), df))
+    
+    partial_corr_results[var] = {{
+        'partial_correlation': corr,
+        't_statistic': t_stat,
+        'p_value': p_value,
+        'significant': p_value < 0.05
+    }}
+";
+    
+    await _pandasManager.ExecutePythonCodeAsync(partialCorrCode);
+    
+    var analysis = new PartialCorrelationAnalysis
+    {
+        TargetVariable = targetVariable,
+        ControlVariables = controlVariables.ToList()
+    };
+    
+    // Extract results (simplified)
+    analysis.PartialCorrelations = new Dictionary&lt;string, decimal&gt;
+    {
+        ["Price"] = 0.45m,
+        ["Region"] = -0.23m
+    };
+    
+    return analysis;
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Advanced Correlation Techniques</h4>
+                        <pre><code class="language-csharp">public async Task&lt;AdvancedCorrelationResults&gt; PerformAdvancedCorrelationAnalysis(string dataFrameName)
+{
+    string advancedCode = $@"
+import pandas as pd
+import numpy as np
+from scipy import stats
+import warnings
+warnings.filterwarnings('ignore')
+
+# Get numeric data
+numeric_data = {dataFrameName}.select_dtypes(include=[np.number])
+
+# 1. Distance Correlation (measures linear and non-linear dependence)
+def distance_correlation(x, y):
+    n = len(x)
+    a = np.abs(np.subtract.outer(x, x))
+    b = np.abs(np.subtract.outer(y, y))
+    
+    A = a - a.mean(axis=0)[None, :] - a.mean(axis=1)[:, None] + a.mean()
+    B = b - b.mean(axis=0)[None, :] - b.mean(axis=1)[:, None] + b.mean()
+    
+    dcov_xy = np.sqrt(np.mean(A * B))
+    dcov_xx = np.sqrt(np.mean(A * A))
+    dcov_yy = np.sqrt(np.mean(B * B))
+    
+    if dcov_xx > 0 and dcov_yy > 0:
+        return dcov_xy / np.sqrt(dcov_xx * dcov_yy)
+    else:
+        return 0
+
+# 2. Maximum Information Coefficient (MIC) - detects various relationships
+def calculate_mic(x, y, bins=10):
+    # Simplified MIC calculation (in practice, would use minepy library)
+    # This is a basic binning approach
+    try:
+        x_bins = pd.cut(x, bins=bins, duplicates='drop')
+        y_bins = pd.cut(y, bins=bins, duplicates='drop')
+        
+        contingency = pd.crosstab(x_bins, y_bins)
+        n = len(x)
+        
+        # Calculate mutual information
+        mi = 0
+        for i in range(len(contingency)):
+            for j in range(len(contingency.columns)):
+                if contingency.iloc[i, j] > 0:
+                    p_xy = contingency.iloc[i, j] / n
+                    p_x = contingency.iloc[i, :].sum() / n
+                    p_y = contingency.iloc[:, j].sum() / n
+                    
+                    if p_x > 0 and p_y > 0:
+                        mi += p_xy * np.log2(p_xy / (p_x * p_y))
+        
+        # Normalize by log(min(bins_x, bins_y))
+        return mi / np.log2(min(bins, bins))
+    except:
+        return 0
+
+# Calculate various correlation measures for all pairs
+correlation_results = {{}}
+columns = numeric_data.columns.tolist()
+
+for i, col1 in enumerate(columns):
+    correlation_results[col1] = {{}}
+    for j, col2 in enumerate(columns):
+        if i != j:  # Skip self-correlation
+            x = numeric_data[col1].dropna()
+            y = numeric_data[col2].dropna()
+            
+            # Align the data (keep only rows where both have values)
+            common_idx = x.index.intersection(y.index)
+            x_aligned = x.loc[common_idx]
+            y_aligned = y.loc[common_idx]
+            
+            if len(x_aligned) > 2:  # Need at least 3 points
+                # Pearson correlation
+                pearson_r, pearson_p = stats.pearsonr(x_aligned, y_aligned)
+                
+                # Spearman correlation
+                spearman_r, spearman_p = stats.spearmanr(x_aligned, y_aligned)
+                
+                # Kendall's tau
+                kendall_tau, kendall_p = stats.kendalltau(x_aligned, y_aligned)
+                
+                # Distance correlation
+                dist_corr = distance_correlation(x_aligned.values, y_aligned.values)
+                
+                # MIC (simplified)
+                mic_value = calculate_mic(x_aligned, y_aligned)
+                
+                correlation_results[col1][col2] = {{
+                    'pearson': {{'r': pearson_r, 'p_value': pearson_p}},
+                    'spearman': {{'r': spearman_r, 'p_value': spearman_p}},
+                    'kendall': {{'tau': kendall_tau, 'p_value': kendall_p}},
+                    'distance': dist_corr,
+                    'mic': mic_value,
+                    'sample_size': len(x_aligned)
+                }}
+
+# Find the strongest relationships by different measures
+strongest_relationships = {{
+    'pearson': None,
+    'spearman': None,
+    'kendall': None,
+    'distance': None,
+    'mic': None
+}}
+
+max_values = {{
+    'pearson': 0,
+    'spearman': 0,
+    'kendall': 0,
+    'distance': 0,
+    'mic': 0
+}}
+
+for col1 in correlation_results:
+    for col2 in correlation_results[col1]:
+        corr_data = correlation_results[col1][col2]
+        
+        # Check each correlation type
+        if abs(corr_data['pearson']['r']) > max_values['pearson']:
+            max_values['pearson'] = abs(corr_data['pearson']['r'])
+            strongest_relationships['pearson'] = (col1, col2, corr_data['pearson']['r'])
+            
+        if abs(corr_data['spearman']['r']) > max_values['spearman']:
+            max_values['spearman'] = abs(corr_data['spearman']['r'])
+            strongest_relationships['spearman'] = (col1, col2, corr_data['spearman']['r'])
+            
+        if abs(corr_data['kendall']['tau']) > max_values['kendall']:
+            max_values['kendall'] = abs(corr_data['kendall']['tau'])
+            strongest_relationships['kendall'] = (col1, col2, corr_data['kendall']['tau'])
+            
+        if corr_data['distance'] > max_values['distance']:
+            max_values['distance'] = corr_data['distance']
+            strongest_relationships['distance'] = (col1, col2, corr_data['distance'])
+            
+        if corr_data['mic'] > max_values['mic']:
+            max_values['mic'] = corr_data['mic']
+            strongest_relationships['mic'] = (col1, col2, corr_data['mic'])
+
+advanced_correlation_results = {{
+    'all_correlations': correlation_results,
+    'strongest_relationships': strongest_relationships,
+    'max_values': max_values
+}}
+";
+    
+    await _pandasManager.ExecutePythonCodeAsync(advancedCode);
+    
+    var results = new AdvancedCorrelationResults();
+    
+    // Extract results (simplified)
+    results.StrongestPearson = new CorrelationPair 
+    { 
+        Variable1 = "Amount", 
+        Variable2 = "Quantity", 
+        Correlation = 0.87m, 
+        PValue = 0.001m 
+    };
+    
+    results.StrongestNonLinear = new CorrelationPair 
+    { 
+        Variable1 = "Price", 
+        Variable2 = "Category", 
+        Correlation = 0.65m, 
+        Method = "Distance Correlation" 
+    };
+    
+    return results;
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Hypothesis Testing -->
+                <section class="section" id="hypothesis-testing">
+                    <h2>?? Hypothesis Testing</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. T-Tests and ANOVA</h4>
+                        <pre><code class="language-csharp">public async Task&lt;HypothesisTestResults&gt; PerformHypothesisTests(string dataFrameName, HypothesisTestConfig config)
+{
+    var results = new HypothesisTestResults();
+    
+    // One-sample t-test
+    if (config.OneSampleTests?.Any() == true)
+    {
+        foreach (var test in config.OneSampleTests)
+        {
+            var result = await PerformOneSampleTTest(dataFrameName, test.Column, test.TestValue, test.Alpha);
+            results.OneSampleTests.Add(result);
+        }
+    }
+    
+    // Two-sample t-tests
+    if (config.TwoSampleTests?.Any() == true)
+    {
+        foreach (var test in config.TwoSampleTests)
+        {
+            var result = await PerformTwoSampleTTest(dataFrameName, test.Column, test.GroupColumn, test.Group1, test.Group2, test.Alpha);
+            results.TwoSampleTests.Add(result);
+        }
+    }
+    
+    // ANOVA tests
+    if (config.AnovaTests?.Any() == true)
+    {
+        foreach (var test in config.AnovaTests)
+        {
+            var result = await PerformANOVA(dataFrameName, test.DependentVariable, test.IndependentVariable, test.Alpha);
+            results.AnovaTests.Add(result);
+        }
+    }
+    
+    return results;
+}
+
+private async Task&lt;OneSampleTTestResult&gt; PerformOneSampleTTest(string dataFrameName, string column, double testValue, double alpha = 0.05)
+{
+    string tTestCode = $@"
+import pandas as pd
+import numpy as np
+from scipy import stats
+
+# Get the data
+data = {dataFrameName}['{column}'].dropna()
+
+# Perform one-sample t-test
+t_statistic, p_value = stats.ttest_1samp(data, {testValue})
+
+# Calculate confidence interval
+n = len(data)
+df = n - 1
+sample_mean = data.mean()
+sample_std = data.std(ddof=1)
+sem = sample_std / np.sqrt(n)
+
+# Critical t-value for confidence interval
+t_critical = stats.t.ppf(1 - {alpha}/2, df)
+margin_error = t_critical * sem
+ci_lower = sample_mean - margin_error
+ci_upper = sample_mean + margin_error
+
+# Effect size (Cohen's d)
+cohens_d = (sample_mean - {testValue}) / sample_std
+
+# Determine statistical significance
+is_significant = p_value < {alpha}
+
+# Determine direction of effect
+if sample_mean > {testValue}:
+    effect_direction = 'Greater than test value'
+elif sample_mean < {testValue}:
+    effect_direction = 'Less than test value'
+else:
+    effect_direction = 'Equal to test value'
+
+one_sample_result = {{
+    't_statistic': t_statistic,
+    'p_value': p_value,
+    'degrees_freedom': df,
+    'sample_mean': sample_mean,
+    'test_value': {testValue},
+    'sample_size': n,
+    'sample_std': sample_std,
+    'cohens_d': cohens_d,
+    'ci_lower': ci_lower,
+    'ci_upper': ci_upper,
+    'alpha': {alpha},
+    'is_significant': is_significant,
+    'effect_direction': effect_direction
+}}
+";
+    
+    await _pandasManager.ExecutePythonCodeAsync(tTestCode);
+    
+    // Extract results (simplified)
+    var result = new OneSampleTTestResult
+    {
+        Column = column,
+        TestValue = testValue,
+        TStatistic = 2.45m,
+        PValue = 0.016m,
+        DegreesOfFreedom = 99,
+        SampleMean = 125.6m,
+        SampleSize = 100,
+        CohensD = 0.35m,
+        ConfidenceIntervalLower = 115.2m,
+        ConfidenceIntervalUpper = 136.0m,
+        IsSignificant = true,
+        EffectDirection = "Greater than test value"
+    };
+    
+    return result;
+}
+
+private async Task&lt;TwoSampleTTestResult&gt; PerformTwoSampleTTest(string dataFrameName, string column, string groupColumn, string group1, string group2, double alpha = 0.05)
+{
+    string twoSampleCode = $@"
+import pandas as pd
+import numpy as np
+from scipy import stats
+
+# Split data into two groups
+group1_data = {dataFrameName}[{dataFrameName}['{groupColumn}'] == '{group1}']['{column}'].dropna()
+group2_data = {dataFrameName}[{dataFrameName}['{groupColumn}'] == '{group2}']['{column}'].dropna()
+
+# Check if we have enough data
+if len(group1_data) < 2 or len(group2_data) < 2:
+    raise ValueError('Insufficient data for t-test')
+
+# Test for equal variances (Levene's test)
+levene_stat, levene_p = stats.levene(group1_data, group2_data)
+equal_variances = levene_p > 0.05
+
+# Perform independent t-test
+t_statistic, p_value = stats.ttest_ind(group1_data, group2_data, equal_var=equal_variances)
+
+# Calculate descriptive statistics
+n1, n2 = len(group1_data), len(group2_data)
+mean1, mean2 = group1_data.mean(), group2_data.mean()
+std1, std2 = group1_data.std(ddof=1), group2_data.std(ddof=1)
+
+# Calculate effect size (Cohen's d)
+if equal_variances:
+    # Pooled standard deviation
+    pooled_std = np.sqrt(((n1-1)*std1**2 + (n2-1)*std2**2) / (n1 + n2 - 2))
+    cohens_d = (mean1 - mean2) / pooled_std
+else:
+    # Use larger standard deviation as denominator
+    cohens_d = (mean1 - mean2) / max(std1, std2)
+
+# Calculate confidence interval for difference in means
+if equal_variances:
+    pooled_std = np.sqrt(((n1-1)*std1**2 + (n2-1)*std2**2) / (n1 + n2 - 2))
+    se_diff = pooled_std * np.sqrt(1/n1 + 1/n2)
+    df = n1 + n2 - 2
+else:
+    se_diff = np.sqrt(std1**2/n1 + std2**2/n2)
+    # Welch's t-test degrees of freedom
+    df = (std1**2/n1 + std2**2/n2)**2 / (std1**4/(n1**2*(n1-1)) + std2**4/(n2**2*(n2-1)))
+
+mean_diff = mean1 - mean2
+t_critical = stats.t.ppf(1 - {alpha}/2, df)
+margin_error = t_critical * se_diff
+ci_lower = mean_diff - margin_error
+ci_upper = mean_diff + margin_error
+
+# Statistical significance
+is_significant = p_value < {alpha}
+
+two_sample_result = {{
+    't_statistic': t_statistic,
+    'p_value': p_value,
+    'degrees_freedom': df,
+    'group1_mean': mean1,
+    'group2_mean': mean2,
+    'mean_difference': mean_diff,
+    'group1_n': n1,
+    'group2_n': n2,
+    'group1_std': std1,
+    'group2_std': std2,
+    'cohens_d': cohens_d,
+    'equal_variances': equal_variances,
+    'levene_p': levene_p,
+    'ci_lower': ci_lower,
+    'ci_upper': ci_upper,
+    'alpha': {alpha},
+    'is_significant': is_significant
+}}
+";
+    
+    await _pandasManager.ExecutePythonCodeAsync(twoSampleCode);
+    
+    var result = new TwoSampleTTestResult
+    {
+        Column = column,
+        GroupColumn = groupColumn,
+        Group1 = group1,
+        Group2 = group2,
+        TStatistic = 3.12m,
+        PValue = 0.003m,
+        Group1Mean = 128.5m,
+        Group2Mean = 115.3m,
+        MeanDifference = 13.2m,
+        CohensD = 0.68m,
+        IsSignificant = true
+    };
+    
+    return result;
+}
+
+private async Task&lt;ANOVAResult&gt; PerformANOVA(string dataFrameName, string dependentVar, string independentVar, double alpha = 0.05)
+{
+    string anovaCode = $@"
+import pandas as pd
+import numpy as np
+from scipy import stats
+
+# Get groups
+groups = {dataFrameName}['{independentVar}'].unique()
+group_data = []
+
+for group in groups:
+    data = {dataFrameName}[{dataFrameName}['{independentVar}'] == group]['{dependentVar}'].dropna()
+    if len(data) > 0:
+        group_data.append(data)
+
+# Perform one-way ANOVA
+f_statistic, p_value = stats.f_oneway(*group_data)
+
+# Calculate group statistics
+group_stats = []
+overall_mean = {dataFrameName}['{dependentVar}'].mean()
+total_n = 0
+
+for i, (group, data) in enumerate(zip(groups, group_data)):
+    if len(data) > 0:
+        group_stats.append({{
+            'group': group,
+            'n': len(data),
+            'mean': data.mean(),
+            'std': data.std(ddof=1),
+            'min': data.min(),
+            'max': data.max()
+        }})
+        total_n += len(data)
+
+# Calculate effect size (eta-squared)
+ss_between = sum([len(data) * (data.mean() - overall_mean)**2 for data in group_data])
+ss_total = sum([(data - overall_mean)**2 for data in group_data for data in data])
+eta_squared = ss_between / ss_total if ss_total > 0 else 0
+
+# Degrees of freedom
+df_between = len(groups) - 1
+df_within = total_n - len(groups)
+
+# Statistical significance
+is_significant = p_value < {alpha}
+
+anova_result = {{
+    'f_statistic': f_statistic,
+    'p_value': p_value,
+    'df_between': df_between,
+    'df_within': df_within,
+    'eta_squared': eta_squared,
+    'group_stats': group_stats,
+    'overall_mean': overall_mean,
+    'total_n': total_n,
+    'alpha': {alpha},
+    'is_significant': is_significant
+}}
+";
+    
+    await _pandasManager.ExecutePythonCodeAsync(anovaCode);
+    
+    var result = new ANOVAResult
+    {
+        DependentVariable = dependentVar,
+        IndependentVariable = independentVar,
+        FStatistic = 8.45m,
+        PValue = 0.0001m,
+        EtaSquared = 0.12m,
+        IsSignificant = true
+    };
+    
+    return result;
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Advanced Statistical Tests -->
+                <section class="section" id="advanced-tests">
+                    <h2>?? Advanced Statistical Tests</h2>
+                    
+                    <div class="code-example">
+                        <h4>Chi-Square and Non-Parametric Tests</h4>
+                        <pre><code class="language-csharp">public async Task&lt;ChiSquareTestResult&gt; PerformChiSquareTest(string dataFrameName, string variable1, string variable2, double alpha = 0.05)
+{
+    string chiSquareCode = $@"
+import pandas as pd
+import numpy as np
+from scipy import stats
+
+# Create contingency table
+contingency_table = pd.crosstab({dataFrameName}['{variable1}'], {dataFrameName}['{variable2}'])
+
+# Perform chi-square test of independence
+chi2_stat, p_value, dof, expected = stats.chi2_contingency(contingency_table)
+
+# Calculate effect size (Cramér's V)
+n = contingency_table.sum().sum()
+cramers_v = np.sqrt(chi2_stat / (n * (min(contingency_table.shape) - 1)))
+
+# Calculate residuals (standardized)
+residuals = (contingency_table - expected) / np.sqrt(expected)
+
+# Check assumptions
+min_expected = expected.min()
+cells_below_5 = (expected < 5).sum().sum()
+total_cells = expected.size
+percent_below_5 = (cells_below_5 / total_cells) * 100
+
+assumptions_met = min_expected >= 1 and percent_below_5 <= 20
+
+# Statistical significance
+is_significant = p_value < {alpha}
+
+chi_square_result = {{
+    'chi2_statistic': chi2_stat,
+    'p_value': p_value,
+    'degrees_freedom': dof,
+    'cramers_v': cramers_v,
+    'contingency_table': contingency_table.to_dict(),
+    'expected_frequencies': expected.tolist(),
+    'standardized_residuals': residuals.to_dict(),
+    'min_expected': min_expected,
+    'assumptions_met': assumptions_met,
+    'cells_below_5': cells_below_5,
+    'total_cells': total_cells,
+    'alpha': {alpha},
+    'is_significant': is_significant
+}}
+";
+    
+    await _pandasManager.ExecutePythonCodeAsync(chiSquareCode);
+    
+    var result = new ChiSquareTestResult
+    {
+        Variable1 = variable1,
+        Variable2 = variable2,
+        ChiSquareStatistic = 15.7m,
+        PValue = 0.008m,
+        DegreesOfFreedom = 4,
+        CramersV = 0.28m,
+        AssumptionsMet = true,
+        IsSignificant = true
+    };
+    
+    return result;
+}
+
+public async Task&lt;NonParametricTestResults&gt; PerformNonParametricTests(string dataFrameName, NonParametricTestConfig config)
+{
+    var results = new NonParametricTestResults();
+    
+    // Mann-Whitney U test (Wilcoxon rank-sum)
+    if (config.MannWhitneyTests?.Any() == true)
+    {
+        foreach (var test in config.MannWhitneyTests)
+        {
+            var result = await PerformMannWhitneyTest(dataFrameName, test.Column, test.GroupColumn, test.Group1, test.Group2);
+            results.MannWhitneyTests.Add(result);
+        }
+    }
+    
+    // Wilcoxon signed-rank test
+    if (config.WilcoxonTests?.Any() == true)
+    {
+        foreach (var test in config.WilcoxonTests)
+        {
+            var result = await PerformWilcoxonTest(dataFrameName, test.Column1, test.Column2);
+            results.WilcoxonTests.Add(result);
+        }
+    }
+    
+    // Kruskal-Wallis test
+    if (config.KruskalWallisTests?.Any() == true)
+    {
+        foreach (var test in config.KruskalWallisTests)
+        {
+            var result = await PerformKruskalWallisTest(dataFrameName, test.DependentVariable, test.IndependentVariable);
+            results.KruskalWallisTests.Add(result);
+        }
+    }
+    
+    return results;
+}
+
+private async Task&lt;MannWhitneyTestResult&gt; PerformMannWhitneyTest(string dataFrameName, string column, string groupColumn, string group1, string group2)
+{
+    string mannWhitneyCode = $@"
+import pandas as pd
+import numpy as np
+from scipy import stats
+
+# Get data for both groups
+group1_data = {dataFrameName}[{dataFrameName}['{groupColumn}'] == '{group1}']['{column}'].dropna()
+group2_data = {dataFrameName}[{dataFrameName}['{groupColumn}'] == '{group2}']['{column}'].dropna()
+
+# Perform Mann-Whitney U test
+u_statistic, p_value = stats.mannwhitneyu(group1_data, group2_data, alternative='two-sided')
+
+# Calculate effect size (rank-biserial correlation)
+n1, n2 = len(group1_data), len(group2_data)
+r = 1 - (2 * u_statistic) / (n1 * n2)
+
+# Calculate medians and IQRs
+median1, median2 = group1_data.median(), group2_data.median()
+q1_1, q3_1 = group1_data.quantile(0.25), group1_data.quantile(0.75)
+q1_2, q3_2 = group2_data.quantile(0.25), group2_data.quantile(0.75)
+
+mann_whitney_result = {{
+    'u_statistic': u_statistic,
+    'p_value': p_value,
+    'effect_size_r': r,
+    'group1_median': median1,
+    'group2_median': median2,
+    'group1_iqr': q3_1 - q1_1,
+    'group2_iqr': q3_2 - q1_2,
+    'group1_n': n1,
+    'group2_n': n2,
+    'is_significant': p_value < 0.05
+}}
+";
+    
+    await _pandasManager.ExecutePythonCodeAsync(mannWhitneyCode);
+    
+    var result = new MannWhitneyTestResult
+    {
+        Column = column,
+        Group1 = group1,
+        Group2 = group2,
+        UStatistic = 1250,
+        PValue = 0.03m,
+        EffectSizeR = 0.45m,
+        Group1Median = 125m,
+        Group2Median = 110m,
+        IsSignificant = true
+    };
+    
+    return result;
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Performance Considerations -->
+                <section class="section" id="performance">
+                    <h2>? Performance Optimization for Statistical Analysis</h2>
+                    
+                    <div class="tip">
+                        <h4>?? Optimization Strategies</h4>
+                        
+                        <div class="code-example">
+                            <h5>Efficient Statistical Operations</h5>
+                            <pre><code class="language-csharp">// Batch statistical calculations for better performance
+public async Task&lt;BatchStatisticsResult&gt; CalculateBatchStatistics(string dataFrameName, string[] columns)
+{
+    string batchCode = $@"
+import pandas as pd
+import numpy as np
+from scipy import stats
+
+# Get numeric data
+numeric_data = {dataFrameName}[{System.Text.Json.JsonSerializer.Serialize(columns)}]
+
+# Calculate all basic statistics in one pass
+batch_results = {{}}
+
+for column in numeric_data.columns:
+    col_data = numeric_data[column].dropna()
+    
+    if len(col_data) > 0:
+        # Calculate multiple statistics efficiently
+        batch_results[column] = {{
+            'count': len(col_data),
+            'mean': col_data.mean(),
+            'median': col_data.median(),
+            'std': col_data.std(),
+            'min': col_data.min(),
+            'max': col_data.max(),
+            'q25': col_data.quantile(0.25),
+            'q75': col_data.quantile(0.75),
+            'skewness': col_data.skew(),
+            'kurtosis': col_data.kurtosis(),
+            'null_count': numeric_data[column].isnull().sum()
+        }}
+
+# Calculate correlation matrix once for all columns
+correlation_matrix = numeric_data.corr()
+
+batch_statistics = {{
+    'column_statistics': batch_results,
+    'correlation_matrix': correlation_matrix.to_dict()
+}}
+";
+            
+            await _pandasManager.ExecutePythonCodeAsync(batchCode);
+            
+            // Process results efficiently
+            var result = new BatchStatisticsResult();
+            // Implementation details...
+            
+            return result;
+}</code></pre>
+                        </div>
+
+                        <div class="code-example">
+                            <h5>Memory-Efficient Large Dataset Processing</h5>
+                            <pre><code class="language-csharp">// Process large datasets in chunks
+public async Task&lt;StatisticalSummary&gt; ProcessLargeDataset(string dataFrameName, int chunkSize = 10000)
+{
+    string chunkedProcessingCode = $@"
+import pandas as pd
+import numpy as np
+
+# Get dataset size
+total_rows = len({dataFrameName})
+chunk_size = {chunkSize}
+
+# Initialize accumulators
+running_count = 0
+running_sum = 0
+running_sum_sq = 0
+running_min = float('inf')
+running_max = float('-inf')
+
+# Process in chunks
+for start in range(0, total_rows, chunk_size):
+    end = min(start + chunk_size, total_rows)
+    chunk = {dataFrameName}.iloc[start:end]
+    
+    # Process numeric columns
+    for column in chunk.select_dtypes(include=[np.number]).columns:
+        col_data = chunk[column].dropna()
+        
+        if len(col_data) > 0:
+            running_count += len(col_data)
+            running_sum += col_data.sum()
+            running_sum_sq += (col_data ** 2).sum()
+            running_min = min(running_min, col_data.min())
+            running_max = max(running_max, col_data.max())
+
+# Calculate final statistics
+if running_count > 0:
+    mean = running_sum / running_count
+    variance = (running_sum_sq / running_count) - (mean ** 2)
+    std = np.sqrt(variance) if variance >= 0 else 0
+    
+    chunked_stats = {{
+        'count': running_count,
+        'mean': mean,
+        'std': std,
+        'min': running_min,
+        'max': running_max,
+        'chunks_processed': (total_rows + chunk_size - 1) // chunk_size
+    }}
+else:
+    chunked_stats = {{'error': 'No numeric data found'}}
+";
+            
+            await _pandasManager.ExecutePythonCodeAsync(chunkedProcessingCode);
+            
+            return new StatisticalSummary();
+        }
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="data-manipulation.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> Data Manipulation
+                    </a>
+                    <a href="data-cleaning.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> Data Cleaning
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.DataManagement Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="../index.html">Home</a>
+                            <a href="../getting-started.html">Getting Started</a>
+                            <a href="PythonPandasManager.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../assets/navigation.js"></script>
+</body>
+</html>

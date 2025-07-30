@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Usage Examples - Beep.Python.DataManagement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="../assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="../index.html">Home</a>
+                    <span>?</span>
+                    <a href="../index.html#examples">Examples</a>
+                    <span>?</span>
+                    <span>Basic Usage</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-play-circle"></i> Basic Usage Examples</h1>
+                    <p class="page-subtitle">Simple, practical examples to get you started with pandas DataFrame operations in .NET</p>
+                </div>
+
+                <!-- Quick Reference -->
+                <section class="section" id="quick-reference">
+                    <h2>? Quick Reference</h2>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-gear"></i> Setup & Config</h4>
+                            <p>Initialize, configure sessions, and basic setup patterns</p>
+                            <a href="#setup-examples" class="btn btn-outline-primary btn-sm">View Examples</a>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-file-earmark"></i> Load & Save</h4>
+                            <p>Read CSV, Excel files and save results in various formats</p>
+                            <a href="#io-examples" class="btn btn-outline-primary btn-sm">View Examples</a>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-funnel"></i> Filter & Select</h4>
+                            <p>Basic data filtering, column selection, and sampling</p>
+                            <a href="#filtering-examples" class="btn btn-outline-primary btn-sm">View Examples</a>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-calculator"></i> Simple Stats</h4>
+                            <p>Basic statistics, summaries, and data exploration</p>
+                            <a href="#stats-examples" class="btn btn-outline-primary btn-sm">View Examples</a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Setup Examples -->
+                <section class="section" id="setup-examples">
+                    <h2>?? Setup and Configuration</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Basic Initialization</h4>
+                        <pre><code class="language-csharp">using Beep.Python.DataManagement;
+
+// Initialize the pandas manager
+var pandasManager = new PythonPandasManager(beepService, runtimeManager, executeManager);
+
+// Configure for your user (simplest approach)
+bool configured = pandasManager.ConfigureSessionForUser("john.doe");
+
+if (configured)
+{
+    Console.WriteLine("? Ready to work with pandas DataFrames!");
+}
+else
+{
+    Console.WriteLine("? Failed to configure session");
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Dependency Injection Setup</h4>
+                        <pre><code class="language-csharp">// In Program.cs or Startup.cs
+builder.Services.AddTransient&lt;IPythonPandasManager, PythonPandasManager&gt;();
+
+// In your controller or service
+public class DataController : ControllerBase
+{
+    private readonly IPythonPandasManager _pandasManager;
+    
+    public DataController(IPythonPandasManager pandasManager)
+    {
+        _pandasManager = pandasManager;
+    }
+    
+    [HttpGet("analyze")]
+    public IActionResult AnalyzeData()
+    {
+        // Configure session for current user
+        _pandasManager.ConfigureSessionForUser(User.Identity.Name);
+        
+        // Your data operations here...
+        return Ok("Analysis complete");
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>3. Using Statement for Cleanup</h4>
+                        <pre><code class="language-csharp">// Automatic resource cleanup
+using var pandasManager = new PythonPandasManager(beepService, runtimeManager, executeManager);
+
+// Configure and use
+pandasManager.ConfigureSessionForUser("analyst");
+
+// Load some data
+pandasManager.ReadCsv("sales", @"C:\Data\sales.csv");
+
+// Get summary
+string summary = pandasManager.Describe("sales");
+Console.WriteLine($"Data Summary:\n{summary}");
+
+// pandasManager.Dispose() called automatically when exiting using block</code></pre>
+                    </div>
+                </section>
+
+                <!-- I/O Examples -->
+                <section class="section" id="io-examples">
+                    <h2>?? Loading and Saving Data</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Load CSV Files</h4>
+                        <pre><code class="language-csharp">// Load a CSV file
+pandasManager.ReadCsv("sales_data", @"C:\Data\sales_2024.csv");
+
+// Check what we loaded
+string info = pandasManager.Describe("sales_data");
+Console.WriteLine($"Loaded data summary:\n{info}");
+
+// Async loading for large files
+await pandasManager.ReadCsvAsync("large_dataset", @"C:\BigData\huge_file.csv");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Load Excel Files</h4>
+                        <pre><code class="language-csharp">// Load Excel file
+pandasManager.ReadExcel("product_catalog", @"C:\Data\products.xlsx");
+
+// Get unique product categories
+string categories = pandasManager.UniqueValues("product_catalog", "Category");
+Console.WriteLine($"Product categories: {categories}");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>3. Save Data in Different Formats</h4>
+                        <pre><code class="language-csharp">// Save as CSV
+pandasManager.ToCsv("sales_data", @"C:\Output\processed_sales.csv");
+
+// Save as Excel
+pandasManager.ToExcel("sales_data", @"C:\Output\sales_report.xlsx");
+
+// Save as JSON
+pandasManager.ToJson("sales_data", @"C:\Output\sales_data.json");
+
+// Generic save method
+pandasManager.ExportDataFrame("sales_data", @"C:\Output\data.parquet", "parquet");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>4. Load from Database</h4>
+                        <pre><code class="language-csharp">// Load data from SQL Server
+string connectionString = "Server=localhost;Database=SalesDB;Trusted_Connection=true;";
+string query = "SELECT * FROM Orders WHERE OrderDate >= '2024-01-01'";
+
+pandasManager.ReadSql("recent_orders", query, connectionString);
+
+// Check how many orders we got
+string orderCount = pandasManager.CalculateMean("recent_orders", "OrderID");
+Console.WriteLine($"Loaded {orderCount} recent orders");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Filtering Examples -->
+                <section class="section" id="filtering-examples">
+                    <h2>?? Filtering and Selecting Data</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Filter Rows by Condition</h4>
+                        <pre><code class="language-csharp">// Filter high-value sales (amount > 1000)
+pandasManager.FilterRows("sales_data", "high_value_sales", "Amount > 1000");
+
+// Filter by multiple conditions
+pandasManager.FilterRows("sales_data", "premium_recent", 
+    "(Amount > 500) & (OrderDate >= '2024-01-01')");
+
+// Filter by string values
+pandasManager.FilterRows("customers", "vip_customers", "CustomerType == 'VIP'");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Select Specific Columns</h4>
+                        <pre><code class="language-csharp">// Select just the columns we need
+string[] importantColumns = { "CustomerName", "Amount", "OrderDate", "Region" };
+pandasManager.SelectColumns("sales_data", "sales_summary", importantColumns);
+
+// Work with the summarized data
+string summary = pandasManager.Describe("sales_summary");
+Console.WriteLine(summary);</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>3. Sample Data for Testing</h4>
+                        <pre><code class="language-csharp">// Get a 10% random sample for testing
+pandasManager.SampleDataFrame("large_dataset", "test_sample", 0.1);
+
+// Use the sample for quick analysis
+string testStats = pandasManager.Describe("test_sample");
+Console.WriteLine($"Sample statistics:\n{testStats}");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>4. Query with pandas Query Syntax</h4>
+                        <pre><code class="language-csharp">// Use pandas query syntax for complex filtering
+pandasManager.QueryDataFrame("sales_data", "filtered_sales", 
+    "Amount > 100 and Region in ['North', 'South']");
+
+// Date-based queries
+pandasManager.QueryDataFrame("orders", "recent_orders", 
+    "OrderDate >= '2024-01-01' and OrderDate < '2024-02-01'");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Statistics Examples -->
+                <section class="section" id="stats-examples">
+                    <h2>?? Basic Statistics and Analysis</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Descriptive Statistics</h4>
+                        <pre><code class="language-csharp">// Get comprehensive statistics
+string overallStats = pandasManager.Describe("sales_data");
+Console.WriteLine("Overall Statistics:");
+Console.WriteLine(overallStats);
+
+// Individual statistics
+string avgSales = pandasManager.CalculateMean("sales_data", "Amount");
+string medianSales = pandasManager.CalculateMedian("sales_data", "Amount");
+
+Console.WriteLine($"Average Sale: ${avgSales}");
+Console.WriteLine($"Median Sale: ${medianSales}");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Data Exploration</h4>
+                        <pre><code class="language-csharp">// Check for missing values
+string missingData = pandasManager.IsNull("sales_data");
+Console.WriteLine("Missing values by column:");
+Console.WriteLine(missingData);
+
+// Get unique values in categorical columns
+string regions = pandasManager.UniqueValues("sales_data", "Region");
+string customerTypes = pandasManager.UniqueValues("sales_data", "CustomerType");
+
+Console.WriteLine($"Regions: {regions}");
+Console.WriteLine($"Customer Types: {customerTypes}");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>3. Value Counts and Distribution</h4>
+                        <pre><code class="language-csharp">// See distribution of categorical data
+string regionCounts = pandasManager.ValueCounts("sales_data", "Region");
+string productCounts = pandasManager.ValueCounts("sales_data", "ProductCategory");
+
+Console.WriteLine("Sales by Region:");
+Console.WriteLine(regionCounts);
+
+Console.WriteLine("\nSales by Product Category:");
+Console.WriteLine(productCounts);</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>4. Correlation Analysis</h4>
+                        <pre><code class="language-csharp">// Check correlations between numeric columns
+string correlations = pandasManager.Correlation("sales_data");
+Console.WriteLine("Correlation Matrix:");
+Console.WriteLine(correlations);
+
+// This helps identify relationships between variables like:
+// - Price vs Quantity
+// - Customer Age vs Purchase Amount
+// - etc.</code></pre>
+                    </div>
+                </section>
+
+                <!-- Data Cleaning Examples -->
+                <section class="section" id="cleaning-examples">
+                    <h2>?? Basic Data Cleaning</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Handle Missing Values</h4>
+                        <pre><code class="language-csharp">// Remove rows with any missing values
+pandasManager.DropNA("raw_data", "clean_data");
+
+// Fill missing values with defaults
+pandasManager.FillNA("customer_data", "complete_data", "Unknown");
+
+// Fill numeric columns with 0
+pandasManager.FillNA("sales_data", "filled_sales", 0);</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Remove Duplicates</h4>
+                        <pre><code class="language-csharp">// Remove duplicate rows
+pandasManager.DropDuplicates("customer_list", "unique_customers");
+
+// Check the difference
+Console.WriteLine("Duplicates removed successfully");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>3. Add Calculated Columns</h4>
+                        <pre><code class="language-csharp">// Add a profit column
+pandasManager.AddColumn("sales_data", "Profit", "Revenue - Cost");
+
+// Add a profit margin percentage
+pandasManager.AddColumn("sales_data", "ProfitMargin", "(Profit / Revenue) * 100");
+
+// Add a customer category based on purchase amount
+pandasManager.AddColumn("sales_data", "CustomerSegment", 
+    "np.where(Amount > 1000, 'Premium', 'Standard')");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Simple Grouping Examples -->
+                <section class="section" id="grouping-examples">
+                    <h2>?? Basic Grouping and Aggregation</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Group by Single Column</h4>
+                        <pre><code class="language-csharp">// Total sales by region
+pandasManager.GroupBy("sales_data", "sales_by_region", "Region", "sum");
+
+// Average order size by customer type
+pandasManager.GroupBy("sales_data", "avg_by_customer_type", "CustomerType", "mean");
+
+// Count of orders by month
+pandasManager.GroupBy("sales_data", "orders_by_month", "Month", "count");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Export Grouped Results</h4>
+                        <pre><code class="language-csharp">// Save regional analysis
+pandasManager.ToCsv("sales_by_region", @"C:\Reports\regional_analysis.csv");
+
+// Convert to JSON for web display
+string jsonData = pandasManager.GetDataFrameAsJson("sales_by_region");
+Console.WriteLine("Regional data as JSON:");
+Console.WriteLine(jsonData);</code></pre>
+                    </div>
+                </section>
+
+                <!-- Complete Example -->
+                <section class="section" id="complete-basic-example">
+                    <h2>?? Complete Basic Example</h2>
+                    
+                    <div class="code-example">
+                        <h4>Simple Sales Analysis Workflow</h4>
+                        <pre><code class="language-csharp">using Beep.Python.DataManagement;
+
+public class SimpleSalesAnalysis
+{
+    public static void AnalyzeSalesData()
+    {
+        // 1. Setup
+        using var pandasManager = new PythonPandasManager(beepService, runtimeManager, executeManager);
+        pandasManager.ConfigureSessionForUser("analyst");
+
+        try
+        {
+            Console.WriteLine("?? Starting Sales Analysis...");
+
+            // 2. Load data
+            pandasManager.ReadCsv("sales", @"C:\Data\sales_2024.csv");
+            Console.WriteLine("? Data loaded successfully");
+
+            // 3. Quick data check
+            string summary = pandasManager.Describe("sales");
+            Console.WriteLine($"?? Data Summary:\n{summary}");
+
+            // 4. Check for data quality issues
+            string missing = pandasManager.IsNull("sales");
+            Console.WriteLine($"?? Missing values:\n{missing}");
+
+            // 5. Clean the data
+            pandasManager.DropNA("sales", "clean_sales");
+            pandasManager.DropDuplicates("clean_sales", "final_sales");
+            Console.WriteLine("?? Data cleaned");
+
+            // 6. Basic analysis
+            string avgSale = pandasManager.CalculateMean("final_sales", "Amount");
+            string regions = pandasManager.ValueCounts("final_sales", "Region");
+            
+            Console.WriteLine($"?? Average Sale: ${avgSale}");
+            Console.WriteLine($"??? Sales by Region:\n{regions}");
+
+            // 7. Group by region for summary
+            pandasManager.GroupBy("final_sales", "regional_summary", "Region", "sum");
+
+            // 8. Save results
+            pandasManager.ToCsv("regional_summary", @"C:\Reports\regional_analysis.csv");
+            pandasManager.ToExcel("final_sales", @"C:\Reports\clean_sales_data.xlsx");
+
+            Console.WriteLine("? Analysis complete! Check C:\\Reports\\ for results.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"? Error during analysis: {ex.Message}");
+        }
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Tips for Beginners -->
+                <section class="section" id="beginner-tips">
+                    <h2>?? Tips for Beginners</h2>
+                    
+                    <div class="tip">
+                        <h4>?? Start Simple</h4>
+                        <ul>
+                            <li>Begin with small CSV files to test your setup</li>
+                            <li>Use <code>Describe()</code> to understand your data first</li>
+                            <li>Check for missing values with <code>IsNull()</code> before analysis</li>
+                            <li>Always configure your session before operations</li>
+                        </ul>
+                    </div>
+
+                    <div class="tip">
+                        <h4>?? Data Exploration</h4>
+                        <ul>
+                            <li>Use <code>UniqueValues()</code> to see categorical data options</li>
+                            <li>Use <code>ValueCounts()</code> to understand data distribution</li>
+                            <li>Sample large datasets first: <code>SampleDataFrame()</code></li>
+                            <li>Save intermediate results to avoid re-processing</li>
+                        </ul>
+                    </div>
+
+                    <div class="warning">
+                        <h4>?? Common Mistakes</h4>
+                        <ul>
+                            <li>Forgetting to configure the session first</li>
+                            <li>Not checking for missing values before analysis</li>
+                            <li>Using invalid pandas column names in conditions</li>
+                            <li>Not disposing the manager properly</li>
+                        </ul>
+                    </div>
+
+                    <div class="note">
+                        <h4>?? Next Steps</h4>
+                        <p>Once you're comfortable with these basics, explore:</p>
+                        <ul>
+                            <li><a href="business-intelligence.html">Business Intelligence Examples</a></li>
+                            <li><a href="data-analysis-pipeline.html">Complete Analysis Pipelines</a></li>
+                            <li><a href="time-series-analysis.html">Time Series Analysis</a></li>
+                            <li><a href="../api/PythonPandasManager.html">Advanced API Features</a></li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="../getting-started.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> Getting Started
+                    </a>
+                    <a href="business-intelligence.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> Business Intelligence
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.DataManagement Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="../index.html">Home</a>
+                            <a href="../getting-started.html">Getting Started</a>
+                            <a href="../api/PythonPandasManager.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../assets/navigation.js"></script>
+</body>
+</html>

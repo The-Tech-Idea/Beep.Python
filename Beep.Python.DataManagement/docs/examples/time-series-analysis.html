@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Series Analysis Examples - Beep.Python.DataManagement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="../assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb -->
+                <div class="breadcrumb-nav">
+                    <a href="../index.html">Home</a>
+                    <span>/</span>
+                    <a href="../examples/basic-usage.html">Examples</a>
+                    <span>/</span>
+                    <span>Time Series Analysis</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="header-content">
+                        <h1><i class="bi bi-graph-up-arrow text-warning"></i> Time Series Analysis Examples</h1>
+                        <p class="lead">Comprehensive examples demonstrating time series analysis, forecasting, seasonal decomposition, and temporal data processing using PythonPandasManager</p>
+                    </div>
+                </div>
+
+                <!-- Overview -->
+                <section class="section" id="overview">
+                    <h2>?? Overview</h2>
+                    <p>This section provides real-world examples of time series analysis using the PythonPandasManager. From financial data analysis to IoT sensor monitoring, these examples demonstrate how to leverage temporal data processing capabilities for business insights and predictive analytics.</p>
+                    
+                    <div class="info-box">
+                        <h5><i class="bi bi-info-circle"></i> Covered Topics</h5>
+                        <ul>
+                            <li><strong>Financial Time Series:</strong> Stock price analysis, trading signals, risk metrics</li>
+                            <li><strong>Business Analytics:</strong> Sales forecasting, seasonal trends, performance monitoring</li>
+                            <li><strong>IoT & Sensor Data:</strong> Equipment monitoring, anomaly detection, predictive maintenance</li>
+                            <li><strong>Web Analytics:</strong> Traffic patterns, user behavior, conversion analysis</li>
+                            <li><strong>Supply Chain:</strong> Demand forecasting, inventory optimization, logistics tracking</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Financial Time Series Analysis -->
+                <section class="section example" id="financial-analysis">
+                    <h2>?? Financial Time Series Analysis</h2>
+                    
+                    <div class="code-example">
+                        <h3>Stock Price Analysis with Technical Indicators</h3>
+                        <pre><code class="language-csharp">using Beep.Python.DataManagement;
+
+public class FinancialTimeSeriesAnalysis
+{
+    private readonly IPythonPandasManager _pandasManager;
+    
+    public FinancialTimeSeriesAnalysis(IPythonPandasManager pandasManager)
+    {
+        _pandasManager = pandasManager;
+    }
+
+    public async Task PerformStockAnalysis()
+    {
+        // Load daily stock price data
+        _pandasManager.ReadCsv("stock_prices", @"C:\FinancialData\AAPL_daily.csv");
+        
+        // Convert date column and set as index
+        _pandasManager.ConvertToDateTime("stock_prices", "Date", "%Y-%m-%d");
+        _pandasManager.ExecutePythonCode(@"
+            stock_prices = stock_prices.set_index('Date')
+            stock_prices = stock_prices.sort_index()
+        ");
+        
+        // Calculate technical indicators
+        await CalculateMovingAverages();
+        await CalculateVolatilityMetrics();
+        await GenerateTradingSignals();
+        await PerformSeasonalAnalysis();
+        
+        // Export results
+        _pandasManager.ToCsv("technical_analysis", @"C:\Reports\AAPL_technical_analysis.csv");
+        _pandasManager.ToExcel("trading_signals", @"C:\Reports\AAPL_trading_signals.xlsx");
+    }
+    
+    private async Task CalculateMovingAverages()
+    {
+        // Simple Moving Averages
+        _pandasManager.RollingWindow("stock_prices", "sma_5", 5, "mean");
+        _pandasManager.RollingWindow("stock_prices", "sma_20", 20, "mean");
+        _pandasManager.RollingWindow("stock_prices", "sma_50", 50, "mean");
+        _pandasManager.RollingWindow("stock_prices", "sma_200", 200, "mean");
+        
+        // Exponential Moving Averages
+        _pandasManager.ExecutePythonCode(@"
+            # Calculate EMAs
+            stock_prices['ema_12'] = stock_prices['Close'].ewm(span=12).mean()
+            stock_prices['ema_26'] = stock_prices['Close'].ewm(span=26).mean()
+            
+            # MACD calculation
+            stock_prices['macd'] = stock_prices['ema_12'] - stock_prices['ema_26']
+            stock_prices['macd_signal'] = stock_prices['macd'].ewm(span=9).mean()
+            stock_prices['macd_histogram'] = stock_prices['macd'] - stock_prices['macd_signal']
+        ");
+    }
+    
+    private async Task CalculateVolatilityMetrics()
+    {
+        // Rolling volatility (standard deviation)
+        _pandasManager.RollingWindow("stock_prices", "volatility_20", 20, "std");
+        
+        // Bollinger Bands
+        _pandasManager.ExecutePythonCode(@"
+            # Bollinger Bands calculation
+            stock_prices['bb_middle'] = stock_prices['Close'].rolling(20).mean()
+            bb_std = stock_prices['Close'].rolling(20).std()
+            stock_prices['bb_upper'] = stock_prices['bb_middle'] + (bb_std * 2)
+            stock_prices['bb_lower'] = stock_prices['bb_middle'] - (bb_std * 2)
+            stock_prices['bb_width'] = stock_prices['bb_upper'] - stock_prices['bb_lower']
+            stock_prices['bb_position'] = (stock_prices['Close'] - stock_prices['bb_lower']) / stock_prices['bb_width']
+        ");
+        
+        // Average True Range (ATR)
+        _pandasManager.ExecutePythonCode(@"
+            # ATR calculation
+            stock_prices['prev_close'] = stock_prices['Close'].shift(1)
+            stock_prices['high_low'] = stock_prices['High'] - stock_prices['Low']
+            stock_prices['high_prev_close'] = abs(stock_prices['High'] - stock_prices['prev_close'])
+            stock_prices['low_prev_close'] = abs(stock_prices['Low'] - stock_prices['prev_close'])
+            
+            stock_prices['true_range'] = stock_prices[['high_low', 'high_prev_close', 'low_prev_close']].max(axis=1)
+            stock_prices['atr'] = stock_prices['true_range'].rolling(14).mean()
+        ");
+    }
+    
+    private async Task GenerateTradingSignals()
+    {
+        _pandasManager.ExecutePythonCode(@"
+            # Moving Average Crossover Strategy
+            stock_prices['ma_signal'] = 0
+            stock_prices.loc[stock_prices['sma_5'] > stock_prices['sma_20'], 'ma_signal'] = 1  # Buy
+            stock_prices.loc[stock_prices['sma_5'] < stock_prices['sma_20'], 'ma_signal'] = -1  # Sell
+            
+            # RSI Calculation
+            delta = stock_prices['Close'].diff()
+            gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
+            loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
+            rs = gain / loss
+            stock_prices['rsi'] = 100 - (100 / (1 + rs))
+            
+            # RSI Trading Signals
+            stock_prices['rsi_signal'] = 0
+            stock_prices.loc[stock_prices['rsi'] < 30, 'rsi_signal'] = 1  # Oversold - Buy
+            stock_prices.loc[stock_prices['rsi'] > 70, 'rsi_signal'] = -1  # Overbought - Sell
+            
+            # Combined Trading Strategy
+            stock_prices['combined_signal'] = stock_prices['ma_signal'] + stock_prices['rsi_signal']
+            stock_prices['trade_action'] = 'HOLD'
+            stock_prices.loc[stock_prices['combined_signal'] >= 1, 'trade_action'] = 'BUY'
+            stock_prices.loc[stock_prices['combined_signal'] <= -1, 'trade_action'] = 'SELL'
+        ");
+        
+        _pandasManager.StoreDataFrameFromPython("trading_signals", "stock_prices");
+    }
+    
+    private async Task PerformSeasonalAnalysis()
+    {
+        _pandasManager.ExecutePythonCode(@"
+            # Extract temporal features
+            stock_prices['year'] = stock_prices.index.year
+            stock_prices['month'] = stock_prices.index.month
+            stock_prices['quarter'] = stock_prices.index.quarter
+            stock_prices['day_of_week'] = stock_prices.index.dayofweek
+            stock_prices['day_of_year'] = stock_prices.index.dayofyear
+            
+            # Calculate daily returns
+            stock_prices['daily_return'] = stock_prices['Close'].pct_change()
+            
+            # Monthly performance analysis
+            monthly_performance = stock_prices.groupby('month')['daily_return'].agg([
+                'mean', 'std', 'count'
+            ]).round(4)
+            
+            # Day of week analysis
+            dow_performance = stock_prices.groupby('day_of_week')['daily_return'].agg([
+                'mean', 'std', 'count'
+            ]).round(4)
+        ");
+        
+        _pandasManager.StoreDataFrameFromPython("monthly_performance", "monthly_performance");
+        _pandasManager.StoreDataFrameFromPython("dow_performance", "dow_performance");
+        _pandasManager.StoreDataFrameFromPython("technical_analysis", "stock_prices");
+    }
+}
+
+// Usage example
+public async Task RunFinancialAnalysis()
+{
+    var pandasManager = new PythonPandasManager(beepService, runtimeManager, executeManager);
+    var financialAnalysis = new FinancialTimeSeriesAnalysis(pandasManager);
+    
+    await financialAnalysis.PerformStockAnalysis();
+    
+    Console.WriteLine("Financial time series analysis completed!");
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Sales Forecasting -->
+                <section class="section example" id="sales-forecasting">
+                    <h2>?? Sales Forecasting & Trend Analysis</h2>
+                    
+                    <div class="code-example">
+                        <h3>E-commerce Sales Forecasting with Seasonal Decomposition</h3>
+                        <pre><code class="language-csharp">public class SalesForecasting
+{
+    private readonly IPythonPandasManager _pandasManager;
+    
+    public SalesForecasting(IPythonPandasManager pandasManager)
+    {
+        _pandasManager = pandasManager;
+    }
+
+    public async Task PerformSalesAnalysis()
+    {
+        // Load historical sales data
+        _pandasManager.ReadCsv("daily_sales", @"C:\SalesData\daily_sales_2020_2024.csv");
+        
+        // Prepare time series data
+        _pandasManager.ConvertToDateTime("daily_sales", "date", "%Y-%m-%d");
+        _pandasManager.ExecutePythonCode(@"
+            daily_sales = daily_sales.set_index('date')
+            daily_sales = daily_sales.sort_index()
+            
+            # Ensure no missing dates
+            date_range = pd.date_range(start=daily_sales.index.min(), 
+                                     end=daily_sales.index.max(), 
+                                     freq='D')
+            daily_sales = daily_sales.reindex(date_range, fill_value=0)
+        ");
+        
+        await PerformSeasonalDecomposition();
+        await CalculateTrendAnalysis();
+        await GenerateForecasts();
+        await AnalyzeBusinessMetrics();
+        
+        // Export comprehensive results
+        _pandasManager.ToExcel("sales_analysis_complete", @"C:\Reports\sales_forecasting_analysis.xlsx");
+    }
+    
+    private async Task PerformSeasonalDecomposition()
+    {
+        _pandasManager.ExecutePythonCode(@"
+            from statsmodels.tsa.seasonal import seasonal_decompose
+            import numpy as np
+            
+            # Seasonal decomposition
+            decomposition = seasonal_decompose(daily_sales['revenue'], 
+                                             model='additive', 
+                                             period=365)  # Annual seasonality
+            
+            # Store components
+            daily_sales['trend'] = decomposition.trend
+            daily_sales['seasonal'] = decomposition.seasonal
+            daily_sales['residual'] = decomposition.resid
+            
+            # Weekly seasonality analysis
+            daily_sales['day_of_week'] = daily_sales.index.dayofweek
+            daily_sales['week_of_year'] = daily_sales.index.isocalendar().week
+            daily_sales['month'] = daily_sales.index.month
+            daily_sales['quarter'] = daily_sales.index.quarter
+            
+            # Calculate seasonal patterns
+            weekly_pattern = daily_sales.groupby('day_of_week')['revenue'].mean()
+            monthly_pattern = daily_sales.groupby('month')['revenue'].mean()
+            quarterly_pattern = daily_sales.groupby('quarter')['revenue'].mean()
+        ");
+        
+        _pandasManager.StoreDataFrameFromPython("weekly_pattern", "weekly_pattern");
+        _pandasManager.StoreDataFrameFromPython("monthly_pattern", "monthly_pattern");
+        _pandasManager.StoreDataFrameFromPython("quarterly_pattern", "quarterly_pattern");
+    }
+    
+    private async Task CalculateTrendAnalysis()
+    {
+        // Moving averages for trend analysis
+        _pandasManager.RollingWindow("daily_sales", "ma_7", 7, "mean");
+        _pandasManager.RollingWindow("daily_sales", "ma_30", 30, "mean");
+        _pandasManager.RollingWindow("daily_sales", "ma_90", 90, "mean");
+        
+        _pandasManager.ExecutePythonCode(@"
+            # Growth rate calculations
+            daily_sales['yoy_growth'] = daily_sales['revenue'].pct_change(periods=365) * 100
+            daily_sales['mom_growth'] = daily_sales['revenue'].pct_change(periods=30) * 100
+            daily_sales['wow_growth'] = daily_sales['revenue'].pct_change(periods=7) * 100
+            
+            # Trend direction indicators
+            daily_sales['trend_7d'] = (daily_sales['ma_7'] > daily_sales['ma_7'].shift(7)).astype(int)
+            daily_sales['trend_30d'] = (daily_sales['ma_30'] > daily_sales['ma_30'].shift(30)).astype(int)
+            
+            # Volatility measures
+            daily_sales['volatility_7d'] = daily_sales['revenue'].rolling(7).std()
+            daily_sales['volatility_30d'] = daily_sales['revenue'].rolling(30).std()
+            
+            # Anomaly detection using z-score
+            daily_sales['revenue_zscore'] = (daily_sales['revenue'] - daily_sales['ma_30']) / daily_sales['volatility_30d']
+            daily_sales['is_anomaly'] = (abs(daily_sales['revenue_zscore']) > 3).astype(int)
+        ");
+    }
+    
+    private async Task GenerateForecasts()
+    {
+        _pandasManager.ExecutePythonCode(@"
+            from sklearn.linear_model import LinearRegression
+            from sklearn.preprocessing import PolynomialFeatures
+            import numpy as np
+            
+            # Prepare features for forecasting
+            daily_sales['time_index'] = range(len(daily_sales))
+            daily_sales['is_weekend'] = (daily_sales.index.dayofweek >= 5).astype(int)
+            daily_sales['is_holiday'] = 0  # Placeholder for holiday detection
+            
+            # Simple linear trend forecast
+            X_trend = daily_sales[['time_index']].values
+            y_revenue = daily_sales['revenue'].values
+            
+            # Remove NaN values for training
+            mask = ~np.isnan(y_revenue)
+            X_trend_clean = X_trend[mask]
+            y_revenue_clean = y_revenue[mask]
+            
+            # Train linear regression model
+            trend_model = LinearRegression()
+            trend_model.fit(X_trend_clean, y_revenue_clean)
+            
+            # Generate 30-day forecast
+            last_index = daily_sales['time_index'].max()
+            future_indices = np.arange(last_index + 1, last_index + 31).reshape(-1, 1)
+            trend_forecast = trend_model.predict(future_indices)
+            
+            # Create forecast DataFrame
+            forecast_dates = pd.date_range(start=daily_sales.index.max() + pd.Timedelta(days=1), 
+                                         periods=30, freq='D')
+            forecast_df = pd.DataFrame({
+                'date': forecast_dates,
+                'forecast_trend': trend_forecast,
+                'forecast_type': 'linear_trend'
+            })
+            
+            # Add seasonal adjustment to forecast
+            for i, date in enumerate(forecast_dates):
+                day_of_week = date.dayofweek
+                month = date.month
+                
+                # Apply weekly and monthly seasonal patterns
+                weekly_adj = weekly_pattern[day_of_week] / weekly_pattern.mean()
+                monthly_adj = monthly_pattern[month] / monthly_pattern.mean()
+                
+                seasonal_factor = (weekly_adj + monthly_adj) / 2
+                forecast_df.loc[i, 'forecast_seasonal'] = trend_forecast[i] * seasonal_factor
+        ");
+        
+        _pandasManager.StoreDataFrameFromPython("sales_forecast", "forecast_df");
+    }
+    
+    private async Task AnalyzeBusinessMetrics()
+    {
+        // Resample to different time frequencies
+        _pandasManager.Resample("daily_sales", "weekly_sales", "W", "sum");
+        _pandasManager.Resample("daily_sales", "monthly_sales", "M", "sum");
+        _pandasManager.Resample("daily_sales", "quarterly_sales", "Q", "sum");
+        
+        _pandasManager.ExecutePythonCode(@"
+            # Business performance metrics
+            
+            # Weekly analysis
+            weekly_sales['week_number'] = weekly_sales.index.isocalendar().week
+            weekly_sales['year'] = weekly_sales.index.year
+            weekly_sales['growth_wow'] = weekly_sales['revenue'].pct_change() * 100
+            
+            # Monthly analysis
+            monthly_sales['month_name'] = monthly_sales.index.strftime('%B')
+            monthly_sales['month_number'] = monthly_sales.index.month
+            monthly_sales['year'] = monthly_sales.index.year
+            monthly_sales['growth_mom'] = monthly_sales['revenue'].pct_change() * 100
+            monthly_sales['growth_yoy'] = monthly_sales['revenue'].pct_change(periods=12) * 100
+            
+            # Quarterly analysis
+            quarterly_sales['quarter'] = quarterly_sales.index.quarter
+            quarterly_sales['year'] = quarterly_sales.index.year
+            quarterly_sales['growth_qoq'] = quarterly_sales['revenue'].pct_change() * 100
+            quarterly_sales['growth_yoy'] = quarterly_sales['revenue'].pct_change(periods=4) * 100
+            
+            # Performance summary statistics
+            performance_summary = {
+                'total_revenue': daily_sales['revenue'].sum(),
+                'avg_daily_revenue': daily_sales['revenue'].mean(),
+                'revenue_std': daily_sales['revenue'].std(),
+                'best_day': daily_sales['revenue'].max(),
+                'worst_day': daily_sales['revenue'].min(),
+                'total_days': len(daily_sales),
+                'days_with_sales': (daily_sales['revenue'] > 0).sum(),
+                'avg_monthly_growth': monthly_sales['growth_mom'].mean(),
+                'revenue_volatility': daily_sales['revenue'].std() / daily_sales['revenue'].mean()
+            }
+        ");
+        
+        _pandasManager.StoreDataFrameFromPython("weekly_sales_analysis", "weekly_sales");
+        _pandasManager.StoreDataFrameFromPython("monthly_sales_analysis", "monthly_sales");
+        _pandasManager.StoreDataFrameFromPython("quarterly_sales_analysis", "quarterly_sales");
+        _pandasManager.StoreDataFrameFromPython("sales_analysis_complete", "daily_sales");
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- IoT Sensor Monitoring -->
+                <section class="section example" id="iot-monitoring">
+                    <h2>?? IoT Sensor Data Monitoring & Predictive Maintenance</h2>
+                    
+                    <div class="code-example">
+                        <h3>Industrial Equipment Monitoring with Anomaly Detection</h3>
+                        <pre><code class="language-csharp">public class IoTSensorMonitoring
+{
+    private readonly IPythonPandasManager _pandasManager;
+    
+    public IoTSensorMonitoring(IPythonPandasManager pandasManager)
+    {
+        _pandasManager = pandasManager;
+    }
+
+    public async Task PerformSensorAnalysis()
+    {
+        // Load high-frequency sensor data
+        _pandasManager.ReadCsv("sensor_data", @"C:\IoTData\equipment_sensors_2024.csv");
+        
+        // Process timestamp and set up time series
+        _pandasManager.ConvertToDateTime("sensor_data", "timestamp", "%Y-%m-%d %H:%M:%S");
+        _pandasManager.ExecutePythonCode(@"
+            sensor_data = sensor_data.set_index('timestamp')
+            sensor_data = sensor_data.sort_index()
+            
+            # Ensure regular time intervals (handle missing data)
+            sensor_data = sensor_data.resample('1min').mean().interpolate(method='linear')
+        ");
+        
+        await PerformDataAggregation();
+        await DetectAnomalies();
+        await CalculateHealthMetrics();
+        await GenerateMaintenanceAlerts();
+        
+        // Export monitoring reports
+        _pandasManager.ToExcel("equipment_health_report", @"C:\Reports\equipment_monitoring.xlsx");
+        _pandasManager.ToCsv("maintenance_alerts", @"C:\Alerts\maintenance_schedule.csv");
+    }
+    
+    private async Task PerformDataAggregation()
+    {
+        // Aggregate sensor data to different time resolutions
+        _pandasManager.Resample("sensor_data", "hourly_sensors", "H", "mean");
+        _pandasManager.Resample("sensor_data", "daily_sensors", "D", "mean");
+        
+        _pandasManager.ExecutePythonCode(@"
+            # Calculate additional aggregations
+            hourly_stats = sensor_data.resample('H').agg({
+                'temperature': ['mean', 'max', 'min', 'std'],
+                'pressure': ['mean', 'max', 'min', 'std'],
+                'vibration': ['mean', 'max', 'min', 'std'],
+                'flow_rate': ['mean', 'max', 'min', 'std']
+            })
+            
+            # Flatten column names
+            hourly_stats.columns = ['_'.join(col).strip() for col in hourly_stats.columns]
+            
+            # Daily operational summaries
+            daily_stats = sensor_data.resample('D').agg({
+                'temperature': ['mean', 'max', 'min', 'std'],
+                'pressure': ['mean', 'max', 'min', 'std'],
+                'vibration': ['mean', 'max', 'min', 'std'],
+                'flow_rate': ['mean', 'max', 'min', 'std']
+            })
+            
+            daily_stats.columns = ['_'.join(col).strip() for col in daily_stats.columns]
+        ");
+        
+        _pandasManager.StoreDataFrameFromPython("hourly_sensor_stats", "hourly_stats");
+        _pandasManager.StoreDataFrameFromPython("daily_sensor_stats", "daily_stats");
+    }
+    
+    private async Task DetectAnomalies()
+    {
+        // Calculate rolling statistics for anomaly detection
+        _pandasManager.RollingWindow("sensor_data", "temp_ma_24h", 1440, "mean");  // 24 hours
+        _pandasManager.RollingWindow("sensor_data", "temp_std_24h", 1440, "std");
+        
+        _pandasManager.ExecutePythonCode(@"
+            # Z-score based anomaly detection
+            sensor_data['temp_zscore'] = (sensor_data['temperature'] - sensor_data['temp_ma_24h']) / sensor_data['temp_std_24h']
+            sensor_data['pressure_zscore'] = (sensor_data['pressure'] - sensor_data['pressure'].rolling(1440).mean()) / sensor_data['pressure'].rolling(1440).std()
+            sensor_data['vibration_zscore'] = (sensor_data['vibration'] - sensor_data['vibration'].rolling(1440).mean()) / sensor_data['vibration'].rolling(1440).std()
+            
+            # Define anomaly thresholds
+            anomaly_threshold = 3
+            
+            # Flag anomalies
+            sensor_data['temp_anomaly'] = (abs(sensor_data['temp_zscore']) > anomaly_threshold).astype(int)
+            sensor_data['pressure_anomaly'] = (abs(sensor_data['pressure_zscore']) > anomaly_threshold).astype(int)
+            sensor_data['vibration_anomaly'] = (abs(sensor_data['vibration_zscore']) > anomaly_threshold).astype(int)
+            
+            # Overall equipment anomaly score
+            sensor_data['anomaly_score'] = (sensor_data['temp_anomaly'] + 
+                                          sensor_data['pressure_anomaly'] + 
+                                          sensor_data['vibration_anomaly'])
+            
+            # IQR-based outlier detection
+            def detect_outliers_iqr(data, column):
+                Q1 = data[column].quantile(0.25)
+                Q3 = data[column].quantile(0.75)
+                IQR = Q3 - Q1
+                lower_bound = Q1 - 1.5 * IQR
+                upper_bound = Q3 + 1.5 * IQR
+                return (data[column] < lower_bound) | (data[column] > upper_bound)
+            
+            # Apply IQR detection on daily aggregated data
+            daily_data = sensor_data.resample('D').mean()
+            daily_data['temp_outlier'] = detect_outliers_iqr(daily_data, 'temperature')
+            daily_data['pressure_outlier'] = detect_outliers_iqr(daily_data, 'pressure')
+            daily_data['vibration_outlier'] = detect_outliers_iqr(daily_data, 'vibration')
+        ");
+        
+        _pandasManager.StoreDataFrameFromPython("daily_outliers", "daily_data");
+    }
+    
+    private async Task CalculateHealthMetrics()
+    {
+        _pandasManager.ExecutePythonCode(@"
+            # Equipment health scoring
+            
+            # Define normal operating ranges
+            normal_ranges = {
+                'temperature': (20, 80),   # Celsius
+                'pressure': (1.0, 5.0),   # Bar
+                'vibration': (0, 2.0),    # mm/s
+                'flow_rate': (10, 100)    # L/min
+            }
+            
+            # Calculate health scores (0-100, where 100 is perfect health)
+            def calculate_health_score(value, normal_min, normal_max):
+                if normal_min <= value <= normal_max:
+                    return 100
+                elif value < normal_min:
+                    return max(0, 100 * (value / normal_min))
+                else:
+                    return max(0, 100 * (normal_max / value))
+            
+            # Apply health scoring
+            for sensor, (min_val, max_val) in normal_ranges.items():
+                sensor_data[f'{sensor}_health'] = sensor_data[sensor].apply(
+                    lambda x: calculate_health_score(x, min_val, max_val)
+                )
+            
+            # Overall equipment health score
+            health_columns = [col for col in sensor_data.columns if col.endswith('_health')]
+            sensor_data['overall_health'] = sensor_data[health_columns].mean(axis=1)
+            
+            # Health trend analysis
+            sensor_data['health_trend_24h'] = sensor_data['overall_health'].rolling(1440).mean()
+            sensor_data['health_trend_7d'] = sensor_data['overall_health'].rolling(10080).mean()  # 7 days
+            
+            # Degradation rate calculation
+            sensor_data['health_degradation'] = -sensor_data['overall_health'].diff().rolling(1440).mean()
+            
+            # Remaining useful life estimation (simple linear extrapolation)
+            current_health = sensor_data['overall_health'].iloc[-1]
+            degradation_rate = sensor_data['health_degradation'].iloc[-1]
+            
+            if degradation_rate > 0:
+                estimated_rul_hours = current_health / degradation_rate
+                estimated_rul_days = estimated_rul_hours / 24
+            else:
+                estimated_rul_days = float('inf')  # No degradation detected
+        ");
+    }
+    
+    private async Task GenerateMaintenanceAlerts()
+    {
+        _pandasManager.ExecutePythonCode(@"
+            # Maintenance alert generation
+            
+            # Define alert thresholds
+            alert_thresholds = {
+                'critical': 20,    # Health score below 20%
+                'warning': 50,     # Health score below 50%
+                'anomaly': 2       # Anomaly score >= 2
+            }
+            
+            # Generate alerts
+            alerts = []
+            current_time = sensor_data.index[-1]
+            current_health = sensor_data['overall_health'].iloc[-1]
+            current_anomaly = sensor_data['anomaly_score'].iloc[-1]
+            
+            # Health-based alerts
+            if current_health < alert_thresholds['critical']:
+                alerts.append({
+                    'timestamp': current_time,
+                    'alert_type': 'CRITICAL',
+                    'message': f'Equipment health critically low: {current_health:.1f}%',
+                    'recommended_action': 'Immediate maintenance required',
+                    'priority': 1
+                })
+            elif current_health < alert_thresholds['warning']:
+                alerts.append({
+                    'timestamp': current_time,
+                    'alert_type': 'WARNING',
+                    'message': f'Equipment health declining: {current_health:.1f}%',
+                    'recommended_action': 'Schedule maintenance within 7 days',
+                    'priority': 2
+                })
+            
+            # Anomaly-based alerts
+            if current_anomaly >= alert_thresholds['anomaly']:
+                alerts.append({
+                    'timestamp': current_time,
+                    'alert_type': 'ANOMALY',
+                    'message': f'Multiple sensor anomalies detected (score: {current_anomaly})',
+                    'recommended_action': 'Investigate sensor readings and equipment condition',
+                    'priority': 2
+                })
+            
+            # Predictive maintenance scheduling
+            degradation_rate = sensor_data['health_degradation'].iloc[-1]
+            if degradation_rate > 0.1:  # Health declining by more than 0.1% per hour
+                days_to_maintenance = max(1, (current_health - 30) / (degradation_rate * 24))
+                alerts.append({
+                    'timestamp': current_time,
+                    'alert_type': 'PREDICTIVE',
+                    'message': f'Estimated {days_to_maintenance:.0f} days until maintenance needed',
+                    'recommended_action': f'Schedule maintenance for {pd.Timestamp.now() + pd.Timedelta(days=days_to_maintenance):%Y-%m-%d}',
+                    'priority': 3
+                })
+            
+            # Convert alerts to DataFrame
+            alerts_df = pd.DataFrame(alerts)
+            
+            # Equipment health summary
+            health_summary = {
+                'current_health_score': current_health,
+                'health_trend_24h': sensor_data['health_trend_24h'].iloc[-1],
+                'health_trend_7d': sensor_data['health_trend_7d'].iloc[-1],
+                'degradation_rate_per_hour': degradation_rate,
+                'estimated_rul_days': estimated_rul_days if estimated_rul_days != float('inf') else 'No degradation',
+                'total_anomalies_24h': sensor_data['anomaly_score'].rolling(1440).sum().iloc[-1],
+                'last_maintenance': 'N/A',  # Would come from maintenance log
+                'next_scheduled_maintenance': 'N/A'  # Would come from maintenance schedule
+            }
+            
+            health_summary_df = pd.DataFrame([health_summary])
+        ");
+        
+        _pandasManager.StoreDataFrameFromPython("maintenance_alerts", "alerts_df");
+        _pandasManager.StoreDataFrameFromPython("equipment_health_summary", "health_summary_df");
+        _pandasManager.StoreDataFrameFromPython("equipment_health_report", "sensor_data");
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Web Analytics -->
+                <section class="section example" id="web-analytics">
+                    <h2>?? Web Analytics & User Behavior Analysis</h2>
+                    
+                    <div class="code-example">
+                        <h3>Website Traffic Analysis with Conversion Funnel</h3>
+                        <pre><code class="language-csharp">public class WebAnalyticsTimeSeriesAnalysis
+{
+    private readonly IPythonPandasManager _pandasManager;
+    
+    public WebAnalyticsTimeSeriesAnalysis(IPythonPandasManager pandasManager)
+    {
+        _pandasManager = pandasManager;
+    }
+
+    public async Task PerformWebAnalytics()
+    {
+        // Load web analytics data
+        _pandasManager.ReadCsv("web_traffic", @"C:\Analytics\website_logs_2024.csv");
+        _pandasManager.ReadCsv("conversions", @"C:\Analytics\conversion_events.csv");
+        
+        // Process timestamps
+        _pandasManager.ConvertToDateTime("web_traffic", "timestamp", "%Y-%m-%d %H:%M:%S");
+        _pandasManager.ConvertToDateTime("conversions", "conversion_time", "%Y-%m-%d %H:%M:%S");
+        
+        await AnalyzeTrafficPatterns();
+        await CalculateConversionMetrics();
+        await PerformCohortAnalysis();
+        await GeneratePerformanceReport();
+        
+        // Export analytics reports
+        _pandasManager.ToExcel("web_analytics_report", @"C:\Reports\web_analytics_complete.xlsx");
+    }
+    
+    private async Task AnalyzeTrafficPatterns()
+    {
+        _pandasManager.ExecutePythonCode(@"
+            # Set timestamp as index
+            web_traffic = web_traffic.set_index('timestamp')
+            web_traffic = web_traffic.sort_index()
+            
+            # Extract temporal features
+            web_traffic['hour'] = web_traffic.index.hour
+            web_traffic['day_of_week'] = web_traffic.index.dayofweek
+            web_traffic['day_name'] = web_traffic.index.strftime('%A')
+            web_traffic['month'] = web_traffic.index.month
+            web_traffic['is_weekend'] = (web_traffic.index.dayofweek >= 5).astype(int)
+            
+            # Aggregate traffic by different time periods
+            hourly_traffic = web_traffic.resample('H').agg({
+                'page_views': 'sum',
+                'unique_visitors': 'sum',
+                'session_duration': 'mean',
+                'bounce_rate': 'mean'
+            })
+            
+            daily_traffic = web_traffic.resample('D').agg({
+                'page_views': 'sum',
+                'unique_visitors': 'sum',
+                'session_duration': 'mean',
+                'bounce_rate': 'mean'
+            })
+            
+            # Traffic pattern analysis
+            # Hour of day patterns
+            hourly_patterns = web_traffic.groupby('hour').agg({
+                'page_views': 'mean',
+                'unique_visitors': 'mean',
+                'session_duration': 'mean',
+                'bounce_rate': 'mean'
+            })
+            
+            # Day of week patterns
+            dow_patterns = web_traffic.groupby('day_name').agg({
+                'page_views': 'mean',
+                'unique_visitors': 'mean',
+                'session_duration': 'mean',
+                'bounce_rate': 'mean'
+            })
+            
+            # Weekend vs weekday analysis
+            weekend_analysis = web_traffic.groupby('is_weekend').agg({
+                'page_views': 'mean',
+                'unique_visitors': 'mean',
+                'session_duration': 'mean',
+                'bounce_rate': 'mean'
+            })
+        ");
+        
+        _pandasManager.StoreDataFrameFromPython("hourly_traffic", "hourly_traffic");
+        _pandasManager.StoreDataFrameFromPython("daily_traffic", "daily_traffic");
+        _pandasManager.StoreDataFrameFromPython("hourly_patterns", "hourly_patterns");
+        _pandasManager.StoreDataFrameFromPython("dow_patterns", "dow_patterns");
+        _pandasManager.StoreDataFrameFromPython("weekend_analysis", "weekend_analysis");
+    }
+    
+    private async Task CalculateConversionMetrics()
+    {
+        _pandasManager.ExecutePythonCode(@"
+            # Prepare conversion data
+            conversions = conversions.set_index('conversion_time')
+            conversions = conversions.sort_index()
+            
+            # Merge traffic and conversion data
+            # Resample both to hourly for analysis
+            hourly_conversions = conversions.resample('H').agg({
+                'conversion_value': 'sum',
+                'user_id': 'count'  # Number of conversions
+            }).rename(columns={'user_id': 'conversion_count'})
+            
+            # Combine traffic and conversion data
+            combined_data = hourly_traffic.join(hourly_conversions, how='left').fillna(0)
+            
+            # Calculate conversion rates
+            combined_data['conversion_rate'] = (combined_data['conversion_count'] / 
+                                             combined_data['unique_visitors'] * 100)
+            combined_data['conversion_rate'] = combined_data['conversion_rate'].fillna(0)
+            
+            # Calculate revenue per visitor
+            combined_data['revenue_per_visitor'] = (combined_data['conversion_value'] / 
+                                                  combined_data['unique_visitors'])
+            combined_data['revenue_per_visitor'] = combined_data['revenue_per_visitor'].fillna(0)
+            
+            # Moving averages for trends
+            combined_data['conversion_rate_ma_24h'] = combined_data['conversion_rate'].rolling(24).mean()
+            combined_data['revenue_per_visitor_ma_24h'] = combined_data['revenue_per_visitor'].rolling(24).mean()
+            
+            # Daily conversion analysis
+            daily_conversions = combined_data.resample('D').agg({
+                'page_views': 'sum',
+                'unique_visitors': 'sum',
+                'conversion_count': 'sum',
+                'conversion_value': 'sum',
+                'session_duration': 'mean',
+                'bounce_rate': 'mean'
+            })
+            
+            daily_conversions['conversion_rate'] = (daily_conversions['conversion_count'] / 
+                                                  daily_conversions['unique_visitors'] * 100)
+            daily_conversions['revenue_per_visitor'] = (daily_conversions['conversion_value'] / 
+                                                      daily_conversions['unique_visitors'])
+            
+            # Calculate growth rates
+            daily_conversions['traffic_growth'] = daily_conversions['unique_visitors'].pct_change() * 100
+            daily_conversions['conversion_growth'] = daily_conversions['conversion_count'].pct_change() * 100
+            daily_conversions['revenue_growth'] = daily_conversions['conversion_value'].pct_change() * 100
+        ");
+        
+        _pandasManager.StoreDataFrameFromPython("conversion_analysis", "combined_data");
+        _pandasManager.StoreDataFrameFromPython("daily_conversion_analysis", "daily_conversions");
+    }
+    
+    private async Task PerformCohortAnalysis()
+    {
+        _pandasManager.ExecutePythonCode(@"
+            # Cohort analysis based on first visit date
+            
+            # Identify first visit for each user
+            first_visits = web_traffic.groupby('user_id')['timestamp'].min().reset_index()
+            first_visits.columns = ['user_id', 'first_visit_date']
+            first_visits['cohort_period'] = first_visits['first_visit_date'].dt.to_period('M')
+            
+            # Merge with all traffic data
+            web_traffic_with_cohort = web_traffic.reset_index().merge(first_visits, on='user_id')
+            web_traffic_with_cohort['period_number'] = (
+                web_traffic_with_cohort['timestamp'].dt.to_period('M') - 
+                web_traffic_with_cohort['cohort_period']
+            ).apply(attrgetter('n'))
+            
+            # Create cohort table
+            cohort_data = web_traffic_with_cohort.groupby(['cohort_period', 'period_number'])['user_id'].nunique().reset_index()
+            cohort_table = cohort_data.pivot(index='cohort_period', 
+                                           columns='period_number', 
+                                           values='user_id')
+            
+            # Calculate retention rates
+            cohort_sizes = first_visits.groupby('cohort_period')['user_id'].nunique()
+            retention_table = cohort_table.divide(cohort_sizes, axis=0)
+            
+            # Average retention by period
+            avg_retention = retention_table.mean()
+        ");
+        
+        _pandasManager.StoreDataFrameFromPython("cohort_table", "cohort_table");
+        _pandasManager.StoreDataFrameFromPython("retention_table", "retention_table");
+        _pandasManager.StoreDataFrameFromPython("avg_retention", "avg_retention");
+    }
+    
+    private async Task GeneratePerformanceReport()
+    {
+        _pandasManager.ExecutePythonCode(@"
+            # Generate comprehensive performance metrics
+            
+            # Overall KPIs
+            total_visitors = web_traffic['unique_visitors'].sum()
+            total_page_views = web_traffic['page_views'].sum()
+            total_conversions = conversions.shape[0]
+            total_revenue = conversions['conversion_value'].sum()
+            
+            avg_session_duration = web_traffic['session_duration'].mean()
+            avg_bounce_rate = web_traffic['bounce_rate'].mean()
+            overall_conversion_rate = (total_conversions / total_visitors) * 100
+            
+            # Monthly performance trends
+            monthly_performance = daily_conversions.resample('M').agg({
+                'unique_visitors': 'sum',
+                'page_views': 'sum',
+                'conversion_count': 'sum',
+                'conversion_value': 'sum',
+                'session_duration': 'mean',
+                'bounce_rate': 'mean'
+            })
+            
+            monthly_performance['conversion_rate'] = (monthly_performance['conversion_count'] / 
+                                                    monthly_performance['unique_visitors'] * 100)
+            monthly_performance['revenue_per_visitor'] = (monthly_performance['conversion_value'] / 
+                                                        monthly_performance['unique_visitors'])
+            
+            # Performance summary
+            performance_summary = {
+                'reporting_period': f"{web_traffic.index.min()} to {web_traffic.index.max()}",
+                'total_unique_visitors': total_visitors,
+                'total_page_views': total_page_views,
+                'pages_per_visitor': total_page_views / total_visitors,
+                'avg_session_duration_minutes': avg_session_duration,
+                'avg_bounce_rate_percent': avg_bounce_rate,
+                'total_conversions': total_conversions,
+                'total_revenue': total_revenue,
+                'overall_conversion_rate_percent': overall_conversion_rate,
+                'revenue_per_visitor': total_revenue / total_visitors,
+                'best_traffic_day': daily_traffic['unique_visitors'].idxmax(),
+                'best_conversion_day': daily_conversions['conversion_count'].idxmax(),
+                'highest_revenue_day': daily_conversions['conversion_value'].idxmax()
+            }
+            
+            performance_summary_df = pd.DataFrame([performance_summary])
+        ");
+        
+        _pandasManager.StoreDataFrameFromPython("monthly_performance", "monthly_performance");
+        _pandasManager.StoreDataFrameFromPython("performance_summary", "performance_summary_df");
+        _pandasManager.StoreDataFrameFromPython("web_analytics_report", "combined_data");
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Best Practices -->
+                <section class="section" id="best-practices">
+                    <h2>? Time Series Analysis Best Practices</h2>
+                    
+                    <div class="tip">
+                        <h5><i class="bi bi-lightbulb"></i> Data Preparation</h5>
+                        <ul>
+                            <li><strong>Consistent Time Intervals:</strong> Ensure regular time intervals or handle missing periods appropriately</li>
+                            <li><strong>Data Validation:</strong> Check for and handle outliers, duplicates, and missing values</li>
+                            <li><strong>Time Zone Awareness:</strong> Always be explicit about time zones in your data</li>
+                            <li><strong>Index Optimization:</strong> Set datetime as index for efficient time-based operations</li>
+                        </ul>
+                    </div>
+
+                    <div class="tip">
+                        <h5><i class="bi bi-graph-up"></i> Analysis Techniques</h5>
+                        <ul>
+                            <li><strong>Multiple Time Horizons:</strong> Analyze data at different time scales (hourly, daily, monthly)</li>
+                            <li><strong>Seasonal Patterns:</strong> Always consider and analyze seasonal components</li>
+                            <li><strong>Rolling Statistics:</strong> Use moving averages and rolling windows for trend analysis</li>
+                            <li><strong>Anomaly Detection:</strong> Implement multiple anomaly detection methods</li>
+                        </ul>
+                    </div>
+
+                    <div class="warning">
+                        <h5><i class="bi bi-exclamation-triangle"></i> Common Pitfalls</h5>
+                        <ul>
+                            <li><strong>Look-ahead Bias:</strong> Ensure forecasting models don't use future information</li>
+                            <li><strong>Overfitting:</strong> Be cautious of complex models that don't generalize well</li>
+                            <li><strong>Data Leakage:</strong> Prevent future data from influencing historical analysis</li>
+                            <li><strong>Assumption Validation:</strong> Always validate stationarity and other model assumptions</li>
+                        </ul>
+                    </div>
+
+                    <div class="note">
+                        <h5><i class="bi bi-info-circle"></i> Performance Optimization</h5>
+                        <ul>
+                            <li><strong>Efficient Resampling:</strong> Use appropriate aggregation functions for your use case</li>
+                            <li><strong>Memory Management:</strong> Process large time series in chunks when necessary</li>
+                            <li><strong>Vectorized Operations:</strong> Leverage pandas vectorized operations for better performance</li>
+                            <li><strong>Caching:</strong> Cache intermediate results for frequently accessed time periods</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="../api/time-series.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> Time Series API
+                    </a>
+                    <a href="statistical-modeling.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> Statistical Modeling Examples
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.DataManagement Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="../getting-started.html">Getting Started</a>
+                            <a href="../api/PythonPandasManager.html">API Reference</a>
+                            <a href="../examples/data-analysis-pipeline.html">More Examples</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../assets/navigation.js"></script>
+</body>
+</html>

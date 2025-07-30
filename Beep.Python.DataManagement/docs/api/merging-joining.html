@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merging & Joining Operations - Beep.Python.DataManagement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="../assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb -->
+                <div class="breadcrumb-nav">
+                    <a href="../index.html">Home</a>
+                    <span>/</span>
+                    <a href="../api/PythonPandasManager.html">API Reference</a>
+                    <span>/</span>
+                    <span>Merging & Joining Operations</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="header-content">
+                        <h1><i class="bi bi-share text-success"></i> Merging & Joining Operations</h1>
+                        <p class="lead">Advanced DataFrame combining operations including merges, joins, concatenations, and pivot table operations for comprehensive data integration</p>
+                    </div>
+                </div>
+
+                <!-- Overview -->
+                <section class="section" id="overview">
+                    <h2>?? Overview</h2>
+                    <p>The Merging & Joining Operations module provides powerful capabilities for combining multiple DataFrames through various join types, concatenation methods, and pivot operations. These operations are essential for data integration, reporting, and complex analytical workflows.</p>
+                    
+                    <div class="info-box">
+                        <h5><i class="bi bi-info-circle"></i> Key Capabilities</h5>
+                        <ul>
+                            <li><strong>DataFrame Merging:</strong> Inner, outer, left, and right joins with custom key columns</li>
+                            <li><strong>Concatenation:</strong> Row and column-wise concatenation with index alignment</li>
+                            <li><strong>Pivot Tables:</strong> Dynamic pivot operations with multiple aggregation functions</li>
+                            <li><strong>Cross Tabulation:</strong> Frequency tables and contingency analysis</li>
+                            <li><strong>Index Operations:</strong> Multi-level indexing and hierarchical joins</li>
+                            <li><strong>Performance Optimized:</strong> Efficient operations for large dataset combinations</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Join Types Overview -->
+                <section class="section" id="join-types">
+                    <h2>?? Join Types Overview</h2>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-arrow-down-up"></i> Inner Join</h4>
+                            <p>Returns only rows with matching keys in both DataFrames</p>
+                            <small class="text-muted">Use when you need only matching records</small>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-arrow-left-right"></i> Outer Join</h4>
+                            <p>Returns all rows from both DataFrames, with NaN for non-matching</p>
+                            <small class="text-muted">Use for complete data preservation</small>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-arrow-left"></i> Left Join</h4>
+                            <p>Returns all rows from left DataFrame, matching from right</p>
+                            <small class="text-muted">Use to enrich primary dataset</small>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-arrow-right"></i> Right Join</h4>
+                            <p>Returns all rows from right DataFrame, matching from left</p>
+                            <small class="text-muted">Less common, reverse of left join</small>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Method: MergeDataFrames -->
+                <section class="section method" id="merge-dataframes">
+                    <h3><i class="bi bi-bezier2"></i> MergeDataFrames</h3>
+                    <p>Performs SQL-style joins between two DataFrames using specified key columns and join type.</p>
+                    
+                    <div class="api-signature">
+                        <code>public bool MergeDataFrames(string leftDataFrame, string rightDataFrame, string outputName, string leftOn, string rightOn, string how = "inner")</code>
+                    </div>
+
+                    <h4>Parameters</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>leftDataFrame</code></td>
+                                <td>string</td>
+                                <td>Name of the left DataFrame in the merge operation</td>
+                            </tr>
+                            <tr>
+                                <td><code>rightDataFrame</code></td>
+                                <td>string</td>
+                                <td>Name of the right DataFrame in the merge operation</td>
+                            </tr>
+                            <tr>
+                                <td><code>outputName</code></td>
+                                <td>string</td>
+                                <td>Name for the resulting merged DataFrame</td>
+                            </tr>
+                            <tr>
+                                <td><code>leftOn</code></td>
+                                <td>string</td>
+                                <td>Column name(s) to join on from left DataFrame</td>
+                            </tr>
+                            <tr>
+                                <td><code>rightOn</code></td>
+                                <td>string</td>
+                                <td>Column name(s) to join on from right DataFrame</td>
+                            </tr>
+                            <tr>
+                                <td><code>how</code></td>
+                                <td>string</td>
+                                <td>Join type: 'inner', 'outer', 'left', 'right'</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="code-example">
+                        <h4>Customer Order Analysis</h4>
+                        <pre><code class="language-csharp">// Load customer and order data
+pandasManager.ReadCsv("customers", @"C:\Data\customers.csv");
+pandasManager.ReadCsv("orders", @"C:\Data\orders.csv");
+
+// Inner join - customers who have placed orders
+pandasManager.MergeDataFrames("customers", "orders", "customer_orders",
+    leftOn: "customer_id", 
+    rightOn: "customer_id", 
+    how: "inner");
+
+// Left join - all customers with their orders (if any)
+pandasManager.MergeDataFrames("customers", "orders", "all_customers_orders",
+    leftOn: "customer_id", 
+    rightOn: "customer_id", 
+    how: "left");
+
+// Analyze results
+string orderSummary = pandasManager.Describe("customer_orders");
+Console.WriteLine($"Customer Order Analysis:\n{orderSummary}");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Product Sales Integration</h4>
+                        <pre><code class="language-csharp">// Load multiple related datasets
+pandasManager.ReadCsv("products", @"C:\Data\products.csv");
+pandasManager.ReadCsv("sales", @"C:\Data\sales_transactions.csv");
+pandasManager.ReadCsv("categories", @"C:\Data\product_categories.csv");
+
+// Multi-step join process
+// Step 1: Join sales with product details
+pandasManager.MergeDataFrames("sales", "products", "sales_with_products",
+    leftOn: "product_id", 
+    rightOn: "product_id", 
+    how: "left");
+
+// Step 2: Add category information
+pandasManager.MergeDataFrames("sales_with_products", "categories", "complete_sales",
+    leftOn: "category_id", 
+    rightOn: "category_id", 
+    how: "left");
+
+// Generate sales report by category
+pandasManager.GroupBy("complete_sales", "sales_by_category", "category_name", "sum");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Multi-Column Join</h4>
+                        <pre><code class="language-csharp">// Complex join with multiple key columns
+pandasManager.ReadCsv("transaction_details", @"C:\Data\transactions.csv");
+pandasManager.ReadCsv("account_info", @"C:\Data\accounts.csv");
+
+// Join on multiple columns (composite key)
+pandasManager.ExecutePythonCode(@"
+    # Multi-column merge
+    merged_data = pd.merge(
+        transaction_details, 
+        account_info,
+        left_on=['account_id', 'branch_code'],
+        right_on=['account_id', 'branch_code'],
+        how='inner',
+        suffixes=('_trans', '_account')
+    )
+");
+
+pandasManager.StoreDataFrameFromPython("account_transactions", "merged_data");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Method: ConcatDataFrames -->
+                <section class="section method" id="concat-dataframes">
+                    <h3><i class="bi bi-stack"></i> ConcatDataFrames</h3>
+                    <p>Concatenates multiple DataFrames along rows or columns for combining datasets with similar structures.</p>
+                    
+                    <div class="api-signature">
+                        <code>public bool ConcatDataFrames(string[] dataFrameNames, string outputName, int axis = 0, bool ignoreIndex = true)</code>
+                    </div>
+
+                    <h4>Parameters</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>dataFrameNames</code></td>
+                                <td>string[]</td>
+                                <td>Array of DataFrame names to concatenate</td>
+                            </tr>
+                            <tr>
+                                <td><code>outputName</code></td>
+                                <td>string</td>
+                                <td>Name for the concatenated DataFrame</td>
+                            </tr>
+                            <tr>
+                                <td><code>axis</code></td>
+                                <td>int</td>
+                                <td>Concatenation axis: 0 for rows (vertical), 1 for columns (horizontal)</td>
+                            </tr>
+                            <tr>
+                                <td><code>ignoreIndex</code></td>
+                                <td>bool</td>
+                                <td>Whether to reset index in the result</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="code-example">
+                        <h4>Multi-Period Data Consolidation</h4>
+                        <pre><code class="language-csharp">// Load quarterly sales data
+pandasManager.ReadCsv("q1_sales", @"C:\Data\Q1_2024_sales.csv");
+pandasManager.ReadCsv("q2_sales", @"C:\Data\Q2_2024_sales.csv");
+pandasManager.ReadCsv("q3_sales", @"C:\Data\Q3_2024_sales.csv");
+pandasManager.ReadCsv("q4_sales", @"C:\Data\Q4_2024_sales.csv");
+
+// Concatenate all quarters vertically
+var quarterlyData = new[] { "q1_sales", "q2_sales", "q3_sales", "q4_sales" };
+pandasManager.ConcatDataFrames(quarterlyData, "annual_sales", 
+    axis: 0, 
+    ignoreIndex: true);
+
+// Add quarter identification
+pandasManager.ExecutePythonCode(@"
+    # Add quarter labels
+    q1_sales['quarter'] = 'Q1'
+    q2_sales['quarter'] = 'Q2'
+    q3_sales['quarter'] = 'Q3'
+    q4_sales['quarter'] = 'Q4'
+");
+
+// Re-concatenate with quarter labels
+pandasManager.ConcatDataFrames(quarterlyData, "annual_sales_labeled", 
+    axis: 0, 
+    ignoreIndex: true);</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Multi-Source Data Integration</h4>
+                        <pre><code class="language-csharp">// Load data from different sources
+pandasManager.ReadCsv("online_sales", @"C:\Data\ecommerce_sales.csv");
+pandasManager.ReadCsv("retail_sales", @"C:\Data\store_sales.csv");
+pandasManager.ReadCsv("wholesale_sales", @"C:\Data\b2b_sales.csv");
+
+// Add source identification before concatenation
+pandasManager.AddColumn("online_sales", "channel", "'Online'");
+pandasManager.AddColumn("retail_sales", "channel", "'Retail'");
+pandasManager.AddColumn("wholesale_sales", "channel", "'Wholesale'");
+
+// Combine all sales channels
+var salesChannels = new[] { "online_sales", "retail_sales", "wholesale_sales" };
+pandasManager.ConcatDataFrames(salesChannels, "all_sales", 
+    axis: 0, 
+    ignoreIndex: true);
+
+// Analyze by channel
+pandasManager.GroupBy("all_sales", "sales_by_channel", "channel", "sum");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Horizontal Concatenation (Column-wise)</h4>
+                        <pre><code class="language-csharp">// Load customer demographic and behavioral data
+pandasManager.ReadCsv("customer_demographics", @"C:\Data\demographics.csv");
+pandasManager.ReadCsv("customer_behavior", @"C:\Data\behavior_metrics.csv");
+pandasManager.ReadCsv("customer_preferences", @"C:\Data\preferences.csv");
+
+// Ensure same row order
+pandasManager.ExecutePythonCode(@"
+    # Sort all DataFrames by customer_id
+    customer_demographics = customer_demographics.sort_values('customer_id').reset_index(drop=True)
+    customer_behavior = customer_behavior.sort_values('customer_id').reset_index(drop=True)
+    customer_preferences = customer_preferences.sort_values('customer_id').reset_index(drop=True)
+");
+
+// Concatenate horizontally (column-wise)
+var customerDatasets = new[] { "customer_demographics", "customer_behavior", "customer_preferences" };
+pandasManager.ConcatDataFrames(customerDatasets, "complete_customer_profile", 
+    axis: 1, 
+    ignoreIndex: false);</code></pre>
+                    </div>
+                </section>
+
+                <!-- Method: PivotTable -->
+                <section class="section method" id="pivot-table">
+                    <h3><i class="bi bi-table"></i> PivotTable</h3>
+                    <p>Creates pivot tables for data summarization and cross-tabulation analysis with multiple aggregation functions.</p>
+                    
+                    <div class="api-signature">
+                        <code>public bool PivotTable(string dataFrameName, string outputName, string index, string columns, string values, string aggFunc = "sum")</code>
+                    </div>
+
+                    <h4>Parameters</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>dataFrameName</code></td>
+                                <td>string</td>
+                                <td>Name of the source DataFrame</td>
+                            </tr>
+                            <tr>
+                                <td><code>outputName</code></td>
+                                <td>string</td>
+                                <td>Name for the pivot table result</td>
+                            </tr>
+                            <tr>
+                                <td><code>index</code></td>
+                                <td>string</td>
+                                <td>Column(s) to use as row index in pivot table</td>
+                            </tr>
+                            <tr>
+                                <td><code>columns</code></td>
+                                <td>string</td>
+                                <td>Column(s) to use as column headers in pivot table</td>
+                            </tr>
+                            <tr>
+                                <td><code>values</code></td>
+                                <td>string</td>
+                                <td>Column(s) to aggregate in the pivot table</td>
+                            </tr>
+                            <tr>
+                                <td><code>aggFunc</code></td>
+                                <td>string</td>
+                                <td>Aggregation function: 'sum', 'mean', 'count', 'min', 'max'</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="code-example">
+                        <h4>Sales Analysis Pivot Table</h4>
+                        <pre><code class="language-csharp">// Load sales transaction data
+pandasManager.ReadCsv("sales_data", @"C:\Data\detailed_sales.csv");
+
+// Create sales pivot by region and month
+pandasManager.PivotTable("sales_data", "sales_by_region_month",
+    index: "region",
+    columns: "month", 
+    values: "sales_amount",
+    aggFunc: "sum");
+
+// Create quantity pivot table
+pandasManager.PivotTable("sales_data", "quantity_by_product_channel",
+    index: "product_category",
+    columns: "sales_channel", 
+    values: "quantity",
+    aggFunc: "sum");
+
+// Create average order value pivot
+pandasManager.PivotTable("sales_data", "avg_order_by_customer_type",
+    index: "customer_type",
+    columns: "quarter", 
+    values: "order_value",
+    aggFunc: "mean");
+
+// Export pivot tables
+pandasManager.ToExcel("sales_by_region_month", @"C:\Reports\regional_sales_pivot.xlsx");
+pandasManager.ToExcel("quantity_by_product_channel", @"C:\Reports\product_channel_analysis.xlsx");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Multi-Value Pivot Analysis</h4>
+                        <pre><code class="language-csharp">// Create complex pivot with multiple values and functions
+pandasManager.ExecutePythonCode(@"
+    # Advanced pivot table with multiple aggregations
+    pivot_advanced = pd.pivot_table(
+        sales_data,
+        index=['region', 'sales_rep'],
+        columns=['quarter'],
+        values=['sales_amount', 'quantity', 'profit'],
+        aggfunc={
+            'sales_amount': 'sum',
+            'quantity': 'sum', 
+            'profit': 'mean'
+        },
+        fill_value=0,
+        margins=True  # Add totals
+    )
+");
+
+pandasManager.StoreDataFrameFromPython("advanced_sales_pivot", "pivot_advanced");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Method: CrossTab -->
+                <section class="section method" id="cross-tab">
+                    <h3><i class="bi bi-grid-3x3"></i> CrossTab</h3>
+                    <p>Creates cross-tabulation frequency tables for categorical data analysis and contingency analysis.</p>
+                    
+                    <div class="api-signature">
+                        <code>public bool CrossTab(string dataFrameName, string outputName, string index, string columns, bool normalize = false)</code>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Customer Segmentation Analysis</h4>
+                        <pre><code class="language-csharp">// Load customer data
+pandasManager.ReadCsv("customers", @"C:\Data\customer_segments.csv");
+
+// Create cross-tabulation: Customer Type vs Purchase Channel
+pandasManager.ExecutePythonCode(@"
+    # Cross-tabulation analysis
+    crosstab_result = pd.crosstab(
+        customers['customer_type'], 
+        customers['purchase_channel'],
+        normalize='index'  # Show percentages
+    )
+    
+    # Add margins (totals)
+    crosstab_with_totals = pd.crosstab(
+        customers['customer_type'], 
+        customers['purchase_channel'],
+        margins=True,
+        margins_name='Total'
+    )
+");
+
+pandasManager.StoreDataFrameFromPython("customer_channel_crosstab", "crosstab_result");
+pandasManager.StoreDataFrameFromPython("customer_channel_totals", "crosstab_with_totals");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Market Research Analysis</h4>
+                        <pre><code class="language-csharp">// Survey response analysis
+pandasManager.ReadCsv("survey_responses", @"C:\Data\customer_survey.csv");
+
+// Multiple cross-tabulation analyses
+pandasManager.ExecutePythonCode(@"
+    # Age Group vs Product Interest
+    age_product_crosstab = pd.crosstab(
+        survey_responses['age_group'],
+        survey_responses['product_interest'],
+        normalize='columns'
+    )
+    
+    # Income Level vs Purchase Intent
+    income_intent_crosstab = pd.crosstab(
+        survey_responses['income_level'],
+        survey_responses['purchase_intent'],
+        normalize='index'
+    )
+    
+    # Geographic Region vs Brand Preference
+    region_brand_crosstab = pd.crosstab(
+        survey_responses['region'],
+        survey_responses['preferred_brand'],
+        margins=True
+    )
+");
+
+pandasManager.StoreDataFrameFromPython("age_product_analysis", "age_product_crosstab");
+pandasManager.StoreDataFrameFromPython("income_intent_analysis", "income_intent_crosstab");
+pandasManager.StoreDataFrameFromPython("region_brand_analysis", "region_brand_crosstab");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Advanced Joining Techniques -->
+                <section class="section" id="advanced-techniques">
+                    <h2>?? Advanced Joining Techniques</h2>
+                    
+                    <div class="feature-card">
+                        <h4><i class="bi bi-layers"></i> Hierarchical Joins</h4>
+                        <p>Complex joins with multi-level indexes and hierarchical data structures.</p>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Multi-level index join
+pandasManager.ExecutePythonCode(@"
+    # Create hierarchical indexes
+    sales_data = sales_data.set_index(['region', 'store_id'])
+    product_data = product_data.set_index(['category', 'product_id'])
+    
+    # Perform hierarchical merge
+    hierarchical_join = pd.merge(
+        sales_data.reset_index(),
+        product_data.reset_index(),
+        left_on=['product_id'],
+        right_on=['product_id'],
+        how='left'
+    ).set_index(['region', 'store_id', 'category'])
+");
+pandasManager.StoreDataFrameFromPython("hierarchical_sales", "hierarchical_join");</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <h4><i class="bi bi-arrow-left-right"></i> Fuzzy Matching</h4>
+                        <p>Approximate string matching for joining datasets with slight variations in key values.</p>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Fuzzy string matching for customer data
+pandasManager.ExecutePythonCode(@"
+    from fuzzywuzzy import process
+    import pandas as pd
+    
+    def fuzzy_match(x, choices, scorer, cutoff):
+        match = process.extractOne(x, choices, scorer=scorer)
+        if match[1] >= cutoff:
+            return match[0]
+        return None
+    
+    # Fuzzy match customer names between datasets
+    customer_matches = customer_data['name'].apply(
+        lambda x: fuzzy_match(x, contact_data['company_name'].tolist(), 
+                             scorer=fuzz.token_sort_ratio, cutoff=80)
+    )
+");
+pandasManager.StoreDataFrameFromPython("fuzzy_matches", "customer_matches");</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <h4><i class="bi bi-clock-history"></i> Temporal Joins</h4>
+                        <p>Time-based joins for associating events that occurred within specific time windows.</p>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">// Time-window based joins
+pandasManager.ExecutePythonCode(@"
+    import pandas as pd
+    
+    # Convert timestamps
+    transactions['timestamp'] = pd.to_datetime(transactions['timestamp'])
+    events['event_time'] = pd.to_datetime(events['event_time'])
+    
+    # Merge within 5-minute time window
+    temporal_join = pd.merge_asof(
+        transactions.sort_values('timestamp'),
+        events.sort_values('event_time'),
+        left_on='timestamp',
+        right_on='event_time',
+        tolerance=pd.Timedelta('5 minutes'),
+        direction='nearest'
+    )
+");
+pandasManager.StoreDataFrameFromPython("temporal_analysis", "temporal_join");</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Performance Optimization -->
+                <section class="section" id="performance-optimization">
+                    <h2>? Performance Optimization</h2>
+                    
+                    <div class="tip">
+                        <h5><i class="bi bi-lightbulb"></i> Join Performance Tips</h5>
+                        <ul>
+                            <li><strong>Index Optimization:</strong> Set appropriate indexes on join columns before merging</li>
+                            <li><strong>Data Types:</strong> Ensure join columns have compatible and optimized data types</li>
+                            <li><strong>Memory Management:</strong> Use chunking for very large datasets</li>
+                            <li><strong>Sort First:</strong> Pre-sort DataFrames on join columns for better performance</li>
+                            <li><strong>Filter Early:</strong> Apply filters before joins to reduce data volume</li>
+                        </ul>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Optimized Large Dataset Join</h4>
+                        <pre><code class="language-csharp">// Optimize large dataset joins
+pandasManager.ExecutePythonCode(@"
+    # Optimize data types before joining
+    large_dataset['join_key'] = large_dataset['join_key'].astype('category')
+    lookup_table['join_key'] = lookup_table['join_key'].astype('category')
+    
+    # Set index for faster joins
+    lookup_table = lookup_table.set_index('join_key')
+    
+    # Use map for simple one-to-one lookups (faster than merge)
+    if lookup_table.index.is_unique:
+        large_dataset['new_column'] = large_dataset['join_key'].map(lookup_table['value_column'])
+    else:
+        # Fall back to merge for one-to-many
+        result = pd.merge(large_dataset, lookup_table.reset_index(), on='join_key', how='left')
+");</code></pre>
+                    </div>
+
+                    <div class="warning">
+                        <h5><i class="bi bi-exclamation-triangle"></i> Common Performance Issues</h5>
+                        <ul>
+                            <li><strong>Cartesian Products:</strong> Avoid joins without proper key specification</li>
+                            <li><strong>Memory Overflow:</strong> Monitor memory usage with very large joins</li>
+                            <li><strong>Duplicate Keys:</strong> Be aware of one-to-many vs many-to-many relationships</li>
+                            <li><strong>Mixed Data Types:</strong> Ensure consistent data types across join columns</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Use Cases -->
+                <section class="section" id="use-cases">
+                    <h2>?? Common Use Cases</h2>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4>?? Business Intelligence</h4>
+                            <ul>
+                                <li>Customer 360-degree view creation</li>
+                                <li>Sales performance dashboards</li>
+                                <li>Cross-functional reporting</li>
+                                <li>KPI aggregation and analysis</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4>?? Data Integration</h4>
+                            <ul>
+                                <li>Multi-source data consolidation</li>
+                                <li>Master data management</li>
+                                <li>Data warehouse ETL processes</li>
+                                <li>Real-time data streaming joins</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4>?? Analytics & ML</h4>
+                            <ul>
+                                <li>Feature engineering for ML models</li>
+                                <li>Historical trend analysis</li>
+                                <li>Cohort analysis and segmentation</li>
+                                <li>A/B test result analysis</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4>?? Reporting & Compliance</h4>
+                            <ul>
+                                <li>Regulatory reporting compilation</li>
+                                <li>Financial consolidation</li>
+                                <li>Audit trail creation</li>
+                                <li>Cross-system reconciliation</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="data-manipulation.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> Data Manipulation
+                    </a>
+                    <a href="../examples/data-analysis-pipeline.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> Data Analysis Examples
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.DataManagement Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="../getting-started.html">Getting Started</a>
+                            <a href="../api/PythonPandasManager.html">API Reference</a>
+                            <a href="../examples/data-analysis-pipeline.html">Examples</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../assets/navigation.js"></script>
+</body>
+</html>

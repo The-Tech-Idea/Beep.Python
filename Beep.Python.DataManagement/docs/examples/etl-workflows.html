@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETL Workflows - Beep.Python.DataManagement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="../assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="../index.html">Home</a>
+                    <span>?</span>
+                    <a href="../index.html#examples">Examples</a>
+                    <span>?</span>
+                    <span>ETL Workflows</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-arrow-repeat"></i> ETL Workflow Examples</h1>
+                    <p class="page-subtitle">Extract, Transform, and Load patterns using pandas for enterprise data pipelines and integration scenarios</p>
+                </div>
+
+                <!-- Overview -->
+                <section class="section" id="overview">
+                    <h2>?? ETL Pipeline Overview</h2>
+                    
+                    <div class="note">
+                        <h4>?? What are ETL Workflows?</h4>
+                        <p>
+                            <strong>Extract, Transform, Load (ETL)</strong> workflows are essential data integration patterns that:
+                            move data from source systems, apply business transformations, and load results into target systems.
+                            With pandas, you can build powerful, flexible ETL pipelines that handle complex data scenarios.
+                        </p>
+                    </div>
+
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-download"></i> Extract</h4>
+                            <p>Pull data from multiple sources: databases, APIs, files, web services</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-gear"></i> Transform</h4>
+                            <p>Clean, validate, enrich, and reshape data using pandas operations</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-upload"></i> Load</h4>
+                            <p>Write processed data to target systems: data warehouses, APIs, files</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-diagram-3"></i> Orchestrate</h4>
+                            <p>Schedule, monitor, and manage complex multi-step data workflows</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Basic ETL Pattern -->
+                <section class="section" id="basic-etl">
+                    <h2>?? Basic ETL Pattern Implementation</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. ETL Base Class</h4>
+                        <pre><code class="language-csharp">public abstract class BaseETLPipeline
+{
+    protected readonly IPythonPandasManager _pandasManager;
+    protected readonly ILogger _logger;
+    protected readonly string _sessionId;
+    
+    public BaseETLPipeline(IPythonPandasManager pandasManager, ILogger logger, string sessionId)
+    {
+        _pandasManager = pandasManager;
+        _logger = logger;
+        _sessionId = sessionId;
+    }
+    
+    public async Task&lt;ETLResult&gt; ExecuteAsync(ETLConfiguration config)
+    {
+        var result = new ETLResult { StartTime = DateTime.UtcNow };
+        
+        try
+        {
+            _logger.LogInformation("Starting ETL pipeline: {PipelineName}", config.PipelineName);
+            
+            // Configure session
+            if (!_pandasManager.ConfigureSessionForUser(config.UserId, _sessionId))
+            {
+                throw new InvalidOperationException("Failed to configure session");
+            }
+            
+            // Extract phase
+            _logger.LogInformation("Starting Extract phase");
+            var extractResult = await ExtractData(config.ExtractConfig);
+            result.ExtractedRows = extractResult.RowCount;
+            
+            // Transform phase
+            _logger.LogInformation("Starting Transform phase");
+            var transformResult = await TransformData(config.TransformConfig);
+            result.TransformedRows = transformResult.RowCount;
+            
+            // Load phase
+            _logger.LogInformation("Starting Load phase");
+            var loadResult = await LoadData(config.LoadConfig);
+            result.LoadedRows = loadResult.RowCount;
+            
+            result.Success = true;
+            result.EndTime = DateTime.UtcNow;
+            result.Duration = result.EndTime - result.StartTime;
+            
+            _logger.LogInformation("ETL pipeline completed successfully. Duration: {Duration}, Rows: {ExtractedRows} ? {LoadedRows}",
+                result.Duration, result.ExtractedRows, result.LoadedRows);
+                
+            return result;
+        }
+        catch (Exception ex)
+        {
+            result.Success = false;
+            result.ErrorMessage = ex.Message;
+            result.EndTime = DateTime.UtcNow;
+            result.Duration = result.EndTime - result.StartTime;
+            
+            _logger.LogError(ex, "ETL pipeline failed: {PipelineName}", config.PipelineName);
+            throw;
+        }
+        finally
+        {
+            // Cleanup
+            await CleanupResources();
+        }
+    }
+    
+    protected abstract Task&lt;ExtractResult&gt; ExtractData(ExtractConfiguration config);
+    protected abstract Task&lt;TransformResult&gt; TransformData(TransformConfiguration config);
+    protected abstract Task&lt;LoadResult&gt; LoadData(LoadConfiguration config);
+    
+    protected virtual async Task CleanupResources()
+    {
+        _pandasManager.CleanupIdleDataFrames(1);
+        _logger.LogInformation("ETL resources cleaned up");
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Sales Data ETL Implementation</h4>
+                        <pre><code class="language-csharp">public class SalesDataETLPipeline : BaseETLPipeline
+{
+    private readonly IConfiguration _configuration;
+    private readonly ISalesDataValidator _validator;
+    
+    public SalesDataETLPipeline(
+        IPythonPandasManager pandasManager, 
+        ILogger&lt;SalesDataETLPipeline&gt; logger,
+        IConfiguration configuration,
+        ISalesDataValidator validator) 
+        : base(pandasManager, logger, "sales-etl")
+    {
+        _configuration = configuration;
+        _validator = validator;
+    }
+    
+    protected override async Task&lt;ExtractResult&gt; ExtractData(ExtractConfiguration config)
+    {
+        var result = new ExtractResult();
+        
+        // Extract from multiple sources
+        var sources = config.DataSources;
+        
+        foreach (var source in sources)
+        {
+            _logger.LogInformation("Extracting data from: {Source}", source.Name);
+            
+            switch (source.Type)
+            {
+                case DataSourceType.Database:
+                    await ExtractFromDatabase(source);
+                    break;
+                    
+                case DataSourceType.File:
+                    await ExtractFromFile(source);
+                    break;
+                    
+                case DataSourceType.WebAPI:
+                    await ExtractFromAPI(source);
+                    break;
+                    
+                case DataSourceType.FTP:
+                    await ExtractFromFTP(source);
+                    break;
+            }
+        }
+        
+        // Combine extracted data
+        await CombineExtractedData();
+        
+        // Get row count
+        result.RowCount = GetRowCount("raw_sales_data");
+        
+        _logger.LogInformation("Extraction completed. Total rows: {RowCount}", result.RowCount);
+        return result;
+    }
+    
+    private async Task ExtractFromDatabase(DataSource source)
+    {
+        var connectionString = _configuration.GetConnectionString(source.ConnectionName);
+        
+        // Sales transactions
+        var salesQuery = source.Query ?? @"
+            SELECT s.*, c.CustomerName, c.Region, p.ProductName, p.Category
+            FROM Sales s
+            LEFT JOIN Customers c ON s.CustomerID = c.CustomerID
+            LEFT JOIN Products p ON s.ProductID = p.ProductID
+            WHERE s.SaleDate >= @StartDate AND s.SaleDate <= @EndDate
+        ";
+        
+        _pandasManager.ReadSql("raw_sales_db", salesQuery, connectionString);
+        
+        _logger.LogInformation("Extracted sales data from database");
+    }
+    
+    private async Task ExtractFromFile(DataSource source)
+    {
+        var filePath = source.FilePath;
+        
+        if (!File.Exists(filePath))
+        {
+            throw new FileNotFoundException($"Source file not found: {filePath}");
+        }
+        
+        var extension = Path.GetExtension(filePath).ToLower();
+        var dataFrameName = $"raw_sales_{source.Name}";
+        
+        switch (extension)
+        {
+            case ".csv":
+                await _pandasManager.ReadCsvAsync(dataFrameName, filePath);
+                break;
+                
+            case ".xlsx":
+            case ".xls":
+                _pandasManager.ReadExcel(dataFrameName, filePath, source.SheetName);
+                break;
+                
+            case ".json":
+                _pandasManager.ReadJson(dataFrameName, filePath);
+                break;
+                
+            default:
+                throw new NotSupportedException($"File type not supported: {extension}");
+        }
+        
+        _logger.LogInformation("Extracted data from file: {FilePath}", filePath);
+    }
+    
+    private async Task ExtractFromAPI(DataSource source)
+    {
+        var apiUrl = source.ApiEndpoint;
+        var headers = source.Headers ?? new Dictionary&lt;string, string&gt;();
+        
+        // Add authentication if provided
+        if (!string.IsNullOrEmpty(source.ApiKey))
+        {
+            headers["Authorization"] = $"Bearer {source.ApiKey}";
+        }
+        
+        // Use pandas to read from web API
+        string pythonCode = $@"
+import requests
+import pandas as pd
+import json
+
+headers = {System.Text.Json.JsonSerializer.Serialize(headers)}
+response = requests.get('{apiUrl}', headers=headers)
+response.raise_for_status()
+
+data = response.json()
+raw_sales_api = pd.DataFrame(data if isinstance(data, list) else data.get('data', []))
+";
+        
+        await _pandasManager.ExecutePythonCodeAsync(pythonCode);
+        
+        _logger.LogInformation("Extracted data from API: {ApiUrl}", apiUrl);
+    }
+    
+    private async Task ExtractFromFTP(DataSource source)
+    {
+        // Download from FTP first, then process
+        var ftpClient = new FtpClient(source.FtpHost, source.FtpUsername, source.FtpPassword);
+        var localPath = Path.Combine(Path.GetTempPath(), $"ftp_data_{DateTime.Now:yyyyMMddHHmmss}.csv");
+        
+        await ftpClient.DownloadFileAsync(source.FtpPath, localPath);
+        
+        // Process downloaded file
+        await _pandasManager.ReadCsvAsync("raw_sales_ftp", localPath);
+        
+        // Cleanup temp file
+        File.Delete(localPath);
+        
+        _logger.LogInformation("Extracted data from FTP: {FtpPath}", source.FtpPath);
+    }
+    
+    private async Task CombineExtractedData()
+    {
+        // Get list of all extracted DataFrames
+        var extractedFrames = new List&lt;string&gt;();
+        
+        if (DataFrameExists("raw_sales_db")) extractedFrames.Add("raw_sales_db");
+        if (DataFrameExists("raw_sales_file")) extractedFrames.Add("raw_sales_file");
+        if (DataFrameExists("raw_sales_api")) extractedFrames.Add("raw_sales_api");
+        if (DataFrameExists("raw_sales_ftp")) extractedFrames.Add("raw_sales_ftp");
+        
+        if (extractedFrames.Count == 0)
+        {
+            throw new InvalidOperationException("No data extracted from any source");
+        }
+        
+        if (extractedFrames.Count == 1)
+        {
+            // Just rename single source
+            _pandasManager.CreateDataFrame("raw_sales_data", extractedFrames[0]);
+        }
+        else
+        {
+            // Combine multiple sources
+            string combineCode = $@"
+import pandas as pd
+
+# Combine all extracted dataframes
+dataframes = []
+{string.Join("\n", extractedFrames.Select(f => $"if '{f}' in locals(): dataframes.append({f})"))}
+
+if dataframes:
+    raw_sales_data = pd.concat(dataframes, ignore_index=True, sort=False)
+else:
+    raw_sales_data = pd.DataFrame()
+";
+            
+            await _pandasManager.ExecutePythonCodeAsync(combineCode);
+        }
+        
+        _logger.LogInformation("Combined data from {SourceCount} sources", extractedFrames.Count);
+    }
+    
+    protected override async Task&lt;TransformResult&gt; TransformData(TransformConfiguration config)
+    {
+        var result = new TransformResult();
+        
+        _logger.LogInformation("Starting data transformation");
+        
+        // 1. Data Quality Assessment
+        await AssessDataQuality();
+        
+        // 2. Data Cleaning
+        await CleanData();
+        
+        // 3. Data Validation
+        await ValidateData();
+        
+        // 4. Business Transformations
+        await ApplyBusinessTransformations();
+        
+        // 5. Data Enrichment
+        await EnrichData();
+        
+        // 6. Final Validation
+        await FinalValidation();
+        
+        result.RowCount = GetRowCount("transformed_sales_data");
+        
+        _logger.LogInformation("Transformation completed. Rows: {RowCount}", result.RowCount);
+        return result;
+    }
+    
+    private async Task AssessDataQuality()
+    {
+        string qualityCode = @"
+# Data quality assessment
+import pandas as pd
+import numpy as np
+
+# Check for missing values
+missing_summary = raw_sales_data.isnull().sum()
+missing_percentage = (missing_summary / len(raw_sales_data)) * 100
+
+# Check for duplicates
+duplicate_count = raw_sales_data.duplicated().sum()
+
+# Data type assessment
+dtype_info = raw_sales_data.dtypes
+
+# Outlier detection for numeric columns
+numeric_cols = raw_sales_data.select_dtypes(include=[np.number]).columns
+outlier_summary = {}
+
+for col in numeric_cols:
+    Q1 = raw_sales_data[col].quantile(0.25)
+    Q3 = raw_sales_data[col].quantile(0.75)
+    IQR = Q3 - Q1
+    lower_bound = Q1 - 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
+    
+    outliers = ((raw_sales_data[col] < lower_bound) | (raw_sales_data[col] > upper_bound)).sum()
+    outlier_summary[col] = outliers
+
+print(f'Missing values summary:\n{missing_summary}')
+print(f'Missing percentage:\n{missing_percentage}')
+print(f'Duplicate rows: {duplicate_count}')
+print(f'Outliers per column: {outlier_summary}')
+";
+        
+        await _pandasManager.ExecutePythonCodeAsync(qualityCode);
+        _logger.LogInformation("Data quality assessment completed");
+    }
+    
+    private async Task CleanData()
+    {
+        string cleaningCode = @"
+# Data cleaning steps
+import pandas as pd
+import numpy as np
+
+# Start with raw data
+cleaned_data = raw_sales_data.copy()
+
+# 1. Remove exact duplicates
+original_count = len(cleaned_data)
+cleaned_data = cleaned_data.drop_duplicates()
+removed_duplicates = original_count - len(cleaned_data)
+print(f'Removed {removed_duplicates} duplicate rows')
+
+# 2. Handle missing values strategically
+# Critical fields - remove rows if missing
+critical_fields = ['CustomerID', 'ProductID', 'SaleDate', 'Amount']
+for field in critical_fields:
+    if field in cleaned_data.columns:
+        before_count = len(cleaned_data)
+        cleaned_data = cleaned_data.dropna(subset=[field])
+        removed_count = before_count - len(cleaned_data)
+        print(f'Removed {removed_count} rows with missing {field}')
+
+# Optional fields - fill with defaults
+if 'Region' in cleaned_data.columns:
+    cleaned_data['Region'] = cleaned_data['Region'].fillna('Unknown')
+
+if 'Category' in cleaned_data.columns:
+    cleaned_data['Category'] = cleaned_data['Category'].fillna('Uncategorized')
+
+# 3. Fix data types
+if 'SaleDate' in cleaned_data.columns:
+    cleaned_data['SaleDate'] = pd.to_datetime(cleaned_data['SaleDate'], errors='coerce')
+
+if 'Amount' in cleaned_data.columns:
+    cleaned_data['Amount'] = pd.to_numeric(cleaned_data['Amount'], errors='coerce')
+
+if 'Quantity' in cleaned_data.columns:
+    cleaned_data['Quantity'] = pd.to_numeric(cleaned_data['Quantity'], errors='coerce')
+
+# 4. Remove invalid dates
+if 'SaleDate' in cleaned_data.columns:
+    cleaned_data = cleaned_data.dropna(subset=['SaleDate'])
+
+# 5. Remove negative amounts and quantities
+if 'Amount' in cleaned_data.columns:
+    cleaned_data = cleaned_data[cleaned_data['Amount'] > 0]
+
+if 'Quantity' in cleaned_data.columns:
+    cleaned_data = cleaned_data[cleaned_data['Quantity'] > 0]
+
+# Store cleaned data
+clean_sales_data = cleaned_data
+print(f'Data cleaning completed. Final row count: {len(clean_sales_data)}')
+";
+        
+        await _pandasManager.ExecutePythonCodeAsync(cleaningCode);
+        _logger.LogInformation("Data cleaning completed");
+    }
+    
+    private async Task ValidateData()
+    {
+        // Use the injected validator
+        var validationResults = await _validator.ValidateAsync("clean_sales_data");
+        
+        if (!validationResults.IsValid)
+        {
+            var errors = string.Join(", ", validationResults.Errors);
+            throw new DataValidationException($"Data validation failed: {errors}");
+        }
+        
+        _logger.LogInformation("Data validation passed");
+    }
+    
+    private async Task ApplyBusinessTransformations()
+    {
+        string transformCode = @"
+# Business transformations
+import pandas as pd
+import numpy as np
+
+# Start with clean data
+transformed_data = clean_sales_data.copy()
+
+# 1. Calculate derived metrics
+if 'Amount' in transformed_data.columns and 'Quantity' in transformed_data.columns:
+    transformed_data['UnitPrice'] = transformed_data['Amount'] / transformed_data['Quantity']
+
+# 2. Add time-based dimensions
+if 'SaleDate' in transformed_data.columns:
+    transformed_data['Year'] = transformed_data['SaleDate'].dt.year
+    transformed_data['Month'] = transformed_data['SaleDate'].dt.month
+    transformed_data['Quarter'] = transformed_data['SaleDate'].dt.quarter
+    transformed_data['DayOfWeek'] = transformed_data['SaleDate'].dt.dayofweek
+    transformed_data['WeekOfYear'] = transformed_data['SaleDate'].dt.isocalendar().week
+    
+    # Business day indicator
+    transformed_data['IsWeekend'] = transformed_data['DayOfWeek'].isin([5, 6])
+    
+    # Season calculation
+    def get_season(month):
+        if month in [12, 1, 2]:
+            return 'Winter'
+        elif month in [3, 4, 5]:
+            return 'Spring'
+        elif month in [6, 7, 8]:
+            return 'Summer'
+        else:
+            return 'Fall'
+    
+    transformed_data['Season'] = transformed_data['Month'].apply(get_season)
+
+# 3. Categorize amounts
+if 'Amount' in transformed_data.columns:
+    transformed_data['AmountCategory'] = pd.cut(
+        transformed_data['Amount'],
+        bins=[0, 100, 500, 1000, 5000, float('inf')],
+        labels=['Small', 'Medium', 'Large', 'XLarge', 'Enterprise']
+    )
+
+# 4. Customer classification (if customer data available)
+if 'CustomerID' in transformed_data.columns:
+    # Calculate customer metrics
+    customer_metrics = transformed_data.groupby('CustomerID').agg({
+        'Amount': ['sum', 'count', 'mean'],
+        'SaleDate': ['min', 'max']
+    }).round(2)
+    
+    customer_metrics.columns = ['TotalSpent', 'OrderCount', 'AvgOrderValue', 'FirstOrder', 'LastOrder']
+    customer_metrics = customer_metrics.reset_index()
+    
+    # Classify customers
+    customer_metrics['CustomerType'] = pd.cut(
+        customer_metrics['TotalSpent'],
+        bins=[0, 1000, 5000, 10000, float('inf')],
+        labels=['Bronze', 'Silver', 'Gold', 'Platinum']
+    )
+    
+    # Merge back to main data
+    transformed_data = transformed_data.merge(
+        customer_metrics[['CustomerID', 'TotalSpent', 'CustomerType']], 
+        on='CustomerID', 
+        how='left'
+    )
+
+# Store transformed data
+transformed_sales_data = transformed_data
+print(f'Business transformations completed. Columns: {len(transformed_sales_data.columns)}')
+print(f'Column names: {list(transformed_sales_data.columns)}')
+";
+        
+        await _pandasManager.ExecutePythonCodeAsync(transformCode);
+        _logger.LogInformation("Business transformations applied");
+    }
+    
+    private async Task EnrichData()
+    {
+        // Add external data enrichment
+        string enrichmentCode = @"
+# Data enrichment
+import pandas as pd
+
+enriched_data = transformed_sales_data.copy()
+
+# 1. Add fiscal year (assuming April start)
+if 'SaleDate' in enriched_data.columns:
+    def get_fiscal_year(date):
+        if date.month >= 4:
+            return date.year
+        else:
+            return date.year - 1
+    
+    enriched_data['FiscalYear'] = enriched_data['SaleDate'].apply(get_fiscal_year)
+
+# 2. Add running totals and ranks
+if 'Amount' in enriched_data.columns:
+    enriched_data = enriched_data.sort_values(['CustomerID', 'SaleDate'])
+    enriched_data['RunningTotal'] = enriched_data.groupby('CustomerID')['Amount'].cumsum()
+    enriched_data['OrderSequence'] = enriched_data.groupby('CustomerID').cumcount() + 1
+
+# 3. Calculate days since last purchase
+if 'SaleDate' in enriched_data.columns:
+    enriched_data['DaysSinceLastPurchase'] = enriched_data.groupby('CustomerID')['SaleDate'].diff().dt.days
+
+# 4. Add regional economic indicators (placeholder - would connect to external data)
+region_indicators = {
+    'North': {'GDPGrowth': 3.2, 'InflationRate': 2.1},
+    'South': {'GDPGrowth': 2.8, 'InflationRate': 2.3},
+    'East': {'GDPGrowth': 3.5, 'InflationRate': 1.9},
+    'West': {'GDPGrowth': 3.1, 'InflationRate': 2.0}
+}
+
+if 'Region' in enriched_data.columns:
+    enriched_data['GDPGrowth'] = enriched_data['Region'].map(lambda x: region_indicators.get(x, {}).get('GDPGrowth', 2.5))
+    enriched_data['InflationRate'] = enriched_data['Region'].map(lambda x: region_indicators.get(x, {}).get('InflationRate', 2.0))
+
+# Store enriched data
+final_sales_data = enriched_data
+print(f'Data enrichment completed. Final columns: {len(final_sales_data.columns)}')
+";
+        
+        await _pandasManager.ExecutePythonCodeAsync(enrichmentCode);
+        _logger.LogInformation("Data enrichment completed");
+    }
+    
+    private async Task FinalValidation()
+    {
+        string validationCode = @"
+# Final data validation
+import pandas as pd
+import numpy as np
+
+validation_errors = []
+
+# Check required columns
+required_columns = ['CustomerID', 'ProductID', 'SaleDate', 'Amount']
+for col in required_columns:
+    if col not in final_sales_data.columns:
+        validation_errors.append(f'Missing required column: {col}')
+
+# Check data integrity
+if 'Amount' in final_sales_data.columns:
+    negative_amounts = (final_sales_data['Amount'] <= 0).sum()
+    if negative_amounts > 0:
+        validation_errors.append(f'Found {negative_amounts} rows with non-positive amounts')
+
+if 'SaleDate' in final_sales_data.columns:
+    invalid_dates = final_sales_data['SaleDate'].isnull().sum()
+    if invalid_dates > 0:
+        validation_errors.append(f'Found {invalid_dates} rows with invalid dates')
+
+# Check for reasonable data ranges
+if 'Amount' in final_sales_data.columns:
+    max_amount = final_sales_data['Amount'].max()
+    if max_amount > 1000000:  # $1M threshold
+        validation_errors.append(f'Unusually high amount detected: ${max_amount:,.2f}')
+
+if validation_errors:
+    print('Validation errors found:')
+    for error in validation_errors:
+        print(f'- {error}')
+    raise ValueError('Final validation failed')
+else:
+    print('Final validation passed successfully')
+
+# Store final validated data
+transformed_sales_data = final_sales_data
+";
+        
+        await _pandasManager.ExecutePythonCodeAsync(validationCode);
+        _logger.LogInformation("Final validation completed");
+    }
+    
+    protected override async Task&lt;LoadResult&gt; LoadData(LoadConfiguration config)
+    {
+        var result = new LoadResult();
+        
+        _logger.LogInformation("Starting data load phase");
+        
+        // Load to multiple targets
+        foreach (var target in config.LoadTargets)
+        {
+            await LoadToTarget(target);
+        }
+        
+        result.RowCount = GetRowCount("transformed_sales_data");
+        
+        _logger.LogInformation("Load phase completed. Rows loaded: {RowCount}", result.RowCount);
+        return result;
+    }
+    
+    private async Task LoadToTarget(LoadTarget target)
+    {
+        _logger.LogInformation("Loading data to target: {TargetName}", target.Name);
+        
+        switch (target.Type)
+        {
+            case LoadTargetType.Database:
+                await LoadToDatabase(target);
+                break;
+                
+            case LoadTargetType.File:
+                await LoadToFile(target);
+                break;
+                
+            case LoadTargetType.WebAPI:
+                await LoadToAPI(target);
+                break;
+                
+            case LoadTargetType.DataWarehouse:
+                await LoadToDataWarehouse(target);
+                break;
+        }
+    }
+    
+    private async Task LoadToDatabase(LoadTarget target)
+    {
+        var connectionString = _configuration.GetConnectionString(target.ConnectionName);
+        
+        // Use pandas to_sql functionality
+        string loadCode = $@"
+import pandas as pd
+from sqlalchemy import create_engine
+
+# Create database engine
+engine = create_engine('{connectionString}')
+
+# Load data to database
+transformed_sales_data.to_sql(
+    name='{target.TableName}',
+    con=engine,
+    if_exists='{target.LoadMode.ToLower()}',  # replace, append, fail
+    index=False,
+    chunksize=1000
+)
+
+print(f'Data loaded to database table: {target.TableName}')
+";
+        
+        await _pandasManager.ExecutePythonCodeAsync(loadCode);
+        _logger.LogInformation("Data loaded to database table: {TableName}", target.TableName);
+    }
+    
+    private async Task LoadToFile(LoadTarget target)
+    {
+        var outputPath = target.FilePath;
+        var directory = Path.GetDirectoryName(outputPath);
+        
+        if (!Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+        
+        var extension = Path.GetExtension(outputPath).ToLower();
+        
+        switch (extension)
+        {
+            case ".csv":
+                _pandasManager.ToCsv("transformed_sales_data", outputPath);
+                break;
+                
+            case ".xlsx":
+                _pandasManager.ToExcel("transformed_sales_data", outputPath);
+                break;
+                
+            case ".json":
+                var jsonData = _pandasManager.GetDataFrameAsJson("transformed_sales_data");
+                await File.WriteAllTextAsync(outputPath, jsonData);
+                break;
+                
+            case ".parquet":
+                string parquetCode = $@"
+import pandas as pd
+transformed_sales_data.to_parquet('{outputPath}', index=False, compression='snappy')
+print(f'Data saved to Parquet file: {outputPath}')
+";
+                await _pandasManager.ExecutePythonCodeAsync(parquetCode);
+                break;
+                
+            default:
+                throw new NotSupportedException($"Output format not supported: {extension}");
+        }
+        
+        _logger.LogInformation("Data loaded to file: {FilePath}", outputPath);
+    }
+    
+    private async Task LoadToAPI(LoadTarget target)
+    {
+        var jsonData = _pandasManager.GetDataFrameAsJson("transformed_sales_data");
+        
+        using var httpClient = new HttpClient();
+        
+        if (!string.IsNullOrEmpty(target.ApiKey))
+        {
+            httpClient.DefaultRequestHeaders.Authorization = 
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", target.ApiKey);
+        }
+        
+        var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
+        var response = await httpClient.PostAsync(target.ApiEndpoint, content);
+        
+        response.EnsureSuccessStatusCode();
+        
+        _logger.LogInformation("Data loaded to API endpoint: {ApiEndpoint}", target.ApiEndpoint);
+    }
+    
+    private async Task LoadToDataWarehouse(LoadTarget target)
+    {
+        // Implementation for data warehouse loading (Snowflake, BigQuery, etc.)
+        _logger.LogInformation("Loading to data warehouse: {WarehouseName}", target.WarehouseName);
+        
+        switch (target.WarehouseType)
+        {
+            case "snowflake":
+                await LoadToSnowflake(target);
+                break;
+                
+            case "bigquery":
+                await LoadToBigQuery(target);
+                break;
+                
+            case "redshift":
+                await LoadToRedshift(target);
+                break;
+                
+            default:
+                throw new NotSupportedException($"Data warehouse type not supported: {target.WarehouseType}");
+        }
+    }
+    
+    private async Task LoadToSnowflake(LoadTarget target)
+    {
+        string snowflakeCode = $@"
+import pandas as pd
+from sqlalchemy import create_engine
+import snowflake.connector
+
+# Snowflake connection
+engine = create_engine(
+    f'snowflake://{target.Username}:{target.Password}@{target.Account}/{target.Database}/{target.Schema}?warehouse={target.Warehouse}&role={target.Role}'
+)
+
+# Load to Snowflake
+transformed_sales_data.to_sql(
+    name='{target.TableName}',
+    con=engine,
+    if_exists='replace',
+    index=False,
+    method='multi',
+    chunksize=10000
+)
+
+print(f'Data loaded to Snowflake table: {target.TableName}')
+";
+        
+        await _pandasManager.ExecutePythonCodeAsync(snowflakeCode);
+    }
+    
+    // Helper methods
+    private bool DataFrameExists(string name)
+    {
+        try
+        {
+            var info = _pandasManager.Describe(name);
+            return !string.IsNullOrEmpty(info);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+    
+    private int GetRowCount(string dataFrameName)
+    {
+        try
+        {
+            // Implementation to get actual row count
+            return 1000; // Placeholder
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Configuration Classes -->
+                <section class="section" id="configuration">
+                    <h2>?? ETL Configuration</h2>
+                    
+                    <div class="code-example">
+                        <h4>ETL Configuration Models</h4>
+                        <pre><code class="language-csharp">// ETL Configuration classes
+public class ETLConfiguration
+{
+    public string PipelineName { get; set; }
+    public string UserId { get; set; }
+    public ExtractConfiguration ExtractConfig { get; set; }
+    public TransformConfiguration TransformConfig { get; set; }
+    public LoadConfiguration LoadConfig { get; set; }
+    public Dictionary&lt;string, object&gt; Parameters { get; set; } = new();
+}
+
+public class ExtractConfiguration
+{
+    public List&lt;DataSource&gt; DataSources { get; set; } = new();
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+    public int? MaxRows { get; set; }
+}
+
+public class DataSource
+{
+    public string Name { get; set; }
+    public DataSourceType Type { get; set; }
+    public string ConnectionName { get; set; }
+    public string Query { get; set; }
+    public string FilePath { get; set; }
+    public string SheetName { get; set; }
+    public string ApiEndpoint { get; set; }
+    public string ApiKey { get; set; }
+    public Dictionary&lt;string, string&gt; Headers { get; set; }
+    public string FtpHost { get; set; }
+    public string FtpUsername { get; set; }
+    public string FtpPassword { get; set; }
+    public string FtpPath { get; set; }
+}
+
+public class TransformConfiguration
+{
+    public List&lt;ValidationRule&gt; ValidationRules { get; set; } = new();
+    public List&lt;TransformationStep&gt; TransformationSteps { get; set; } = new();
+    public bool EnableDataProfiling { get; set; } = true;
+    public bool EnableOutlierDetection { get; set; } = true;
+}
+
+public class LoadConfiguration
+{
+    public List&lt;LoadTarget&gt; LoadTargets { get; set; } = new();
+    public bool EnablePartitioning { get; set; }
+    public string PartitionColumn { get; set; }
+    public int BatchSize { get; set; } = 1000;
+}
+
+public class LoadTarget
+{
+    public string Name { get; set; }
+    public LoadTargetType Type { get; set; }
+    public string ConnectionName { get; set; }
+    public string TableName { get; set; }
+    public string FilePath { get; set; }
+    public string ApiEndpoint { get; set; }
+    public string ApiKey { get; set; }
+    public string LoadMode { get; set; } = "replace"; // replace, append, fail
+    public string WarehouseName { get; set; }
+    public string WarehouseType { get; set; }
+    public Dictionary&lt;string, string&gt; Properties { get; set; } = new();
+}
+
+// Enums
+public enum DataSourceType
+{
+    Database,
+    File,
+    WebAPI,
+    FTP,
+    SFTP,
+    SharePoint,
+    S3
+}
+
+public enum LoadTargetType
+{
+    Database,
+    File,
+    WebAPI,
+    DataWarehouse,
+    MessageQueue,
+    Cache
+}
+
+// Result classes
+public class ETLResult
+{
+    public bool Success { get; set; }
+    public DateTime StartTime { get; set; }
+    public DateTime EndTime { get; set; }
+    public TimeSpan Duration { get; set; }
+    public int ExtractedRows { get; set; }
+    public int TransformedRows { get; set; }
+    public int LoadedRows { get; set; }
+    public string ErrorMessage { get; set; }
+    public Dictionary&lt;string, object&gt; Metrics { get; set; } = new();
+}
+
+public class ExtractResult
+{
+    public int RowCount { get; set; }
+    public Dictionary&lt;string, int&gt; SourceRowCounts { get; set; } = new();
+}
+
+public class TransformResult
+{
+    public int RowCount { get; set; }
+    public int CleanedRows { get; set; }
+    public int InvalidRows { get; set; }
+    public List&lt;string&gt; ValidationErrors { get; set; } = new();
+}
+
+public class LoadResult
+{
+    public int RowCount { get; set; }
+    public Dictionary&lt;string, int&gt; TargetRowCounts { get; set; } = new();
+    public List&lt;string&gt; LoadErrors { get; set; } = new();
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Scheduling and Orchestration -->
+                <section class="section" id="scheduling">
+                    <h2>? ETL Scheduling and Orchestration</h2>
+                    
+                    <div class="code-example">
+                        <h4>Background ETL Service</h4>
+                        <pre><code class="language-csharp">public class ETLSchedulerService : BackgroundService
+{
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger&lt;ETLSchedulerService&gt; _logger;
+    private readonly IConfiguration _configuration;
+    
+    public ETLSchedulerService(
+        IServiceProvider serviceProvider,
+        ILogger&lt;ETLSchedulerService&gt; logger,
+        IConfiguration configuration)
+    {
+        _serviceProvider = serviceProvider;
+        _logger = logger;
+        _configuration = configuration;
+    }
+    
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                var schedules = GetETLSchedules();
+                
+                foreach (var schedule in schedules)
+                {
+                    if (ShouldRunNow(schedule))
+                    {
+                        await ExecuteScheduledETL(schedule);
+                    }
+                }
+                
+                // Check every minute
+                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in ETL scheduler");
+                await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+            }
+        }
+    }
+    
+    private async Task ExecuteScheduledETL(ETLSchedule schedule)
+    {
+        _logger.LogInformation("Executing scheduled ETL: {PipelineName}", schedule.PipelineName);
+        
+        try
+        {
+            using var scope = _serviceProvider.CreateScope();
+            var pipelineFactory = scope.ServiceProvider.GetRequiredService&lt;IETLPipelineFactory&gt;();
+            
+            var pipeline = pipelineFactory.CreatePipeline(schedule.PipelineType);
+            var config = BuildETLConfiguration(schedule);
+            
+            var result = await pipeline.ExecuteAsync(config);
+            
+            if (result.Success)
+            {
+                _logger.LogInformation("Scheduled ETL completed successfully: {PipelineName}, Duration: {Duration}",
+                    schedule.PipelineName, result.Duration);
+                    
+                await NotifySuccess(schedule, result);
+            }
+            else
+            {
+                _logger.LogError("Scheduled ETL failed: {PipelineName}, Error: {Error}",
+                    schedule.PipelineName, result.ErrorMessage);
+                    
+                await NotifyFailure(schedule, result);
+            }
+            
+            // Update last run time
+            await UpdateLastRunTime(schedule);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception during scheduled ETL execution: {PipelineName}", schedule.PipelineName);
+            await NotifyException(schedule, ex);
+        }
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Best Practices -->
+                <section class="section" id="best-practices">
+                    <h2>? ETL Best Practices</h2>
+                    
+                    <div class="tip">
+                        <h4>?? Design Principles</h4>
+                        <ul>
+                            <li><strong>Idempotency:</strong> ETL processes should be repeatable with the same results</li>
+                            <li><strong>Error Handling:</strong> Implement comprehensive error handling and recovery</li>
+                            <li><strong>Data Quality:</strong> Validate data at each stage of the pipeline</li>
+                            <li><strong>Monitoring:</strong> Track performance metrics and data lineage</li>
+                        </ul>
+                    </div>
+
+                    <div class="tip">
+                        <h4>?? Performance Optimization</h4>
+                        <ul>
+                            <li><strong>Chunking:</strong> Process large datasets in manageable chunks</li>
+                            <li><strong>Parallel Processing:</strong> Use parallel operations where appropriate</li>
+                            <li><strong>Memory Management:</strong> Clean up DataFrames and monitor memory usage</li>
+                            <li><strong>Incremental Loading:</strong> Load only new or changed data when possible</li>
+                        </ul>
+                    </div>
+
+                    <div class="warning">
+                        <h4>?? Common Pitfalls</h4>
+                        <ul>
+                            <li><strong>Full Table Scans:</strong> Avoid loading entire tables when only recent data is needed</li>
+                            <li><strong>Schema Changes:</strong> Handle source schema changes gracefully</li>
+                            <li><strong>Time Zone Issues:</strong> Be consistent with date/time handling across sources</li>
+                            <li><strong>Resource Leaks:</strong> Always clean up resources in finally blocks</li>
+                        </ul>
+                    </div>
+
+                    <div class="note">
+                        <h4>?? Maintenance Guidelines</h4>
+                        <ul>
+                            <li><strong>Documentation:</strong> Document data sources, transformations, and business rules</li>
+                            <li><strong>Version Control:</strong> Track changes to ETL logic and configurations</li>
+                            <li><strong>Testing:</strong> Implement unit tests for transformation logic</li>
+                            <li><strong>Monitoring:</strong> Set up alerts for failures and performance degradation</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="business-intelligence.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> Business Intelligence
+                    </a>
+                    <a href="time-series-analysis.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> Time Series Analysis
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.DataManagement Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="../index.html">Home</a>
+                            <a href="../getting-started.html">Getting Started</a>
+                            <a href="../api/PythonPandasManager.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../assets/navigation.js"></script>
+</body>
+</html>

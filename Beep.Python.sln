@@ -19,6 +19,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beep.Python.Runtime.Winform
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beep.Python.AI.Transformers", "Beep.Python.Hugginface\Beep.Python.AI.Transformers.csproj", "{FD5E2EB6-5700-46A4-8AD9-1C8747CDC465}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beep.Python.DataManagement", "Beep.Python.DataManagement\Beep.Python.DataManagement.csproj", "{74099135-9282-4AEA-95A8-1ADB9AD3A88A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beep.Python.PackageManagement", "Beep.Python.PackageManagement\Beep.Python.PackageManagement.csproj", "{9D5E3FE1-CFCB-4812-AE42-BFC865131F91}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beep.Python.ML", "Beep.Python.ML\Beep.Python.ML.csproj", "{AEF798CC-15F3-4382-B25A-6A1651A1D77A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +97,30 @@ Global
 		{FD5E2EB6-5700-46A4-8AD9-1C8747CDC465}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FD5E2EB6-5700-46A4-8AD9-1C8747CDC465}.Release|x64.ActiveCfg = Release|Any CPU
 		{FD5E2EB6-5700-46A4-8AD9-1C8747CDC465}.Release|x64.Build.0 = Release|Any CPU
+		{74099135-9282-4AEA-95A8-1ADB9AD3A88A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74099135-9282-4AEA-95A8-1ADB9AD3A88A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74099135-9282-4AEA-95A8-1ADB9AD3A88A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{74099135-9282-4AEA-95A8-1ADB9AD3A88A}.Debug|x64.Build.0 = Debug|Any CPU
+		{74099135-9282-4AEA-95A8-1ADB9AD3A88A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74099135-9282-4AEA-95A8-1ADB9AD3A88A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74099135-9282-4AEA-95A8-1ADB9AD3A88A}.Release|x64.ActiveCfg = Release|Any CPU
+		{74099135-9282-4AEA-95A8-1ADB9AD3A88A}.Release|x64.Build.0 = Release|Any CPU
+		{9D5E3FE1-CFCB-4812-AE42-BFC865131F91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D5E3FE1-CFCB-4812-AE42-BFC865131F91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D5E3FE1-CFCB-4812-AE42-BFC865131F91}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9D5E3FE1-CFCB-4812-AE42-BFC865131F91}.Debug|x64.Build.0 = Debug|Any CPU
+		{9D5E3FE1-CFCB-4812-AE42-BFC865131F91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D5E3FE1-CFCB-4812-AE42-BFC865131F91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D5E3FE1-CFCB-4812-AE42-BFC865131F91}.Release|x64.ActiveCfg = Release|Any CPU
+		{9D5E3FE1-CFCB-4812-AE42-BFC865131F91}.Release|x64.Build.0 = Release|Any CPU
+		{AEF798CC-15F3-4382-B25A-6A1651A1D77A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEF798CC-15F3-4382-B25A-6A1651A1D77A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AEF798CC-15F3-4382-B25A-6A1651A1D77A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AEF798CC-15F3-4382-B25A-6A1651A1D77A}.Debug|x64.Build.0 = Debug|Any CPU
+		{AEF798CC-15F3-4382-B25A-6A1651A1D77A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AEF798CC-15F3-4382-B25A-6A1651A1D77A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AEF798CC-15F3-4382-B25A-6A1651A1D77A}.Release|x64.ActiveCfg = Release|Any CPU
+		{AEF798CC-15F3-4382-B25A-6A1651A1D77A}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

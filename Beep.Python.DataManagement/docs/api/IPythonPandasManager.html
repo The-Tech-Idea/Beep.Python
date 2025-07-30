@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPythonPandasManager Interface - Beep.Python.DataManagement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="../assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="../index.html">Home</a>
+                    <span>?</span>
+                    <a href="../index.html#core-api">Core API</a>
+                    <span>?</span>
+                    <span>IPythonPandasManager</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-code-square"></i> IPythonPandasManager Interface</h1>
+                    <p class="page-subtitle">Complete interface contract for pandas DataFrame operations with comprehensive method definitions and documentation</p>
+                </div>
+
+                <!-- Class Info -->
+                <div class="class-info">
+                    <div class="class-namespace">
+                        <strong>Namespace:</strong> Beep.Python.DataManagement<br>
+                        <strong>Assembly:</strong> Beep.Python.DataManagement.dll<br>
+                        <strong>Package:</strong> Beep.Python.DataManagement
+                    </div>
+                    <div class="class-implements">
+                        <strong>Type:</strong> Interface<br>
+                        <strong>Inherits:</strong> IDisposable<br>
+                        <strong>Implemented By:</strong> PythonPandasManager
+                    </div>
+                </div>
+
+                <!-- Overview Section -->
+                <section class="section" id="overview">
+                    <h2>?? Interface Overview</h2>
+                    <p>
+                        The <strong>IPythonPandasManager</strong> interface defines the complete contract for pandas DataFrame operations 
+                        within the Beep.Python framework. It ensures consistent implementation across different pandas manager implementations
+                        and provides a clear API surface for dependency injection and testing scenarios.
+                    </p>
+                    
+                    <div class="note">
+                        <strong>?? Key Benefits</strong>
+                        <ul>
+                            <li><strong>Dependency Injection Ready:</strong> Perfect for IoC containers and unit testing</li>
+                            <li><strong>Complete API Contract:</strong> All 40+ methods clearly defined</li>
+                            <li><strong>Async Support:</strong> Key operations available in async variants</li>
+                            <li><strong>Resource Management:</strong> IDisposable implementation for cleanup</li>
+                            <li><strong>Enterprise Integration:</strong> Session and environment management included</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Interface Methods by Category -->
+                <section class="section" id="session-management-methods">
+                    <h2>?? Session Management Methods</h2>
+                    
+                    <div class="method">
+                        <h3>ConfigureSession</h3>
+                        <div class="api-signature">
+                            <code>bool ConfigureSession(PythonSessionInfo session, PythonVirtualEnvironment virtualEnvironment);</code>
+                        </div>
+                        <p>Configure the pandas manager to use a specific Python session and virtual environment.</p>
+                    </div>
+
+                    <div class="method">
+                        <h3>ConfigureSessionForUser</h3>
+                        <div class="api-signature">
+                            <code>bool ConfigureSessionForUser(string username, string? environmentId = null);</code>
+                        </div>
+                        <p>Configure session using username and optional environment ID with automatic session creation.</p>
+                    </div>
+
+                    <div class="method">
+                        <h3>Session Information</h3>
+                        <div class="api-signature">
+                            <code>PythonSessionInfo? GetConfiguredSession();
+PythonVirtualEnvironment? GetConfiguredVirtualEnvironment();
+bool IsSessionConfigured();</code>
+                        </div>
+                        <p>Methods to retrieve session information and verify configuration status.</p>
+                    </div>
+                </section>
+
+                <section class="section" id="io-methods">
+                    <h2>?? DataFrame I/O Methods</h2>
+                    
+                    <div class="method">
+                        <h3>DataFrame Creation</h3>
+                        <div class="api-signature">
+                            <code>void CreateDataFrame(string dataFrameName, dynamic data);
+Task CreateDataFrameAsync(string dataFrameName, dynamic data, CancellationToken cancellationToken = default);</code>
+                        </div>
+                        <p>Create DataFrames from data with sync and async variants.</p>
+                    </div>
+
+                    <div class="method">
+                        <h3>Data Loading</h3>
+                        <div class="api-signature">
+                            <code>void ReadCsv(string dataFrameName, string filePath);
+Task ReadCsvAsync(string dataFrameName, string filePath, CancellationToken cancellationToken = default);
+void ReadExcel(string dataFrameName, string filePath);
+void ReadJson(string dataFrameName, string filePath);
+void ReadSql(string dataFrameName, string sql, string connectionString);
+void ReadFromWeb(string dataFrameName, string url);</code>
+                        </div>
+                        <p>Load data from various sources including files, databases, and web APIs.</p>
+                    </div>
+
+                    <div class="method">
+                        <h3>Data Export</h3>
+                        <div class="api-signature">
+                            <code>void ToCsv(string dataFrameName, string filePath);
+Task ToCsvAsync(string dataFrameName, string filePath, CancellationToken cancellationToken = default);
+void ToExcel(string dataFrameName, string filePath);
+void ToJson(string dataFrameName, string filePath);
+void ExportDataFrame(string dataFrameName, string filePath, string format);</code>
+                        </div>
+                        <p>Export DataFrames to various formats with async support for large operations.</p>
+                    </div>
+                </section>
+
+                <section class="section" id="manipulation-methods">
+                    <h2>??? Data Manipulation Methods</h2>
+                    
+                    <div class="method">
+                        <h3>Selection and Filtering</h3>
+                        <div class="api-signature">
+                            <code>void SelectColumns(string dataFrameName, string newFrameName, string[] columns);
+void FilterRows(string dataFrameName, string newFrameName, string condition);
+void QueryDataFrame(string dataFrameName, string newFrameName, string query);
+void SampleDataFrame(string dataFrameName, string newFrameName, double fraction);</code>
+                        </div>
+                        <p>Methods for selecting, filtering, and sampling DataFrame data.</p>
+                    </div>
+
+                    <div class="method">
+                        <h3>Column Operations</h3>
+                        <div class="api-signature">
+                            <code>void AddColumn(string dataFrameName, string columnName, dynamic columnData);
+void DropColumn(string dataFrameName, string columnName);
+void RenameColumns(string dataFrameName, Dictionary&lt;string, string&gt; newColumnNames);
+void ApplyFunction(string dataFrameName, string columnName, string func);
+void ConvertDataType(string dataFrameName, string columnName, string newType);</code>
+                        </div>
+                        <p>Column manipulation including adding, removing, renaming, and transforming columns.</p>
+                    </div>
+                </section>
+
+                <section class="section" id="cleaning-methods">
+                    <h2>?? Data Cleaning Methods</h2>
+                    
+                    <div class="method">
+                        <h3>Missing Value Handling</h3>
+                        <div class="api-signature">
+                            <code>void DropNA(string dataFrameName, string newFrameName);
+void FillNA(string dataFrameName, string newFrameName, dynamic value);
+string IsNull(string dataFrameName);</code>
+                        </div>
+                        <p>Comprehensive missing value detection and handling methods.</p>
+                    </div>
+
+                    <div class="method">
+                        <h3>Data Quality</h3>
+                        <div class="api-signature">
+                            <code>void DropDuplicates(string dataFrameName, string newFrameName);
+void OptimizeMemory(string dataFrameName);</code>
+                        </div>
+                        <p>Methods for removing duplicates and optimizing DataFrame memory usage.</p>
+                    </div>
+                </section>
+
+                <section class="section" id="analysis-methods">
+                    <h2>?? Statistical Analysis Methods</h2>
+                    
+                    <div class="method">
+                        <h3>Descriptive Statistics</h3>
+                        <div class="api-signature">
+                            <code>string Describe(string dataFrameName);
+string Correlation(string dataFrameName);
+string CalculateMean(string dataFrameName, string columnName);
+string CalculateMedian(string dataFrameName, string columnName);</code>
+                        </div>
+                        <p>Core statistical analysis and descriptive statistics methods.</p>
+                    </div>
+
+                    <div class="method">
+                        <h3>Data Exploration</h3>
+                        <div class="api-signature">
+                            <code>string UniqueValues(string dataFrameName, string columnName);
+string ValueCounts(string dataFrameName, string columnName);</code>
+                        </div>
+                        <p>Methods for exploring data distribution and unique values.</p>
+                    </div>
+                </section>
+
+                <section class="section" id="grouping-methods">
+                    <h2>?? Aggregation and Grouping Methods</h2>
+                    
+                    <div class="method">
+                        <h3>GroupBy Operations</h3>
+                        <div class="api-signature">
+                            <code>void GroupBy(string dataFrameName, string newFrameName, string groupByColumn, string aggFunc);
+Task GroupByAsync(string dataFrameName, string newFrameName, string groupByColumn, string aggFunc, CancellationToken cancellationToken = default);</code>
+                        </div>
+                        <p>Group-by operations with synchronous and asynchronous variants.</p>
+                    </div>
+
+                    <div class="method">
+                        <h3>Pivot Operations</h3>
+                        <div class="api-signature">
+                            <code>void PivotTable(string dataFrameName, string newFrameName, string index, string columns, string values);
+void CrossTab(string dataFrameName, string newFrameName, string index, string columns);</code>
+                        </div>
+                        <p>Create pivot tables and cross-tabulation for data analysis.</p>
+                    </div>
+                </section>
+
+                <section class="section" id="timeseries-methods">
+                    <h2>? Time Series Methods</h2>
+                    
+                    <div class="method">
+                        <h3>DateTime Operations</h3>
+                        <div class="api-signature">
+                            <code>void ConvertToDateTime(string dataFrameName, string columnName);
+void Resample(string dataFrameName, string newFrameName, string rule, string aggFunc);
+void RollingWindow(string dataFrameName, string newFrameName, int windowSize, string operation);</code>
+                        </div>
+                        <p>Time series analysis including datetime conversion, resampling, and rolling windows.</p>
+                    </div>
+                </section>
+
+                <section class="section" id="merging-methods">
+                    <h2>?? Data Merging Methods</h2>
+                    
+                    <div class="method">
+                        <h3>DataFrame Joining</h3>
+                        <div class="api-signature">
+                            <code>void MergeDataFrames(string leftFrameName, string rightFrameName, string newFrameName, string onColumn);
+void ConcatDataFrames(string[] dataFrameNames, string newFrameName);</code>
+                        </div>
+                        <p>Merge and concatenate DataFrames for data integration workflows.</p>
+                    </div>
+                </section>
+
+                <section class="section" id="utility-methods">
+                    <h2>??? Utility Methods</h2>
+                    
+                    <div class="method">
+                        <h3>Data Access and Configuration</h3>
+                        <div class="api-signature">
+                            <code>string GetDataFrameAsJson(string dataFrameName);
+void ResetIndex(string dataFrameName);
+void SetPandasOption(string optionName, string value);</code>
+                        </div>
+                        <p>Utility methods for data access, indexing, and pandas configuration.</p>
+                    </div>
+
+                    <div class="method">
+                        <h3>Memory Management</h3>
+                        <div class="api-signature">
+                            <code>string GetMemoryUsageReport();
+void CleanupIdleDataFrames(int maxIdleMinutes = 30);</code>
+                        </div>
+                        <p>Memory monitoring and cleanup utilities for resource management.</p>
+                    </div>
+                </section>
+
+                <!-- Implementation Example -->
+                <section class="section" id="implementation-example">
+                    <h2>?? Implementation Example</h2>
+                    
+                    <div class="code-example">
+                        <h4>Dependency Injection with Interface</h4>
+                        <pre><code class="language-csharp">// Register in DI container
+services.AddTransient&lt;IPythonPandasManager, PythonPandasManager&gt;();
+
+// Use in your classes
+public class DataAnalysisService
+{
+    private readonly IPythonPandasManager _pandasManager;
+    
+    public DataAnalysisService(IPythonPandasManager pandasManager)
+    {
+        _pandasManager = pandasManager;
+    }
+    
+    public async Task&lt;AnalysisResult&gt; AnalyzeData(string dataPath)
+    {
+        // Configure session
+        _pandasManager.ConfigureSessionForUser("analyst");
+        
+        // Load and analyze data
+        await _pandasManager.ReadCsvAsync("data", dataPath);
+        
+        var summary = _pandasManager.Describe("data");
+        var correlation = _pandasManager.Correlation("data");
+        
+        return new AnalysisResult
+        {
+            Summary = summary,
+            Correlation = correlation
+        };
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Unit Testing with Interface</h4>
+                        <pre><code class="language-csharp">// Create mock implementation for testing
+public class MockPandasManager : IPythonPandasManager
+{
+    private readonly Dictionary&lt;string, string&gt; _mockData = new();
+    
+    public bool ConfigureSessionForUser(string username, string? environmentId = null)
+    {
+        return true; // Always succeed in tests
+    }
+    
+    public void ReadCsv(string dataFrameName, string filePath)
+    {
+        _mockData[dataFrameName] = "mock csv data";
+    }
+    
+    public string Describe(string dataFrameName)
+    {
+        return "Mock statistical summary";
+    }
+    
+    // Implement other required methods...
+    public void Dispose() { }
+}
+
+// Use in unit tests
+[Test]
+public async Task AnalyzeData_Should_Return_Valid_Results()
+{
+    // Arrange
+    var mockManager = new MockPandasManager();
+    var service = new DataAnalysisService(mockManager);
+    
+    // Act
+    var result = await service.AnalyzeData("test.csv");
+    
+    // Assert
+    Assert.That(result.Summary, Is.Not.Empty);
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Best Practices -->
+                <section class="section" id="interface-best-practices">
+                    <h2>? Interface Best Practices</h2>
+                    
+                    <div class="tip">
+                        <h4>?? Dependency Injection</h4>
+                        <ul>
+                            <li>Register the interface in your DI container for flexibility</li>
+                            <li>Use constructor injection to receive the interface</li>
+                            <li>Create mock implementations for unit testing</li>
+                            <li>Consider using factory patterns for complex scenarios</li>
+                        </ul>
+                    </div>
+
+                    <div class="tip">
+                        <h4>?? Async Patterns</h4>
+                        <ul>
+                            <li>Use async methods for I/O-heavy operations</li>
+                            <li>Pass CancellationTokens for long-running operations</li>
+                            <li>Handle async exceptions appropriately</li>
+                            <li>Consider ConfigureAwait(false) in library code</li>
+                        </ul>
+                    </div>
+
+                    <div class="warning">
+                        <h4>?? Resource Management</h4>
+                        <ul>
+                            <li>Always dispose of the manager when finished</li>
+                            <li>Use using statements or try/finally blocks</li>
+                            <li>Call CleanupIdleDataFrames() regularly</li>
+                            <li>Monitor memory usage in production</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="PythonPandasManager.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> PythonPandasManager
+                    </a>
+                    <a href="dataframe-io.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> I/O Operations
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.DataManagement Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="../index.html">Home</a>
+                            <a href="../getting-started.html">Getting Started</a>
+                            <a href="PythonPandasManager.html">Implementation</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../assets/navigation.js"></script>
+</body>
+</html>

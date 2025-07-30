@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Environments Configuration - Beep.Python.DataManagement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="../assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="../index.html">Home</a>
+                    <span>?</span>
+                    <a href="../index.html#configuration">Configuration</a>
+                    <span>?</span>
+                    <span>Virtual Environments</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-boxes"></i> Virtual Environments Configuration</h1>
+                    <p class="page-subtitle">Complete guide to Python virtual environment management for isolated package dependencies and multi-user scenarios</p>
+                </div>
+
+                <!-- Overview -->
+                <section class="section" id="overview">
+                    <h2>?? Why Virtual Environments?</h2>
+                    
+                    <div class="note">
+                        <h4>?? Key Benefits</h4>
+                        <ul>
+                            <li><strong>Package Isolation:</strong> Different projects can use different package versions</li>
+                            <li><strong>User Separation:</strong> Each user can have their own environment with custom packages</li>
+                            <li><strong>Reproducibility:</strong> Consistent environments across development, testing, and production</li>
+                            <li><strong>Security:</strong> Isolate potentially dangerous packages from the system Python</li>
+                            <li><strong>Flexibility:</strong> Switch between different Python versions and configurations</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-person-workspace"></i> User-Specific Environments</h4>
+                            <p>Each user gets their own isolated Python environment with custom packages</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-layers"></i> Project-Based Isolation</h4>
+                            <p>Different analytics projects can use different package versions</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-shield-check"></i> Security & Compliance</h4>
+                            <p>Prevent package conflicts and ensure regulatory compliance</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-arrow-repeat"></i> Easy Management</h4>
+                            <p>Create, delete, and switch environments programmatically</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Environment Architecture -->
+                <section class="section" id="architecture">
+                    <h2>??? Environment Architecture</h2>
+                    
+                    <div class="code-example">
+                        <h4>Environment Structure</h4>
+                        <pre><code class="language-text">C:\Environments\
+??? analytics-env\           # General analytics environment
+?   ??? Scripts\
+?   ?   ??? python.exe
+?   ?   ??? pip.exe
+?   ?   ??? activate.bat
+?   ??? Lib\
+?   ?   ??? site-packages\
+?   ?       ??? pandas\
+?   ?       ??? numpy\
+?   ?       ??? matplotlib\
+?   ??? pyvenv.cfg
+??? ml-environment\          # Machine learning environment
+?   ??? Scripts\
+?   ??? Lib\
+?   ?   ??? site-packages\
+?   ?       ??? scikit-learn\
+?   ?       ??? tensorflow\
+?   ?       ??? pytorch\
+?   ??? pyvenv.cfg
+??? user-john-env\          # User-specific environment
+    ??? Scripts\
+    ??? Lib\
+    ?   ??? site-packages\
+    ?       ??? custom-package\
+    ?       ??? specialized-tool\
+    ??? pyvenv.cfg</code></pre>
+                    </div>
+                </section>
+
+                <!-- Creating Environments -->
+                <section class="section" id="creating-environments">
+                    <h2>??? Creating Virtual Environments</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Programmatic Environment Creation</h4>
+                        <pre><code class="language-csharp">public class VirtualEnvironmentService
+{
+    private readonly IPythonRunTimeManager _runtimeManager;
+    private readonly ILogger&lt;VirtualEnvironmentService&gt; _logger;
+    
+    public VirtualEnvironmentService(IPythonRunTimeManager runtimeManager, ILogger&lt;VirtualEnvironmentService&gt; logger)
+    {
+        _runtimeManager = runtimeManager;
+        _logger = logger;
+    }
+    
+    public async Task&lt;PythonVirtualEnvironment&gt; CreateAnalyticsEnvironment(string userName, string projectName)
+    {
+        try
+        {
+            var envManager = _runtimeManager.VirtualEnvmanager;
+            var pythonConfig = _runtimeManager.PythonConfig;
+            
+            // Create environment name
+            string environmentName = $"{userName}-{projectName}-env";
+            string environmentPath = Path.Combine(@"C:\Environments", environmentName);
+            
+            _logger.LogInformation("Creating virtual environment: {EnvironmentName}", environmentName);
+            
+            // Create the virtual environment
+            var environment = envManager.CreateEnvironmentForUser(
+                pythonConfig: pythonConfig,
+                envBasePath: @"C:\Environments",
+                userName: userName,
+                environmentName: environmentName
+            );
+            
+            if (environment == null)
+            {
+                throw new InvalidOperationException($"Failed to create environment: {environmentName}");
+            }
+            
+            _logger.LogInformation("Successfully created environment: {EnvironmentName}", environmentName);
+            
+            // Install essential packages
+            await InstallEssentialPackages(environment);
+            
+            return environment;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to create analytics environment for user: {UserName}", userName);
+            throw;
+        }
+    }
+    
+    private async Task InstallEssentialPackages(PythonVirtualEnvironment environment)
+    {
+        var packageManager = _runtimeManager.PackageManager;
+        
+        string[] essentialPackages = {
+            "pandas>=1.5.0",
+            "numpy>=1.21.0", 
+            "matplotlib>=3.5.0",
+            "openpyxl>=3.0.0",
+            "xlrd>=2.0.0",
+            "requests>=2.28.0"
+        };
+        
+        foreach (string package in essentialPackages)
+        {
+            _logger.LogInformation("Installing package: {Package}", package);
+            
+            bool installed = await packageManager.InstallPackageAsync(package, environment);
+            if (!installed)
+            {
+                _logger.LogWarning("Failed to install package: {Package}", package);
+            }
+            else
+            {
+                _logger.LogInformation("Successfully installed: {Package}", package);
+            }
+        }
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Specialized Environment Templates</h4>
+                        <pre><code class="language-csharp">public class EnvironmentTemplates
+{
+    public static async Task&lt;PythonVirtualEnvironment&gt; CreateDataScienceEnvironment(
+        IPythonRunTimeManager runtimeManager, string userName)
+    {
+        var environment = await CreateBaseEnvironment(runtimeManager, userName, "datascience");
+        
+        string[] dataSciencePackages = {
+            "pandas>=1.5.0",
+            "numpy>=1.21.0",
+            "scipy>=1.9.0",
+            "matplotlib>=3.5.0",
+            "seaborn>=0.11.0",
+            "plotly>=5.0.0",
+            "scikit-learn>=1.1.0",
+            "statsmodels>=0.13.0",
+            "jupyter>=1.0.0",
+            "ipykernel>=6.0.0"
+        };
+        
+        await InstallPackages(runtimeManager, environment, dataSciencePackages);
+        return environment;
+    }
+    
+    public static async Task&lt;PythonVirtualEnvironment&gt; CreateBusinessIntelligenceEnvironment(
+        IPythonRunTimeManager runtimeManager, string userName)
+    {
+        var environment = await CreateBaseEnvironment(runtimeManager, userName, "business-intelligence");
+        
+        string[] biPackages = {
+            "pandas>=1.5.0",
+            "numpy>=1.21.0",
+            "openpyxl>=3.0.0",
+            "xlrd>=2.0.0",
+            "sqlalchemy>=1.4.0",
+            "psycopg2-binary>=2.9.0",  // PostgreSQL
+            "pymysql>=1.0.0",          // MySQL
+            "pyodbc>=4.0.0",           // SQL Server
+            "plotly>=5.0.0",
+            "dash>=2.0.0",             // Dashboard creation
+            "streamlit>=1.0.0"         // Quick web apps
+        };
+        
+        await InstallPackages(runtimeManager, environment, biPackages);
+        return environment;
+    }
+    
+    public static async Task&lt;PythonVirtualEnvironment&gt; CreateMachineLearningEnvironment(
+        IPythonRunTimeManager runtimeManager, string userName)
+    {
+        var environment = await CreateBaseEnvironment(runtimeManager, userName, "machine-learning");
+        
+        string[] mlPackages = {
+            "pandas>=1.5.0",
+            "numpy>=1.21.0",
+            "scikit-learn>=1.1.0",
+            "tensorflow>=2.10.0",
+            "torch>=1.12.0",
+            "xgboost>=1.6.0",
+            "lightgbm>=3.3.0",
+            "catboost>=1.0.0",
+            "hyperopt>=0.2.0",
+            "mlflow>=1.28.0"
+        };
+        
+        await InstallPackages(runtimeManager, environment, mlPackages);
+        return environment;
+    }
+    
+    public static async Task&lt;PythonVirtualEnvironment&gt; CreateWebScrapingEnvironment(
+        IPythonRunTimeManager runtimeManager, string userName)
+    {
+        var environment = await CreateBaseEnvironment(runtimeManager, userName, "web-scraping");
+        
+        string[] scrapingPackages = {
+            "requests>=2.28.0",
+            "beautifulsoup4>=4.11.0",
+            "selenium>=4.4.0",
+            "scrapy>=2.6.0",
+            "lxml>=4.9.0",
+            "pandas>=1.5.0",
+            "aiohttp>=3.8.0",
+            "httpx>=0.23.0"
+        };
+        
+        await InstallPackages(runtimeManager, environment, scrapingPackages);
+        return environment;
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Environment Management -->
+                <section class="section" id="environment-management">
+                    <h2>?? Environment Management Operations</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Environment Lifecycle Management</h4>
+                        <pre><code class="language-csharp">public class EnvironmentManager
+{
+    private readonly IPythonRunTimeManager _runtimeManager;
+    private readonly IConfiguration _configuration;
+    
+    public async Task&lt;List&lt;EnvironmentInfo&gt;&gt; ListEnvironments()
+    {
+        var envManager = _runtimeManager.VirtualEnvmanager;
+        var environments = envManager.GetAllEnvironments();
+        
+        var environmentInfos = new List&lt;EnvironmentInfo&gt;();
+        
+        foreach (var env in environments)
+        {
+            var info = new EnvironmentInfo
+            {
+                Id = env.ID,
+                Name = env.Name,
+                Path = env.EnvironmentPath,
+                PythonVersion = env.PythonVersion,
+                CreatedDate = env.CreatedDate,
+                IsActive = env.IsActive,
+                PackageCount = await GetPackageCount(env),
+                DiskUsage = GetDirectorySize(env.EnvironmentPath)
+            };
+            
+            environmentInfos.Add(info);
+        }
+        
+        return environmentInfos;
+    }
+    
+    public async Task&lt;bool&gt; DeleteEnvironment(string environmentId, bool force = false)
+    {
+        try
+        {
+            var envManager = _runtimeManager.VirtualEnvmanager;
+            var environment = envManager.GetEnvironmentById(environmentId);
+            
+            if (environment == null)
+            {
+                return false;
+            }
+            
+            // Check if environment is in use
+            if (!force && IsEnvironmentInUse(environment))
+            {
+                throw new InvalidOperationException($"Environment {environment.Name} is currently in use");
+            }
+            
+            // Backup environment info before deletion
+            await BackupEnvironmentInfo(environment);
+            
+            // Delete the environment
+            bool deleted = envManager.DeleteEnvironment(environmentId);
+            
+            if (deleted)
+            {
+                // Clean up file system
+                if (Directory.Exists(environment.EnvironmentPath))
+                {
+                    Directory.Delete(environment.EnvironmentPath, true);
+                }
+            }
+            
+            return deleted;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to delete environment: {EnvironmentId}", environmentId);
+            return false;
+        }
+    }
+    
+    public async Task&lt;bool&gt; CloneEnvironment(string sourceEnvironmentId, string newEnvironmentName, string userName)
+    {
+        try
+        {
+            var envManager = _runtimeManager.VirtualEnvmanager;
+            var sourceEnv = envManager.GetEnvironmentById(sourceEnvironmentId);
+            
+            if (sourceEnv == null)
+            {
+                return false;
+            }
+            
+            // Create new environment
+            var newEnv = envManager.CreateEnvironmentForUser(
+                pythonConfig: _runtimeManager.PythonConfig,
+                envBasePath: Path.GetDirectoryName(sourceEnv.EnvironmentPath),
+                userName: userName,
+                environmentName: newEnvironmentName
+            );
+            
+            if (newEnv == null)
+            {
+                return false;
+            }
+            
+            // Clone packages from source environment
+            await ClonePackages(sourceEnv, newEnv);
+            
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to clone environment: {SourceId} to {NewName}", sourceEnvironmentId, newEnvironmentName);
+            return false;
+        }
+    }
+    
+    private async Task ClonePackages(PythonVirtualEnvironment source, PythonVirtualEnvironment target)
+    {
+        var packageManager = _runtimeManager.PackageManager;
+        
+        // Get installed packages from source
+        var installedPackages = await packageManager.GetInstalledPackagesAsync(source);
+        
+        // Install packages in target environment
+        foreach (var package in installedPackages)
+        {
+            await packageManager.InstallPackageAsync($"{package.Name}=={package.Version}", target);
+        }
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Environment Health Monitoring</h4>
+                        <pre><code class="language-csharp">public class EnvironmentHealthMonitor
+{
+    public async Task&lt;EnvironmentHealthReport&gt; CheckEnvironmentHealth(string environmentId)
+    {
+        var envManager = _runtimeManager.VirtualEnvmanager;
+        var environment = envManager.GetEnvironmentById(environmentId);
+        
+        if (environment == null)
+        {
+            return new EnvironmentHealthReport { Status = HealthStatus.NotFound };
+        }
+        
+        var report = new EnvironmentHealthReport
+        {
+            EnvironmentId = environmentId,
+            EnvironmentName = environment.Name,
+            CheckTime = DateTime.UtcNow
+        };
+        
+        try
+        {
+            // Check Python executable
+            report.PythonExecutableExists = File.Exists(Path.Combine(environment.EnvironmentPath, "Scripts", "python.exe"));
+            
+            // Check pip installation
+            report.PipAvailable = File.Exists(Path.Combine(environment.EnvironmentPath, "Scripts", "pip.exe"));
+            
+            // Check critical packages
+            report.CriticalPackagesStatus = await CheckCriticalPackages(environment);
+            
+            // Check disk space
+            report.DiskUsage = GetDirectorySize(environment.EnvironmentPath);
+            report.AvailableDiskSpace = GetAvailableDiskSpace(environment.EnvironmentPath);
+            
+            // Test environment activation
+            report.CanActivate = await TestEnvironmentActivation(environment);
+            
+            // Check for package conflicts
+            report.PackageConflicts = await DetectPackageConflicts(environment);
+            
+            // Determine overall health
+            report.Status = DetermineOverallHealth(report);
+            
+            return report;
+        }
+        catch (Exception ex)
+        {
+            report.Status = HealthStatus.Error;
+            report.ErrorMessage = ex.Message;
+            return report;
+        }
+    }
+    
+    private async Task&lt;List&lt;PackageStatus&gt;&gt; CheckCriticalPackages(PythonVirtualEnvironment environment)
+    {
+        var packageManager = _runtimeManager.PackageManager;
+        string[] criticalPackages = { "pandas", "numpy", "pip", "setuptools" };
+        
+        var statuses = new List&lt;PackageStatus&gt;();
+        
+        foreach (string package in criticalPackages)
+        {
+            bool isInstalled = await packageManager.IsPackageInstalledAsync(package, environment);
+            string version = isInstalled ? await GetPackageVersion(package, environment) : null;
+            
+            statuses.Add(new PackageStatus
+            {
+                PackageName = package,
+                IsInstalled = isInstalled,
+                Version = version,
+                IsCritical = true
+            });
+        }
+        
+        return statuses;
+    }
+    
+    private async Task&lt;bool&gt; TestEnvironmentActivation(PythonVirtualEnvironment environment)
+    {
+        try
+        {
+            // Test by running a simple Python command in the environment
+            string pythonPath = Path.Combine(environment.EnvironmentPath, "Scripts", "python.exe");
+            
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = pythonPath,
+                    Arguments = "-c \"import sys; print(sys.version)\"",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                }
+            };
+            
+            process.Start();
+            await process.WaitForExitAsync();
+            
+            return process.ExitCode == 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Package Management -->
+                <section class="section" id="package-management">
+                    <h2>?? Package Management</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Advanced Package Operations</h4>
+                        <pre><code class="language-csharp">public class AdvancedPackageManager
+{
+    private readonly IPythonPackageManager _packageManager;
+    
+    public async Task&lt;bool&gt; InstallFromRequirements(PythonVirtualEnvironment environment, string requirementsPath)
+    {
+        try
+        {
+            if (!File.Exists(requirementsPath))
+            {
+                throw new FileNotFoundException($"Requirements file not found: {requirementsPath}");
+            }
+            
+            var requirements = await File.ReadAllLinesAsync(requirementsPath);
+            
+            foreach (string requirement in requirements)
+            {
+                string cleanRequirement = requirement.Trim();
+                
+                // Skip comments and empty lines
+                if (string.IsNullOrEmpty(cleanRequirement) || cleanRequirement.StartsWith("#"))
+                    continue;
+                
+                _logger.LogInformation("Installing: {Package}", cleanRequirement);
+                
+                bool installed = await _packageManager.InstallPackageAsync(cleanRequirement, environment);
+                if (!installed)
+                {
+                    _logger.LogWarning("Failed to install: {Package}", cleanRequirement);
+                }
+            }
+            
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to install from requirements: {RequirementsPath}", requirementsPath);
+            return false;
+        }
+    }
+    
+    public async Task&lt;string&gt; GenerateRequirements(PythonVirtualEnvironment environment, string outputPath = null)
+    {
+        try
+        {
+            var installedPackages = await _packageManager.GetInstalledPackagesAsync(environment);
+            
+            var requirements = installedPackages
+                .Where(p => !IsBuiltInPackage(p.Name))
+                .Select(p => $"{p.Name}=={p.Version}")
+                .OrderBy(r => r)
+                .ToList();
+            
+            string requirementsContent = string.Join(Environment.NewLine, requirements);
+            
+            if (!string.IsNullOrEmpty(outputPath))
+            {
+                await File.WriteAllTextAsync(outputPath, requirementsContent);
+                _logger.LogInformation("Requirements file generated: {OutputPath}", outputPath);
+            }
+            
+            return requirementsContent;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to generate requirements for environment: {EnvironmentId}", environment.ID);
+            throw;
+        }
+    }
+    
+    public async Task&lt;PackageUpdateReport&gt; UpdateAllPackages(PythonVirtualEnvironment environment, bool includePreRelease = false)
+    {
+        var report = new PackageUpdateReport
+        {
+            EnvironmentId = environment.ID,
+            StartTime = DateTime.UtcNow,
+            Updates = new List&lt;PackageUpdate&gt;()
+        };
+        
+        try
+        {
+            var installedPackages = await _packageManager.GetInstalledPackagesAsync(environment);
+            
+            foreach (var package in installedPackages)
+            {
+                if (IsBuiltInPackage(package.Name))
+                    continue;
+                
+                var update = new PackageUpdate
+                {
+                    PackageName = package.Name,
+                    CurrentVersion = package.Version
+                };
+                
+                try
+                {
+                    // Check for updates
+                    string latestVersion = await GetLatestPackageVersion(package.Name, includePreRelease);
+                    
+                    if (IsNewerVersion(latestVersion, package.Version))
+                    {
+                        update.AvailableVersion = latestVersion;
+                        
+                        // Attempt update
+                        bool updated = await _packageManager.UpdatePackageAsync(package.Name, environment);
+                        update.UpdateSuccessful = updated;
+                        
+                        if (updated)
+                        {
+                            update.NewVersion = latestVersion;
+                        }
+                    }
+                    else
+                    {
+                        update.UpdateSuccessful = true; // Already up to date
+                        update.NewVersion = package.Version;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    update.UpdateSuccessful = false;
+                    update.ErrorMessage = ex.Message;
+                }
+                
+                report.Updates.Add(update);
+            }
+            
+            report.EndTime = DateTime.UtcNow;
+            report.Success = report.Updates.All(u => u.UpdateSuccessful);
+            
+            return report;
+        }
+        catch (Exception ex)
+        {
+            report.Success = false;
+            report.ErrorMessage = ex.Message;
+            report.EndTime = DateTime.UtcNow;
+            return report;
+        }
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Package Conflict Detection</h4>
+                        <pre><code class="language-csharp">public async Task&lt;List&lt;PackageConflict&gt;&gt; DetectPackageConflicts(PythonVirtualEnvironment environment)
+{
+    var conflicts = new List&lt;PackageConflict&gt;();
+    
+    try
+    {
+        var installedPackages = await _packageManager.GetInstalledPackagesAsync(environment);
+        
+        // Check for version conflicts
+        var packageGroups = installedPackages
+            .GroupBy(p => p.Name.ToLowerInvariant())
+            .Where(g => g.Count() > 1);
+        
+        foreach (var group in packageGroups)
+        {
+            conflicts.Add(new PackageConflict
+            {
+                Type = ConflictType.DuplicatePackage,
+                PackageName = group.Key,
+                ConflictingVersions = group.Select(p => p.Version).ToList(),
+                Description = $"Multiple versions of {group.Key} are installed"
+            });
+        }
+        
+        // Check for known incompatible packages
+        var incompatiblePairs = new Dictionary&lt;string, string[]&gt;
+        {
+            ["tensorflow"] = new[] { "tensorflow-gpu" },
+            ["opencv-python"] = new[] { "opencv-contrib-python" },
+            ["pillow"] = new[] { "pil" }
+        };
+        
+        foreach (var pair in incompatiblePairs)
+        {
+            string mainPackage = pair.Key;
+            string[] conflictingPackages = pair.Value;
+            
+            bool hasMainPackage = installedPackages.Any(p => p.Name.Equals(mainPackage, StringComparison.OrdinalIgnoreCase));
+            
+            if (hasMainPackage)
+            {
+                var foundConflicts = installedPackages
+                    .Where(p => conflictingPackages.Contains(p.Name, StringComparer.OrdinalIgnoreCase))
+                    .ToList();
+                
+                if (foundConflicts.Any())
+                {
+                    conflicts.Add(new PackageConflict
+                    {
+                        Type = ConflictType.IncompatiblePackages,
+                        PackageName = mainPackage,
+                        ConflictingPackages = foundConflicts.Select(p => p.Name).ToList(),
+                        Description = $"{mainPackage} is incompatible with {string.Join(", ", foundConflicts.Select(p => p.Name))}"
+                    });
+                }
+            }
+        }
+        
+        return conflicts;
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Failed to detect package conflicts for environment: {EnvironmentId}", environment.ID);
+        return conflicts;
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Environment Security -->
+                <section class="section" id="environment-security">
+                    <h2>?? Environment Security</h2>
+                    
+                    <div class="code-example">
+                        <h4>Secure Environment Configuration</h4>
+                        <pre><code class="language-csharp">public class SecureEnvironmentManager
+{
+    public async Task&lt;PythonVirtualEnvironment&gt; CreateSecureEnvironment(string userName, SecurityLevel securityLevel)
+    {
+        var envName = $"secure-{userName}-{DateTime.Now:yyyyMMdd}";
+        var environment = await CreateBaseEnvironment(envName, userName);
+        
+        // Apply security configurations based on level
+        switch (securityLevel)
+        {
+            case SecurityLevel.High:
+                await ConfigureHighSecurityEnvironment(environment);
+                break;
+            case SecurityLevel.Medium:
+                await ConfigureMediumSecurityEnvironment(environment);
+                break;
+            case SecurityLevel.Low:
+                await ConfigureLowSecurityEnvironment(environment);
+                break;
+        }
+        
+        // Set appropriate permissions
+        SetEnvironmentPermissions(environment, userName);
+        
+        return environment;
+    }
+    
+    private async Task ConfigureHighSecurityEnvironment(PythonVirtualEnvironment environment)
+    {
+        // Install only verified packages
+        string[] trustedPackages = {
+            "pandas==1.5.3",     // Specific versions only
+            "numpy==1.24.3",
+            "matplotlib==3.7.1",
+            "openpyxl==3.1.2"
+        };
+        
+        // Install packages with verification
+        foreach (string package in trustedPackages)
+        {
+            await InstallVerifiedPackage(environment, package);
+        }
+        
+        // Disable pip for end users (admin only)
+        await DisablePipForUsers(environment);
+        
+        // Enable package signature verification
+        await EnablePackageVerification(environment);
+        
+        // Set up audit logging
+        await SetupAuditLogging(environment);
+    }
+    
+    private void SetEnvironmentPermissions(PythonVirtualEnvironment environment, string userName)
+    {
+        try
+        {
+            var directoryInfo = new DirectoryInfo(environment.EnvironmentPath);
+            var directorySecurity = directoryInfo.GetAccessControl();
+            
+            // Remove inherited permissions
+            directorySecurity.SetAccessRuleProtection(true, false);
+            
+            // Add specific user permissions
+            var userAccessRule = new FileSystemAccessRule(
+                userName,
+                FileSystemRights.ReadAndExecute | FileSystemRights.Write,
+                InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit,
+                PropagationFlags.None,
+                AccessControlType.Allow
+            );
+            
+            directorySecurity.SetAccessRule(userAccessRule);
+            
+            // Add admin permissions
+            var adminAccessRule = new FileSystemAccessRule(
+                "Administrators",
+                FileSystemRights.FullControl,
+                InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit,
+                PropagationFlags.None,
+                AccessControlType.Allow
+            );
+            
+            directorySecurity.SetAccessRule(adminAccessRule);
+            
+            directoryInfo.SetAccessControl(directorySecurity);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to set environment permissions for: {EnvironmentPath}", environment.EnvironmentPath);
+        }
+    }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Best Practices -->
+                <section class="section" id="best-practices">
+                    <h2>? Best Practices</h2>
+                    
+                    <div class="tip">
+                        <h4>?? Environment Naming Conventions</h4>
+                        <ul>
+                            <li><strong>User-Specific:</strong> <code>username-purpose-env</code> (e.g., <code>john-analytics-env</code>)</li>
+                            <li><strong>Project-Based:</strong> <code>project-version-env</code> (e.g., <code>sales-dashboard-v2-env</code>)</li>
+                            <li><strong>Shared Environments:</strong> <code>shared-purpose-env</code> (e.g., <code>shared-datascience-env</code>)</li>
+                            <li><strong>Date Versioning:</strong> Include creation date for tracking (e.g., <code>ml-prod-20241219-env</code>)</li>
+                        </ul>
+                    </div>
+
+                    <div class="tip">
+                        <h4>?? Package Management</h4>
+                        <ul>
+                            <li><strong>Pin Versions:</strong> Always specify exact package versions in production</li>
+                            <li><strong>Requirements Files:</strong> Maintain requirements.txt for each environment</li>
+                            <li><strong>Regular Updates:</strong> Schedule monthly package update reviews</li>
+                            <li><strong>Security Scanning:</strong> Use tools to scan for vulnerable packages</li>
+                        </ul>
+                    </div>
+
+                    <div class="warning">
+                        <h4>?? Common Pitfalls</h4>
+                        <ul>
+                            <li><strong>Mixing Environments:</strong> Don't install packages globally after creating virtual environments</li>
+                            <li><strong>Path Issues:</strong> Ensure environment paths don't contain spaces or special characters</li>
+                            <li><strong>Size Management:</strong> Regularly clean up unused environments to save disk space</li>
+                            <li><strong>Permissions:</strong> Set appropriate file system permissions for multi-user scenarios</li>
+                        </ul>
+                    </div>
+
+                    <div class="note">
+                        <h4>?? Maintenance Schedule</h4>
+                        <p><strong>Daily:</strong> Monitor environment health and disk usage</p>
+                        <p><strong>Weekly:</strong> Review package conflicts and security alerts</p>
+                        <p><strong>Monthly:</strong> Update packages and clean up unused environments</p>
+                        <p><strong>Quarterly:</strong> Review and update environment templates</p>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="session-management.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> Session Management
+                    </a>
+                    <a href="performance-tuning.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> Performance Tuning
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.DataManagement Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="../index.html">Home</a>
+                            <a href="../getting-started.html">Getting Started</a>
+                            <a href="../api/PythonPandasManager.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../assets/navigation.js"></script>
+</body>
+</html>

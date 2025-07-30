@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Getting Started - Beep.Python.DataManagement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-rocket-takeoff"></i> Getting Started</h1>
+                    <p class="page-subtitle">Learn how to set up and use Beep.Python.DataManagement for powerful pandas DataFrame operations in your .NET applications</p>
+                </div>
+
+                <!-- Quick Start -->
+                <section class="section" id="quick-start">
+                    <h2>? Quick Start (5 Minutes)</h2>
+                    <p>Get up and running with PythonPandasManager in just a few minutes:</p>
+                    
+                    <div class="code-example">
+                        <h4>1. Install and Initialize</h4>
+                        <pre><code class="language-csharp">// Add to your dependency injection container
+services.AddSingleton&lt;IPythonRunTimeManager, PythonRunTimeManager&gt;();
+services.AddSingleton&lt;IPythonCodeExecuteManager, PythonCodeExecuteManager&gt;();
+services.AddTransient&lt;IPythonPandasManager, PythonPandasManager&gt;();
+
+// Or create manually
+var pandasManager = new PythonPandasManager(beepService, runtimeManager, executeManager);</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Configure Session</h4>
+                        <pre><code class="language-csharp">// Configure for your user
+pandasManager.ConfigureSessionForUser("your-username", "data-env");
+
+// Verify configuration
+if (pandasManager.IsSessionConfigured()) {
+    Console.WriteLine("Ready to analyze data!");
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>3. Load and Analyze Data</h4>
+                        <pre><code class="language-csharp">// Load your data
+pandasManager.ReadCsv("sales_data", @"C:\Data\sales.csv");
+
+// Get quick insights
+string summary = pandasManager.Describe("sales_data");
+Console.WriteLine(summary);
+
+// Save results
+pandasManager.ToCsv("sales_data", @"C:\Output\processed_sales.csv");</code></pre>
+                    </div>
+
+                    <div class="note">
+                        <strong>?? That's it!</strong> You're now ready to perform advanced data analysis with pandas in your .NET application.
+                    </div>
+                </section>
+
+                <!-- Prerequisites -->
+                <section class="section" id="prerequisites">
+                    <h2>?? Prerequisites</h2>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-microsoft"></i> .NET Requirements</h4>
+                            <ul>
+                                <li>.NET 6, 7, 8, or 9</li>
+                                <li>Visual Studio 2022 or VS Code</li>
+                                <li>NuGet Package Manager</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-python"></i> Python Environment</h4>
+                            <ul>
+                                <li>Python 3.8+ installed</li>
+                                <li>pandas, numpy packages</li>
+                                <li>Virtual environment support</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-gear"></i> BEEP Framework</h4>
+                            <ul>
+                                <li>Beep.Python.Runtime</li>
+                                <li>TheTechIdea.Beep.Container</li>
+                                <li>Session management setup</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Installation -->
+                <section class="section" id="installation">
+                    <h2>?? Installation</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Install NuGet Package</h4>
+                        <pre><code class="language-bash"># Package Manager Console
+Install-Package Beep.Python.DataManagement
+
+# .NET CLI
+dotnet add package Beep.Python.DataManagement
+
+# PackageReference in .csproj
+&lt;PackageReference Include="Beep.Python.DataManagement" Version="1.0.0" /&gt;</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Add Required Dependencies</h4>
+                        <pre><code class="language-xml">&lt;!-- Core dependencies (usually auto-installed) --&gt;
+&lt;PackageReference Include="Beep.Python.Runtime" Version="1.0.0" /&gt;
+&lt;PackageReference Include="Beep.Python.Model" Version="1.0.0" /&gt;
+&lt;PackageReference Include="TheTechIdea.Beep.Container" Version="1.0.0" /&gt;
+&lt;PackageReference Include="PythonNET" Version="3.0.3" /&gt;</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>3. Setup Python Environment</h4>
+                        <pre><code class="language-bash"># Create virtual environment
+python -m venv data-analysis-env
+
+# Activate environment (Windows)
+data-analysis-env\Scripts\activate
+
+# Activate environment (macOS/Linux)
+source data-analysis-env/bin/activate
+
+# Install required packages
+pip install pandas numpy openpyxl sqlalchemy requests</code></pre>
+                    </div>
+                </section>
+
+                <!-- Basic Setup -->
+                <section class="section" id="basic-setup">
+                    <h2>?? Basic Setup</h2>
+                    
+                    <div class="code-example">
+                        <h4>Dependency Injection Setup</h4>
+                        <pre><code class="language-csharp">// In your Startup.cs or Program.cs
+public void ConfigureServices(IServiceCollection services)
+{
+    // Register BEEP services
+    services.AddSingleton&lt;IBeepService, BeepService&gt;();
+    
+    // Register Python runtime services
+    services.AddSingleton&lt;IPythonRunTimeManager, PythonRunTimeManager&gt;();
+    services.AddSingleton&lt;IPythonCodeExecuteManager, PythonCodeExecuteManager&gt;();
+    services.AddSingleton&lt;IPythonSessionManager, PythonSessionManager&gt;();
+    services.AddSingleton&lt;IPythonVirtualEnvManager, PythonVirtualEnvManager&gt;();
+    
+    // Register DataManagement services
+    services.AddTransient&lt;IPythonPandasManager, PythonPandasManager&gt;();
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Manual Initialization</h4>
+                        <pre><code class="language-csharp">// Create services manually if not using DI
+var beepService = new BeepService();
+var runtimeManager = new PythonRunTimeManager(beepService);
+var executeManager = new PythonCodeExecuteManager(beepService, runtimeManager);
+
+// Initialize runtime with Python configuration
+var pythonConfig = new PythonRunTime
+{
+    PythonDLLPath = @"C:\Python39\python39.dll",
+    PythonHomePath = @"C:\Python39",
+    VirtualEnvironmentPath = @"C:\Environments\data-env"
+};
+
+bool initialized = runtimeManager.Initialize(pythonConfig, null, null, PythonEngineMode.MultiUser);
+if (!initialized) {
+    throw new InvalidOperationException("Failed to initialize Python runtime");
+}
+
+// Create pandas manager
+var pandasManager = new PythonPandasManager(beepService, runtimeManager, executeManager);</code></pre>
+                    </div>
+                </section>
+
+                <!-- Session Configuration -->
+                <section class="section" id="session-configuration">
+                    <h2>?? Session Configuration</h2>
+                    
+                    <div class="highlight-box">
+                        <h4>Why Session Management Matters</h4>
+                        <p>PythonPandasManager uses session-based architecture to provide:</p>
+                        <ul>
+                            <li><strong>Multi-user Isolation:</strong> Each user gets their own Python environment</li>
+                            <li><strong>Resource Management:</strong> Automatic cleanup and memory management</li>
+                            <li><strong>Security:</strong> Data separation between users and sessions</li>
+                            <li><strong>Scalability:</strong> Support for concurrent data operations</li>
+                        </ul>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Method 1: Auto-Configure for User (Recommended)</h4>
+                        <pre><code class="language-csharp">// Let the system handle session creation
+bool configured = pandasManager.ConfigureSessionForUser("alice.smith");
+
+if (configured) {
+    Console.WriteLine("Session configured successfully!");
+    
+    // Start working with data
+    pandasManager.ReadCsv("my_data", @"C:\Data\sample.csv");
+} else {
+    Console.WriteLine("Failed to configure session");
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Method 2: Manual Session Configuration</h4>
+                        <pre><code class="language-csharp">// Create specific session and environment
+var sessionManager = runtimeManager.SessionManager;
+var envManager = runtimeManager.VirtualEnvmanager;
+
+// Create or get environment
+var environment = envManager.GetEnvironmentById("data-analysis-env") 
+                  ?? envManager.CreateEnvironmentForUser(pythonConfig, envBasePath, "alice.smith", "data-env");
+
+// Create session
+var session = sessionManager.CreateSession("alice.smith", environment.ID);
+
+// Configure pandas manager
+bool configured = pandasManager.ConfigureSession(session, environment);
+
+if (configured) {
+    Console.WriteLine($"Session {session.SessionId} configured for user {session.Username}");
+}</code></pre>
+                    </div>
+
+                    <div class="tip">
+                        <strong>?? Best Practice:</strong> Use <code>ConfigureSessionForUser()</code> for most scenarios. 
+                        The system will automatically create or reuse appropriate sessions and environments.
+                    </div>
+                </section>
+
+                <!-- First Data Operations -->
+                <section class="section" id="first-operations">
+                    <h2>?? Your First Data Operations</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Loading Data from Different Sources</h4>
+                        <pre><code class="language-csharp">// Ensure session is configured
+if (!pandasManager.IsSessionConfigured()) {
+    pandasManager.ConfigureSessionForUser("data-analyst");
+}
+
+// Load from CSV (most common)
+pandasManager.ReadCsv("sales", @"C:\Data\sales_2024.csv");
+
+// Load from Excel
+pandasManager.ReadExcel("products", @"C:\Data\product_catalog.xlsx");
+
+// Load from database
+string connectionString = "Server=localhost;Database=SalesDB;Trusted_Connection=true;";
+pandasManager.ReadSql("customers", 
+    "SELECT CustomerID, Name, Region, TotalSpent FROM Customers", 
+    connectionString);
+
+// Load from web API
+pandasManager.ReadFromWeb("market_data", "https://api.example.com/market-data.json");
+
+Console.WriteLine("All data sources loaded successfully!");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Basic Data Exploration</h4>
+                        <pre><code class="language-csharp">// Get overview of your data
+string salesSummary = pandasManager.Describe("sales");
+Console.WriteLine("Sales Data Summary:");
+Console.WriteLine(salesSummary);
+
+// Check data types and missing values
+string missingValues = pandasManager.IsNull("sales");
+Console.WriteLine("\nMissing Values:");
+Console.WriteLine(missingValues);
+
+// Get unique values in categorical columns
+string uniqueRegions = pandasManager.UniqueValues("customers", "Region");
+Console.WriteLine($"\nRegions: {uniqueRegions}");
+
+// Value distribution
+string regionCounts = pandasManager.ValueCounts("customers", "Region");
+Console.WriteLine("\nCustomers by Region:");
+Console.WriteLine(regionCounts);</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>3. Basic Data Cleaning</h4>
+                        <pre><code class="language-csharp">// Remove rows with missing values
+pandasManager.DropNA("sales", "sales_clean");
+
+// Fill missing values with defaults
+pandasManager.FillNA("customers", "customers_complete", "Unknown");
+
+// Remove duplicates
+pandasManager.DropDuplicates("products", "products_unique");
+
+// Convert date columns
+pandasManager.ConvertToDateTime("sales_clean", "OrderDate");
+
+Console.WriteLine("Data cleaning completed!");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>4. Simple Analysis</h4>
+                        <pre><code class="language-csharp">// Group sales by region
+pandasManager.GroupBy("sales_clean", "sales_by_region", "Region", "sum");
+
+// Calculate monthly totals
+pandasManager.AddColumn("sales_clean", "Month", "OrderDate.dt.month");
+pandasManager.GroupBy("sales_clean", "monthly_sales", "Month", "sum");
+
+// Create pivot table
+pandasManager.PivotTable("sales_clean", "sales_pivot", 
+    "Region", "Month", "Amount");
+
+// Statistical analysis
+string correlation = pandasManager.Correlation("sales_clean");
+Console.WriteLine("Correlation Analysis:");
+Console.WriteLine(correlation);</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>5. Export Results</h4>
+                        <pre><code class="language-csharp">// Export to different formats
+pandasManager.ToCsv("sales_by_region", @"C:\Output\regional_analysis.csv");
+pandasManager.ToExcel("monthly_sales", @"C:\Output\monthly_trends.xlsx");
+pandasManager.ExportDataFrame("sales_pivot", @"C:\Output\pivot_analysis.json", "json");
+
+// Get as JSON for web APIs
+string jsonData = pandasManager.GetDataFrameAsJson("sales_by_region");
+Console.WriteLine("Data exported successfully!");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Common Patterns -->
+                <section class="section" id="common-patterns">
+                    <h2>?? Common Usage Patterns</h2>
+                    
+                    <div class="feature-section">
+                        <h3>Pattern 1: ETL Pipeline</h3>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public async Task RunETLPipeline(string userId, string[] sourcePaths, string outputPath)
+{
+    // Configure session for user
+    pandasManager.ConfigureSessionForUser(userId, "etl-environment");
+    
+    try
+    {
+        // Extract: Load from multiple sources
+        for (int i = 0; i < sourcePaths.Length; i++)
+        {
+            await pandasManager.ReadCsvAsync($"source_{i}", sourcePaths[i]);
+        }
+        
+        // Transform: Combine and clean data
+        string[] sources = sourcePaths.Select((_, i) => $"source_{i}").ToArray();
+        pandasManager.ConcatDataFrames(sources, "combined_data");
+        
+        pandasManager.DropNA("combined_data", "clean_data");
+        pandasManager.DropDuplicates("clean_data", "final_data");
+        
+        // Load: Export to destination
+        await pandasManager.ToCsvAsync("final_data", outputPath);
+        
+        Console.WriteLine($"ETL pipeline completed for user {userId}");
+    }
+    finally
+    {
+        // Cleanup resources
+        pandasManager.CleanupIdleDataFrames();
+    }
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="feature-section">
+                        <h3>Pattern 2: Business Intelligence Dashboard</h3>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public class SalesDashboard
+{
+    private readonly IPythonPandasManager _pandasManager;
+    
+    public SalesDashboard(IPythonPandasManager pandasManager)
+    {
+        _pandasManager = pandasManager;
+        _pandasManager.ConfigureSessionForUser("dashboard-service", "bi-environment");
+    }
+    
+    public async Task&lt;DashboardData&gt; GenerateDashboard()
+    {
+        // Load sales data
+        _pandasManager.ReadSql("sales", GetSalesQuery(), connectionString);
+        
+        // Create summary metrics
+        _pandasManager.GroupBy("sales", "monthly_totals", "month", "sum");
+        _pandasManager.GroupBy("sales", "regional_performance", "region", "sum");
+        _pandasManager.PivotTable("sales", "product_matrix", "product", "month", "revenue");
+        
+        // Get statistical insights
+        var totalRevenue = _pandasManager.CalculateMean("sales", "revenue");
+        var topRegion = _pandasManager.ValueCounts("sales", "region");
+        
+        return new DashboardData
+        {
+            MonthlyTrends = _pandasManager.GetDataFrameAsJson("monthly_totals"),
+            RegionalPerformance = _pandasManager.GetDataFrameAsJson("regional_performance"),
+            ProductMatrix = _pandasManager.GetDataFrameAsJson("product_matrix"),
+            AverageRevenue = totalRevenue,
+            TopRegion = topRegion
+        };
+    }
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="feature-section">
+                        <h3>Pattern 3: Data Validation Service</h3>
+                        <div class="code-example">
+                            <pre><code class="language-csharp">public class DataValidationService
+{
+    private readonly IPythonPandasManager _pandasManager;
+    
+    public async Task&lt;ValidationResult&gt; ValidateDataFile(string filePath, string userId)
+    {
+        _pandasManager.ConfigureSessionForUser(userId, "validation-env");
+        
+        var result = new ValidationResult();
+        
+        try
+        {
+            // Load data
+            _pandasManager.ReadCsv("raw_data", filePath);
+            
+            // Check for issues
+            var missingValues = _pandasManager.IsNull("raw_data");
+            var duplicateCount = GetDuplicateCount("raw_data");
+            var dataTypes = _pandasManager.Describe("raw_data");
+            
+            // Generate quality report
+            result.HasMissingValues = !string.IsNullOrEmpty(missingValues);
+            result.DuplicateRows = duplicateCount;
+            result.Summary = dataTypes;
+            result.IsValid = !result.HasMissingValues && result.DuplicateRows == 0;
+            
+            // Clean data if requested
+            if (!result.IsValid)
+            {
+                pandasManager.DropNA("raw_data", "clean_data");
+                pandasManager.DropDuplicates("clean_data", "validated_data");
+                result.CleanedDataAvailable = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            result.ValidationError = ex.Message;
+        }
+        
+        return result;
+    }
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Error Handling -->
+                <section class="section" id="error-handling">
+                    <h2>?? Error Handling</h2>
+                    
+                    <div class="code-example">
+                        <h4>Comprehensive Error Handling</h4>
+                        <pre><code class="language-csharp">public async Task&lt;bool&gt; SafeDataOperation(string dataPath)
+{
+    try
+    {
+        // Check session configuration
+        if (!pandasManager.IsSessionConfigured())
+        {
+            Console.WriteLine("Configuring session...");
+            if (!pandasManager.ConfigureSessionForUser("default-user"))
+            {
+                throw new InvalidOperationException("Failed to configure session");
+            }
+        }
+        
+        // Validate file exists
+        if (!File.Exists(dataPath))
+        {
+            throw new FileNotFoundException($"Data file not found: {dataPath}");
+        }
+        
+        // Load data with error handling
+        Console.WriteLine("Loading data...");
+        pandasManager.ReadCsv("data", dataPath);
+        
+        // Validate data was loaded
+        string shape = pandasManager.GetDataFrameAsJson("data");
+        if (string.IsNullOrEmpty(shape))
+        {
+            throw new InvalidOperationException("No data was loaded");
+        }
+        
+        Console.WriteLine("Data loaded successfully");
+        return true;
+    }
+    catch (FileNotFoundException ex)
+    {
+        Console.WriteLine($"File error: {ex.Message}");
+        return false;
+    }
+    catch (InvalidOperationException ex)
+    {
+        Console.WriteLine($"Operation error: {ex.Message}");
+        return false;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Unexpected error: {ex.Message}");
+        return false;
+    }
+    finally
+    {
+        // Always cleanup resources
+        try
+        {
+            pandasManager.CleanupIdleDataFrames();
+        }
+        catch (Exception cleanupEx)
+        {
+            Console.WriteLine($"Cleanup warning: {cleanupEx.Message}");
+        }
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="warning">
+                        <h4>Common Issues and Solutions</h4>
+                        <ul>
+                            <li><strong>Session not configured:</strong> Always check <code>IsSessionConfigured()</code> before operations</li>
+                            <li><strong>Python environment missing:</strong> Ensure Python and pandas are installed</li>
+                            <li><strong>File not found:</strong> Validate file paths before loading data</li>
+                            <li><strong>Memory issues:</strong> Use <code>CleanupIdleDataFrames()</code> regularly</li>
+                            <li><strong>Data type errors:</strong> Convert data types explicitly when needed</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Resource Management -->
+                <section class="section" id="resource-management">
+                    <h2>?? Resource Management</h2>
+                    
+                    <div class="code-example">
+                        <h4>Proper Resource Cleanup</h4>
+                        <pre><code class="language-csharp">// Using statement for automatic disposal
+using (var pandasManager = new PythonPandasManager(beepService, runtimeManager, executeManager))
+{
+    pandasManager.ConfigureSessionForUser("user1");
+    
+    // Perform data operations
+    pandasManager.ReadCsv("data", @"C:\Data\file.csv");
+    pandasManager.Describe("data");
+    
+    // pandasManager.Dispose() called automatically
+}
+
+// Manual resource management
+var pandasManager = serviceProvider.GetService&lt;IPythonPandasManager&gt;();
+try
+{
+    // Configure and use
+    pandasManager.ConfigureSessionForUser("user1");
+    // ... operations ...
+}
+finally
+{
+    // Manual cleanup
+    pandasManager.CleanupIdleDataFrames();
+    pandasManager.Dispose();
+}</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>Memory Monitoring</h4>
+                        <pre><code class="language-csharp">// Monitor memory usage
+public void MonitorMemoryUsage()
+{
+    // Get current memory usage
+    string memoryReport = pandasManager.GetMemoryUsageReport();
+    Console.WriteLine("Current Memory Usage:");
+    Console.WriteLine(memoryReport);
+    
+    // Optimize memory for large DataFrames
+    pandasManager.OptimizeMemory("large_dataset");
+    
+    // Clean up old DataFrames (older than 30 minutes)
+    pandasManager.CleanupIdleDataFrames(30);
+    
+    // Check memory again
+    string updatedReport = pandasManager.GetMemoryUsageReport();
+    Console.WriteLine("After Cleanup:");
+    Console.WriteLine(updatedReport);
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Next Steps -->
+                <section class="section" id="next-steps">
+                    <h2>?? Next Steps</h2>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-book"></i> Explore the API</h4>
+                            <p>Dive deep into all 40+ available methods and their capabilities</p>
+                            <a href="api/PythonPandasManager.html" class="btn btn-outline-primary">API Reference</a>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-lightbulb"></i> View Examples</h4>
+                            <p>See real-world examples and complete data analysis workflows</p>
+                            <a href="examples/data-analysis-pipeline.html" class="btn btn-outline-primary">Examples Gallery</a>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-gear"></i> Advanced Configuration</h4>
+                            <p>Learn about session management, virtual environments, and security</p>
+                            <a href="configuration/session-management.html" class="btn btn-outline-primary">Configuration</a>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-plugin"></i> Framework Integration</h4>
+                            <p>Integrate with BEEP framework, dependency injection, and workflows</p>
+                            <a href="integration/beep-framework.html" class="btn btn-outline-primary">Integration Guide</a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="index.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> Back to Home
+                    </a>
+                    <a href="api/PythonPandasManager.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> API Reference
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.DataManagement Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="index.html">Home</a>
+                            <a href="api/PythonPandasManager.html">API Reference</a>
+                            <a href="examples/data-analysis-pipeline.html">Examples</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="assets/navigation.js"></script>
+</body>
+</html>

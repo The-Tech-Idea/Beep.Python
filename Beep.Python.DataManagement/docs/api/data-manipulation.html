@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Manipulation Operations - Beep.Python.DataManagement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="../assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically by navigation.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Breadcrumb Navigation -->
+                <div class="breadcrumb-nav">
+                    <a href="../index.html">Home</a>
+                    <span>?</span>
+                    <a href="../index.html#operations">Data Operations</a>
+                    <span>?</span>
+                    <span>Data Manipulation</span>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1><i class="bi bi-tools"></i> Data Manipulation Operations</h1>
+                    <p class="page-subtitle">Transform, filter, and reshape your DataFrames with powerful manipulation methods</p>
+                </div>
+
+                <!-- Quick Reference -->
+                <section class="section" id="quick-reference">
+                    <h2>? Quick Reference</h2>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4><i class="bi bi-funnel"></i> Filtering & Selection</h4>
+                            <p>Filter rows, select columns, and sample data subsets</p>
+                            <small>FilterRows, SelectColumns, QueryDataFrame, SampleDataFrame</small>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-plus-circle"></i> Column Operations</h4>
+                            <p>Add, remove, rename, and transform columns</p>
+                            <small>AddColumn, DropColumn, RenameColumns, ApplyFunction</small>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-arrow-left-right"></i> Data Transformation</h4>
+                            <p>Convert data types and apply mathematical operations</p>
+                            <small>ConvertDataType, ApplyFunction, calculated columns</small>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h4><i class="bi bi-diagram-3"></i> Reshaping</h4>
+                            <p>Pivot, melt, and restructure your data</p>
+                            <small>PivotTable, reshape operations, index management</small>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Row Filtering Operations -->
+                <section class="section" id="row-filtering">
+                    <h2>?? Row Filtering and Selection</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Basic Row Filtering</h4>
+                        <pre><code class="language-csharp">// Filter rows based on conditions
+pandasManager.FilterRows("sales_data", "high_value_sales", "Amount > 1000");
+
+// Multiple conditions with AND
+pandasManager.FilterRows("sales_data", "premium_recent", 
+    "(Amount > 500) & (OrderDate >= '2024-01-01')");
+
+// Multiple conditions with OR
+pandasManager.FilterRows("customers", "target_customers", 
+    "(CustomerType == 'VIP') | (TotalSpent > 10000)");
+
+// String filtering
+pandasManager.FilterRows("products", "tech_products", 
+    "Category.str.contains('Technology')");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Advanced Filtering with Query</h4>
+                        <pre><code class="language-csharp">// Complex query syntax
+pandasManager.QueryDataFrame("sales_data", "filtered_sales", 
+    "Amount > 100 and Region in ['North', 'South'] and CustomerType == 'Premium'");
+
+// Date-based filtering
+pandasManager.QueryDataFrame("orders", "q1_orders", 
+    "OrderDate >= '2024-01-01' and OrderDate < '2024-04-01'");
+
+// Numeric range filtering
+pandasManager.QueryDataFrame("employees", "mid_level", 
+    "Salary >= 50000 and Salary <= 100000 and YearsExperience > 2");
+
+// String pattern matching
+pandasManager.QueryDataFrame("customers", "gmail_customers", 
+    "Email.str.endswith('@gmail.com')");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>3. Data Sampling</h4>
+                        <pre><code class="language-csharp">// Random sampling - 10% of data
+pandasManager.SampleDataFrame("large_dataset", "sample_10pct", 0.1);
+
+// Random sampling - 1000 rows
+pandasManager.SampleDataFrame("customer_data", "sample_1k", 1000.0 / GetRowCount("customer_data"));
+
+// Stratified sampling (preserving proportions)
+// This would require custom Python code for advanced sampling
+string stratifiedSampleCode = @"
+# Stratified sampling by region
+sample_data = large_dataset.groupby('Region', group_keys=False).apply(
+    lambda x: x.sample(frac=0.1)
+).reset_index(drop=True)
+";
+
+// Execute custom sampling logic when needed
+executeManager.ExecutePythonCode(stratifiedSampleCode);</code></pre>
+                    </div>
+                </section>
+
+                <!-- Column Selection and Operations -->
+                <section class="section" id="column-operations">
+                    <h2>?? Column Selection and Operations</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Column Selection</h4>
+                        <pre><code class="language-csharp">// Select specific columns
+string[] essentialColumns = { "CustomerName", "Amount", "OrderDate", "Region" };
+pandasManager.SelectColumns("sales_data", "essential_data", essentialColumns);
+
+// Select columns by pattern (requires custom code)
+string columnSelectionCode = @"
+# Select columns that contain 'Amount'
+amount_columns = [col for col in sales_data.columns if 'Amount' in col]
+amount_data = sales_data[amount_columns]
+
+# Select numeric columns only
+numeric_data = sales_data.select_dtypes(include=['number'])
+
+# Select datetime columns
+datetime_data = sales_data.select_dtypes(include=['datetime'])
+";
+
+executeManager.ExecutePythonCode(columnSelectionCode);</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Adding New Columns</h4>
+                        <pre><code class="language-csharp">// Add simple calculated column
+pandasManager.AddColumn("sales_data", "TotalWithTax", "Amount * 1.08");
+
+// Add conditional column
+pandasManager.AddColumn("customers", "CustomerSegment", 
+    "np.where(TotalSpent > 1000, 'Premium', 'Standard')");
+
+// Add date-based column
+pandasManager.AddColumn("orders", "OrderYear", "OrderDate.dt.year");
+
+// Add complex business logic column
+pandasManager.AddColumn("sales_data", "CommissionRate", 
+    "np.select([Amount > 10000, Amount > 5000, Amount > 1000], [0.05, 0.03, 0.01], default=0.005)");
+
+// Add categorization column
+pandasManager.AddColumn("products", "PriceCategory", 
+    "pd.cut(Price, bins=[0, 100, 500, 1000, float('inf')], labels=['Budget', 'Mid', 'Premium', 'Luxury'])");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>3. Column Modification</h4>
+                        <pre><code class="language-csharp">// Rename columns
+var columnRenames = new Dictionary&lt;string, string&gt;
+{
+    { "old_name", "new_name" },
+    { "customer_id", "CustomerID" },
+    { "order_amt", "OrderAmount" }
+};
+pandasManager.RenameColumns("sales_data", columnRenames);
+
+// Drop unnecessary columns
+pandasManager.DropColumn("sales_data", "internal_notes");
+pandasManager.DropColumn("sales_data", "temp_calculation");
+
+// Apply function to transform existing column
+pandasManager.ApplyFunction("customers", "Email", "str.lower()");
+pandasManager.ApplyFunction("products", "ProductName", "str.title()");
+pandasManager.ApplyFunction("sales_data", "Amount", "round(2)");</code></pre>
+                    </div>
+                </section>
+
+                <!-- Data Type Conversion -->
+                <section class="section" id="data-types">
+                    <h2>?? Data Type Conversion</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Basic Type Conversions</h4>
+                        <pre><code class="language-csharp">// Convert to numeric types
+pandasManager.ConvertDataType("sales_data", "Amount", "float64");
+pandasManager.ConvertDataType("orders", "Quantity", "int32");
+
+// Convert to datetime
+pandasManager.ConvertDataType("sales_data", "OrderDate", "datetime64[ns]");
+
+// Convert to categorical for memory efficiency
+pandasManager.ConvertDataType("products", "Category", "category");
+pandasManager.ConvertDataType("customers", "Region", "category");
+
+// Convert to string
+pandasManager.ConvertDataType("orders", "OrderID", "string");</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Advanced Type Conversions</h4>
+                        <pre><code class="language-csharp">// Safe numeric conversion with error handling
+string safeConversionCode = @"
+# Convert with error handling
+sales_data['Amount'] = pd.to_numeric(sales_data['Amount'], errors='coerce')
+
+# Convert datetime with format specification
+sales_data['OrderDate'] = pd.to_datetime(sales_data['OrderDate'], 
+                                         format='%Y-%m-%d', 
+                                         errors='coerce')
+
+# Convert boolean columns
+sales_data['IsActive'] = sales_data['IsActive'].astype('bool')
+
+# Convert to appropriate numeric types for memory optimization
+sales_data['Quantity'] = sales_data['Quantity'].astype('int16')  # Small integers
+sales_data['Price'] = sales_data['Price'].astype('float32')     # 32-bit floats
+";
+
+executeManager.ExecutePythonCode(safeConversionCode);</code></pre>
+                    </div>
+                </section>
+
+                <!-- Complex Transformations -->
+                <section class="section" id="complex-transformations">
+                    <h2>?? Complex Data Transformations</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Business Logic Transformations</h4>
+                        <pre><code class="language-csharp">// Customer segmentation based on multiple criteria
+string segmentationCode = @"
+def segment_customer(row):
+    if row['TotalSpent'] > 10000 and row['OrderFrequency'] > 12:
+        return 'VIP'
+    elif row['TotalSpent'] > 5000 and row['OrderFrequency'] > 6:
+        return 'Premium'
+    elif row['TotalSpent'] > 1000:
+        return 'Standard'
+    else:
+        return 'Basic'
+
+customers['Segment'] = customers.apply(segment_customer, axis=1)
+";
+
+// Sales performance scoring
+string performanceCode = @"
+# Calculate sales performance score
+def calculate_score(row):
+    base_score = (row['Amount'] / 1000) * 10  # Base on amount
+    
+    # Bonus for premium customers
+    if row['CustomerType'] == 'Premium':
+        base_score *= 1.2
+    
+    # Bonus for certain regions
+    if row['Region'] in ['North', 'West']:
+        base_score *= 1.1
+    
+    return min(base_score, 100)  # Cap at 100
+
+sales_data['PerformanceScore'] = sales_data.apply(calculate_score, axis=1)
+";
+
+executeManager.ExecutePythonCode(segmentationCode);
+executeManager.ExecutePythonCode(performanceCode);</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Text Data Transformations</h4>
+                        <pre><code class="language-csharp">// Text cleaning and standardization
+string textCleaningCode = @"
+# Clean customer names
+customers['CustomerName'] = customers['CustomerName'].str.strip()  # Remove whitespace
+customers['CustomerName'] = customers['CustomerName'].str.title()  # Title case
+
+# Standardize phone numbers
+customers['Phone'] = customers['Phone'].str.replace(r'[^\d]', '', regex=True)  # Remove non-digits
+
+# Extract domain from email
+customers['EmailDomain'] = customers['Email'].str.extract(r'@([^.]+\.[^.]+)')
+
+# Categorize products by keywords
+def categorize_product(name):
+    name_lower = name.lower()
+    if 'laptop' in name_lower or 'computer' in name_lower:
+        return 'Electronics'
+    elif 'book' in name_lower or 'magazine' in name_lower:
+        return 'Books'
+    elif 'shirt' in name_lower or 'pants' in name_lower:
+        return 'Clothing'
+    else:
+        return 'Other'
+
+products['AutoCategory'] = products['ProductName'].apply(categorize_product)
+";
+
+executeManager.ExecutePythonCode(textCleaningCode);</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>3. Date and Time Transformations</h4>
+                        <pre><code class="language-csharp">// Extract date components
+pandasManager.AddColumn("sales_data", "OrderYear", "OrderDate.dt.year");
+pandasManager.AddColumn("sales_data", "OrderMonth", "OrderDate.dt.month");
+pandasManager.AddColumn("sales_data", "OrderDayOfWeek", "OrderDate.dt.day_name()");
+pandasManager.AddColumn("sales_data", "OrderQuarter", "OrderDate.dt.quarter");
+
+// Calculate business metrics
+string dateMetricsCode = @"
+# Days since last order
+sales_data['DaysSinceOrder'] = (pd.Timestamp.now() - sales_data['OrderDate']).dt.days
+
+# Business vs Weekend
+sales_data['IsWeekend'] = sales_data['OrderDate'].dt.weekday >= 5
+
+# Fiscal year (assuming April start)
+def get_fiscal_year(date):
+    if date.month >= 4:
+        return date.year
+    else:
+        return date.year - 1
+
+sales_data['FiscalYear'] = sales_data['OrderDate'].apply(get_fiscal_year)
+
+# Season classification
+def get_season(date):
+    month = date.month
+    if month in [12, 1, 2]:
+        return 'Winter'
+    elif month in [3, 4, 5]:
+        return 'Spring'
+    elif month in [6, 7, 8]:
+        return 'Summer'
+    else:
+        return 'Fall'
+
+sales_data['Season'] = sales_data['OrderDate'].apply(get_season)
+";
+
+executeManager.ExecutePythonCode(dateMetricsCode);</code></pre>
+                    </div>
+                </section>
+
+                <!-- Data Reshaping -->
+                <section class="section" id="data-reshaping">
+                    <h2>?? Data Reshaping Operations</h2>
+                    
+                    <div class="code-example">
+                        <h4>1. Pivot Tables</h4>
+                        <pre><code class="language-csharp">// Basic pivot table
+pandasManager.PivotTable("sales_data", "sales_by_region_month", "Region", "OrderMonth", "Amount");
+
+// Cross-tabulation
+pandasManager.CrossTab("customer_data", "customer_region_type", "Region", "CustomerType");
+
+// Advanced pivot operations
+string advancedPivotCode = @"
+# Multi-level pivot table
+pivot_advanced = pd.pivot_table(sales_data, 
+                               values=['Amount', 'Quantity'],
+                               index=['Region', 'CustomerType'],
+                               columns=['OrderMonth'],
+                               aggfunc={'Amount': 'sum', 'Quantity': 'mean'},
+                               fill_value=0)
+
+# Normalize data for percentages
+pivot_pct = pd.pivot_table(sales_data,
+                          values='Amount',
+                          index='Region',
+                          columns='CustomerType',
+                          aggfunc='sum',
+                          normalize='index')  # Percentage by row
+";
+
+executeManager.ExecutePythonCode(advancedPivotCode);</code></pre>
+                    </div>
+
+                    <div class="code-example">
+                        <h4>2. Melting and Unstacking</h4>
+                        <pre><code class="language-csharp">// Data melting for long format
+string meltingCode = @"
+# Convert wide format to long format
+melted_data = pd.melt(sales_summary,
+                     id_vars=['Region', 'CustomerType'],
+                     value_vars=['Q1_Sales', 'Q2_Sales', 'Q3_Sales', 'Q4_Sales'],
+                     var_name='Quarter',
+                     value_name='Sales')
+
+# Clean up the quarter column
+melted_data['Quarter'] = melted_data['Quarter'].str.replace('_Sales', '')
+
+# Multiple value columns
+melted_multi = pd.melt(performance_data,
+                      id_vars=['Employee', 'Department'],
+                      value_vars=['Sales_Q1', 'Sales_Q2', 'Orders_Q1', 'Orders_Q2'],
+                      var_name='Metric_Quarter',
+                      value_name='Value')
+
+# Split metric and quarter
+melted_multi[['Metric', 'Quarter']] = melted_multi['Metric_Quarter'].str.split('_', expand=True)
+";
+
+executeManager.ExecutePythonCode(meltingCode);</code></pre>
+                    </div>
+                </section>
+
+                <!-- Performance Considerations -->
+                <section class="section" id="performance-tips">
+                    <h2>? Performance Optimization</h2>
+                    
+                    <div class="tip">
+                        <h4>?? Best Practices for Large DataFrames</h4>
+                        
+                        <div class="code-example">
+                            <h5>1. Efficient Column Operations</h5>
+                            <pre><code class="language-csharp">// Use vectorized operations instead of apply when possible
+// ? GOOD: Vectorized operation
+pandasManager.AddColumn("sales_data", "TotalWithTax", "Amount * 1.08");
+
+// ? AVOID: Row-by-row operations for simple calculations
+
+// ? GOOD: Use categorical for repeated string values
+pandasManager.ConvertDataType("customers", "Region", "category");
+pandasManager.ConvertDataType("products", "Category", "category");
+
+// ? GOOD: Optimize numeric types
+pandasManager.ConvertDataType("orders", "Quantity", "int16");  // If values are small
+pandasManager.ConvertDataType("prices", "Price", "float32");   // If precision allows</code></pre>
+                        </div>
+
+                        <div class="code-example">
+                            <h5>2. Memory-Efficient Filtering</h5>
+                            <pre><code class="language-csharp">// Filter early to reduce data size
+pandasManager.FilterRows("large_dataset", "recent_data", "OrderDate >= '2024-01-01'");
+pandasManager.SelectColumns("recent_data", "working_data", new[] { "CustomerID", "Amount", "Region" });
+
+// Use query for complex filters (often faster)
+pandasManager.QueryDataFrame("sales_data", "filtered_sales", 
+    "Amount > 100 and Region in ['North', 'South']");
+
+// Clean up intermediate results
+pandasManager.CleanupIdleDataFrames(5);</code></pre>
+                        </div>
+
+                        <div class="code-example">
+                            <h5>3. Batch Operations</h5>
+                            <pre><code class="language-csharp">// Process in chunks for very large datasets
+string chunkProcessingCode = @"
+chunk_size = 10000
+processed_chunks = []
+
+for chunk in pd.read_csv('huge_file.csv', chunksize=chunk_size):
+    # Apply transformations
+    chunk['processed_amount'] = chunk['amount'] * 1.08
+    chunk = chunk[chunk['amount'] > 100]  # Filter
+    
+    processed_chunks.append(chunk)
+
+# Combine all processed chunks
+final_data = pd.concat(processed_chunks, ignore_index=True)
+";
+
+// For existing DataFrames, process in batches
+string batchCode = @"
+batch_size = 5000
+total_rows = len(large_dataframe)
+
+for start in range(0, total_rows, batch_size):
+    end = min(start + batch_size, total_rows)
+    batch = large_dataframe.iloc[start:end].copy()
+    
+    # Process batch
+    batch['new_column'] = batch['existing_column'].apply(expensive_function)
+    
+    # Update original dataframe
+    large_dataframe.iloc[start:end, large_dataframe.columns.get_loc('new_column')] = batch['new_column']
+";
+
+executeManager.ExecutePythonCode(chunkProcessingCode);</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="dataframe-io.html" class="btn-beep">
+                        <i class="bi bi-arrow-left"></i> DataFrame I/O
+                    </a>
+                    <a href="statistical-analysis.html" class="btn-beep">
+                        <i class="bi bi-arrow-right"></i> Statistical Analysis
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.DataManagement Documentation</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="../index.html">Home</a>
+                            <a href="../getting-started.html">Getting Started</a>
+                            <a href="PythonPandasManager.html">API Reference</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="../assets/navigation.js"></script>
+</body>
+</html>

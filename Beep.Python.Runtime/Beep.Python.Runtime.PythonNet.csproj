@@ -32,6 +32,7 @@
     <Folder Include="EmbedderManagement\" />
     <Folder Include="VectorDBManagement\" />
     <Folder Include="UI\" />
+    <Folder Include="Workflows\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Autofac" Version="8.3.0" />
