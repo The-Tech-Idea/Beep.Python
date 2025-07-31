@@ -9,14 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beep.Python.Nodes", "Beep.P
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beep.Python.Runtime.PythonNet", "Beep.Python.Runtime\Beep.Python.Runtime.PythonNet.csproj", "{D2C6F958-C83A-4724-92BB-059EE7A8D9E4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beep.Python.WinformCore", "Beep.Python.Winform6\Beep.Python.WinformCore.csproj", "{99BF62C2-6581-4792-9D90-376C4BA4501C}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beep.Python.WorflowSteps", "Beep.Python.WorflowSteps\Beep.Python.WorflowSteps.csproj", "{F97F6103-BEBD-4C64-A63D-A810493CA511}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Beep.Python.WorkFlows", "Beep.Python.WorkFlows\Beep.Python.WorkFlows.csproj", "{164CA58E-4E91-46FF-A65E-11D01B3027AE}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beep.Python.Runtime.Winform", "Beep.Python.Runtime.Winform\Beep.Python.Runtime.Winform.csproj", "{B65F2D59-FAB2-4A2F-AEA8-31F29248BFC4}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beep.Python.AI.Transformers", "Beep.Python.Hugginface\Beep.Python.AI.Transformers.csproj", "{FD5E2EB6-5700-46A4-8AD9-1C8747CDC465}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beep.Python.DataManagement", "Beep.Python.DataManagement\Beep.Python.DataManagement.csproj", "{74099135-9282-4AEA-95A8-1ADB9AD3A88A}"
@@ -57,38 +49,6 @@ Global
 		{D2C6F958-C83A-4724-92BB-059EE7A8D9E4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D2C6F958-C83A-4724-92BB-059EE7A8D9E4}.Release|x64.ActiveCfg = Release|Any CPU
 		{D2C6F958-C83A-4724-92BB-059EE7A8D9E4}.Release|x64.Build.0 = Release|Any CPU
-		{99BF62C2-6581-4792-9D90-376C4BA4501C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{99BF62C2-6581-4792-9D90-376C4BA4501C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{99BF62C2-6581-4792-9D90-376C4BA4501C}.Debug|x64.ActiveCfg = Debug|x64
-		{99BF62C2-6581-4792-9D90-376C4BA4501C}.Debug|x64.Build.0 = Debug|x64
-		{99BF62C2-6581-4792-9D90-376C4BA4501C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{99BF62C2-6581-4792-9D90-376C4BA4501C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{99BF62C2-6581-4792-9D90-376C4BA4501C}.Release|x64.ActiveCfg = Release|x64
-		{99BF62C2-6581-4792-9D90-376C4BA4501C}.Release|x64.Build.0 = Release|x64
-		{F97F6103-BEBD-4C64-A63D-A810493CA511}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F97F6103-BEBD-4C64-A63D-A810493CA511}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F97F6103-BEBD-4C64-A63D-A810493CA511}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{F97F6103-BEBD-4C64-A63D-A810493CA511}.Debug|x64.Build.0 = Debug|Any CPU
-		{F97F6103-BEBD-4C64-A63D-A810493CA511}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F97F6103-BEBD-4C64-A63D-A810493CA511}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F97F6103-BEBD-4C64-A63D-A810493CA511}.Release|x64.ActiveCfg = Release|Any CPU
-		{F97F6103-BEBD-4C64-A63D-A810493CA511}.Release|x64.Build.0 = Release|Any CPU
-		{164CA58E-4E91-46FF-A65E-11D01B3027AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{164CA58E-4E91-46FF-A65E-11D01B3027AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{164CA58E-4E91-46FF-A65E-11D01B3027AE}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{164CA58E-4E91-46FF-A65E-11D01B3027AE}.Debug|x64.Build.0 = Debug|Any CPU
-		{164CA58E-4E91-46FF-A65E-11D01B3027AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{164CA58E-4E91-46FF-A65E-11D01B3027AE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{164CA58E-4E91-46FF-A65E-11D01B3027AE}.Release|x64.ActiveCfg = Release|Any CPU
-		{164CA58E-4E91-46FF-A65E-11D01B3027AE}.Release|x64.Build.0 = Release|Any CPU
-		{B65F2D59-FAB2-4A2F-AEA8-31F29248BFC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B65F2D59-FAB2-4A2F-AEA8-31F29248BFC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B65F2D59-FAB2-4A2F-AEA8-31F29248BFC4}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{B65F2D59-FAB2-4A2F-AEA8-31F29248BFC4}.Debug|x64.Build.0 = Debug|Any CPU
-		{B65F2D59-FAB2-4A2F-AEA8-31F29248BFC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B65F2D59-FAB2-4A2F-AEA8-31F29248BFC4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B65F2D59-FAB2-4A2F-AEA8-31F29248BFC4}.Release|x64.ActiveCfg = Release|Any CPU
-		{B65F2D59-FAB2-4A2F-AEA8-31F29248BFC4}.Release|x64.Build.0 = Release|Any CPU
 		{FD5E2EB6-5700-46A4-8AD9-1C8747CDC465}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FD5E2EB6-5700-46A4-8AD9-1C8747CDC465}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD5E2EB6-5700-46A4-8AD9-1C8747CDC465}.Debug|x64.ActiveCfg = Debug|Any CPU

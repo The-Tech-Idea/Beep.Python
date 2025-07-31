@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoML Integration - Beep.Python.ML</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="header-content">
+                        <h1><i class="bi bi-robot text-success"></i> AutoML Integration</h1>
+                        <p class="lead">Automated Machine Learning capabilities with intelligent model selection, feature engineering, and hyperparameter optimization for .NET 6, 7, 8, and 9</p>
+                        
+                        <div class="achievement-badges">
+                            <span class="badge bg-success"><i class="bi bi-check-circle"></i> Automated Workflows</span>
+                            <span class="badge bg-info"><i class="bi bi-cpu"></i> Smart Selection</span>
+                            <span class="badge bg-warning"><i class="bi bi-gear"></i> Auto Feature Engineering</span>
+                            <span class="badge bg-primary"><i class="bi bi-star"></i> Zero-Code ML</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AutoML Overview -->
+                <section class="section" id="automl-overview">
+                    <h2>?? AutoML Overview</h2>
+                    <p>Beep.Python.ML provides comprehensive AutoML capabilities that automatically handle the entire machine learning pipeline, from data preprocessing to model deployment, with minimal human intervention.</p>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <h4><i class="bi bi-magic text-primary"></i> Automated Processes</h4>
+                                <ul>
+                                    <li><strong>Algorithm Selection:</strong> Intelligent model comparison</li>
+                                    <li><strong>Feature Engineering:</strong> Automated feature creation</li>
+                                    <li><strong>Hyperparameter Tuning:</strong> Bayesian optimization</li>
+                                    <li><strong>Model Validation:</strong> Cross-validation strategies</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <h4><i class="bi bi-speedometer2 text-success"></i> Advanced Features</h4>
+                                <ul>
+                                    <li><strong>Ensemble Methods:</strong> Automatic model combining</li>
+                                    <li><strong>Time Budget:</strong> Configurable training limits</li>
+                                    <li><strong>Multi-Objective:</strong> Balance accuracy vs speed</li>
+                                    <li><strong>Interpretability:</strong> Model explanation features</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Quick AutoML -->
+                <section class="section" id="quick-automl">
+                    <h2>? Quick AutoML</h2>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-lightning-fill"></i> One-Line AutoML</h3>
+                        
+                        <div class="code-example">
+                            <h4>Simple AutoML Execution</h4>
+                            <pre><code class="language-csharp">// Initialize ML Manager and ViewModel
+var beepService = new BeepService();
+var pythonRuntime = new PythonNetRunTimeManager(beepService);
+var sessionInfo = new PythonSessionInfo { Username = "automl_user" };
+
+var mlManager = new PythonMLManager(beepService, pythonRuntime, sessionInfo);
+mlManager.ConfigureMLSessionForUser("automl_user");
+
+// One-line AutoML execution using TrainingExtensions
+var viewModel = new PythonTrainingViewModel(beepService, pythonRuntime, sessionInfo);
+
+// Quick AutoML - finds best model automatically
+var result = await MLTrainingManager.QuickTrainAsync(viewModel, "customer_data.csv", "churn");
+
+if (result.Success)
+{
+    Console.WriteLine($"?? AutoML Success!");
+    Console.WriteLine($"Best Algorithm: {result.BestAlgorithm}");
+    Console.WriteLine($"Accuracy: {result.Accuracy:P2}");
+    Console.WriteLine($"F1-Score: {result.F1Score:F4}");
+    Console.WriteLine($"Training Time: {result.TrainingTime.TotalMinutes:F1} minutes");
+}
+
+// Static helper class for quick ML operations
+public static class MLTrainingManager
+{
+    public static async Task&lt;AutoMLResult&gt; QuickTrainAsync(
+        PythonTrainingViewModel viewModel, 
+        string dataFile, 
+        string targetColumn)
+    {
+        var config = new AutoMLConfiguration
+        {
+            MaxRunTime = TimeSpan.FromMinutes(30),
+            MaxTrials = 50,
+            OptimizationMetric = "f1_weighted",
+            EnableFeatureEngineering = true,
+            EnableEnsemble = true
+        };
+        
+        return await viewModel.RunAutoMLAsync(config);
+    }
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="tip">
+                        <h5><i class="bi bi-lightbulb"></i> Quick AutoML Benefits</h5>
+                        <ul>
+                            <li><strong>Zero Configuration:</strong> Works with sensible defaults</li>
+                            <li><strong>Automatic Data Handling:</strong> Handles missing values and encoding</li>
+                            <li><strong>Smart Algorithm Selection:</strong> Tests multiple algorithms</li>
+                            <li><strong>Built-in Validation:</strong> Cross-validation included</li>
+                            <li><strong>Production Ready:</strong> Generates deployable models</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Advanced AutoML Configuration -->
+                <section class="section" id="advanced-automl">
+                    <h2>?? Advanced AutoML Configuration</h2>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-gear-wide"></i> Comprehensive AutoML Setup</h3>
+                        
+                        <div class="code-example">
+                            <h4>Advanced AutoML Configuration</h4>
+                            <pre><code class="language-csharp">// Advanced AutoML configuration for enterprise use
+var advancedConfig = new AutoMLConfiguration
+{
+    // Time and resource constraints
+    MaxRunTime = TimeSpan.FromHours(4),
+    MaxTrials = 200,
+    MaxConcurrentTrials = Environment.ProcessorCount,
+    
+    // Optimization settings
+    OptimizationMetric = "f1_weighted",
+    OptimizationDirection = OptimizationDirection.Maximize,
+    EarlyStoppingRounds = 20,
+    
+    // Feature engineering
+    EnableFeatureEngineering = true,
+    EnableAutomaticFeatureSelection = true,
+    MaxFeatures = 100,
+    FeatureSelectionMethod = "mutual_info",
+    
+    // Algorithm selection
+    IncludeAlgorithms = new[]
+    {
+        MachineLearningAlgorithm.RandomForestClassifier,
+        MachineLearningAlgorithm.GradientBoostingClassifier,
+        MachineLearningAlgorithm.LogisticRegression,
+        MachineLearningAlgorithm.SVC,
+        MachineLearningAlgorithm.KNeighborsClassifier
+    },
+    ExcludeAlgorithms = new[]
+    {
+        MachineLearningAlgorithm.NaiveBayes // Exclude if not suitable
+    },
+    
+    // Ensemble configuration
+    EnableEnsemble = true,
+    EnsembleMethod = EnsembleMethod.Stacking,
+    EnsembleSize = 5,
+    
+    // Cross-validation
+    CVFolds = 5,
+    CVStrategy = CrossValidationStrategy.StratifiedKFold,
+    
+    // Data preprocessing
+    HandleImbalancedData = true,
+    ImbalanceStrategy = ImbalanceHandlingStrategy.SMOTE,
+    ScalingMethod = ScalingMethod.RobustScaler,
+    
+    // Output settings
+    SaveIntermediateModels = true,
+    GenerateReport = true,
+    ReportFormat = ReportFormat.HTML,
+    LogLevel = LogLevel.Info
+};
+
+// Execute advanced AutoML
+var progress = new Progress&lt;AutoMLProgress&gt;(OnAutoMLProgressChanged);
+var result = await viewModel.RunAutoMLAsync(advancedConfig, progress);
+
+private void OnAutoMLProgressChanged(AutoMLProgress progress)
+{
+    Console.WriteLine($"[{progress.Percentage:F1}%] {progress.Stage}: {progress.Message}");
+    
+    if (progress.CurrentTrial != null)
+    {
+        Console.WriteLine($"  Trial {progress.CurrentTrial.Number}: {progress.CurrentTrial.Algorithm} " +
+                         $"Score: {progress.CurrentTrial.Score:F4}");
+    }
+    
+    if (progress.BestTrialSoFar != null)
+    {
+        Console.WriteLine($"  Best so far: {progress.BestTrialSoFar.Algorithm} " +
+                         $"Score: {progress.BestTrialSoFar.Score:F4}");
+    }
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="method">
+                        <h3><i class="bi bi-cpu"></i> AutoML Data Structures</h3>
+                        
+                        <div class="code-example">
+                            <h4>AutoML Configuration Classes</h4>
+                            <pre><code class="language-csharp">public class AutoMLConfiguration
+{
+    // Time and resource constraints
+    public TimeSpan MaxRunTime { get; set; } = TimeSpan.FromHours(1);
+    public int MaxTrials { get; set; } = 100;
+    public int MaxConcurrentTrials { get; set; } = 1;
+    public int RandomState { get; set; } = 42;
+    
+    // Optimization settings
+    public string OptimizationMetric { get; set; } = "f1_weighted";
+    public OptimizationDirection OptimizationDirection { get; set; } = OptimizationDirection.Maximize;
+    public int EarlyStoppingRounds { get; set; } = 10;
+    public double EarlyStoppingThreshold { get; set; } = 0.001;
+    
+    // Feature engineering
+    public bool EnableFeatureEngineering { get; set; } = true;
+    public bool EnableAutomaticFeatureSelection { get; set; } = true;
+    public int MaxFeatures { get; set; } = 50;
+    public string FeatureSelectionMethod { get; set; } = "mutual_info";
+    public bool EnablePolynomialFeatures { get; set; } = false;
+    public int PolynomialDegree { get; set; } = 2;
+    
+    // Algorithm selection
+    public MachineLearningAlgorithm[] IncludeAlgorithms { get; set; }
+    public MachineLearningAlgorithm[] ExcludeAlgorithms { get; set; }
+    public bool EnableNeuralNetworks { get; set; } = false;
+    
+    // Ensemble configuration
+    public bool EnableEnsemble { get; set; } = true;
+    public EnsembleMethod EnsembleMethod { get; set; } = EnsembleMethod.Voting;
+    public int EnsembleSize { get; set; } = 3;
+    public bool EnableStackedEnsemble { get; set; } = false;
+    
+    // Cross-validation
+    public int CVFolds { get; set; } = 5;
+    public CrossValidationStrategy CVStrategy { get; set; } = CrossValidationStrategy.StratifiedKFold;
+    public bool ShuffleSplit { get; set; } = true;
+    
+    // Data preprocessing
+    public bool HandleImbalancedData { get; set; } = true;
+    public ImbalanceHandlingStrategy ImbalanceStrategy { get; set; } = ImbalanceHandlingStrategy.SMOTE;
+    public ScalingMethod ScalingMethod { get; set; } = ScalingMethod.StandardScaler;
+    public string MissingValueStrategy { get; set; } = "median";
+    
+    // Output settings
+    public bool SaveIntermediateModels { get; set; } = false;
+    public bool GenerateReport { get; set; } = true;
+    public ReportFormat ReportFormat { get; set; } = ReportFormat.HTML;
+    public LogLevel LogLevel { get; set; } = LogLevel.Info;
+    public string OutputDirectory { get; set; } = "automl_output";
+}
+
+public class AutoMLResult
+{
+    public bool Success { get; set; }
+    public string ErrorMessage { get; set; }
+    
+    // Best model information
+    public string BestModelId { get; set; }
+    public MachineLearningAlgorithm BestAlgorithm { get; set; }
+    public Dictionary&lt;string, object&gt; BestParameters { get; set; }
+    public double BestScore { get; set; }
+    public string OptimizationMetric { get; set; }
+    
+    // Training summary
+    public int TotalTrials { get; set; }
+    public int CompletedTrials { get; set; }
+    public TimeSpan TotalRunTime { get; set; }
+    public DateTime StartTime { get; set; }
+    public DateTime EndTime { get; set; }
+    
+    // Model performance
+    public ModelPerformanceMetrics BestModelMetrics { get; set; }
+    public List&lt;TrialResult&gt; AllTrials { get; set; }
+    public List&lt;ModelPerformanceMetrics&gt; AllModelMetrics { get; set; }
+    
+    // Feature information
+    public string[] SelectedFeatures { get; set; }
+    public Dictionary&lt;string, double&gt; FeatureImportance { get; set; }
+    public FeatureEngineeringReport FeatureEngineeringReport { get; set; }
+    
+    // Ensemble information
+    public EnsembleResult EnsembleResult { get; set; }
+    public bool UsedEnsemble { get; set; }
+    
+    // Output files
+    public string ModelFilePath { get; set; }
+    public string ReportFilePath { get; set; }
+    public List&lt;string&gt; GeneratedFiles { get; set; }
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- AutoML Workflow Stages -->
+                <section class="section" id="automl-stages">
+                    <h2>?? AutoML Workflow Stages</h2>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-diagram-3"></i> Complete AutoML Pipeline</h3>
+                        
+                        <div class="code-example">
+                            <h4>AutoML Workflow Implementation</h4>
+                            <pre><code class="language-csharp">public async Task&lt;AutoMLResult&gt; RunAutoMLAsync(
+    AutoMLConfiguration config, 
+    IProgress&lt;AutoMLProgress&gt; progress = null)
+{
+    var result = new AutoMLResult { StartTime = DateTime.Now };
+    var totalStages = 8;
+    var currentStage = 0;
+    
+    try
+    {
+        // Stage 1: Data Analysis and Validation
+        currentStage++;
+        progress?.Report(new AutoMLProgress
+        {
+            Stage = "Data Analysis",
+            Percentage = (currentStage * 100.0 / totalStages),
+            Message = "Analyzing data characteristics and quality"
+        });
+        
+        var dataAnalysis = await AnalyzeDataAsync();
+        if (!dataAnalysis.IsValid)
+        {
+            result.ErrorMessage = $"Data validation failed: {dataAnalysis.ErrorMessage}";
+            return result;
+        }
+        
+        // Stage 2: Automatic Data Preprocessing
+        currentStage++;
+        progress?.Report(new AutoMLProgress
+        {
+            Stage = "Data Preprocessing",
+            Percentage = (currentStage * 100.0 / totalStages),
+            Message = "Applying automatic data preprocessing"
+        });
+        
+        await ApplyAutomaticPreprocessingAsync(config);
+        
+        // Stage 3: Feature Engineering
+        if (config.EnableFeatureEngineering)
+        {
+            currentStage++;
+            progress?.Report(new AutoMLProgress
+            {
+                Stage = "Feature Engineering",
+                Percentage = (currentStage * 100.0 / totalStages),
+                Message = "Generating and selecting features automatically"
+            });
+            
+            var featureReport = await PerformAutomaticFeatureEngineeringAsync(config);
+            result.FeatureEngineeringReport = featureReport;
+        }
+        
+        // Stage 4: Algorithm Selection and Training
+        currentStage++;
+        progress?.Report(new AutoMLProgress
+        {
+            Stage = "Model Selection",
+            Percentage = (currentStage * 100.0 / totalStages),
+            Message = "Testing multiple algorithms and configurations"
+        });
+        
+        var trials = await RunAlgorithmTrialsAsync(config, progress);
+        result.AllTrials = trials;
+        
+        // Find best trial
+        var bestTrial = trials.OrderByDescending(t => t.Score).First();
+        result.BestAlgorithm = bestTrial.Algorithm;
+        result.BestParameters = bestTrial.Parameters;
+        result.BestScore = bestTrial.Score;
+        
+        // Stage 5: Hyperparameter Optimization for Best Model
+        currentStage++;
+        progress?.Report(new AutoMLProgress
+        {
+            Stage = "Hyperparameter Optimization",
+            Percentage = (currentStage * 100.0 / totalStages),
+            Message = $"Optimizing {bestTrial.Algorithm} hyperparameters"
+        });
+        
+        var optimizedResult = await OptimizeBestModelAsync(bestTrial, config);
+        if (optimizedResult.Success)
+        {
+            result.BestParameters = optimizedResult.BestParams;
+            result.BestScore = optimizedResult.BestScore;
+        }
+        
+        // Stage 6: Ensemble Creation
+        if (config.EnableEnsemble)
+        {
+            currentStage++;
+            progress?.Report(new AutoMLProgress
+            {
+                Stage = "Ensemble Creation",
+                Percentage = (currentStage * 100.0 / totalStages),
+                Message = "Creating ensemble from top models"
+            });
+            
+            var topTrials = trials.OrderByDescending(t => t.Score).Take(config.EnsembleSize);
+            var ensembleResult = await CreateEnsembleFromTrialsAsync(topTrials, config);
+            
+            if (ensembleResult.Success && ensembleResult.EnsembleScore > result.BestScore)
+            {
+                result.BestScore = ensembleResult.EnsembleScore;
+                result.EnsembleResult = ensembleResult;
+                result.UsedEnsemble = true;
+                result.BestAlgorithm = MachineLearningAlgorithm.EnsembleClassifier;
+            }
+        }
+        
+        // Stage 7: Final Model Training and Validation
+        currentStage++;
+        progress?.Report(new AutoMLProgress
+        {
+            Stage = "Final Training",
+            Percentage = (currentStage * 100.0 / totalStages),
+            Message = "Training final model with best configuration"
+        });
+        
+        var finalModelId = await TrainFinalModelAsync(result);
+        result.BestModelId = finalModelId;
+        
+        // Stage 8: Model Evaluation and Report Generation
+        currentStage++;
+        progress?.Report(new AutoMLProgress
+        {
+            Stage = "Evaluation & Reporting",
+            Percentage = 100,
+            Message = "Generating comprehensive evaluation report"
+        });
+        
+        result.BestModelMetrics = await EvaluateFinalModelAsync(finalModelId);
+        
+        if (config.GenerateReport)
+        {
+            var reportPath = await GenerateAutoMLReportAsync(result, config);
+            result.ReportFilePath = reportPath;
+        }
+        
+        // Save model if requested
+        if (config.SaveIntermediateModels)
+        {
+            var modelPath = await SaveFinalModelAsync(finalModelId, config.OutputDirectory);
+            result.ModelFilePath = modelPath;
+        }
+        
+        result.Success = true;
+        result.EndTime = DateTime.Now;
+        result.TotalRunTime = result.EndTime - result.StartTime;
+        result.CompletedTrials = trials.Count;
+        
+        progress?.Report(new AutoMLProgress
+        {
+            Stage = "Complete",
+            Percentage = 100,
+            Message = $"AutoML completed successfully! Best score: {result.BestScore:F4}"
+        });
+        
+    }
+    catch (Exception ex)
+    {
+        result.ErrorMessage = ex.Message;
+        result.Success = false;
+    }
+    
+    return result;
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- AutoML Integration with ViewModels -->
+                <section class="section" id="viewmodel-integration">
+                    <h2>??? ViewModel Integration</h2>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-laptop"></i> MVVM AutoML Integration</h3>
+                        
+                        <div class="code-example">
+                            <h4>AutoML ViewModel Implementation</h4>
+                            <pre><code class="language-csharp">// AutoML integration in PythonMachineLearningViewModel
+public partial class PythonMachineLearningViewModel : PythonBaseViewModel
+{
+    // AutoML properties
+    [ObservableProperty] private AutoMLConfiguration autoMLConfig;
+    [ObservableProperty] private bool isAutoMLRunning;
+    [ObservableProperty] private AutoMLProgress currentAutoMLProgress;
+    [ObservableProperty] private AutoMLResult autoMLResult;
+    [ObservableProperty] private ObservableCollection&lt;TrialResult&gt; autoMLTrials;
+    
+    // Commands
+    public IAsyncRelayCommand RunAutoMLCommand { get; }
+    public IAsyncRelayCommand StopAutoMLCommand { get; }
+    public IRelayCommand ConfigureAutoMLCommand { get; }
+    
+    public PythonMachineLearningViewModel(IBeepService beepService, 
+                                        IPythonNetRunTimeManager pythonRuntime, 
+                                        PythonSessionInfo sessionInfo)
+        : base(beepService, pythonRuntime, sessionInfo)
+    {
+        // Initialize AutoML properties
+        AutoMLConfig = new AutoMLConfiguration();
+        AutoMLTrials = new ObservableCollection&lt;TrialResult&gt;();
+        
+        // Initialize commands
+        RunAutoMLCommand = new AsyncRelayCommand(RunAutoMLAsync, CanRunAutoML);
+        StopAutoMLCommand = new AsyncRelayCommand(StopAutoMLAsync, () => IsAutoMLRunning);
+        ConfigureAutoMLCommand = new RelayCommand(ConfigureAutoML);
+    }
+    
+    private async Task RunAutoMLAsync()
+    {
+        try
+        {
+            IsAutoMLRunning = true;
+            CurrentWorkflowStage = "Starting AutoML...";
+            
+            // Progress reporting
+            var progress = new Progress&lt;AutoMLProgress&gt;(OnAutoMLProgressChanged);
+            
+            // Run AutoML
+            var result = await RunAutoMLAsync(AutoMLConfig, progress);
+            
+            if (result.Success)
+            {
+                AutoMLResult = result;
+                
+                // Update UI with results
+                SelectedAlgorithmInfo = new MLAlgorithmInfo
+                {
+                    Algorithm = result.BestAlgorithm,
+                    Name = result.BestAlgorithm.ToString(),
+                    Parameters = result.BestParameters
+                };
+                
+                CurrentModelMetrics = result.BestModelMetrics;
+                
+                // Update trials display
+                AutoMLTrials.Clear();
+                foreach (var trial in result.AllTrials.OrderByDescending(t => t.Score))
+                {
+                    AutoMLTrials.Add(trial);
+                }
+                
+                CurrentWorkflowStage = $"AutoML Completed - Best: {result.BestAlgorithm} ({result.BestScore:F4})";
+                ShowSuccessMessage($"AutoML found optimal model with {result.OptimizationMetric}: {result.BestScore:F4}");
+            }
+            else
+            {
+                ShowErrorMessage($"AutoML failed: {result.ErrorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowErrorMessage($"AutoML execution error: {ex.Message}");
+        }
+        finally
+        {
+            IsAutoMLRunning = false;
+        }
+    }
+    
+    private void OnAutoMLProgressChanged(AutoMLProgress progress)
+    {
+        CurrentAutoMLProgress = progress;
+        OverallProgress = progress.Percentage;
+        CurrentWorkflowStage = $"{progress.Stage}: {progress.Message}";
+        
+        // Update trials in real-time
+        if (progress.CurrentTrial != null)
+        {
+            Dispatcher.BeginInvoke(() =>
+            {
+                // Add or update trial in collection
+                var existingTrial = AutoMLTrials.FirstOrDefault(t => t.Number == progress.CurrentTrial.Number);
+                if (existingTrial != null)
+                {
+                    var index = AutoMLTrials.IndexOf(existingTrial);
+                    AutoMLTrials[index] = progress.CurrentTrial;
+                }
+                else
+                {
+                    AutoMLTrials.Add(progress.CurrentTrial);
+                }
+            });
+        }
+        
+        // Update best trial display
+        if (progress.BestTrialSoFar != null)
+        {
+            NotifyBestTrialUpdate(progress.BestTrialSoFar);
+        }
+    }
+    
+    private bool CanRunAutoML()
+    {
+        return !IsAutoMLRunning && 
+               IsMLPipelineReady && 
+               !string.IsNullOrEmpty(LabelColumn) && 
+               Features?.Any() == true;
+    }
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="method">
+                        <h3><i class="bi bi-window"></i> AutoML UI Binding</h3>
+                        
+                        <div class="code-example">
+                            <h4>WPF AutoML Interface</h4>
+                            <pre><code class="language-xml">&lt;!-- AutoML Configuration Panel --&gt;
+&lt;Expander Header="AutoML Configuration" IsExpanded="True" Margin="10"&gt;
+    &lt;Grid Margin="10"&gt;
+        &lt;Grid.RowDefinitions&gt;
+            &lt;RowDefinition Height="Auto"/&gt;
+            &lt;RowDefinition Height="Auto"/&gt;
+            &lt;RowDefinition Height="Auto"/&gt;
+            &lt;RowDefinition Height="Auto"/&gt;
+        &lt;/Grid.RowDefinitions&gt;
+        &lt;Grid.ColumnDefinitions&gt;
+            &lt;ColumnDefinition Width="Auto"/&gt;
+            &lt;ColumnDefinition Width="*"/&gt;
+            &lt;ColumnDefinition Width="Auto"/&gt;
+            &lt;ColumnDefinition Width="*"/&gt;
+        &lt;/Grid.ColumnDefinitions&gt;
+        
+        &lt;!-- Time Budget --&gt;
+        &lt;Label Grid.Row="0" Grid.Column="0" Content="Max Run Time (hours):" Margin="5"/&gt;
+        &lt;TextBox Grid.Row="0" Grid.Column="1" 
+                 Text="{Binding AutoMLConfig.MaxRunTime, Converter={StaticResource TimeSpanToHoursConverter}}" 
+                 Margin="5"/&gt;
+        
+        &lt;!-- Max Trials --&gt;
+        &lt;Label Grid.Row="0" Grid.Column="2" Content="Max Trials:" Margin="5"/&gt;
+        &lt;TextBox Grid.Row="0" Grid.Column="3" 
+                 Text="{Binding AutoMLConfig.MaxTrials}" 
+                 Margin="5"/&gt;
+        
+        &lt;!-- Optimization Metric --&gt;
+        &lt;Label Grid.Row="1" Grid.Column="0" Content="Optimization Metric:" Margin="5"/&gt;
+        &lt;ComboBox Grid.Row="1" Grid.Column="1" 
+                  SelectedItem="{Binding AutoMLConfig.OptimizationMetric}" 
+                  Margin="5"&gt;
+            &lt;ComboBoxItem Content="accuracy"/&gt;
+            &lt;ComboBoxItem Content="f1_weighted"/&gt;
+            &lt;ComboBoxItem Content="precision"/&gt;
+            &lt;ComboBoxItem Content="recall"/&gt;
+            &lt;ComboBoxItem Content="roc_auc"/&gt;
+        &lt;/ComboBox&gt;
+        
+        &lt;!-- Feature Engineering --&gt;
+        &lt;CheckBox Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
+                  IsChecked="{Binding AutoMLConfig.EnableFeatureEngineering}"
+                  Content="Enable Automatic Feature Engineering"
+                  Margin="5"/&gt;
+        
+        &lt;!-- Ensemble Methods --&gt;
+        &lt;CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                  IsChecked="{Binding AutoMLConfig.EnableEnsemble}"
+                  Content="Enable Ensemble Methods"
+                  Margin="5"/&gt;
+        
+        &lt;!-- Advanced Options --&gt;
+        &lt;CheckBox Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2"
+                  IsChecked="{Binding AutoMLConfig.HandleImbalancedData}"
+                  Content="Handle Imbalanced Data"
+                  Margin="5"/&gt;
+    &lt;/Grid&gt;
+&lt;/Expander&gt;
+
+&lt;!-- AutoML Controls --&gt;
+&lt;StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10"&gt;
+    &lt;Button Content="?? Run AutoML" 
+            Command="{Binding RunAutoMLCommand}"
+            IsEnabled="{Binding IsAutoMLRunning, Converter={StaticResource InverseBooleanConverter}}"
+            Style="{StaticResource PrimaryButtonStyle}"
+            Width="150" Height="40"/&gt;
+    
+    &lt;Button Content="?? Stop AutoML" 
+            Command="{Binding StopAutoMLCommand}"
+            IsEnabled="{Binding IsAutoMLRunning}"
+            Style="{StaticResource DangerButtonStyle}"
+            Width="120" Height="40"/&gt;
+    
+    &lt;Button Content="?? Configure" 
+            Command="{Binding ConfigureAutoMLCommand}"
+            Style="{StaticResource InfoButtonStyle}"
+            Width="100" Height="40"/&gt;
+&lt;/StackPanel&gt;
+
+&lt;!-- AutoML Progress Display --&gt;
+&lt;GroupBox Header="AutoML Progress" 
+          Visibility="{Binding IsAutoMLRunning, Converter={StaticResource BooleanToVisibilityConverter}}"
+          Margin="10"&gt;
+    &lt;StackPanel&gt;
+        &lt;TextBlock Text="{Binding CurrentAutoMLProgress.Stage}" 
+                   FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" Margin="10"/&gt;
+        
+        &lt;ProgressBar Value="{Binding CurrentAutoMLProgress.Percentage}" 
+                     Maximum="100" Height="25" Margin="10"/&gt;
+        
+        &lt;TextBlock Text="{Binding CurrentAutoMLProgress.Message}" 
+                   HorizontalAlignment="Center" Margin="5"/&gt;
+        
+        &lt;!-- Current Trial Info --&gt;
+        &lt;Border BorderBrush="LightGray" BorderThickness="1" Margin="10" Padding="10"
+                Visibility="{Binding CurrentAutoMLProgress.CurrentTrial, Converter={StaticResource NullToVisibilityConverter}}"&gt;
+            &lt;StackPanel&gt;
+                &lt;TextBlock Text="Current Trial" FontWeight="Bold" Margin="0,0,0,5"/&gt;
+                &lt;Grid&gt;
+                    &lt;Grid.ColumnDefinitions&gt;
+                        &lt;ColumnDefinition Width="*"/&gt;
+                        &lt;ColumnDefinition Width="*"/&gt;
+                        &lt;ColumnDefinition Width="*"/&gt;
+                    &lt;/Grid.ColumnDefinitions&gt;
+                    
+                    &lt;TextBlock Grid.Column="0" 
+                               Text="{Binding CurrentAutoMLProgress.CurrentTrial.Number, StringFormat='Trial: {0}'}" /&gt;
+                    &lt;TextBlock Grid.Column="1" 
+                               Text="{Binding CurrentAutoMLProgress.CurrentTrial.Algorithm}" /&gt;
+                    &lt;TextBlock Grid.Column="2" 
+                               Text="{Binding CurrentAutoMLProgress.CurrentTrial.Score, StringFormat='Score: {0:F4}'}" /&gt;
+                &lt;/Grid&gt;
+            &lt;/StackPanel&gt;
+        &lt;/Border&gt;
+        
+        &lt;!-- Best Trial So Far --&gt;
+        &lt;Border BorderBrush="Green" BorderThickness="1" Margin="10" Padding="10"
+                Visibility="{Binding CurrentAutoMLProgress.BestTrialSoFar, Converter={StaticResource NullToVisibilityConverter}}"&gt;
+            &lt;StackPanel&gt;
+                &lt;TextBlock Text="Best Trial So Far" FontWeight="Bold" Foreground="Green" Margin="0,0,0,5"/&gt;
+                &lt;Grid&gt;
+                    &lt;Grid.ColumnDefinitions&gt;
+                        &lt;ColumnDefinition Width="*"/&gt;
+                        &lt;ColumnDefinition Width="*"/&gt;
+                        &lt;ColumnDefinition Width="*"/&gt;
+                    &lt;/Grid.ColumnDefinitions&gt;
+                    
+                    &lt;TextBlock Grid.Column="0" 
+                               Text="{Binding CurrentAutoMLProgress.BestTrialSoFar.Number, StringFormat='Trial: {0}'}" /&gt;
+                    &lt;TextBlock Grid.Column="1" 
+                               Text="{Binding CurrentAutoMLProgress.BestTrialSoFar.Algorithm}" /&gt;
+                    &lt;TextBlock Grid.Column="2" 
+                               Text="{Binding CurrentAutoMLProgress.BestTrialSoFar.Score, StringFormat='Score: {0:F4}'}" /&gt;
+                &lt;/Grid&gt;
+            &lt;/StackPanel&gt;
+        &lt;/Border&gt;
+    &lt;/StackPanel&gt;
+&lt;/GroupBox&gt;
+
+&lt;!-- AutoML Results Display --&gt;
+&lt;Expander Header="AutoML Results" IsExpanded="True"
+          Visibility="{Binding AutoMLResult, Converter={StaticResource NullToVisibilityConverter}}"
+          Margin="10"&gt;
+    &lt;TabControl&gt;
+        &lt;!-- Summary Tab --&gt;
+        &lt;TabItem Header="Summary"&gt;
+            &lt;Grid Margin="10"&gt;
+                &lt;Grid.RowDefinitions&gt;
+                    &lt;RowDefinition Height="Auto"/&gt;
+                    &lt;RowDefinition Height="Auto"/&gt;
+                    &lt;RowDefinition Height="Auto"/&gt;
+                    &lt;RowDefinition Height="Auto"/&gt;
+                &lt;/Grid.RowDefinitions&gt;
+                &lt;Grid.ColumnDefinitions&gt;
+                    &lt;ColumnDefinition Width="*"/&gt;
+                    &lt;ColumnDefinition Width="*"/&gt;
+                &lt;/Grid.ColumnDefinitions&gt;
+                
+                &lt;StackPanel Grid.Row="0" Grid.Column="0" Margin="10"&gt;
+                    &lt;TextBlock Text="Best Model" FontWeight="Bold" FontSize="16" Margin="0,0,0,10"/&gt;
+                    &lt;TextBlock Text="{Binding AutoMLResult.BestAlgorithm, StringFormat='Algorithm: {0}'}" Margin="0,2"/&gt;
+                    &lt;TextBlock Text="{Binding AutoMLResult.BestScore, StringFormat='Score: {0:F4}'}" Margin="0,2"/&gt;
+                    &lt;TextBlock Text="{Binding AutoMLResult.OptimizationMetric, StringFormat='Metric: {0}'}" Margin="0,2"/&gt;
+                &lt;/StackPanel&gt;
+                
+                &lt;StackPanel Grid.Row="0" Grid.Column="1" Margin="10"&gt;
+                    &lt;TextBlock Text="Training Summary" FontWeight="Bold" FontSize="16" Margin="0,0,0,10"/&gt;
+                    &lt;TextBlock Text="{Binding AutoMLResult.CompletedTrials, StringFormat='Completed Trials: {0}'}" Margin="0,2"/&gt;
+                    &lt;TextBlock Text="{Binding AutoMLResult.TotalRunTime, StringFormat='Total Time: {0:hh\\:mm\\:ss}'}" Margin="0,2"/&gt;
+                    &lt;TextBlock Text="{Binding AutoMLResult.UsedEnsemble, StringFormat='Used Ensemble: {0}'}" Margin="0,2"/&gt;
+                &lt;/StackPanel&gt;
+            &lt;/Grid&gt;
+        &lt;/TabItem&gt;
+        
+        &lt;!-- All Trials Tab --&gt;
+        &lt;TabItem Header="All Trials"&gt;
+            &lt;DataGrid ItemsSource="{Binding AutoMLTrials}" 
+                      AutoGenerateColumns="False" 
+                      IsReadOnly="True"
+                      CanUserSortColumns="True"&gt;
+                &lt;DataGrid.Columns&gt;
+                    &lt;DataGridTextColumn Header="Trial" Binding="{Binding Number}" Width="60"/&gt;
+                    &lt;DataGridTextColumn Header="Algorithm" Binding="{Binding Algorithm}" Width="200"/&gt;
+                    &lt;DataGridTextColumn Header="Score" Binding="{Binding Score, StringFormat=F4}" Width="80"/&gt;
+                    &lt;DataGridTextColumn Header="Duration" Binding="{Binding Duration, StringFormat=mm\\:ss}" Width="80"/&gt;
+                    &lt;DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/&gt;
+                &lt;/DataGrid.Columns&gt;
+            &lt;/DataGrid&gt;
+        &lt;/TabItem&gt;
+    &lt;/TabControl&gt;
+&lt;/Expander&gt;</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Best Practices -->
+                <section class="section" id="automl-best-practices">
+                    <h2>? AutoML Best Practices</h2>
+                    
+                    <div class="tip">
+                        <h5><i class="bi bi-lightbulb"></i> AutoML Optimization Guidelines</h5>
+                        <ul>
+                            <li><strong>Data Quality:</strong> Ensure clean, representative data for best results</li>
+                            <li><strong>Time Budget:</strong> Allocate sufficient time for thorough search</li>
+                            <li><strong>Metric Selection:</strong> Choose metrics aligned with business objectives</li>
+                            <li><strong>Feature Engineering:</strong> Enable for better automated feature discovery</li>
+                            <li><strong>Cross-Validation:</strong> Use appropriate CV strategy for your data</li>
+                            <li><strong>Baseline Comparison:</strong> Compare AutoML results with simple baselines</li>
+                        </ul>
+                    </div>
+
+                    <div class="warning">
+                        <h5><i class="bi bi-exclamation-triangle"></i> AutoML Limitations</h5>
+                        <ul>
+                            <li><strong>Domain Knowledge:</strong> AutoML can't replace domain expertise</li>
+                            <li><strong>Data Understanding:</strong> Still need to understand your data</li>
+                            <li><strong>Computational Cost:</strong> Can be resource-intensive</li>
+                            <li><strong>Interpretability:</strong> Complex models may be hard to explain</li>
+                            <li><strong>Overfitting:</strong> Risk of overfitting to validation set</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="PythonMachineLearningViewModel.html" class="btn-beep">
+                        <i class="bi bi-laptop"></i> ML ViewModel
+                    </a>
+                    <a href="hyperparameter-tuning.html" class="btn-beep">
+                        <i class="bi bi-sliders"></i> Hyperparameter Tuning
+                    </a>
+                    <a href="ensemble-methods.html" class="btn-beep">
+                        <i class="bi bi-layers"></i> Ensemble Methods
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.ML AutoML Integration Documentation</p>
+                            <p>Automated Machine Learning for .NET 6, 7, 8, and 9</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="#automl-overview">Overview</a>
+                            <a href="#quick-automl">Quick AutoML</a>
+                            <a href="#advanced-automl">Advanced AutoML</a>
+                            <a href="#viewmodel-integration">ViewModel Integration</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="assets/navigation.js"></script>
+</body>
+</html>

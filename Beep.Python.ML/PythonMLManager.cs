@@ -8,13 +8,114 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TheTechIdea.Beep.Container.Services;
+using Beep.Python.ML.Utils;
+using Beep.Python.ML.Assistants;
 
 namespace Beep.Python.ML
 {
+    /// <summary>
+    /// Core Python ML Manager with clean architecture using assistant classes for specialized operations.
+    /// This class focuses on core ML operations while delegating specialized tasks to assistant classes.
+    /// </summary>
     public class PythonMLManager : PythonBaseViewModel, IPythonMLManager, IDisposable
     {
         private Dictionary<string, bool> algorithmSupervision = new Dictionary<string, bool>();
 
+        #region Assistant Classes (Lazy Initialization)
+        private PythonDataPreprocessingAssistant _dataPreprocessingAssistant;
+        private PythonFeatureEngineeringAssistant _featureEngineeringAssistant;
+        private PythonCategoricalEncodingAssistant _categoricalEncodingAssistant;
+        private PythonTextProcessingAssistant _textProcessingAssistant;
+        private PythonDateTimeProcessingAssistant _dateTimeProcessingAssistant;
+        private PythonImbalancedDataAssistant _imbalancedDataAssistant;
+        private PythonTimeSeriesAssistant _timeSeriesAssistant;
+        private PythonFeatureSelectionAssistant _featureSelectionAssistant;
+        private PythonCrossValidationAssistant _crossValidationAssistant;
+        private PythonDataCleaningAssistant _dataCleaningAssistant;
+        private PythonDimensionalityReductionAssistant _dimensionalityReductionAssistant;
+        private PythonVisualizationAssistant _visualizationAssistant;
+        private PythonUtilityAssistant _utilityAssistant;
+
+        /// <summary>
+        /// Get the data preprocessing assistant for data cleaning and preparation operations
+        /// </summary>
+        public PythonDataPreprocessingAssistant DataPreprocessing =>
+            _dataPreprocessingAssistant ??= new PythonDataPreprocessingAssistant(PythonRuntime, SessionInfo);
+
+        /// <summary>
+        /// Get the feature engineering assistant for advanced feature creation and transformation
+        /// </summary>
+        public PythonFeatureEngineeringAssistant FeatureEngineering =>
+            _featureEngineeringAssistant ??= new PythonFeatureEngineeringAssistant(PythonRuntime, SessionInfo);
+
+        /// <summary>
+        /// Get the categorical encoding assistant for handling categorical variables
+        /// </summary>
+        public PythonCategoricalEncodingAssistant CategoricalEncoding =>
+            _categoricalEncodingAssistant ??= new PythonCategoricalEncodingAssistant(PythonRuntime, SessionInfo);
+
+        /// <summary>
+        /// Get the text processing assistant for natural language processing operations
+        /// </summary>
+        public PythonTextProcessingAssistant TextProcessing =>
+            _textProcessingAssistant ??= new PythonTextProcessingAssistant(PythonRuntime, SessionInfo);
+
+        /// <summary>
+        /// Get the date/time processing assistant for temporal data operations
+        /// </summary>
+        public PythonDateTimeProcessingAssistant DateTimeProcessing =>
+            _dateTimeProcessingAssistant ??= new PythonDateTimeProcessingAssistant(PythonRuntime, SessionInfo);
+
+        /// <summary>
+        /// Get the imbalanced data assistant for handling class imbalance
+        /// </summary>
+        public PythonImbalancedDataAssistant ImbalancedData =>
+            _imbalancedDataAssistant ??= new PythonImbalancedDataAssistant(PythonRuntime, SessionInfo);
+
+        /// <summary>
+        /// Get the time series assistant for time series analysis
+        /// </summary>
+        public PythonTimeSeriesAssistant TimeSeries =>
+            _timeSeriesAssistant ??= new PythonTimeSeriesAssistant(PythonRuntime, SessionInfo);
+
+        /// <summary>
+        /// Get the feature selection assistant for feature importance and selection
+        /// </summary>
+        public PythonFeatureSelectionAssistant FeatureSelection =>
+            _featureSelectionAssistant ??= new PythonFeatureSelectionAssistant(PythonRuntime, SessionInfo);
+
+        /// <summary>
+        /// Get the cross-validation assistant for model validation
+        /// </summary>
+        public PythonCrossValidationAssistant CrossValidation =>
+            _crossValidationAssistant ??= new PythonCrossValidationAssistant(PythonRuntime, SessionInfo);
+
+        /// <summary>
+        /// Get the data cleaning assistant for outlier detection and data quality
+        /// </summary>
+        public PythonDataCleaningAssistant DataCleaning =>
+            _dataCleaningAssistant ??= new PythonDataCleaningAssistant(PythonRuntime, SessionInfo);
+
+        /// <summary>
+        /// Get the dimensionality reduction assistant for PCA, LDA, etc.
+        /// </summary>
+        public PythonDimensionalityReductionAssistant DimensionalityReduction =>
+            _dimensionalityReductionAssistant ??= new PythonDimensionalityReductionAssistant(PythonRuntime, SessionInfo);
+
+        /// <summary>
+        /// Get the visualization assistant for creating charts and plots
+        /// </summary>
+        public PythonVisualizationAssistant Visualization =>
+            _visualizationAssistant ??= new PythonVisualizationAssistant(PythonRuntime, SessionInfo);
+
+        /// <summary>
+        /// Get the utility assistant for data splitting, export, and other utilities
+        /// </summary>
+        public PythonUtilityAssistant Utilities =>
+            _utilityAssistant ??= new PythonUtilityAssistant(PythonRuntime, SessionInfo);
+        #endregion
+
+        #region State Properties
         public bool IsDataLoaded { get; set; } = false;
         public bool IsModelTrained { get; set; } = false;
         public bool IsModelSaved { get; set; } = false;
@@ -29,14 +130,17 @@ namespace Beep.Python.ML
         public string TrainingFilePath { get; set; } = string.Empty;
         public string TestingFilePath { get; set; } = string.Empty;
         public string ValidationFilePath { get; set; } = string.Empty;
+        #endregion
 
+        #region Constructor
         public PythonMLManager(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager, PythonSessionInfo sessionInfo) 
             : base(beepservice, pythonRuntimeManager, sessionInfo)
         {
             InitializeAlgorithmSupervision();
         }
+        #endregion
 
-        #region Enhanced Session Management (New)
+        #region Session Management
         public bool ConfigureMLSession(PythonSessionInfo session, PythonVirtualEnvironment virtualEnvironment)
         {
             return ConfigureSession(session, virtualEnvironment);
@@ -63,7 +167,274 @@ namespace Beep.Python.ML
         }
         #endregion
 
-        #region Async Methods (New Interface Requirements)
+        #region Python Module Management
+        public void ImportPythonModule(string moduleName)
+        {
+            if (!IsInitialized)
+                throw new InvalidOperationException("Python environment is not initialized");
+
+            string script = $"import {moduleName}";
+            PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
+        }
+        #endregion
+
+        #region Core Data Loading and Validation
+        public string[] ValidateAndPreviewData(string filePath, int numRows = 5)
+        {
+            if (!IsInitialized)
+            {
+                return null;
+            }
+
+            var parameters = new Dictionary<string, object>
+            {
+                ["file_path"] = filePath.Replace("\\", "\\\\"),
+                ["num_rows"] = numRows
+            };
+
+            string script = PythonScriptTemplateManager.GetScript("validate_and_preview_data", parameters);
+            ExecuteInSession(script);
+            return GetStringArrayFromSession("preview_columns");
+        }
+
+        public string[] LoadData(string filePath)
+        {
+            if (!IsInitialized)
+            {
+                return null;
+            }
+
+            var parameters = new Dictionary<string, object>
+            {
+                ["file_path"] = filePath.Replace("\\", "\\\\"),
+                ["selected_features"] = Array.Empty<string>()
+            };
+
+            string script = PythonScriptTemplateManager.GetScript("load_data_with_features", parameters);
+
+            if (ExecuteInSession(script))
+            {
+                IsDataLoaded = true;
+                DataFilePath = filePath.Replace("\\", "\\\\");
+            }
+            else
+            {
+                IsDataLoaded = false;
+            }
+
+            return GetStringArrayFromSession("features");
+        }
+
+        public string[] LoadData(string filePath, string[] selectedFeatures)
+        {
+            if (!IsInitialized)
+            {
+                return null;
+            }
+
+            var parameters = new Dictionary<string, object>
+            {
+                ["file_path"] = filePath.Replace("\\", "\\\\"),
+                ["selected_features"] = selectedFeatures
+            };
+
+            string script = PythonScriptTemplateManager.GetScript("load_data_with_features", parameters);
+
+            if (ExecuteInSession(script))
+            {
+                IsDataLoaded = true;
+                DataFilePath = filePath.Replace("\\", "\\\\");
+            }
+            else
+            {
+                IsDataLoaded = false;
+            }
+
+            return GetStringArrayFromSession("features");
+        }
+
+        public void FilterDataToSelectedFeatures(string[] selectedFeatures)
+        {
+            if (!IsInitialized)
+            {
+                throw new InvalidOperationException("The Python environment is not initialized.");
+            }
+
+            var parameters = new Dictionary<string, object>
+            {
+                ["selected_features"] = selectedFeatures
+            };
+
+            string script = PythonScriptTemplateManager.GetScript("filter_selected_features", parameters);
+            ExecuteInSession(script);
+        }
+
+        public string[] GetFeatures(string filePath) => ValidateAndPreviewData(filePath, 1);
+        public string[] LoadTestData(string filePath) => LoadData(filePath);
+        public string[] LoadPredictionData(string filePath) => LoadData(filePath);
+        #endregion
+
+        #region Core Model Operations
+        public void TrainModel(string modelId, MachineLearningAlgorithm algorithm, Dictionary<string, object> parameters, string[] featureColumns, string labelColumn)
+        {
+            if (!IsInitialized)
+            {
+                throw new InvalidOperationException("The Python environment is not initialized.");
+            }
+
+            var scriptParameters = new Dictionary<string, object>
+            {
+                ["model_id"] = modelId,
+                ["algorithm_module"] = GetAlgorithmModule(algorithm),
+                ["algorithm_name"] = GetScikitLearnAlgorithmName(algorithm),
+                ["parameters"] = parameters ?? new Dictionary<string, object>(),
+                ["feature_columns"] = featureColumns,
+                ["label_column"] = labelColumn
+            };
+
+            string script = PythonScriptTemplateManager.GetScript("train_model", scriptParameters);
+            
+            if (ExecuteInSession(script))
+            {
+                IsModelTrained = true;
+            }
+        }
+
+        public string LoadModel(string filePath)
+        {
+            if (!IsInitialized)
+            {
+                throw new InvalidOperationException("The Python environment is not initialized.");
+            }
+
+            string modelId = Guid.NewGuid().ToString();
+            var parameters = new Dictionary<string, object>
+            {
+                ["model_id"] = modelId,
+                ["file_path"] = filePath.Replace("\\", "\\\\")
+            };
+
+            string script = PythonScriptTemplateManager.GetScript("load_model", parameters);
+            
+            if (ExecuteInSession(script))
+            {
+                IsModelLoaded = true;
+                ModelFilePath = filePath;
+                return modelId;
+            }
+            
+            return null;
+        }
+
+        public void SaveModel(string modelId, string filePath)
+        {
+            if (!IsInitialized)
+            {
+                throw new InvalidOperationException("The Python environment is not initialized.");
+            }
+
+            var parameters = new Dictionary<string, object>
+            {
+                ["model_id"] = modelId,
+                ["file_path"] = filePath.Replace("\\", "\\\\")
+            };
+
+            string script = PythonScriptTemplateManager.GetScript("save_model", parameters);
+            
+            if (ExecuteInSession(script))
+            {
+                IsModelSaved = true;
+                ModelFilePath = filePath;
+            }
+        }
+
+        public Tuple<double, double> GetModelClassificationScore(string modelId)
+        {
+            if (!IsInitialized)
+            {
+                throw new InvalidOperationException("The Python environment is not initialized.");
+            }
+
+            var parameters = new Dictionary<string, object>
+            {
+                ["model_id"] = modelId,
+                ["is_classification"] = true
+            };
+
+            string script = PythonScriptTemplateManager.GetScript("evaluate_model", parameters);
+            ExecuteInSession(script);
+
+            var accuracy = GetFromSessionScope<double>("accuracy", 0.0);
+            var f1Score = GetFromSessionScope<double>("f1_score", 0.0);
+            
+            return new Tuple<double, double>(accuracy, f1Score);
+        }
+
+        public Tuple<double, double, double> GetModelRegressionScores(string modelId)
+        {
+            if (!IsInitialized)
+            {
+                throw new InvalidOperationException("The Python environment is not initialized.");
+            }
+
+            var parameters = new Dictionary<string, object>
+            {
+                ["model_id"] = modelId,
+                ["is_classification"] = false
+            };
+
+            string script = PythonScriptTemplateManager.GetScript("evaluate_model", parameters);
+            ExecuteInSession(script);
+
+            var mse = GetFromSessionScope<double>("mse", 0.0);
+            var rmse = GetFromSessionScope<double>("rmse", 0.0);
+            var mae = GetFromSessionScope<double>("mae", 0.0);
+            
+            return new Tuple<double, double, double>(mse, rmse, mae);
+        }
+
+        public dynamic PredictClassification(string[] training_columns)
+        {
+            if (!IsInitialized)
+            {
+                throw new InvalidOperationException("The Python environment is not initialized.");
+            }
+
+            var parameters = new Dictionary<string, object>
+            {
+                ["training_columns"] = training_columns,
+                ["prediction_type"] = "classification"
+            };
+
+            string script = PythonScriptTemplateManager.GetScript("predict_model", parameters);
+            ExecuteInSession(script);
+
+            IsModelPredicted = true;
+            return GetFromSessionScope<object>("predictions", Array.Empty<int>());
+        }
+
+        public dynamic PredictRegression(string[] training_columns)
+        {
+            if (!IsInitialized)
+            {
+                throw new InvalidOperationException("The Python environment is not initialized.");
+            }
+
+            var parameters = new Dictionary<string, object>
+            {
+                ["training_columns"] = training_columns,
+                ["prediction_type"] = "regression"
+            };
+
+            string script = PythonScriptTemplateManager.GetScript("predict_model", parameters);
+            ExecuteInSession(script);
+
+            IsModelPredicted = true;
+            return GetFromSessionScope<object>("predictions", Array.Empty<double>());
+        }
+        #endregion
+
+        #region Async Operations
         public async Task<string[]> LoadDataAsync(string filePath, CancellationToken cancellationToken = default)
         {
             return await Task.FromResult(LoadData(filePath));
@@ -96,9 +467,9 @@ namespace Beep.Python.ML
         }
         #endregion
 
+        #region Private Helper Methods
         private void InitializeAlgorithmSupervision()
         {
-            // Here you set whether each algorithm is supervised or not
             algorithmSupervision["HistGradientBoostingRegressor"] = true;
             algorithmSupervision["HistGradientBoostingClassifier"] = true;
             algorithmSupervision["LogisticRegression"] = true;
@@ -125,21 +496,6 @@ namespace Beep.Python.ML
             algorithmSupervision["AdaBoostClassifier"] = true;
         }
 
-        #region Python Module Management
-        public void ImportPythonModule(string moduleName)
-        {
-            if (!IsInitialized)
-                throw new InvalidOperationException("Python environment is not initialized");
-
-            string script = $"import {moduleName}";
-            PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
-        }
-        #endregion
-
-        #region Session-based Python Execution Helpers
-        /// <summary>
-        /// Executes Python code using the session scope instead of manual GIL management
-        /// </summary>
         private bool ExecuteInSession(string script)
         {
             if (!IsInitialized || SessionInfo == null)
@@ -148,9 +504,6 @@ namespace Beep.Python.ML
             return PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
 
-        /// <summary>
-        /// Gets string array from Python session scope without manual GIL management
-        /// </summary>
         private string[] GetStringArrayFromSession(string variableName)
         {
             if (!IsInitialized || SessionInfo == null)
@@ -158,13 +511,12 @@ namespace Beep.Python.ML
 
             try
             {
-                string script = $@"
-import json
-if '{variableName}' in globals():
-    result_json = json.dumps({variableName})
-else:
-    result_json = '[]'
-";
+                var parameters = new Dictionary<string, object>
+                {
+                    ["variable_name"] = variableName
+                };
+
+                string script = PythonScriptTemplateManager.GetScript("get_string_array", parameters);
                 ExecuteInSession(script);
                 
                 var jsonResult = PythonRuntime.ExecuteManager.RunPythonCodeAndGetOutput(null, "result_json", SessionInfo);
@@ -184,9 +536,6 @@ else:
             return Array.Empty<string>();
         }
 
-        /// <summary>
-        /// Gets data from Python session scope without manual GIL management
-        /// </summary>
         private T GetFromSessionScope<T>(string variableName, T defaultValue = default(T))
         {
             if (!IsInitialized || SessionInfo == null)
@@ -194,16 +543,12 @@ else:
 
             try
             {
-                string script = $@"
-import json
-if '{variableName}' in globals():
-    if isinstance({variableName}, (list, dict, str, int, float, bool)):
-        result_json = json.dumps({variableName})
-    else:
-        result_json = json.dumps(str({variableName}))
-else:
-    result_json = 'null'
-";
+                var parameters = new Dictionary<string, object>
+                {
+                    ["variable_name"] = variableName
+                };
+
+                string script = PythonScriptTemplateManager.GetScript("get_from_session_scope", parameters);
                 ExecuteInSession(script);
                 
                 var jsonResult = PythonRuntime.ExecuteManager.RunPythonCodeAndGetOutput(null, "result_json", SessionInfo);
@@ -225,343 +570,39 @@ else:
 
             return defaultValue;
         }
-        #endregion
 
-        #region "Validate CSV File"
-        public string[] ValidateAndPreviewData(string filePath, int numRows = 5)
+        private string GetAlgorithmModule(MachineLearningAlgorithm algorithm)
         {
-            if (!IsInitialized)
+            return algorithm switch
             {
-                return null;
-            }
-
-            string formattedFilePath = filePath.Replace("\\", "\\\\");
-
-            // Python script to load the first few rows and perform basic validation
-            string script = $@"
-import pandas as pd
-
-# Load the first few rows of the dataset
-preview_data = pd.read_csv('{formattedFilePath}', nrows={numRows})
-
-# Perform basic validation
-expected_columns = preview_data.columns.tolist()
-
-# Check for missing values in the preview (optional)
-missing_values = preview_data.isnull().sum().tolist()
-
-# Check data types (optional)
-data_types = preview_data.dtypes.apply(lambda X: X.name).tolist()
-
-# Assign results to the persistent scope
-preview_columns = expected_columns
-preview_missing_values = missing_values
-preview_data_types = data_types
-";
-
-            // Execute the Python script using session
-            ExecuteInSession(script);
-
-            // Fetch and return the preview column names using session scope
-            return GetStringArrayFromSession("preview_columns");
+                MachineLearningAlgorithm.RandomForestClassifier or MachineLearningAlgorithm.RandomForestRegressor => "ensemble",
+                MachineLearningAlgorithm.GradientBoostingClassifier or MachineLearningAlgorithm.GradientBoostingRegressor => "ensemble",
+                MachineLearningAlgorithm.LogisticRegression or MachineLearningAlgorithm.LinearRegression => "linear_model",
+                MachineLearningAlgorithm.SVC or MachineLearningAlgorithm.SVR => "svm",
+                MachineLearningAlgorithm.DecisionTreeClassifier or MachineLearningAlgorithm.DecisionTreeRegressor => "tree",
+                MachineLearningAlgorithm.KNeighborsClassifier => "neighbors",
+                _ => "ensemble"
+            };
         }
 
-        private string[] FetchPreviewColumnsFromPython()
+        private string GetScikitLearnAlgorithmName(MachineLearningAlgorithm algorithm)
         {
-            return GetStringArrayFromSession("preview_columns");
-        }
-
-        // Additional methods to fetch missing values and data types if needed
-        private int[] FetchPreviewMissingValuesFromPython()
-        {
-            // Use session scope instead of manual GIL
-            var missingValues = GetFromSessionScope<List<object>>("preview_missing_values", new List<object>());
-            return missingValues.Select(v => Convert.ToInt32(v)).ToArray();
-        }
-
-        private string[] FetchPreviewDataTypesFromPython()
-        {
-            return GetStringArrayFromSession("preview_data_types");
-        }
-
-        #endregion "Validate CSV File"
-
-        public void FilterDataToSelectedFeatures(string[] selectedFeatures)
-        {
-            if (!IsInitialized)
+            return algorithm switch
             {
-                throw new InvalidOperationException("The Python environment is not initialized.");
-            }
-
-            // Convert the array of selected features to a Python list format
-            string selectedFeaturesList = string.Join(", ", selectedFeatures.Select(f => $"'{f}'"));
-
-            // Python script to filter the datasets based on selected features
-            string script = $@"
-# List of selected features
-selected_features = [{selectedFeaturesList}]
-
-# Filter train_data, test_data, and data based on selected features
-if 'train_data' in globals():
-    train_data = train_data[selected_features]
-if 'test_data' in globals():
-    test_data = test_data[selected_features]
-if 'data' in globals():
-    data = data[selected_features]
-
-# Update the datasets in the Python scope (if needed)
-globals()['train_data'] = train_data if 'train_data' in globals() else None
-globals()['test_data'] = test_data if 'test_data' in globals() else None
-globals()['data'] = data if 'data' in globals() else None
-";
-
-            // Execute the Python script using session
-            ExecuteInSession(script);
+                MachineLearningAlgorithm.RandomForestClassifier => "RandomForestClassifier",
+                MachineLearningAlgorithm.RandomForestRegressor => "RandomForestRegressor",
+                MachineLearningAlgorithm.LogisticRegression => "LogisticRegression",
+                MachineLearningAlgorithm.LinearRegression => "LinearRegression",
+                MachineLearningAlgorithm.SVC => "SVC",
+                MachineLearningAlgorithm.SVR => "SVR",
+                MachineLearningAlgorithm.DecisionTreeClassifier => "DecisionTreeClassifier",
+                MachineLearningAlgorithm.DecisionTreeRegressor => "DecisionTreeRegressor",
+                MachineLearningAlgorithm.KNeighborsClassifier => "KNeighborsClassifier",
+                MachineLearningAlgorithm.GradientBoostingClassifier => "GradientBoostingClassifier",
+                MachineLearningAlgorithm.GradientBoostingRegressor => "GradientBoostingRegressor",
+                _ => "RandomForestClassifier"
+            };
         }
-
-        public string[] LoadData(string filePath, string[] selectedFeatures)
-        {
-            if (!IsInitialized)
-            {
-                return null;
-            }
-
-            // Replace backslashes with double backslashes or use a raw string
-            string modifiedFilePath = filePath.Replace("\\", "\\\\");
-
-            // Convert the array of selected features to a Python list format
-            string selectedFeaturesList = string.Join(", ", selectedFeatures.Select(f => $"'{f}'"));
-
-            // Python script to load the data and filter by selected features
-            string script = $@"
-import pandas as pd
-
-# Load the dataset
-data = pd.read_csv('{modifiedFilePath}')
-# List of selected features
-selected_features = [{selectedFeaturesList}]
-
-# Filter the data based on selected features
-data = data[selected_features]
-
-# Get the final list of features after filtering
-features = data.columns.tolist()
-
-# Store the filtered data back to the global scope if needed
-globals()['data'] = data
-";
-
-            if (ExecuteInSession(script))
-            {
-                IsDataLoaded = true;
-                DataFilePath = modifiedFilePath;
-            }
-            else
-            {
-                IsDataLoaded = false;
-            }
-
-            // Retrieve the features (column names) from the Python script using session scope
-            return GetStringArrayFromSession("features");
-        }
-
-        public string[] LoadData(string filePath)
-        {
-            if (!IsInitialized)
-            {
-                return null;
-            }
-
-            // Replace backslashes with double backslashes
-            string modifiedFilePath = filePath.Replace("\\", "\\\\");
-
-            // Python script to load the data
-            string script = $@"
-import pandas as pd
-
-# Load the dataset
-data = pd.read_csv('{modifiedFilePath}')
-
-# Get the list of features (column names)
-features = data.columns.tolist()
-
-# Store the data in the global scope
-globals()['data'] = data
-";
-
-            if (ExecuteInSession(script))
-            {
-                IsDataLoaded = true;
-                DataFilePath = modifiedFilePath;
-            }
-            else
-            {
-                IsDataLoaded = false;
-            }
-
-            // Retrieve the features (column names) from the Python script using session scope
-            return GetStringArrayFromSession("features");
-        }
-
-        private string[] FetchFeaturesFromPython()
-        {
-            return GetStringArrayFromSession("features");
-        }
-
-        // Placeholder implementations for interface compliance - these would be in assistant classes in a full implementation
-        #region Interface Implementation Stubs
-        public string[] LoadTestData(string filePath) => LoadData(filePath);
-        public string[] LoadPredictionData(string filePath) => LoadData(filePath);
-        public string[] GetFeatures(string filePath) => ValidateAndPreviewData(filePath, 1);
-        public bool RemoveSpecialCharacters(string dataFrameName) => true;
-
-        public void TrainModel(string modelId, MachineLearningAlgorithm algorithm, Dictionary<string, object> parameters, string[] featureColumns, string labelColumn)
-        {
-            IsModelTrained = true;
-            // Implementation would be in PythonModelManager assistant class
-        }
-
-        public string LoadModel(string filePath)
-        {
-            IsModelLoaded = true;
-            ModelFilePath = filePath;
-            return Guid.NewGuid().ToString();
-        }
-
-        public void SaveModel(string modelId, string filePath)
-        {
-            IsModelSaved = true;
-            ModelFilePath = filePath;
-        }
-
-        public Tuple<double, double> GetModelClassificationScore(string modelId)
-        {
-            return new Tuple<double, double>(0.85, 0.82);
-        }
-
-        public Tuple<double, double, double> GetModelRegressionScores(string modelId)
-        {
-            return new Tuple<double, double, double>(0.15, 0.39, 0.12);
-        }
-
-        public dynamic PredictClassification(string[] training_columns)
-        {
-            IsModelPredicted = true;
-            return new[] { 1, 0, 1, 0, 1 };
-        }
-
-        public dynamic PredictRegression(string[] training_columns)
-        {
-            IsModelPredicted = true;
-            return new[] { 1.5, 2.3, 0.8, 3.1, 1.9 };
-        }
-
-        // All other interface methods would be similarly implemented or delegated to assistant classes
-        // For brevity, I'm including minimal stubs here
-        public string[] SplitData(float testSize, string trainFilePath, string testFilePath) => new[] { trainFilePath, testFilePath };
-        public string[] SplitData(string dataFilePath, float testSize, string trainFilePath, string testFilePath) => new[] { trainFilePath, testFilePath };
-        public string[] SplitData(string dataFilePath, float testSize, float validationSize, string trainFilePath, string testFilePath, string validationFilePath) => new[] { trainFilePath, testFilePath, validationFilePath };
-        public string[] SplitData(string dataFilePath, float testSize, string trainFilePath, string testFilePath, string validationFilePath, string primaryFeatureKeyID, string labelColumn) => new[] { trainFilePath, testFilePath, validationFilePath };
-        public Tuple<string, string> SplitDataClassFile(string urlpath, string filename, double splitRatio) => new Tuple<string, string>("train.csv", "test.csv");
-        public void ExportTestResult(string filePath, string iDColumn, string labelColumn) { IsModelExported = true; }
-
-        // Preprocessing stubs
-        public void HandleCategoricalDataEncoder(string[] categoricalFeatures) { }
-        public void HandleMultiValueCategoricalFeatures(string[] multiValueFeatures) { }
-        public void HandleDateData(string[] dateFeatures) { }
-        public void ImputeMissingValues(string strategy = "mean") { }
-        public void ImputeMissingValuesWithFill(string method = "ffill") { }
-        public void ImputeMissingValuesWithCustomValue(object customValue) { }
-        public void DropMissingValues(string axis = "rows") { }
-        public void ImputeMissingValues(string[] featureList = null, string strategy = "mean") { }
-        public void StandardizeData() { }
-        public void MinMaxScaleData(double featureRangeMin = 0.0, double featureRangeMax = 1.0) { }
-        public void RobustScaleData() { }
-        public void NormalizeData(string norm = "l2") { }
-        public void StandardizeData(string[] selectedFeatures = null) { }
-        public void MinMaxScaleData(double featureRangeMin = 0.0, double featureRangeMax = 1.0, string[] selectedFeatures = null) { }
-        public void RobustScaleData(string[] selectedFeatures = null) { }
-        public void NormalizeData(string norm = "l2", string[] selectedFeatures = null) { }
-
-        // Feature engineering stubs
-        public void GeneratePolynomialFeatures(string[] selectedFeatures = null, int degree = 2, bool includeBias = true, bool interactionOnly = false) { }
-        public void ApplyLogTransformation(string[] selectedFeatures = null) { }
-        public void ApplyBinning(string[] selectedFeatures, int numberOfBins = 5, bool encodeAsOrdinal = true) { }
-        public void ApplyFeatureHashing(string[] selectedFeatures, int nFeatures = 10) { }
-
-        // Imbalanced data handling stubs
-        public void ApplyRandomUndersampling(string targetColumn, float samplingStrategy = 0.5f) { }
-        public void ApplyRandomOversampling(string targetColumn, float samplingStrategy = 1.0f) { }
-        public void ApplySMOTE(string targetColumn, float samplingStrategy = 1.0f) { }
-        public void ApplyNearMiss(string targetColumn, int version = 1) { }
-        public void ApplyBalancedRandomForest(string targetColumn, int nEstimators = 100) { }
-        public void AdjustClassWeights(string modelId, string algorithmName, Dictionary<string, object> parameters, string[] featureColumns, string labelColumn) { }
-        public void RandomOverSample(string labelColumn) { }
-        public void RandomUnderSample(string labelColumn) { }
-        public void ApplySMOTE(string labelColumn) { }
-
-        // Text processing stubs
-        public void ConvertTextToLowercase(string columnName) { }
-        public void RemovePunctuation(string columnName) { }
-        public void RemoveStopwords(string columnName, string language = "english") { }
-        public void ApplyStemming(string columnName) { }
-        public void ApplyLemmatization(string columnName) { }
-        public void ApplyTokenization(string columnName) { }
-        public void ApplyTFIDFVectorization(string columnName, int maxFeatures = 1000) { }
-
-        // Date/Time processing stubs
-        public void ExtractDateTimeComponents(string columnName) { }
-        public void CalculateTimeDifference(string startColumn, string endColumn, string newColumnName) { }
-        public void HandleCyclicalTimeFeatures(string columnName, string featureType) { }
-        public void ParseDateColumn(string columnName) { }
-        public void HandleMissingDates(string columnName, string method = "fill", string fillValue = null) { }
-
-        // Categorical encoding stubs
-        public void OneHotEncode(string[] categoricalFeatures) { }
-        public void LabelEncode(string[] categoricalFeatures) { }
-        public void TargetEncode(string[] categoricalFeatures, string labelColumn) { }
-        public void BinaryEncode(string[] categoricalFeatures) { }
-        public void FrequencyEncode(string[] categoricalFeatures) { }
-        public string[] GetCategoricalFeatures(string[] selectedFeatures) => Array.Empty<string>();
-        public Tuple<string[], string[]> GetCategoricalAndDateFeatures(string[] selectedFeatures) => new Tuple<string[], string[]>(Array.Empty<string>(), Array.Empty<string>());
-
-        // Time series stubs
-        public void TimeSeriesAugmentation(string[] timeSeriesColumns, string augmentationType, double parameter) { }
-
-        // Feature selection stubs
-        public void ApplyVarianceThreshold(double threshold = 0.0) { }
-        public void ApplyCorrelationThreshold(double threshold = 0.9) { }
-        public void ApplyRFE(string modelId, int n_features_to_select = 5) { }
-        public void ApplyL1Regularization(double alpha = 0.01) { }
-        public void ApplyTreeBasedFeatureSelection(string modelId) { }
-        public void ApplyVarianceThreshold(double threshold = 0.0, string[] featureList = null) { }
-
-        // Cross-validation and sampling stubs
-        public void PerformCrossValidation(string modelId, int numFolds = 5) { }
-        public void PerformStratifiedSampling(float testSize, string trainFilePath, string testFilePath) { }
-
-        // Data cleaning stubs
-        public void RemoveOutliers(string[] featureList = null, double zThreshold = 3.0) { }
-        public void DropDuplicates(string[] featureList = null) { }
-        public void StandardizeCategories(string[] featureList = null, Dictionary<string, string> replacements = null) { }
-
-        // Dimensionality reduction stubs
-        public void ApplyPCA(int nComponents = 2, string[] featureList = null) { }
-        public void ApplyLDA(string labelColumn, int nComponents = 2, string[] featureList = null) { }
-
-        // Utility method stubs
-        public void AddLabelColumnIfMissing(string testDataFilePath, string labelColumn) { }
-        public void AddLabelColumnIfMissing(string labelColumn) { }
-
-        // Visualization stubs
-        public bool CreateROC() => true;
-        public bool CreateConfusionMatrix() => true;
-        public bool CreateLearningCurve(string modelId, string imagePath) => true;
-        public bool CreatePrecisionRecallCurve(string modelId, string imagePath) => true;
-        public bool CreateFeatureImportance(string modelId, string imagePath) => true;
-        public bool CreateConfusionMatrix(string modelId, string imagePath) => true;
-        public bool CreateROC(string modelId, string imagePath) => true;
-        public bool GenerateEvaluationReport(string modelId, string outputHtmlPath) => true;
         #endregion
     }
 }

@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Reference - Beep.Python.ML</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="header-content">
+                        <h1><i class="bi bi-book text-info"></i> API Reference</h1>
+                        <p class="lead">Complete API documentation for Beep.Python.ML classes, methods, properties, and assistant classes with detailed examples and parameter descriptions for .NET 6, 7, 8, and 9</p>
+                        
+                        <div class="achievement-badges">
+                            <span class="badge bg-success"><i class="bi bi-check-circle"></i> Complete Coverage</span>
+                            <span class="badge bg-info"><i class="bi bi-cpu"></i> Core Classes</span>
+                            <span class="badge bg-warning"><i class="bi bi-tools"></i> 13 Assistants</span>
+                            <span class="badge bg-primary"><i class="bi bi-code-square"></i> All Methods</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Overview -->
+                <section class="section" id="api-overview">
+                    <h2>📋 API Overview</h2>
+                    <p>The Beep.Python.ML API is organized into core interfaces, implementation classes, and specialized assistant classes. This reference provides complete documentation for all public APIs.</p>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-box">
+                                <h5><i class="bi bi-info-circle"></i> Core APIs</h5>
+                                <ul>
+                                    <li><strong>IPythonMLManager:</strong> Core ML interface</li>
+                                    <li><strong>PythonMLManager:</strong> Implementation with assistants</li>
+                                    <li><strong>MachineLearningAlgorithm:</strong> Supported algorithms</li>
+                                    <li><strong>PythonSessionInfo:</strong> Session management</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="info-box success">
+                                <h5><i class="bi bi-tools"></i> Assistant Classes</h5>
+                                <ul>
+                                    <li><strong>13 Specialized Assistants:</strong> Domain-specific operations</li>
+                                    <li><strong>Lazy Initialization:</strong> Created when needed</li>
+                                    <li><strong>Template-Based:</strong> 101+ Python scripts</li>
+                                    <li><strong>Clean APIs:</strong> Intuitive method signatures</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Core Interface -->
+                <section class="section" id="core-interface">
+                    <h2>🎯 IPythonMLManager Interface</h2>
+                    <p>The core interface defining essential machine learning operations. Clean and focused on fundamental ML workflows.</p>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-gear-wide-connected"></i> Core ML Operations</h3>
+                        
+                        <div class="code-example">
+                            <h4>Data Loading Methods</h4>
+                            <pre><code class="language-csharp">// Validate and preview data before loading
+string[] ValidateAndPreviewData(string filePath, int numRows = 5);
+
+// Load data from file
+string[] LoadData(string filePath);
+
+// Load data with specific features
+string[] LoadData(string filePath, string[] selectedFeatures);
+
+// Get available features from file
+string[] GetFeatures(string filePath);
+
+// Filter data to selected features
+void FilterDataToSelectedFeatures(string[] selectedFeatures);</code></pre>
+                        </div>
+
+                        <div class="code-example">
+                            <h4>Model Training Methods</h4>
+                            <pre><code class="language-csharp">// Train a machine learning model
+void TrainModel(string modelId, MachineLearningAlgorithm algorithm, 
+                Dictionary&lt;string, object&gt; parameters, 
+                string[] featureColumns, string labelColumn);
+
+// Async model training
+Task&lt;bool&gt; TrainModelAsync(string modelId, MachineLearningAlgorithm algorithm, 
+                          Dictionary&lt;string, object&gt; parameters, 
+                          string[] featureColumns, string labelColumn, 
+                          CancellationToken cancellationToken = default);</code></pre>
+                        </div>
+
+                        <div class="code-example">
+                            <h4>Model Management Methods</h4>
+                            <pre><code class="language-csharp">// Save trained model to file
+void SaveModel(string modelId, string filePath);
+
+// Load model from file
+string LoadModel(string filePath);
+
+// Get model evaluation scores for classification
+Tuple&lt;double, double&gt; GetModelClassificationScore(string modelId);
+
+// Get model evaluation scores for regression
+Tuple&lt;double, double, double&gt; GetModelRegressionScores(string modelId);</code></pre>
+                        </div>
+
+                        <div class="code-example">
+                            <h4>Prediction Methods</h4>
+                            <pre><code class="language-csharp">// Make classification predictions
+dynamic PredictClassification(string[] training_columns);
+
+// Make regression predictions
+dynamic PredictRegression(string[] training_columns);</code></pre>
+                        </div>
+
+                        <div class="code-example">
+                            <h4>Session Management Methods</h4>
+                            <pre><code class="language-csharp">// Configure ML session
+bool ConfigureMLSession(PythonSessionInfo session, PythonVirtualEnvironment virtualEnvironment);
+
+// Configure session for specific user
+bool ConfigureMLSessionForUser(string username, string? environmentId = null);
+
+// Check if session is configured
+bool IsSessionConfigured();
+
+// Get configured session info
+PythonSessionInfo? GetConfiguredSession();
+
+// Get configured virtual environment
+PythonVirtualEnvironment? GetConfiguredVirtualEnvironment();</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="method">
+                        <h3><i class="bi bi-cpu"></i> Usage Example</h3>
+                        
+                        <div class="code-example">
+                            <h4>Basic Interface Usage</h4>
+                            <pre><code class="language-csharp">// Initialize ML manager
+IPythonMLManager mlManager = new PythonMLManager(beepService, pythonRuntime, sessionInfo);
+
+// Configure session
+mlManager.ConfigureMLSessionForUser("data_scientist");
+
+// Load and validate data
+var features = mlManager.ValidateAndPreviewData("data.csv", 10);
+var loadedFeatures = mlManager.LoadData("data.csv", features.Take(5).ToArray());
+
+// Train model
+var parameters = new Dictionary&lt;string, object&gt;
+{
+    ["n_estimators"] = 100,
+    ["max_depth"] = 10,
+    ["random_state"] = 42
+};
+
+mlManager.TrainModel("model1", MachineLearningAlgorithm.RandomForestClassifier, 
+                    parameters, loadedFeatures, "target");
+
+// Evaluate model
+var scores = mlManager.GetModelClassificationScore("model1");
+Console.WriteLine($"Accuracy: {scores.Item1:F4}, F1-Score: {scores.Item2:F4}");
+
+// Make predictions
+var predictions = mlManager.PredictClassification(loadedFeatures);</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Implementation Class -->
+                <section class="section" id="implementation-class">
+                    <h2>⚙️ PythonMLManager Implementation</h2>
+                    <p>The concrete implementation providing access to 13 specialized assistant classes and advanced ML operations based on your assistant classes documentation.</p>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-tools"></i> Assistant Properties</h3>
+                        
+                        <div class="code-example">
+                            <h4>All Assistant Properties</h4>
+                            <pre><code class="language-csharp">public class PythonMLManager : IPythonMLManager
+{
+    // Data Processing Assistants
+    public PythonDataPreprocessingAssistant DataPreprocessing { get; }
+    public PythonFeatureEngineeringAssistant FeatureEngineering { get; }
+    public PythonDataCleaningAssistant DataCleaning { get; }
+    
+    // Encoding and Transformation Assistants
+    public PythonCategoricalEncodingAssistant CategoricalEncoding { get; }
+    public PythonTextProcessingAssistant TextProcessing { get; }
+    public PythonDateTimeProcessingAssistant DateTimeProcessing { get; }
+    
+    // Advanced ML Assistants
+    public PythonImbalancedDataAssistant ImbalancedData { get; }
+    public PythonTimeSeriesAssistant TimeSeries { get; }
+    public PythonFeatureSelectionAssistant FeatureSelection { get; }
+    public PythonCrossValidationAssistant CrossValidation { get; }
+    
+    // Analysis and Output Assistants
+    public PythonDimensionalityReductionAssistant DimensionalityReduction { get; }
+    public PythonVisualizationAssistant Visualization { get; }
+    public PythonUtilityAssistant Utilities { get; }
+}</code></pre>
+                        </div>
+
+                        <div class="code-example">
+                            <h4>Accessing Assistant Classes</h4>
+                            <pre><code class="language-csharp">// Cast interface to implementation to access assistants
+if (mlManager is PythonMLManager manager)
+{
+    // Data preprocessing operations
+    manager.DataPreprocessing.ImputeMissingValues("mean");
+    manager.DataPreprocessing.StandardizeData();
+    
+    // Feature engineering operations
+    manager.FeatureEngineering.GeneratePolynomialFeatures(degree: 2);
+    
+    // Categorical encoding operations
+    manager.CategoricalEncoding.OneHotEncode(categoricalFeatures);
+    
+    // Advanced analysis operations
+    manager.CrossValidation.PerformCrossValidation("model1", 5);
+    manager.Visualization.CreateROC("model1", "roc_curve.png");
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="method">
+                        <h3><i class="bi bi-database"></i> State Properties</h3>
+                        
+                        <div class="code-example">
+                            <h4>ML Pipeline State</h4>
+                            <pre><code class="language-csharp">// Data state
+public bool IsDataLoaded { get; set; }
+public string DataFilePath { get; set; }
+public bool IsDataSplit { get; set; }
+
+// Model state
+public bool IsModelTrained { get; set; }
+public bool IsModelSaved { get; set; }
+public bool IsModelLoaded { get; set; }
+public string ModelFilePath { get; set; }
+
+// Prediction state
+public bool IsModelPredicted { get; set; }
+public bool IsModelScored { get; set; }
+public bool IsModelExported { get; set; }
+public string PredictionsFilePath { get; set; }
+
+// File paths
+public string TrainingFilePath { get; set; }
+public string TestingFilePath { get; set; }
+public string ValidationFilePath { get; set; }</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Machine Learning Algorithms -->
+                <section class="section" id="ml-algorithms">
+                    <h2>🤖 MachineLearningAlgorithm Enumeration</h2>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-list"></i> Supported Algorithms</h3>
+                        
+                        <div class="code-example">
+                            <h4>Classification Algorithms</h4>
+                            <pre><code class="language-csharp">public enum MachineLearningAlgorithm
+{
+    // Tree-based Classifiers
+    RandomForestClassifier,
+    GradientBoostingClassifier,
+    HistGradientBoostingClassifier,
+    DecisionTreeClassifier,
+    
+    // Linear Classifiers
+    LogisticRegression,
+    
+    // Support Vector Machines
+    SVC,
+    
+    // Instance-based
+    KNeighborsClassifier,
+    
+    // Naive Bayes
+    GaussianNB,
+    MultinomialNB,
+    BernoulliNB,
+    
+    // Ensemble Methods
+    AdaBoostClassifier
+}</code></pre>
+                        </div>
+
+                        <div class="code-example">
+                            <h4>Regression Algorithms</h4>
+                            <pre><code class="language-csharp">// Regression Algorithms
+RandomForestRegressor,
+GradientBoostingRegressor,
+HistGradientBoostingRegressor,
+DecisionTreeRegressor,
+
+// Linear Regression
+LinearRegression,
+LassoRegression,
+RidgeRegression,
+ElasticNet,
+
+// Support Vector Regression
+SVR,
+
+// Instance-based Regression
+KNeighborsRegressor</code></pre>
+                        </div>
+
+                        <div class="code-example">
+                            <h4>Clustering Algorithms</h4>
+                            <pre><code class="language-csharp">// Unsupervised Learning
+KMeans,
+DBSCAN,
+AgglomerativeClustering</code></pre>
+                        </div>
+
+                        <div class="code-example">
+                            <h4>Algorithm Usage</h4>
+                            <pre><code class="language-csharp">// Use specific algorithm
+var algorithm = MachineLearningAlgorithm.RandomForestClassifier;
+
+// Algorithm-specific parameters
+var parameters = new Dictionary&lt;string, object&gt;();
+
+switch (algorithm)
+{
+    case MachineLearningAlgorithm.RandomForestClassifier:
+        parameters = new Dictionary&lt;string, object&gt;
+        {
+            ["n_estimators"] = 100,
+            ["max_depth"] = 10,
+            ["min_samples_split"] = 2,
+            ["min_samples_leaf"] = 1,
+            ["random_state"] = 42
+        };
+        break;
+        
+    case MachineLearningAlgorithm.LogisticRegression:
+        parameters = new Dictionary&lt;string, object&gt;
+        {
+            ["C"] = 1.0,
+            ["max_iter"] = 1000,
+            ["random_state"] = 42,
+            ["solver"] = "liblinear"
+        };
+        break;
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Assistant Classes API (Based on your detailed assistant classes documentation) -->
+                <section class="section" id="assistant-apis">
+                    <h2>🛠️ Assistant Classes API Reference</h2>
+                    
+                    <!-- Data Preprocessing Assistant -->
+                    <div class="method">
+                        <h3><i class="bi bi-database"></i> PythonDataPreprocessingAssistant</h3>
+                        
+                        <div class="code-example">
+                            <h4>Missing Value Handling</h4>
+                            <pre><code class="language-csharp">// Impute missing values with strategy
+void ImputeMissingValues(string strategy = "mean");
+// strategy: "mean", "median", "mode"
+
+// Impute with specific fill method
+void ImputeMissingValuesWithFill(string method = "ffill");
+// method: "ffill", "bfill"
+
+// Impute with custom value
+void ImputeMissingValuesWithCustomValue(object customValue);
+
+// Drop rows/columns with missing values
+void DropMissingValues(string axis = "rows");
+// axis: "rows", "columns"
+
+// Impute specific features
+void ImputeMissingValues(string[] featureList = null, string strategy = "mean");</code></pre>
+                        </div>
+
+                        <div class="code-example">
+                            <h4>Feature Scaling</h4>
+                            <pre><code class="language-csharp">// Standardize features (z-score normalization)
+void StandardizeData();
+void StandardizeData(string[] selectedFeatures = null);
+
+// Min-max scaling
+void MinMaxScaleData(double featureRangeMin = 0.0, double featureRangeMax = 1.0);
+void MinMaxScaleData(double featureRangeMin = 0.0, double featureRangeMax = 1.0, string[] selectedFeatures = null);
+
+// Robust scaling (median and IQR)
+void RobustScaleData();
+void RobustScaleData(string[] selectedFeatures = null);
+
+// L2 normalization
+void NormalizeData(string norm = "l2");
+void NormalizeData(string norm = "l2", string[] selectedFeatures = null);</code></pre>
+                        </div>
+
+                        <div class="code-example">
+                            <h4>Data Type Handling</h4>
+                            <pre><code class="language-csharp">// Handle categorical data encoding
+void HandleCategoricalDataEncoder(string[] categoricalFeatures);
+
+// Handle multi-value categorical features
+void HandleMultiValueCategoricalFeatures(string[] multiValueFeatures);
+
+// Handle date data
+void HandleDateData(string[] dateFeatures);
+
+// Remove special characters
+void RemoveSpecialCharacters(string dataFrameName);</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Feature Engineering Assistant -->
+                    <div class="method">
+                        <h3><i class="bi bi-gear"></i> PythonFeatureEngineeringAssistant</h3>
+                        
+                        <div class="code-example">
+                            <h4>Feature Creation Methods</h4>
+                            <pre><code class="language-csharp">// Generate polynomial features
+void GeneratePolynomialFeatures(
+    string[] selectedFeatures = null, 
+    int degree = 2, 
+    bool includeBias = true, 
+    bool interactionOnly = false);
+
+// Apply log transformation
+void ApplyLogTransformation(string[] selectedFeatures = null);
+
+// Create binned features
+void ApplyBinning(
+    string[] selectedFeatures, 
+    int numberOfBins = 5, 
+    bool encodeAsOrdinal = true);
+
+// Feature hashing
+void ApplyFeatureHashing(
+    string[] selectedFeatures, 
+    int nFeatures = 10);</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Categorical Encoding Assistant -->
+                    <div class="method">
+                        <h3><i class="bi bi-tags"></i> PythonCategoricalEncodingAssistant</h3>
+                        
+                        <div class="code-example">
+                            <h4>Encoding Methods</h4>
+                            <pre><code class="language-csharp">// One-hot encoding
+void OneHotEncode(string[] categoricalFeatures);
+
+// Label encoding
+void LabelEncode(string[] categoricalFeatures);
+
+// Target encoding
+void TargetEncode(string[] categoricalFeatures, string labelColumn);
+
+// Binary encoding
+void BinaryEncode(string[] categoricalFeatures);
+
+// Frequency encoding
+void FrequencyEncode(string[] categoricalFeatures);
+
+// Get categorical features
+string[] GetCategoricalFeatures(string[] selectedFeatures);
+
+// Get categorical and date features
+string[] GetCategoricalAndDateFeatures(string[] selectedFeatures);</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Text Processing Assistant -->
+                    <div class="method">
+                        <h3><i class="bi bi-chat-text"></i> PythonTextProcessingAssistant</h3>
+                        
+                        <div class="code-example">
+                            <h4>Text Processing Methods</h4>
+                            <pre><code class="language-csharp">// Convert text to lowercase
+void ConvertTextToLowercase(string columnName);
+
+// Remove punctuation
+void RemovePunctuation(string columnName);
+
+// Remove stopwords
+void RemoveStopwords(string columnName, string language = "english");
+
+// Apply stemming
+void ApplyStemming(string columnName);
+
+// Apply lemmatization
+void ApplyLemmatization(string columnName);
+
+// Apply tokenization
+void ApplyTokenization(string columnName);
+
+// TF-IDF vectorization
+void ApplyTFIDFVectorization(string columnName, int maxFeatures = 1000);</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Imbalanced Data Assistant -->
+                    <div class="method">
+                        <h3><i class="bi bi-balance"></i> PythonImbalancedDataAssistant</h3>
+                        
+                        <div class="code-example">
+                            <h4>Sampling Methods</h4>
+                            <pre><code class="language-csharp">// Random undersampling
+void ApplyRandomUndersampling(string targetColumn, float samplingStrategy = 0.5f);
+void RandomUnderSample(string labelColumn);
+
+// Random oversampling
+void ApplyRandomOversampling(string targetColumn, float samplingStrategy = 1.0f);
+void RandomOverSample(string labelColumn);
+
+// SMOTE oversampling
+void ApplySMOTE(string targetColumn, float samplingStrategy = 1.0f);
+void ApplySMOTE(string labelColumn);
+
+// Near Miss undersampling
+void ApplyNearMiss(string targetColumn, int version = 1);
+
+// Balanced Random Forest
+void ApplyBalancedRandomForest(string targetColumn, int nEstimators = 100);
+
+// Adjust class weights
+void AdjustClassWeights(
+    string modelId, 
+    string algorithmName, 
+    Dictionary&lt;string, object&gt; parameters, 
+    string[] featureColumns, 
+    string labelColumn);</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Visualization Assistant -->
+                    <div class="method">
+                        <h3><i class="bi bi-bar-chart"></i> PythonVisualizationAssistant</h3>
+                        
+                        <div class="code-example">
+                            <h4>Model Evaluation Plots</h4>
+                            <pre><code class="language-csharp">// Create ROC curve
+void CreateROC();
+void CreateROC(string modelId, string imagePath);
+
+// Create confusion matrix
+void CreateConfusionMatrix();
+void CreateConfusionMatrix(string modelId, string imagePath);
+
+// Create learning curve
+void CreateLearningCurve(string modelId, string imagePath);
+
+// Create precision-recall curve
+void CreatePrecisionRecallCurve(string modelId, string imagePath);
+
+// Create feature importance plot
+void CreateFeatureImportance(string modelId, string imagePath);
+
+// Generate comprehensive HTML report
+void GenerateEvaluationReport(string modelId, string outputHtmlPath);</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Cross Validation Assistant -->
+                    <div class="method">
+                        <h3><i class="bi bi-check2-all"></i> PythonCrossValidationAssistant</h3>
+                        
+                        <div class="code-example">
+                            <h4>Validation Methods</h4>
+                            <pre><code class="language-csharp">// Perform k-fold cross-validation
+void PerformCrossValidation(string modelId, int numFolds = 5);
+
+// Stratified sampling for train/test split
+void PerformStratifiedSampling(
+    float testSize, 
+    string trainFilePath, 
+    string testFilePath);</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Feature Selection Assistant -->
+                    <div class="method">
+                        <h3><i class="bi bi-funnel"></i> PythonFeatureSelectionAssistant</h3>
+                        
+                        <div class="code-example">
+                            <h4>Feature Selection Methods</h4>
+                            <pre><code class="language-csharp">// Apply variance threshold
+void ApplyVarianceThreshold(double threshold = 0.0);
+void ApplyVarianceThreshold(double threshold = 0.0, string[] featureList = null);
+
+// Apply correlation threshold
+void ApplyCorrelationThreshold(double threshold = 0.9);
+
+// Recursive Feature Elimination
+void ApplyRFE(string modelId, int n_features_to_select = 5);
+
+// L1 regularization feature selection
+void ApplyL1Regularization(double alpha = 0.01);
+
+// Tree-based feature selection
+void ApplyTreeBasedFeatureSelection(string modelId);</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Utilities Assistant -->
+                    <div class="method">
+                        <h3><i class="bi bi-tools"></i> PythonUtilityAssistant</h3>
+                        
+                        <div class="code-example">
+                            <h4>Data Management Methods</h4>
+                            <pre><code class="language-csharp">// Split data into train/test sets
+string[] SplitData(float testSize, string trainFilePath, string testFilePath);
+
+// Split data with file paths
+string[] SplitData(string dataFilePath, float testSize, string trainFilePath, string testFilePath);
+
+// Split data with validation set
+string[] SplitData(
+    string dataFilePath, 
+    float testSize, 
+    float validationSize, 
+    string trainFilePath, 
+    string testFilePath, 
+    string validationFilePath);
+
+// Split data with ID and label columns
+string[] SplitData(
+    string dataFilePath, 
+    float testSize, 
+    string trainFilePath, 
+    string testFilePath, 
+    string validationFilePath, 
+    string primaryFeatureKeyID, 
+    string labelColumn);
+
+// Export test results
+void ExportTestResult(string filePath, string iDColumn, string labelColumn);
+
+// Add label column if missing
+void AddLabelColumnIfMissing(string labelColumn);
+void AddLabelColumnIfMissing(string testDataFilePath, string labelColumn);
+
+// Split data class file
+void SplitDataClassFile(string urlpath, string filename, double splitRatio);</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Error Handling -->
+                <section class="section" id="error-handling">
+                    <h2>⚠️ Error Handling</h2>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-exclamation-triangle"></i> Exception Types</h3>
+                        
+                        <div class="code-example">
+                            <h4>Common Exceptions</h4>
+                            <pre><code class="language-csharp">// Session not configured
+InvalidOperationException("Python environment is not initialized");
+InvalidOperationException("The Python environment is not initialized.");
+
+// File not found
+FileNotFoundException("Data file not found: {filePath}");
+
+// Invalid parameters
+ArgumentException("Invalid algorithm parameters");
+ArgumentNullException("Feature columns cannot be null");
+
+// Python execution errors
+PythonException("Python script execution failed");
+
+// Model errors
+InvalidOperationException("Model not trained");
+InvalidOperationException("Model file not found");</code></pre>
+                        </div>
+
+                        <div class="code-example">
+                            <h4>Error Handling Best Practices</h4>
+                            <pre><code class="language-csharp">try
+{
+    // Configure session first
+    if (!mlManager.ConfigureMLSessionForUser("user1"))
+    {
+        throw new InvalidOperationException("Failed to configure ML session");
+    }
+
+    // Validate data file exists
+    if (!File.Exists(dataFilePath))
+    {
+        throw new FileNotFoundException($"Data file not found: {dataFilePath}");
+    }
+
+    // Load and validate data
+    var features = mlManager.ValidateAndPreviewData(dataFilePath);
+    if (features == null || features.Length == 0)
+    {
+        throw new InvalidOperationException("No valid features found in data file");
+    }
+
+    // Use assistant classes with error handling
+    if (mlManager is PythonMLManager manager)
+    {
+        manager.DataPreprocessing.ImputeMissingValues("mean");
+        manager.DataPreprocessing.StandardizeData();
+        manager.FeatureEngineering.GeneratePolynomialFeatures(degree: 2);
+    }
+
+    // Train model with parameter validation
+    var parameters = new Dictionary&lt;string, object&gt;
+    {
+        ["n_estimators"] = 100,
+        ["max_depth"] = 10,
+        ["random_state"] = 42
+    };
+
+    mlManager.TrainModel("model1", MachineLearningAlgorithm.RandomForestClassifier, 
+                        parameters, features, "target");
+
+    Console.WriteLine("✅ ML pipeline completed successfully");
+}
+catch (InvalidOperationException ex)
+{
+    Console.WriteLine($"❌ Configuration error: {ex.Message}");
+}
+catch (FileNotFoundException ex)
+{
+    Console.WriteLine($"❌ File error: {ex.Message}");
+}
+catch (ArgumentException ex)
+{
+    Console.WriteLine($"❌ Parameter error: {ex.Message}");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"❌ Unexpected error: {ex.Message}");
+    Console.WriteLine($"Stack trace: {ex.StackTrace}");
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Performance Considerations -->
+                <section class="section" id="performance">
+                    <h2>⚡ Performance Considerations</h2>
+                    
+                    <div class="tip">
+                        <h5><i class="bi bi-lightbulb"></i> Performance Tips</h5>
+                        <ul>
+                            <li><strong>Session Reuse:</strong> Configure sessions once and reuse for multiple operations</li>
+                            <li><strong>Lazy Initialization:</strong> Assistant classes are created only when accessed</li>
+                            <li><strong>Script Caching:</strong> Python scripts are cached for optimal performance</li>
+                            <li><strong>Memory Management:</strong> Dispose of managers properly after use</li>
+                            <li><strong>Async Operations:</strong> Use async methods for long-running ML operations</li>
+                            <li><strong>Data Size:</strong> Consider data size when choosing algorithms and parameters</li>
+                        </ul>
+                    </div>
+
+                    <div class="warning">
+                        <h5><i class="bi bi-exclamation-triangle"></i> Memory Usage</h5>
+                        <ul>
+                            <li><strong>Large Datasets:</strong> Monitor memory usage with large datasets</li>
+                            <li><strong>Model Complexity:</strong> Complex models require more memory</li>
+                            <li><strong>Feature Engineering:</strong> Polynomial features can exponentially increase memory usage</li>
+                            <li><strong>Batch Processing:</strong> Consider batch processing for very large datasets</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="index.html" class="btn-beep">
+                        <i class="bi bi-house"></i> Home
+                    </a>
+                    <a href="getting-started.html" class="btn-beep">
+                        <i class="bi bi-rocket"></i> Getting Started
+                    </a>
+                    <a href="assistant-classes.html" class="btn-beep">
+                        <i class="bi bi-tools"></i> Assistant Classes
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.ML API Reference</p>
+                            <p>Complete API Documentation for .NET 6, 7, 8, and 9</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="#core-interface">Core Interface</a>
+                            <a href="#implementation-class">Implementation</a>
+                            <a href="#assistant-apis">Assistant APIs</a>
+                            <a href="#error-handling">Error Handling</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="assets/navigation.js"></script>
+</body>
+</html>

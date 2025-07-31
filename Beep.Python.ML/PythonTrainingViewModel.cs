@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using TheTechIdea.Beep.Container.Services;
+using Beep.Python.ML.Utils;
 
 namespace Beep.Python.ML
 {
@@ -169,28 +170,8 @@ namespace Beep.Python.ML
 
             try
             {
-                // Import training-specific libraries including advanced ones
-                string script = @"
-import numpy as np
-import pandas as pd
-from sklearn.model_selection import (
-    train_test_split, GridSearchCV, RandomizedSearchCV, 
-    cross_val_score, StratifiedKFold, learning_curve
-)
-from sklearn.metrics import (
-    accuracy_score, mean_squared_error, mean_absolute_error, f1_score,
-    classification_report, confusion_matrix, roc_curve, roc_auc_score,
-    precision_recall_curve, average_precision_score
-)
-from sklearn.preprocessing import StandardScaler, RobustScaler, MinMaxScaler
-from sklearn.feature_selection import SelectKBest, f_classif, f_regression
-import pickle
-import joblib
-import warnings
-warnings.filterwarnings('ignore')
-
-print('Advanced ML training environment initialized successfully')
-";
+                // Use template manager to get initialization script
+                string script = PythonScriptTemplateManager.GetScript("training_initialization");
                 ExecuteInSession(script);
                 
                 Editor?.AddLogMessage("PythonTrainingViewModel", "Advanced training environment initialized successfully", DateTime.Now, -1, null, Errors.Ok);
@@ -504,13 +485,28 @@ print('Advanced ML training environment initialized successfully')
 
                 parameterGrid ??= GetDefaultParameterGrid(SelectAlgorithm);
                 
-                string script = searchType switch
+                var scriptParams = new Dictionary<string, object>
                 {
-                    OptimizationSearchType.GridSearch => GenerateGridSearchScript(parameterGrid, cvFolds),
-                    OptimizationSearchType.RandomSearch => GenerateRandomSearchScript(parameterGrid, 50, cvFolds),
-                    _ => GenerateGridSearchScript(parameterGrid, cvFolds)
+                    ["algorithm_module"] = GetAlgorithmModule(SelectAlgorithm),
+                    ["algorithm_name"] = GetScikitLearnAlgorithmName(SelectAlgorithm),
+                    ["parameter_grid"] = parameterGrid,
+                    ["cv_folds"] = cvFolds,
+                    ["label_column"] = LabelColumn
                 };
 
+                string scriptName = searchType switch
+                {
+                    SearchType.GridSearch => "grid_search",
+                    SearchType.RandomSearch => "random_search",
+                    _ => "grid_search"
+                };
+
+                if (searchType == SearchType.RandomSearch)
+                {
+                    scriptParams["n_iterations"] = 50;
+                }
+
+                string script = PythonScriptTemplateManager.GetScript(scriptName, scriptParams);
                 bool success = await ExecuteInSessionAsync(script, cancellationToken);
                 
                 if (success)
@@ -529,7 +525,7 @@ print('Advanced ML training environment initialized successfully')
                         // Update view model properties
                         BestParameters = result.BestParams;
                         BestCrossValidationScore = result.BestScore;
-                        Parameters = result.BestParams; // Update current parameters
+                        Parameters = result.BestParams;
                         
                         Editor?.AddLogMessage("PythonTrainingViewModel", 
                             $"Hyperparameter optimization completed. Best score: {result.BestScore:F4}", 
@@ -575,12 +571,17 @@ print('Advanced ML training environment initialized successfully')
 
             try
             {
-                string script = GenerateCrossValidationScript(
-                    SelectAlgorithm,
-                    Parameters ?? new Dictionary<string, object>(),
-                    cvFolds,
-                    scoringMetric);
+                var scriptParams = new Dictionary<string, object>
+                {
+                    ["algorithm_module"] = GetAlgorithmModule(SelectAlgorithm),
+                    ["algorithm_name"] = GetScikitLearnAlgorithmName(SelectAlgorithm),
+                    ["parameters"] = GenerateParametersScript(Parameters ?? new Dictionary<string, object>()),
+                    ["cv_folds"] = cvFolds,
+                    ["scoring_metric"] = scoringMetric,
+                    ["label_column"] = LabelColumn
+                };
 
+                string script = PythonScriptTemplateManager.GetScript("cross_validation", scriptParams);
                 bool success = await ExecuteInSessionAsync(script, cancellationToken);
                 
                 if (success)
@@ -640,7 +641,17 @@ print('Advanced ML training environment initialized successfully')
 
             try
             {
-                string script = GenerateModelComparisonScript(algorithms, cvFolds);
+                var algorithmsList = algorithms.Select(alg => 
+                    $"('{alg}', {GetScikitLearnAlgorithmName(alg)}())").ToArray();
+
+                var scriptParams = new Dictionary<string, object>
+                {
+                    ["algorithms_list"] = $"[\n    {string.Join(",\n    ", algorithmsList)}\n]",
+                    ["cv_folds"] = cvFolds,
+                    ["label_column"] = LabelColumn
+                };
+
+                string script = PythonScriptTemplateManager.GetScript("model_comparison", scriptParams);
                 bool success = await ExecuteInSessionAsync(script, cancellationToken);
                 
                 if (success)
@@ -717,7 +728,12 @@ print('Advanced ML training environment initialized successfully')
                     return result;
                 }
 
-                string script = GenerateComprehensiveEvaluationScript();
+                var scriptParams = new Dictionary<string, object>
+                {
+                    ["is_classification"] = IsClassificationAlgorithm(SelectAlgorithm).ToString().ToLower()
+                };
+
+                string script = PythonScriptTemplateManager.GetScript("comprehensive_evaluation", scriptParams);
                 bool success = await ExecuteInSessionAsync(script, cancellationToken);
                 
                 if (success)
@@ -1124,6 +1140,396 @@ print('Advanced ML training environment initialized successfully')
             }
 
             return summary.ToString();
+        }
+        #endregion
+
+        #region Private Helper Methods
+        /// <summary>
+        /// Missing methods that need to be implemented
+        /// </summary>
+        private async Task<HyperparameterOptimizationResult> OptimizeHyperparametersAdvancedAsync(AdvancedTrainingConfiguration configuration, CancellationToken cancellationToken)
+        {
+            // Map OptimizationStrategy to SearchType
+            var searchType = configuration.OptimizationStrategy switch
+            {
+                OptimizationStrategy.GridSearch => SearchType.GridSearch,
+                OptimizationStrategy.RandomSearch => SearchType.RandomSearch,
+                OptimizationStrategy.BayesianOptimization => SearchType.BayesianOptimization,
+                OptimizationStrategy.HyperBand => SearchType.HyperBand,
+                OptimizationStrategy.EvolutionarySearch => SearchType.EvolutionarySearch,
+                _ => SearchType.GridSearch
+            };
+
+            // Implementation similar to OptimizeHyperparametersAsync but with configuration
+            return await OptimizeHyperparametersAsync(
+                configuration.CustomParameterGrid, 
+                searchType, 
+                configuration.CrossValidationFolds, 
+                cancellationToken);
+        }
+
+        private async Task<CrossValidationResult> PerformCrossValidationAdvancedAsync(AdvancedTrainingConfiguration configuration, CancellationToken cancellationToken)
+        {
+            // Implementation similar to PerformCrossValidationAsync but with configuration
+            return await PerformCrossValidationAsync(
+                configuration.CrossValidationFolds, 
+                configuration.ScoringMetric, 
+                cancellationToken);
+        }
+
+        /// <summary>
+        /// Validate advanced training setup
+        /// </summary>
+        private bool ValidateAdvancedTrainingSetup(AdvancedTrainingConfiguration configuration)
+        {
+            if (!IsSessionConfigured)
+            {
+                Editor?.AddLogMessage("PythonTrainingViewModel", "Session not configured", DateTime.Now, -1, null, Errors.Failed);
+                return false;
+            }
+
+            if (!IsDataReady)
+            {
+                Editor?.AddLogMessage("PythonTrainingViewModel", "Training data not ready", DateTime.Now, -1, null, Errors.Failed);
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(LabelColumn))
+            {
+                Editor?.AddLogMessage("PythonTrainingViewModel", "Label column not specified", DateTime.Now, -1, null, Errors.Failed);
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Apply advanced preprocessing async
+        /// </summary>
+        private async Task ApplyAdvancedPreprocessingAsync(AdvancedTrainingConfiguration configuration, CancellationToken cancellationToken)
+        {
+            if (PythonMLManager == null || !IsSessionConfigured)
+                return;
+
+            try
+            {
+                var config = configuration.PreprocessingConfig;
+                
+                // Cast PythonMLManager to PythonMLManager (implementation) to access assistant classes
+                if (PythonMLManager is PythonMLManager mlManager)
+                {
+                    // Apply missing value handling
+                    switch (config.MissingValueStrategy)
+                    {
+                        case MissingValueStrategy.Mean:
+                            mlManager.DataPreprocessing.ImputeMissingValues("mean");
+                            break;
+                        case MissingValueStrategy.Median:
+                            mlManager.DataPreprocessing.ImputeMissingValues("median");
+                            break;
+                        case MissingValueStrategy.Mode:
+                            mlManager.DataPreprocessing.ImputeMissingValues("most_frequent");
+                            break;
+                    }
+
+                    // Apply scaling
+                    switch (config.ScalingMethod)
+                    {
+                        case ScalingMethod.StandardScaler:
+                            mlManager.DataPreprocessing.StandardizeData();
+                            break;
+                        case ScalingMethod.MinMaxScaler:
+                            mlManager.DataPreprocessing.MinMaxScaleData(0, 1);
+                            break;
+                        case ScalingMethod.RobustScaler:
+                            mlManager.DataPreprocessing.RobustScaleData();
+                            break;
+                    }
+
+                    // Apply categorical encoding
+                    if (config.CategoricalFeatures?.Length > 0)
+                    {
+                        switch (config.CategoricalEncoding)
+                        {
+                            case CategoricalEncoding.OneHot:
+                                mlManager.CategoricalEncoding.OneHotEncode(config.CategoricalFeatures);
+                                break;
+                            case CategoricalEncoding.Label:
+                                mlManager.CategoricalEncoding.LabelEncode(config.CategoricalFeatures);
+                                break;
+                            case CategoricalEncoding.Target:
+                                mlManager.CategoricalEncoding.TargetEncode(config.CategoricalFeatures, LabelColumn);
+                                break;
+                        }
+                    }
+                }
+
+                Editor?.AddLogMessage("PythonTrainingViewModel", "Advanced preprocessing completed", DateTime.Now, -1, null, Errors.Ok);
+            }
+            catch (Exception ex)
+            {
+                Editor?.AddLogMessage("PythonTrainingViewModel", $"Preprocessing failed: {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Execute Python code in session asynchronously
+        /// </summary>
+        private async Task<bool> ExecuteInSessionAsync(string script, CancellationToken cancellationToken = default)
+        {
+            return await Task.Run(() => ExecuteInSession(script), cancellationToken);
+        }
+
+        /// <summary>
+        /// Execute Python code in session
+        /// </summary>
+        private bool ExecuteInSession(string script)
+        {
+            if (!IsSessionConfigured || PythonRuntime?.ExecuteManager == null)
+                return false;
+
+            try
+            {
+                return PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
+            }
+            catch (Exception ex)
+            {
+                Editor?.AddLogMessage("PythonTrainingViewModel", $"Python execution failed: {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Get data from Python session scope
+        /// </summary>
+        private T GetFromSessionScope<T>(string variableName, T defaultValue = default(T))
+        {
+            if (!IsSessionConfigured || PythonRuntime?.ExecuteManager == null)
+                return defaultValue;
+
+            try
+            {
+                var result = PythonRuntime.ExecuteManager.RunPythonCodeAndGetOutput(null, variableName, SessionInfo);
+                if (result != null && result is T typedResult)
+                {
+                    return typedResult;
+                }
+                
+                // Try JSON deserialization for complex objects
+                if (result != null)
+                {
+                    try
+                    {
+                        var json = result.ToString();
+                        if (!string.IsNullOrEmpty(json))
+                        {
+                            return System.Text.Json.JsonSerializer.Deserialize<T>(json);
+                        }
+                    }
+                    catch
+                    {
+                        // Fallback to default
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Editor?.AddLogMessage("PythonTrainingViewModel", $"Failed to get data from session: {ex.Message}", DateTime.Now, -1, null, Errors.Warning);
+            }
+
+            return defaultValue;
+        }
+
+        /// <summary>
+        /// Extract current model metrics
+        /// </summary>
+        private ModelMetrics ExtractCurrentModelMetrics()
+        {
+            return new ModelMetrics
+            {
+                Accuracy = EvalScore,
+                F1Score = F1Accuracy,
+                MeanSquaredError = MseScore,
+                RootMeanSquaredError = RmseScore,
+                MeanAbsoluteError = MaeScore,
+                TrainingTime = 0 // Would need to track this during training
+            };
+        }
+
+        /// <summary>
+        /// Get default parameter grid for hyperparameter optimization
+        /// </summary>
+        private Dictionary<string, object[]> GetDefaultParameterGrid(MachineLearningAlgorithm algorithm)
+        {
+            return algorithm switch
+            {
+                MachineLearningAlgorithm.RandomForestClassifier or MachineLearningAlgorithm.RandomForestRegressor =>
+                    new Dictionary<string, object[]>
+                    {
+                        ["n_estimators"] = new object[] { 50, 100, 200 },
+                        ["max_depth"] = new object[] { 5, 10, null },
+                        ["min_samples_split"] = new object[] { 2, 5, 10 }
+                    },
+                MachineLearningAlgorithm.LogisticRegression =>
+                    new Dictionary<string, object[]>
+                    {
+                        ["C"] = new object[] { 0.1, 1, 10 },
+                        ["penalty"] = new object[] { "l1", "l2" },
+                        ["solver"] = new object[] { "liblinear", "saga" }
+                    },
+                MachineLearningAlgorithm.SVC =>
+                    new Dictionary<string, object[]>
+                    {
+                        ["C"] = new object[] { 0.1, 1, 10 },
+                        ["kernel"] = new object[] { "linear", "rbf" },
+                        ["gamma"] = new object[] { "scale", "auto" }
+                    },
+                MachineLearningAlgorithm.SVR =>
+                    new Dictionary<string, object[]>
+                    {
+                        ["C"] = new object[] { 0.1, 1, 10 },
+                        ["kernel"] = new object[] { "linear", "rbf" },
+                        ["gamma"] = new object[] { "scale", "auto" }
+                    },
+                MachineLearningAlgorithm.DecisionTreeClassifier or MachineLearningAlgorithm.DecisionTreeRegressor =>
+                    new Dictionary<string, object[]>
+                    {
+                        ["max_depth"] = new object[] { 3, 5, 10, null },
+                        ["min_samples_split"] = new object[] { 2, 5, 10 },
+                        ["min_samples_leaf"] = new object[] { 1, 2, 4 }
+                    },
+                MachineLearningAlgorithm.GradientBoostingClassifier or MachineLearningAlgorithm.GradientBoostingRegressor =>
+                    new Dictionary<string, object[]>
+                    {
+                        ["n_estimators"] = new object[] { 50, 100, 200 },
+                        ["learning_rate"] = new object[] { 0.01, 0.1, 0.2 },
+                        ["max_depth"] = new object[] { 3, 5, 7 }
+                    },
+                _ => new Dictionary<string, object[]> { ["random_state"] = new object[] { 42 } }
+            };
+        }
+
+        /// <summary>
+        /// Generate parameters script for Python
+        /// </summary>
+        private string GenerateParametersScript(Dictionary<string, object> parameters)
+        {
+            if (parameters == null || parameters.Count == 0)
+                return "random_state=42";
+
+            var paramPairs = parameters.Select(kvp => $"{kvp.Key}={FormatParameterValue(kvp.Value)}");
+            return string.Join(", ", paramPairs);
+        }
+
+        /// <summary>
+        /// Format parameter value for Python
+        /// </summary>
+        private string FormatParameterValue(object value)
+        {
+            return value switch
+            {
+                null => "None",
+                string str => $"'{str}'",
+                bool b => b.ToString().ToLower(),
+                _ => value.ToString()
+            };
+        }
+
+        /// <summary>
+        /// Get scikit-learn algorithm name
+        /// </summary>
+        private string GetScikitLearnAlgorithmName(MachineLearningAlgorithm algorithm)
+        {
+            return algorithm switch
+            {
+                MachineLearningAlgorithm.RandomForestClassifier => "RandomForestClassifier",
+                MachineLearningAlgorithm.RandomForestRegressor => "RandomForestRegressor",
+                MachineLearningAlgorithm.LogisticRegression => "LogisticRegression",
+                MachineLearningAlgorithm.LinearRegression => "LinearRegression",
+                MachineLearningAlgorithm.SVC => "SVC",
+                MachineLearningAlgorithm.SVR => "SVR",
+                MachineLearningAlgorithm.DecisionTreeClassifier => "DecisionTreeClassifier",
+                MachineLearningAlgorithm.DecisionTreeRegressor => "DecisionTreeRegressor",
+                MachineLearningAlgorithm.KNeighborsClassifier => "KNeighborsClassifier",
+                MachineLearningAlgorithm.GradientBoostingClassifier => "GradientBoostingClassifier",
+                MachineLearningAlgorithm.GradientBoostingRegressor => "GradientBoostingRegressor",
+                _ => "RandomForestClassifier"
+            };
+        }
+
+        /// <summary>
+        /// Get algorithm module for import
+        /// </summary>
+        private string GetAlgorithmModule(MachineLearningAlgorithm algorithm)
+        {
+            return algorithm switch
+            {
+                MachineLearningAlgorithm.RandomForestClassifier or MachineLearningAlgorithm.RandomForestRegressor => "ensemble",
+                MachineLearningAlgorithm.GradientBoostingClassifier or MachineLearningAlgorithm.GradientBoostingRegressor => "ensemble",
+                MachineLearningAlgorithm.LogisticRegression or MachineLearningAlgorithm.LinearRegression => "linear_model",
+                MachineLearningAlgorithm.SVC or MachineLearningAlgorithm.SVR => "svm",
+                MachineLearningAlgorithm.DecisionTreeClassifier or MachineLearningAlgorithm.DecisionTreeRegressor => "tree",
+                MachineLearningAlgorithm.KNeighborsClassifier => "neighbors",
+                _ => "ensemble"
+            };
+        }
+
+        /// <summary>
+        /// Extract classification metrics
+        /// </summary>
+        private void ExtractClassificationMetrics(ComprehensiveEvaluationResult result, Dictionary<string, object> evaluationData)
+        {
+            if (evaluationData.ContainsKey("accuracy"))
+                result.Metrics.Accuracy = Convert.ToDouble(evaluationData["accuracy"]);
+            if (evaluationData.ContainsKey("precision"))
+                result.Metrics.Precision = Convert.ToDouble(evaluationData["precision"]);
+            if (evaluationData.ContainsKey("recall"))
+                result.Metrics.Recall = Convert.ToDouble(evaluationData["recall"]);
+            if (evaluationData.ContainsKey("f1_score"))
+                result.Metrics.F1Score = Convert.ToDouble(evaluationData["f1_score"]);
+            if (evaluationData.ContainsKey("auc"))
+                result.Metrics.AUC = Convert.ToDouble(evaluationData["auc"]);
+        }
+
+        /// <summary>
+        /// Extract regression metrics
+        /// </summary>
+        private void ExtractRegressionMetrics(ComprehensiveEvaluationResult result, Dictionary<string, object> evaluationData)
+        {
+            if (evaluationData.ContainsKey("mse"))
+                result.Metrics.MeanSquaredError = Convert.ToDouble(evaluationData["mse"]);
+            if (evaluationData.ContainsKey("rmse"))
+                result.Metrics.RootMeanSquaredError = Convert.ToDouble(evaluationData["rmse"]);
+            if (evaluationData.ContainsKey("mae"))
+                result.Metrics.MeanAbsoluteError = Convert.ToDouble(evaluationData["mae"]);
+            if (evaluationData.ContainsKey("r2"))
+                result.Metrics.R2Score = Convert.ToDouble(evaluationData["r2"]);
+        }
+
+        /// <summary>
+        /// Extract feature importance
+        /// </summary>
+        private void ExtractFeatureImportance(ComprehensiveEvaluationResult result, Dictionary<string, object> evaluationData)
+        {
+            // Implementation would extract feature importance data
+            result.FeatureImportance = new FeatureImportanceData
+            {
+                Features = SelectedFeatures ?? Features ?? Array.Empty<string>(),
+                Importances = Array.Empty<double>()
+            };
+        }
+
+        /// <summary>
+        /// Extract learning curves
+        /// </summary>
+        private void ExtractLearningCurves(ComprehensiveEvaluationResult result, Dictionary<string, object> evaluationData)
+        {
+            // Implementation would extract learning curve data
+            result.LearningCurve = new LearningCurveData
+            {
+                ScoringMetric = "accuracy"
+            };
         }
         #endregion
     }

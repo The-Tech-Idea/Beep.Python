@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Workflows - Beep.Python.ML</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="header-content">
+                        <h1><i class="bi bi-diagram-3 text-primary"></i> Training Workflows</h1>
+                        <p class="lead">Complete machine learning training workflows and pipelines with template-based architecture supporting .NET 6, 7, 8, and 9</p>
+                        
+                        <div class="achievement-badges">
+                            <span class="badge bg-success"><i class="bi bi-check-circle"></i> End-to-End Pipelines</span>
+                            <span class="badge bg-info"><i class="bi bi-cpu"></i> Async Operations</span>
+                            <span class="badge bg-warning"><i class="bi bi-tools"></i> Template-Based</span>
+                            <span class="badge bg-primary"><i class="bi bi-star"></i> Production Ready</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Workflow Overview -->
+                <section class="section" id="workflow-overview">
+                    <h2>?? Training Workflow Overview</h2>
+                    <p>Beep.Python.ML provides comprehensive training workflows that cover the entire machine learning pipeline from data preparation to model deployment, all using template-based Python scripts.</p>
+                    
+                    <div class="workflow-diagram">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="workflow-step">
+                                    <div class="step-icon">
+                                        <i class="bi bi-database text-primary"></i>
+                                    </div>
+                                    <h5>Data Preparation</h5>
+                                    <p>Loading, validation, cleaning, and preprocessing</p>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <div class="workflow-step">
+                                    <div class="step-icon">
+                                        <i class="bi bi-gear text-success"></i>
+                                    </div>
+                                    <h5>Feature Engineering</h5>
+                                    <p>Feature creation, selection, and transformation</p>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <div class="workflow-step">
+                                    <div class="step-icon">
+                                        <i class="bi bi-cpu text-warning"></i>
+                                    </div>
+                                    <h5>Model Training</h5>
+                                    <p>Algorithm selection, hyperparameter tuning, training</p>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <div class="workflow-step">
+                                    <div class="step-icon">
+                                        <i class="bi bi-graph-up text-info"></i>
+                                    </div>
+                                    <h5>Evaluation & Deployment</h5>
+                                    <p>Performance assessment, model saving, reporting</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Basic Training Workflow -->
+                <section class="section" id="basic-workflow">
+                    <h2>?? Basic Training Workflow</h2>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-play-circle"></i> Simple End-to-End Training</h3>
+                        
+                        <div class="code-example">
+                            <h4>Complete Basic Workflow</h4>
+                            <pre><code class="language-csharp">public async Task RunBasicTrainingWorkflow()
+{
+    // Initialize ML Manager
+    var beepService = new BeepService();
+    var pythonRuntime = new PythonNetRunTimeManager(beepService);
+    var sessionInfo = new PythonSessionInfo { Username = "ml_engineer" };
+    
+    var mlManager = new PythonMLManager(beepService, pythonRuntime, sessionInfo);
+    
+    try
+    {
+        // Step 1: Configure session
+        Console.WriteLine("?? Configuring ML session...");
+        bool sessionConfigured = mlManager.ConfigureMLSessionForUser("ml_engineer");
+        if (!sessionConfigured)
+        {
+            throw new InvalidOperationException("Failed to configure ML session");
+        }
+        
+        // Step 2: Load and validate data
+        Console.WriteLine("?? Loading and validating data...");
+        var features = mlManager.ValidateAndPreviewData("customer_data.csv", numRows: 10);
+        Console.WriteLine($"Found {features.Length} features: {string.Join(", ", features)}");
+        
+        var loadedFeatures = mlManager.LoadData("customer_data.csv");
+        
+        // Step 3: Basic preprocessing
+        Console.WriteLine("?? Preprocessing data...");
+        if (mlManager is PythonMLManager manager)
+        {
+            // Handle missing values
+            manager.DataPreprocessing.ImputeMissingValues("median");
+            
+            // Scale features
+            manager.DataPreprocessing.StandardizeData();
+            
+            // Encode categorical features
+            var categoricalFeatures = new[] { "category", "region", "customer_type" };
+            manager.CategoricalEncoding.OneHotEncode(categoricalFeatures);
+        }
+        
+        // Step 4: Train model
+        Console.WriteLine("?? Training model...");
+        var modelId = "basic_customer_model";
+        var parameters = new Dictionary&lt;string, object&gt;
+        {
+            ["n_estimators"] = 100,
+            ["max_depth"] = 10,
+            ["random_state"] = 42
+        };
+        
+        mlManager.TrainModel(
+            modelId,
+            MachineLearningAlgorithm.RandomForestClassifier,
+            parameters,
+            loadedFeatures.Where(f => f != "target" && f != "customer_id").ToArray(),
+            "target");
+        
+        // Step 5: Evaluate model
+        Console.WriteLine("?? Evaluating model performance...");
+        var scores = mlManager.GetModelClassificationScore(modelId);
+        Console.WriteLine($"Model Performance:");
+        Console.WriteLine($"  Accuracy: {scores.Item1:P2}");
+        Console.WriteLine($"  F1-Score: {scores.Item2:F4}");
+        
+        // Step 6: Save model
+        Console.WriteLine("?? Saving trained model...");
+        mlManager.SaveModel(modelId, "models/basic_customer_model.pkl");
+        
+        Console.WriteLine("? Basic training workflow completed successfully!");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"? Training workflow failed: {ex.Message}");
+        throw;
+    }
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Advanced Training Workflow -->
+                <section class="section" id="advanced-workflow">
+                    <h2>?? Advanced Training Workflow</h2>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-cpu"></i> Comprehensive ML Pipeline</h3>
+                        
+                        <div class="code-example">
+                            <h4>Advanced Workflow with All Assistant Classes</h4>
+                            <pre><code class="language-csharp">public async Task RunAdvancedTrainingWorkflow()
+{
+    var mlManager = new PythonMLManager(beepService, pythonRuntime, sessionInfo);
+    mlManager.ConfigureMLSessionForUser("advanced_user");
+    
+    try
+    {
+        Console.WriteLine("?? Starting advanced ML training workflow...");
+        
+        // Phase 1: Data Loading and Initial Analysis
+        Console.WriteLine("?? Phase 1: Data Analysis");
+        var features = mlManager.LoadData("enterprise_dataset.csv");
+        
+        if (mlManager is PythonMLManager manager)
+        {
+            // Advanced data cleaning
+            manager.DataCleaning.RemoveOutliers(zThreshold: 3.0);
+            manager.DataCleaning.RemoveDuplicates();
+            manager.DataCleaning.StandardizeCategories();
+            
+            // Phase 2: Feature Engineering
+            Console.WriteLine("?? Phase 2: Feature Engineering");
+            
+            // Handle different data types
+            manager.DateTimeProcessing.ExtractDateTimeComponents("transaction_date");
+            manager.DateTimeProcessing.HandleCyclicalTimeFeatures("month", "cyclical");
+            
+            // Text processing for description fields
+            manager.TextProcessing.ConvertTextToLowercase("product_description");
+            manager.TextProcessing.RemoveStopwords("product_description", "english");
+            manager.TextProcessing.ApplyTFIDFVectorization("product_description", maxFeatures: 100);
+            
+            // Advanced categorical encoding
+            var categoricalFeatures = manager.CategoricalEncoding.GetCategoricalFeatures(features);
+            manager.CategoricalEncoding.TargetEncode(categoricalFeatures, "target");
+            
+            // Feature creation
+            manager.FeatureEngineering.GeneratePolynomialFeatures(degree: 2, interactionOnly: true);
+            manager.FeatureEngineering.ApplyLogTransformation(new[] { "revenue", "amount" });
+            
+            // Phase 3: Feature Selection
+            Console.WriteLine("?? Phase 3: Feature Selection");
+            manager.FeatureSelection.ApplyVarianceThreshold(threshold: 0.01);
+            manager.FeatureSelection.ApplyCorrelationThreshold(threshold: 0.95);
+            manager.FeatureSelection.ApplyRFE(estimator: "RandomForestRegressor", nFeatures: 20);
+            
+            // Phase 4: Handle Imbalanced Data
+            Console.WriteLine("?? Phase 4: Handling Data Imbalance");
+            manager.ImbalancedData.ApplySMOTE("target", samplingStrategy: 1.0f);
+            
+            // Phase 5: Dimensionality Reduction (if needed)
+            Console.WriteLine("?? Phase 5: Dimensionality Reduction");
+            manager.DimensionalityReduction.ApplyPCA(nComponents: 50, preserveVariance: 0.95);
+            
+            // Phase 6: Data Splitting
+            Console.WriteLine("?? Phase 6: Data Preparation");
+            var splitPaths = manager.Utilities.SplitData(
+                "processed_data.csv", 0.2f, 0.1f,
+                "train_advanced.csv", "test_advanced.csv", "validation_advanced.csv",
+                "id", "target");
+            
+            Console.WriteLine($"Data split into: {string.Join(", ", splitPaths)}");
+        }
+        
+        // Phase 7: Model Training with Cross-Validation
+        Console.WriteLine("?? Phase 7: Advanced Model Training");
+        var modelId = "advanced_enterprise_model";
+        var advancedParameters = new Dictionary&lt;string, object&gt;
+        {
+            ["n_estimators"] = 200,
+            ["max_depth"] = 15,
+            ["min_samples_split"] = 5,
+            ["min_samples_leaf"] = 2,
+            ["class_weight"] = "balanced",
+            ["random_state"] = 42,
+            ["n_jobs"] = -1  // Use all CPU cores
+        };
+        
+        // Train with progress tracking
+        await mlManager.TrainModelAsync(
+            modelId,
+            MachineLearningAlgorithm.RandomForestClassifier,
+            advancedParameters,
+            features.Where(f => f != "target" && f != "id").ToArray(),
+            "target");
+        
+        // Phase 8: Comprehensive Evaluation
+        Console.WriteLine("?? Phase 8: Model Evaluation");
+        if (mlManager is PythonMLManager evalManager)
+        {
+            // Cross-validation
+            evalManager.CrossValidation.PerformCrossValidation(modelId, numFolds: 10);
+            
+            // Create all visualizations
+            evalManager.Visualization.CreateROC(modelId, "outputs/advanced_roc.png");
+            evalManager.Visualization.CreateConfusionMatrix(modelId, "outputs/advanced_confusion.png");
+            evalManager.Visualization.CreateFeatureImportance(modelId, "outputs/advanced_importance.png");
+            evalManager.Visualization.CreateLearningCurve(modelId, "outputs/advanced_learning.png");
+            
+            // Generate comprehensive report
+            evalManager.Visualization.GenerateEvaluationReport(modelId, "reports/advanced_evaluation.html");
+        }
+        
+        // Phase 9: Model Persistence and Export
+        Console.WriteLine("?? Phase 9: Model Persistence");
+        mlManager.SaveModel(modelId, "models/advanced_enterprise_model.pkl");
+        
+        if (mlManager is PythonMLManager exportManager)
+        {
+            exportManager.Utilities.ExportTestResult("predictions_advanced.csv", "id", "prediction");
+        }
+        
+        // Final performance summary
+        var finalScores = mlManager.GetModelClassificationScore(modelId);
+        Console.WriteLine("?? Advanced Training Workflow Completed!");
+        Console.WriteLine("=" + new string('=', 50));
+        Console.WriteLine($"Final Model Performance:");
+        Console.WriteLine($"  Accuracy: {finalScores.Item1:P2}");
+        Console.WriteLine($"  F1-Score: {finalScores.Item2:F4}");
+        Console.WriteLine($"  Model saved to: models/advanced_enterprise_model.pkl");
+        Console.WriteLine($"  Report generated: reports/advanced_evaluation.html");
+        
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"? Advanced workflow failed at phase: {ex.Message}");
+        throw;
+    }
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Async Training Workflow -->
+                <section class="section" id="async-workflow">
+                    <h2>? Async Training Workflows</h2>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-lightning"></i> Parallel Training with Progress Tracking</h3>
+                        
+                        <div class="code-example">
+                            <h4>Async Training with CancellationToken</h4>
+                            <pre><code class="language-csharp">public async Task RunAsyncTrainingWorkflow(CancellationToken cancellationToken = default)
+{
+    var mlManager = new PythonMLManager(beepService, pythonRuntime, sessionInfo);
+    
+    // Progress reporting
+    var progress = new Progress&lt;TrainingProgress&gt;(OnProgressChanged);
+    
+    try
+    {
+        Console.WriteLine("? Starting async training workflow...");
+        
+        // Async data loading
+        var features = await Task.Run(() => mlManager.LoadData("large_dataset.csv"), cancellationToken);
+        
+        // Async preprocessing
+        await Task.Run(() =>
+        {
+            if (mlManager is PythonMLManager manager)
+            {
+                ReportProgress(progress, 10, "Preprocessing data...");
+                manager.DataPreprocessing.ImputeMissingValues("median");
+                
+                ReportProgress(progress, 20, "Scaling features...");
+                manager.DataPreprocessing.StandardizeData();
+                
+                ReportProgress(progress, 30, "Encoding categorical features...");
+                var categoricalFeatures = new[] { "category", "type" };
+                manager.CategoricalEncoding.OneHotEncode(categoricalFeatures);
+            }
+        }, cancellationToken);
+        
+        // Async model training
+        ReportProgress(progress, 40, "Starting model training...");
+        
+        var modelId = "async_trained_model";
+        var parameters = new Dictionary&lt;string, object&gt;
+        {
+            ["n_estimators"] = 150,
+            ["max_depth"] = 12,
+            ["random_state"] = 42
+        };
+        
+        bool trainingSuccess = await mlManager.TrainModelAsync(
+            modelId,
+            MachineLearningAlgorithm.RandomForestClassifier,
+            parameters,
+            features.Where(f => f != "target").ToArray(),
+            "target",
+            cancellationToken);
+        
+        if (!trainingSuccess)
+        {
+            throw new InvalidOperationException("Model training failed");
+        }
+        
+        // Async evaluation
+        ReportProgress(progress, 80, "Evaluating model...");
+        
+        await Task.Run(() =>
+        {
+            if (mlManager is PythonMLManager manager)
+            {
+                manager.CrossValidation.PerformCrossValidation(modelId, 5);
+                manager.Visualization.CreateROC(modelId, "outputs/async_roc.png");
+                manager.Visualization.GenerateEvaluationReport(modelId, "reports/async_evaluation.html");
+            }
+        }, cancellationToken);
+        
+        ReportProgress(progress, 100, "Training workflow completed!");
+        
+        var scores = mlManager.GetModelClassificationScore(modelId);
+        Console.WriteLine($"? Async training completed - Accuracy: {scores.Item1:P2}, F1: {scores.Item2:F4}");
+        
+    }
+    catch (OperationCanceledException)
+    {
+        Console.WriteLine("?? Training workflow was cancelled");
+        throw;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"? Async training workflow failed: {ex.Message}");
+        throw;
+    }
+}
+
+private void OnProgressChanged(TrainingProgress progress)
+{
+    Console.WriteLine($"[{progress.Percentage:F1}%] {progress.Message}");
+    
+    if (progress.EstimatedTimeRemaining.HasValue)
+    {
+        Console.WriteLine($"    Estimated time remaining: {progress.EstimatedTimeRemaining.Value:mm\\:ss}");
+    }
+}
+
+private void ReportProgress(IProgress&lt;TrainingProgress&gt; progress, double percentage, string message)
+{
+    progress?.Report(new TrainingProgress
+    {
+        Percentage = percentage,
+        Message = message,
+        Timestamp = DateTime.Now
+    });
+}
+
+public class TrainingProgress
+{
+    public double Percentage { get; set; }
+    public string Message { get; set; }
+    public DateTime Timestamp { get; set; }
+    public TimeSpan? EstimatedTimeRemaining { get; set; }
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Batch Training Workflow -->
+                <section class="section" id="batch-workflow">
+                    <h2>?? Batch Training Workflows</h2>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-collection"></i> Multiple Dataset Processing</h3>
+                        
+                        <div class="code-example">
+                            <h4>Batch Training Multiple Models</h4>
+                            <pre><code class="language-csharp">public async Task RunBatchTrainingWorkflow()
+{
+    var datasets = new[]
+    {
+        ("customers_2023.csv", "customer_churn_2023"),
+        ("customers_2022.csv", "customer_churn_2022"),
+        ("customers_2021.csv", "customer_churn_2021")
+    };
+    
+    var algorithms = new[]
+    {
+        MachineLearningAlgorithm.RandomForestClassifier,
+        MachineLearningAlgorithm.GradientBoostingClassifier,
+        MachineLearningAlgorithm.LogisticRegression
+    };
+    
+    var results = new List&lt;BatchTrainingResult&gt;();
+    
+    foreach (var (datasetPath, modelPrefix) in datasets)
+    {
+        Console.WriteLine($"?? Processing dataset: {datasetPath}");
+        
+        var mlManager = new PythonMLManager(beepService, pythonRuntime, sessionInfo);
+        mlManager.ConfigureMLSessionForUser($"batch_user_{DateTime.Now.Ticks}");
+        
+        try
+        {
+            // Load and preprocess data
+            var features = mlManager.LoadData(datasetPath);
+            
+            if (mlManager is PythonMLManager manager)
+            {
+                // Standardized preprocessing pipeline
+                manager.DataPreprocessing.ImputeMissingValues("median");
+                manager.DataPreprocessing.StandardizeData();
+                manager.CategoricalEncoding.OneHotEncode(new[] { "region", "customer_type" });
+            }
+            
+            // Train multiple algorithms on same dataset
+            foreach (var algorithm in algorithms)
+            {
+                var modelId = $"{modelPrefix}_{algorithm}";
+                var parameters = GetDefaultParameters(algorithm);
+                
+                Console.WriteLine($"  Training {algorithm} on {datasetPath}...");
+                
+                await mlManager.TrainModelAsync(modelId, algorithm, parameters, 
+                                              features.Where(f => f != "churn").ToArray(), "churn");
+                
+                var scores = mlManager.GetModelClassificationScore(modelId);
+                
+                results.Add(new BatchTrainingResult
+                {
+                    Dataset = datasetPath,
+                    Algorithm = algorithm,
+                    ModelId = modelId,
+                    Accuracy = scores.Item1,
+                    F1Score = scores.Item2,
+                    TrainingTime = DateTime.Now
+                });
+                
+                // Save model
+                mlManager.SaveModel(modelId, $"models/batch/{modelId}.pkl");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"? Failed to process {datasetPath}: {ex.Message}");
+        }
+    }
+    
+    // Generate batch results summary
+    GenerateBatchResultsSummary(results);
+}
+
+private Dictionary&lt;string, object&gt; GetDefaultParameters(MachineLearningAlgorithm algorithm)
+{
+    return algorithm switch
+    {
+        MachineLearningAlgorithm.RandomForestClassifier => new Dictionary&lt;string, object&gt;
+        {
+            ["n_estimators"] = 100,
+            ["max_depth"] = 10,
+            ["random_state"] = 42
+        },
+        MachineLearningAlgorithm.GradientBoostingClassifier => new Dictionary&lt;string, object&gt;
+        {
+            ["n_estimators"] = 100,
+            ["learning_rate"] = 0.1,
+            ["random_state"] = 42
+        },
+        MachineLearningAlgorithm.LogisticRegression => new Dictionary&lt;string, object&gt;
+        {
+            ["C"] = 1.0,
+            ["max_iter"] = 1000,
+            ["random_state"] = 42
+        },
+        _ => new Dictionary&lt;string, object&gt; { ["random_state"] = 42 }
+    };
+}
+
+public class BatchTrainingResult
+{
+    public string Dataset { get; set; }
+    public MachineLearningAlgorithm Algorithm { get; set; }
+    public string ModelId { get; set; }
+    public double Accuracy { get; set; }
+    public double F1Score { get; set; }
+    public DateTime TrainingTime { get; set; }
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Error Handling -->
+                <section class="section" id="error-handling">
+                    <h2>??? Error Handling in Workflows</h2>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-shield-check"></i> Robust Workflow Implementation</h3>
+                        
+                        <div class="code-example">
+                            <h4>Comprehensive Error Handling</h4>
+                            <pre><code class="language-csharp">public async Task RunRobustTrainingWorkflow()
+{
+    var mlManager = new PythonMLManager(beepService, pythonRuntime, sessionInfo);
+    string modelId = "robust_model";
+    
+    try
+    {
+        // Phase 1: Session Configuration with retry
+        Console.WriteLine("?? Configuring session with retry logic...");
+        bool sessionConfigured = await RetryAsync(
+            () => mlManager.ConfigureMLSessionForUser("robust_user"),
+            maxRetries: 3,
+            delay: TimeSpan.FromSeconds(2));
+        
+        if (!sessionConfigured)
+        {
+            throw new InvalidOperationException("Failed to configure session after retries");
+        }
+        
+        // Phase 2: Data Loading with validation
+        Console.WriteLine("?? Loading data with validation...");
+        string[] features;
+        try
+        {
+            features = mlManager.ValidateAndPreviewData("data.csv");
+            if (features == null || features.Length == 0)
+            {
+                throw new ArgumentException("No valid features found in dataset");
+            }
+        }
+        catch (FileNotFoundException)
+        {
+            Console.WriteLine("?? Primary data file not found, trying backup...");
+            features = mlManager.ValidateAndPreviewData("backup_data.csv");
+        }
+        
+        var loadedFeatures = mlManager.LoadData("data.csv");
+        
+        // Phase 3: Preprocessing with fallback strategies
+        Console.WriteLine("?? Preprocessing with fallback strategies...");
+        if (mlManager is PythonMLManager manager)
+        {
+            try
+            {
+                manager.DataPreprocessing.ImputeMissingValues("median");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"?? Median imputation failed ({ex.Message}), using mean...");
+                manager.DataPreprocessing.ImputeMissingValues("mean");
+            }
+            
+            try
+            {
+                manager.DataPreprocessing.StandardizeData();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"?? Standardization failed ({ex.Message}), using robust scaling...");
+                manager.DataPreprocessing.RobustScaleData();
+            }
+        }
+        
+        // Phase 4: Model Training with timeout
+        Console.WriteLine("?? Training model with timeout protection...");
+        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(30)); // 30-minute timeout
+        
+        var parameters = new Dictionary&lt;string, object&gt;
+        {
+            ["n_estimators"] = 50, // Reduced for faster training
+            ["max_depth"] = 8,
+            ["random_state"] = 42
+        };
+        
+        bool trainingSuccess = await mlManager.TrainModelAsync(
+            modelId,
+            MachineLearningAlgorithm.RandomForestClassifier,
+            parameters,
+            loadedFeatures.Where(f => f != "target").ToArray(),
+            "target",
+            cts.Token);
+        
+        if (!trainingSuccess)
+        {
+            throw new InvalidOperationException("Model training failed");
+        }
+        
+        // Phase 5: Evaluation with error recovery
+        Console.WriteLine("?? Evaluating model with error recovery...");
+        try
+        {
+            var scores = mlManager.GetModelClassificationScore(modelId);
+            Console.WriteLine($"Model trained successfully - Accuracy: {scores.Item1:P2}");
+            
+            if (scores.Item1 < 0.5) // Accuracy threshold check
+            {
+                Console.WriteLine("?? Model accuracy below threshold, attempting retraining...");
+                await RetrainWithDifferentAlgorithm(mlManager, loadedFeatures);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"?? Evaluation failed ({ex.Message}), saving model anyway...");
+        }
+        
+        // Phase 6: Model persistence with backup
+        Console.WriteLine("?? Saving model with backup...");
+        try
+        {
+            mlManager.SaveModel(modelId, "models/robust_model.pkl");
+            
+            // Create backup copy
+            mlManager.SaveModel(modelId, $"models/backup/robust_model_{DateTime.Now:yyyyMMdd_HHmmss}.pkl");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"?? Model saving failed: {ex.Message}");
+        }
+        
+        Console.WriteLine("? Robust training workflow completed successfully!");
+        
+    }
+    catch (OperationCanceledException)
+    {
+        Console.WriteLine("?? Training workflow was cancelled due to timeout");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"? Robust workflow failed: {ex.Message}");
+        
+        // Cleanup on failure
+        await CleanupFailedTraining(modelId);
+        throw;
+    }
+}
+
+private async Task&lt;bool&gt; RetryAsync(Func&lt;bool&gt; operation, int maxRetries, TimeSpan delay)
+{
+    for (int i = 0; i <= maxRetries; i++)
+    {
+        try
+        {
+            return operation();
+        }
+        catch (Exception ex) when (i < maxRetries)
+        {
+            Console.WriteLine($"?? Attempt {i + 1} failed: {ex.Message}, retrying in {delay.TotalSeconds}s...");
+            await Task.Delay(delay);
+        }
+    }
+    return false;
+}
+
+private async Task RetrainWithDifferentAlgorithm(PythonMLManager mlManager, string[] features)
+{
+    // Attempt retraining with a different algorithm
+    var fallbackParams = new Dictionary&lt;string, object&gt;
+    {
+        ["C"] = 1.0,
+        ["max_iter"] = 1000,
+        ["random_state"] = 42
+    };
+    
+    await mlManager.TrainModelAsync(
+        "fallback_model",
+        MachineLearningAlgorithm.LogisticRegression,
+        fallbackParams,
+        features.Where(f => f != "target").ToArray(),
+        "target");
+}
+
+private async Task CleanupFailedTraining(string modelId)
+{
+    try
+    {
+        // Clean up any temporary files or partial results
+        Console.WriteLine("?? Cleaning up failed training artifacts...");
+        
+        // Delete partial model files, temporary data, etc.
+        var tempFiles = Directory.GetFiles("temp", $"*{modelId}*");
+        foreach (var file in tempFiles)
+        {
+            File.Delete(file);
+        }
+        
+        Console.WriteLine("? Cleanup completed");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"?? Cleanup failed: {ex.Message}");
+    }
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Best Practices -->
+                <section class="section" id="workflow-best-practices">
+                    <h2>? Workflow Best Practices</h2>
+                    
+                    <div class="tip">
+                        <h5><i class="bi bi-lightbulb"></i> Training Workflow Guidelines</h5>
+                        <ul>
+                            <li><strong>Session Management:</strong> Always configure sessions before operations</li>
+                            <li><strong>Error Handling:</strong> Implement comprehensive try-catch blocks</li>
+                            <li><strong>Progress Tracking:</strong> Use async operations with progress reporting</li>
+                            <li><strong>Data Validation:</strong> Validate data at each preprocessing step</li>
+                            <li><strong>Model Persistence:</strong> Save models and create backups</li>
+                            <li><strong>Resource Cleanup:</strong> Properly dispose of resources</li>
+                        </ul>
+                    </div>
+
+                    <div class="warning">
+                        <h5><i class="bi bi-exclamation-triangle"></i> Common Workflow Pitfalls</h5>
+                        <ul>
+                            <li><strong>Memory Leaks:</strong> Not disposing of large ML managers</li>
+                            <li><strong>Session Conflicts:</strong> Multiple users with same session ID</li>
+                            <li><strong>Data Leakage:</strong> Using future information in preprocessing</li>
+                            <li><strong>Overfitting:</strong> Not using proper train/validation splits</li>
+                            <li><strong>Timeout Issues:</strong> Not setting appropriate timeouts for long operations</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="PythonTrainingViewModel.html" class="btn-beep">
+                        <i class="bi bi-laptop"></i> Training ViewModel
+                    </a>
+                    <a href="model-evaluation.html" class="btn-beep">
+                        <i class="bi bi-graph-up"></i> Model Evaluation
+                    </a>
+                    <a href="hyperparameter-tuning.html" class="btn-beep">
+                        <i class="bi bi-sliders"></i> Hyperparameter Tuning
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.ML Training Workflows Documentation</p>
+                            <p>Complete ML Training Pipelines for .NET 6, 7, 8, and 9</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="#workflow-overview">Workflow Overview</a>
+                            <a href="#basic-workflow">Basic Workflow</a>
+                            <a href="#advanced-workflow">Advanced Workflow</a>
+                            <a href="#async-workflow">Async Workflow</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="assets/navigation.js"></script>
+</body>
+</html>

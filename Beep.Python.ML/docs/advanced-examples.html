@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Examples - Beep.Python.ML</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="header-content">
+                        <h1><i class="bi bi-code-square text-success"></i> Advanced Examples</h1>
+                        <p class="lead">Comprehensive examples showcasing enterprise ML workflows, advanced assistant class usage, and production-ready patterns for .NET 6, 7, 8, and 9</p>
+                        
+                        <div class="achievement-badges">
+                            <span class="badge bg-success"><i class="bi bi-check-circle"></i> Enterprise Examples</span>
+                            <span class="badge bg-info"><i class="bi bi-cpu"></i> Complete Workflows</span>
+                            <span class="badge bg-warning"><i class="bi bi-tools"></i> All 13 Assistants</span>
+                            <span class="badge bg-primary"><i class="bi bi-star"></i> Production Ready</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Examples Overview -->
+                <section class="section" id="examples-overview">
+                    <h2>?? Examples Overview</h2>
+                    <p>These advanced examples demonstrate real-world usage of Beep.Python.ML in enterprise scenarios, showcasing the full power of the 13 assistant classes and template-based architecture.</p>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-box">
+                                <h5><i class="bi bi-info-circle"></i> What You'll Find</h5>
+                                <ul>
+                                    <li><strong>Complete Workflows:</strong> End-to-end ML pipelines</li>
+                                    <li><strong>Enterprise Patterns:</strong> Production-ready code</li>
+                                    <li><strong>Assistant Usage:</strong> All 13 assistants in action</li>
+                                    <li><strong>Best Practices:</strong> Error handling and optimization</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="info-box success">
+                                <h5><i class="bi bi-star"></i> Featured Examples</h5>
+                                <ul>
+                                    <li><strong>Customer Churn Prediction:</strong> Complete business workflow</li>
+                                    <li><strong>Fraud Detection System:</strong> Imbalanced data handling</li>
+                                    <li><strong>Text Classification:</strong> NLP pipeline with visualizations</li>
+                                    <li><strong>Time Series Forecasting:</strong> Advanced temporal analysis</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Customer Churn Prediction -->
+                <section class="section" id="customer-churn">
+                    <h2>?? Customer Churn Prediction - Enterprise Workflow</h2>
+                    <p>A comprehensive customer churn prediction system demonstrating the complete ML pipeline with data preprocessing, feature engineering, model training, and visualization.</p>
+                    
+                    <div class="code-example">
+                        <h4>Complete Customer Churn Pipeline</h4>
+                        <pre><code class="language-csharp">public async Task&lt;ChurnPredictionResult&gt; RunCustomerChurnPrediction()
+{
+    // Initialize ML Manager
+    var beepService = new BeepService();
+    var pythonRuntime = new PythonNetRunTimeManager(beepService);
+    var sessionInfo = new PythonSessionInfo 
+    { 
+        Username = "churn_analyst",
+        SessionId = Guid.NewGuid().ToString(),
+        CreateTime = DateTime.UtcNow
+    };
+    
+    var mlManager = new PythonMLManager(beepService, pythonRuntime, sessionInfo);
+    
+    try
+    {
+        // Configure session
+        if (!mlManager.ConfigureMLSessionForUser("churn_analyst"))
+        {
+            throw new InvalidOperationException("Failed to configure ML session");
+        }
+        
+        Console.WriteLine("?? Starting Customer Churn Prediction Pipeline...");
+        
+        // 1. Load and validate customer data
+        Console.WriteLine("?? Loading customer data...");
+        var features = mlManager.ValidateAndPreviewData("data/customer_churn.csv", numRows: 10);
+        Console.WriteLine($"Found {features.Length} features: {string.Join(", ", features)}");
+        
+        var loadedFeatures = mlManager.LoadData("data/customer_churn.csv");
+        Console.WriteLine($"? Loaded dataset with {loadedFeatures.Length} features");
+        
+        // Cast to access assistant classes
+        if (mlManager is PythonMLManager manager)
+        {
+            // 2. Data Preprocessing Pipeline
+            Console.WriteLine("?? Data Preprocessing Pipeline...");
+            
+            // Handle missing values strategically
+            manager.DataPreprocessing.ImputeMissingValues(
+                featureList: new[] { "tenure", "monthly_charges", "total_charges" }, 
+                strategy: "median");
+            manager.DataPreprocessing.ImputeMissingValues(
+                featureList: new[] { "internet_service", "payment_method" }, 
+                strategy: "mode");
+            
+            // Handle special characters in data
+            manager.DataPreprocessing.RemoveSpecialCharacters("customer_data");
+            
+            // 3. Feature Engineering
+            Console.WriteLine("?? Feature Engineering...");
+            
+            // Date/time feature extraction
+            manager.DateTimeProcessing.ExtractDateTimeComponents("signup_date");
+            manager.DateTimeProcessing.CalculateTimeDifference("signup_date", "last_activity", "days_since_activity");
+            manager.DateTimeProcessing.HandleCyclicalTimeFeatures("signup_month", "cyclical");
+            
+            // Create polynomial features for key metrics
+            manager.FeatureEngineering.GeneratePolynomialFeatures(
+                selectedFeatures: new[] { "tenure", "monthly_charges", "total_charges" },
+                degree: 2,
+                includeBias: false,
+                interactionOnly: true);
+            
+            // Apply log transformation to skewed features
+            manager.FeatureEngineering.ApplyLogTransformation(
+                selectedFeatures: new[] { "total_charges", "monthly_charges" });
+            
+            // Binning for tenure (customer lifecycle stages)
+            manager.FeatureEngineering.ApplyBinning(
+                selectedFeatures: new[] { "tenure" },
+                numberOfBins: 5,
+                encodeAsOrdinal: true);
+            
+            // 4. Categorical Encoding Strategy
+            Console.WriteLine("??? Categorical Encoding...");
+            
+            // Get categorical features automatically
+            var categoricalFeatures = manager.CategoricalEncoding.GetCategoricalFeatures(loadedFeatures);
+            Console.WriteLine($"Detected categorical features: {string.Join(", ", categoricalFeatures)}");
+            
+            // Apply different encoding strategies
+            var highCardinalityFeatures = new[] { "payment_method", "internet_service" };
+            var lowCardinalityFeatures = new[] { "gender", "partner", "dependents" };
+            
+            // Target encoding for high cardinality
+            manager.CategoricalEncoding.TargetEncode(highCardinalityFeatures, "churn");
+            
+            // One-hot encoding for low cardinality
+            manager.CategoricalEncoding.OneHotEncode(lowCardinalityFeatures);
+            
+            // 5. Text Processing (for customer feedback)
+            if (features.Contains("customer_feedback"))
+            {
+                Console.WriteLine("?? Processing Customer Feedback Text...");
+                
+                manager.TextProcessing.ConvertTextToLowercase("customer_feedback");
+                manager.TextProcessing.RemovePunctuation("customer_feedback");
+                manager.TextProcessing.RemoveStopwords("customer_feedback", "english");
+                manager.TextProcessing.ApplyLemmatization("customer_feedback");
+                manager.TextProcessing.ApplyTFIDFVectorization("customer_feedback", maxFeatures: 100);
+            }
+            
+            // 6. Data Scaling
+            Console.WriteLine("?? Feature Scaling...");
+            
+            // Robust scaling for features with outliers
+            var robustScaleFeatures = new[] { "tenure", "monthly_charges", "total_charges" };
+            manager.DataPreprocessing.RobustScaleData(robustScaleFeatures);
+            
+            // Standard scaling for other numerical features
+            var standardScaleFeatures = loadedFeatures
+                .Where(f => !robustScaleFeatures.Contains(f) && !categoricalFeatures.Contains(f))
+                .ToArray();
+            manager.DataPreprocessing.StandardizeData(standardScaleFeatures);
+            
+            // 7. Data Cleaning
+            Console.WriteLine("?? Data Cleaning...");
+            
+            // Remove outliers using z-score
+            manager.DataCleaning.RemoveOutliers(
+                featureList: new[] { "monthly_charges", "total_charges" },
+                zThreshold: 3.0);
+            
+            // Remove duplicates
+            manager.DataCleaning.DropDuplicates();
+            
+            // Standardize categories
+            var categoryMappings = new Dictionary&lt;string, string&gt;
+            {
+                ["Yes"] = "yes",
+                ["No"] = "no",
+                ["Male"] = "male",
+                ["Female"] = "female"
+            };
+            manager.DataCleaning.StandardizeCategories(
+                featureList: new[] { "partner", "dependents", "gender" },
+                replacements: categoryMappings);
+            
+            // 8. Handle Imbalanced Data
+            Console.WriteLine("?? Handling Class Imbalance...");
+            
+            // Apply SMOTE to balance the dataset
+            manager.ImbalancedData.ApplySMOTE("churn", samplingStrategy: 1.0f);
+            
+            // Also try random oversampling as comparison
+            // manager.ImbalancedData.RandomOverSample("churn");
+            
+            // 9. Feature Selection
+            Console.WriteLine("?? Feature Selection...");
+            
+            // Remove low variance features
+            manager.FeatureSelection.ApplyVarianceThreshold(threshold: 0.01);
+            
+            // Remove highly correlated features
+            manager.FeatureSelection.ApplyCorrelationThreshold(threshold: 0.95);
+            
+            // 10. Data Splitting
+            Console.WriteLine("?? Data Splitting...");
+            
+            var splitPaths = manager.Utilities.SplitData(
+                dataFilePath: "preprocessed_data.csv",
+                testSize: 0.2f,
+                validationSize: 0.1f,
+                trainFilePath: "train_churn.csv",
+                testFilePath: "test_churn.csv",
+                validationFilePath: "validation_churn.csv",
+                primaryFeatureKeyID: "customer_id",
+                labelColumn: "churn");
+            
+            Console.WriteLine($"Data split completed: {string.Join(", ", splitPaths)}");
+            
+            // 11. Model Training with Hyperparameter Optimization
+            Console.WriteLine("?? Training Churn Prediction Models...");
+            
+            // Get final feature list after all preprocessing
+            var finalFeatures = mlManager.GetFeatures("train_churn.csv")
+                .Where(f => f != "churn" && f != "customer_id")
+                .ToArray();
+            
+            // Train multiple models for comparison
+            var models = new Dictionary&lt;string, (MachineLearningAlgorithm Algorithm, Dictionary&lt;string, object&gt; Parameters)&gt;
+            {
+                ["RandomForest"] = (MachineLearningAlgorithm.RandomForestClassifier, new Dictionary&lt;string, object&gt;
+                {
+                    ["n_estimators"] = 200,
+                    ["max_depth"] = 15,
+                    ["min_samples_split"] = 5,
+                    ["min_samples_leaf"] = 2,
+                    ["class_weight"] = "balanced",
+                    ["random_state"] = 42
+                }),
+                ["GradientBoosting"] = (MachineLearningAlgorithm.GradientBoostingClassifier, new Dictionary&lt;string, object&gt;
+                {
+                    ["n_estimators"] = 150,
+                    ["learning_rate"] = 0.1,
+                    ["max_depth"] = 10,
+                    ["subsample"] = 0.8,
+                    ["random_state"] = 42
+                }),
+                ["LogisticRegression"] = (MachineLearningAlgorithm.LogisticRegression, new Dictionary&lt;string, object&gt;
+                {
+                    ["C"] = 1.0,
+                    ["class_weight"] = "balanced",
+                    ["max_iter"] = 1000,
+                    ["random_state"] = 42
+                })
+            };
+            
+            var modelResults = new Dictionary&lt;string, (double Accuracy, double F1Score)&gt;();
+            
+            foreach (var model in models)
+            {
+                Console.WriteLine($"Training {model.Key}...");
+                
+                var modelId = $"churn_{model.Key.ToLower()}";
+                
+                mlManager.TrainModel(
+                    modelId,
+                    model.Value.Algorithm,
+                    model.Value.Parameters,
+                    finalFeatures,
+                    "churn");
+                
+                // Evaluate model
+                var scores = mlManager.GetModelClassificationScore(modelId);
+                modelResults[model.Key] = (scores.Item1, scores.Item2);
+                
+                Console.WriteLine($"{model.Key} - Accuracy: {scores.Item1:F4}, F1-Score: {scores.Item2:F4}");
+                
+                // Cross-validation for robust evaluation
+                manager.CrossValidation.PerformCrossValidation(modelId, numFolds: 10);
+                
+                // Create model-specific visualizations
+                manager.Visualization.CreateROC(modelId, $"visualizations/{model.Key}_roc_curve.png");
+                manager.Visualization.CreateConfusionMatrix(modelId, $"visualizations/{model.Key}_confusion_matrix.png");
+                manager.Visualization.CreateFeatureImportance(modelId, $"visualizations/{model.Key}_feature_importance.png");
+                manager.Visualization.CreateLearningCurve(modelId, $"visualizations/{model.Key}_learning_curve.png");
+                manager.Visualization.CreatePrecisionRecallCurve(modelId, $"visualizations/{model.Key}_pr_curve.png");
+            }
+            
+            // 12. Select Best Model
+            var bestModel = modelResults.OrderByDescending(m => m.Value.F1Score).First();
+            var bestModelId = $"churn_{bestModel.Key.ToLower()}";
+            
+            Console.WriteLine($"?? Best model: {bestModel.Key} (F1-Score: {bestModel.Value.F1Score:F4})");
+            
+            // 13. Generate Predictions
+            Console.WriteLine("?? Generating Predictions...");
+            
+            // Load test data and make predictions
+            var testFeatures = mlManager.LoadData("test_churn.csv", finalFeatures);
+            var predictions = mlManager.PredictClassification(finalFeatures);
+            
+            // 14. Create Comprehensive Visualizations and Reports
+            Console.WriteLine("?? Creating Comprehensive Reports...");
+            
+            // Generate final evaluation report
+            manager.Visualization.GenerateEvaluationReport(
+                bestModelId, 
+                "reports/churn_prediction_report.html");
+            
+            // Export results
+            manager.Utilities.ExportTestResult(
+                "results/churn_predictions.csv", 
+                "customer_id", 
+                "churn_prediction");
+            
+            // Save best model
+            mlManager.SaveModel(bestModelId, $"models/{bestModel.Key}_churn_model.pkl");
+            
+            Console.WriteLine("?? Customer Churn Prediction Pipeline Completed Successfully!");
+            
+            return new ChurnPredictionResult
+            {
+                Success = true,
+                BestModel = bestModel.Key,
+                Accuracy = bestModel.Value.Accuracy,
+                F1Score = bestModel.Value.F1Score,
+                ModelResults = modelResults,
+                ReportPath = "reports/churn_prediction_report.html",
+                PredictionsPath = "results/churn_predictions.csv",
+                ModelPath = $"models/{bestModel.Key}_churn_model.pkl"
+            };
+        }
+        
+        throw new InvalidOperationException("Failed to cast to PythonMLManager");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"? Churn prediction pipeline failed: {ex.Message}");
+        return new ChurnPredictionResult
+        {
+            Success = false,
+            ErrorMessage = ex.Message
+        };
+    }
+}
+
+// Result class for the churn prediction
+public class ChurnPredictionResult
+{
+    public bool Success { get; set; }
+    public string BestModel { get; set; }
+    public double Accuracy { get; set; }
+    public double F1Score { get; set; }
+    public Dictionary&lt;string, (double Accuracy, double F1Score)&gt; ModelResults { get; set; }
+    public string ReportPath { get; set; }
+    public string PredictionsPath { get; set; }
+    public string ModelPath { get; set; }
+    public string ErrorMessage { get; set; }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Fraud Detection System -->
+                <section class="section" id="fraud-detection">
+                    <h2>??? Fraud Detection System - Imbalanced Data Handling</h2>
+                    <p>Advanced fraud detection system focusing on handling severely imbalanced datasets and real-time prediction capabilities.</p>
+                    
+                    <div class="code-example">
+                        <h4>Fraud Detection with Advanced Imbalanced Data Techniques</h4>
+                        <pre><code class="language-csharp">public async Task&lt;FraudDetectionResult&gt; RunFraudDetectionSystem()
+{
+    var mlManager = new PythonMLManager(beepService, pythonRuntime, sessionInfo);
+    mlManager.ConfigureMLSessionForUser("fraud_analyst");
+    
+    Console.WriteLine("??? Starting Fraud Detection System...");
+    
+    try
+    {
+        // Load transaction data
+        var features = mlManager.LoadData("data/transactions.csv");
+        
+        if (mlManager is PythonMLManager manager)
+        {
+            // 1. Specialized preprocessing for financial data
+            Console.WriteLine("?? Financial Data Preprocessing...");
+            
+            // Handle missing values in financial data
+            manager.DataPreprocessing.ImputeMissingValues(
+                featureList: new[] { "amount", "merchant_category", "location" },
+                strategy: "median");
+            
+            // Financial feature engineering
+            manager.FeatureEngineering.ApplyLogTransformation(
+                selectedFeatures: new[] { "amount", "balance_before", "balance_after" });
+            
+            // Time-based features for fraud detection
+            manager.DateTimeProcessing.ExtractDateTimeComponents("transaction_time");
+            manager.DateTimeProcessing.HandleCyclicalTimeFeatures("hour", "cyclical");
+            manager.DateTimeProcessing.HandleCyclicalTimeFeatures("day_of_week", "cyclical");
+            
+            // 2. Advanced Imbalanced Data Handling
+            Console.WriteLine("?? Advanced Imbalanced Data Techniques...");
+            
+            // Start with SMOTE
+            manager.ImbalancedData.ApplySMOTE("is_fraud", samplingStrategy: 0.3f);
+            
+            // Combine with random undersampling
+            manager.ImbalancedData.ApplyRandomUndersampling("is_fraud", samplingStrategy: 0.7f);
+            
+            // Try Near Miss algorithm
+            manager.ImbalancedData.ApplyNearMiss("is_fraud", version: 1);
+            
+            // Use Balanced Random Forest
+            manager.ImbalancedData.ApplyBalancedRandomForest("is_fraud", nEstimators: 200);
+            
+            // 3. Feature selection optimized for fraud detection
+            manager.FeatureSelection.ApplyVarianceThreshold(threshold: 0.001);
+            manager.FeatureSelection.ApplyCorrelationThreshold(threshold: 0.98);
+            
+            // Train specialized fraud detection model
+            var fraudModelId = "fraud_detector_v1";
+            var fraudParameters = new Dictionary&lt;string, object&gt;
+            {
+                ["n_estimators"] = 300,
+                ["max_depth"] = 20,
+                ["min_samples_split"] = 2,
+                ["min_samples_leaf"] = 1,
+                ["class_weight"] = "balanced_subsample",
+                ["bootstrap"] = true,
+                ["random_state"] = 42
+            };
+            
+            mlManager.TrainModel(
+                fraudModelId,
+                MachineLearningAlgorithm.RandomForestClassifier,
+                fraudParameters,
+                features.Where(f => f != "is_fraud" && f != "transaction_id").ToArray(),
+                "is_fraud");
+            
+            // Comprehensive evaluation
+            manager.CrossValidation.PerformCrossValidation(fraudModelId, numFolds: 5);
+            
+            // Create specialized fraud detection visualizations
+            manager.Visualization.CreatePrecisionRecallCurve(fraudModelId, "fraud_pr_curve.png");
+            manager.Visualization.CreateROC(fraudModelId, "fraud_roc_curve.png");
+            manager.Visualization.CreateFeatureImportance(fraudModelId, "fraud_feature_importance.png");
+            
+            var scores = mlManager.GetModelClassificationScore(fraudModelId);
+            
+            Console.WriteLine($"?? Fraud Detection Model Performance:");
+            Console.WriteLine($"   Accuracy: {scores.Item1:F4}");
+            Console.WriteLine($"   F1-Score: {scores.Item2:F4}");
+            
+            return new FraudDetectionResult
+            {
+                Success = true,
+                Accuracy = scores.Item1,
+                F1Score = scores.Item2,
+                ModelId = fraudModelId
+            };
+        }
+        
+        throw new InvalidOperationException("Failed to cast to PythonMLManager");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"? Fraud detection failed: {ex.Message}");
+        return new FraudDetectionResult { Success = false, ErrorMessage = ex.Message };
+    }
+}
+
+public class FraudDetectionResult
+{
+    public bool Success { get; set; }
+    public double Accuracy { get; set; }
+    public double F1Score { get; set; }
+    public string ModelId { get; set; }
+    public string ErrorMessage { get; set; }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Text Classification Pipeline -->
+                <section class="section" id="text-classification">
+                    <h2>?? Text Classification - Advanced NLP Pipeline</h2>
+                    <p>Comprehensive text classification system using advanced NLP techniques and text processing assistants.</p>
+                    
+                    <div class="code-example">
+                        <h4>Advanced Text Classification Pipeline</h4>
+                        <pre><code class="language-csharp">public async Task&lt;TextClassificationResult&gt; RunTextClassificationPipeline()
+{
+    var mlManager = new PythonMLManager(beepService, pythonRuntime, sessionInfo);
+    mlManager.ConfigureMLSessionForUser("text_analyst");
+    
+    Console.WriteLine("?? Starting Text Classification Pipeline...");
+    
+    try
+    {
+        // Load text data (e.g., customer reviews, support tickets)
+        var features = mlManager.LoadData("data/customer_reviews.csv");
+        
+        if (mlManager is PythonMLManager manager)
+        {
+            // 1. Comprehensive Text Preprocessing
+            Console.WriteLine("?? Text Preprocessing Pipeline...");
+            
+            // Basic text cleaning
+            manager.TextProcessing.ConvertTextToLowercase("review_text");
+            manager.TextProcessing.RemovePunctuation("review_text");
+            manager.TextProcessing.RemoveStopwords("review_text", "english");
+            
+            // Advanced text processing
+            manager.TextProcessing.ApplyLemmatization("review_text");
+            manager.TextProcessing.ApplyTokenization("review_text");
+            
+            // Create TF-IDF features
+            manager.TextProcessing.ApplyTFIDFVectorization("review_text", maxFeatures: 5000);
+            
+            // 2. Handle categorical metadata
+            if (features.Contains("product_category"))
+            {
+                manager.CategoricalEncoding.TargetEncode(
+                    new[] { "product_category", "customer_segment" }, 
+                    "sentiment");
+            }
+            
+            // 3. Feature engineering for text data
+            manager.FeatureEngineering.ApplyFeatureHashing(
+                selectedFeatures: new[] { "processed_text" },
+                nFeatures: 1000);
+            
+            // 4. Dimensionality reduction for text features
+            manager.DimensionalityReduction.ApplyPCA(
+                nComponents: 100,
+                featureList: features.Where(f => f.StartsWith("tfidf_")).ToArray());
+            
+            // 5. Train text classification model
+            var textModelId = "sentiment_classifier";
+            var textParameters = new Dictionary&lt;string, object&gt;
+            {
+                ["C"] = 1.0,
+                ["kernel"] = "linear",
+                ["class_weight"] = "balanced",
+                ["random_state"] = 42
+            };
+            
+            mlManager.TrainModel(
+                textModelId,
+                MachineLearningAlgorithm.SVC,
+                textParameters,
+                features.Where(f => f != "sentiment" && f != "review_id").ToArray(),
+                "sentiment");
+            
+            // 6. Evaluation and visualization
+            manager.CrossValidation.PerformCrossValidation(textModelId, numFolds: 5);
+            
+            var scores = mlManager.GetModelClassificationScore(textModelId);
+            
+            // Create text-specific visualizations
+            manager.Visualization.CreateConfusionMatrix(textModelId, "text_confusion_matrix.png");
+            manager.Visualization.CreateROC(textModelId, "text_roc_curve.png");
+            manager.Visualization.GenerateEvaluationReport(textModelId, "text_classification_report.html");
+            
+            Console.WriteLine($"?? Text Classification Results:");
+            Console.WriteLine($"   Accuracy: {scores.Item1:F4}");
+            Console.WriteLine($"   F1-Score: {scores.Item2:F4}");
+            
+            return new TextClassificationResult
+            {
+                Success = true,
+                Accuracy = scores.Item1,
+                F1Score = scores.Item2,
+                ModelId = textModelId
+            };
+        }
+        
+        throw new InvalidOperationException("Failed to cast to PythonMLManager");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"? Text classification failed: {ex.Message}");
+        return new TextClassificationResult { Success = false, ErrorMessage = ex.Message };
+    }
+}
+
+public class TextClassificationResult
+{
+    public bool Success { get; set; }
+    public double Accuracy { get; set; }
+    public double F1Score { get; set; }
+    public string ModelId { get; set; }
+    public string ErrorMessage { get; set; }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Time Series Forecasting -->
+                <section class="section" id="time-series">
+                    <h2>?? Time Series Forecasting - Advanced Temporal Analysis</h2>
+                    <p>Sophisticated time series forecasting pipeline with advanced temporal feature engineering and seasonal decomposition.</p>
+                    
+                    <div class="code-example">
+                        <h4>Advanced Time Series Forecasting</h4>
+                        <pre><code class="language-csharp">public async Task&lt;TimeSeriesForecastResult&gt; RunTimeSeriesForecasting()
+{
+    var mlManager = new PythonMLManager(beepService, pythonRuntime, sessionInfo);
+    mlManager.ConfigureMLSessionForUser("forecast_analyst");
+    
+    Console.WriteLine("?? Starting Time Series Forecasting Pipeline...");
+    
+    try
+    {
+        // Load time series data (e.g., sales, demand, stock prices)
+        var features = mlManager.LoadData("data/sales_timeseries.csv");
+        
+        if (mlManager is PythonMLManager manager)
+        {
+            // 1. Advanced DateTime Processing
+            Console.WriteLine("?? Advanced DateTime Feature Engineering...");
+            
+            // Extract comprehensive datetime components
+            manager.DateTimeProcessing.ExtractDateTimeComponents("date");
+            
+            // Create cyclical features for seasonality
+            manager.DateTimeProcessing.HandleCyclicalTimeFeatures("month", "cyclical");
+            manager.DateTimeProcessing.HandleCyclicalTimeFeatures("day_of_week", "cyclical");
+            manager.DateTimeProcessing.HandleCyclicalTimeFeatures("hour", "cyclical");
+            
+            // Calculate time differences for trend analysis
+            manager.DateTimeProcessing.CalculateTimeDifference("date", "previous_date", "time_delta");
+            
+            // Handle missing dates in time series
+            manager.DateTimeProcessing.HandleMissingDates("date", method: "interpolate");
+            
+            // 2. Time Series Specific Feature Engineering
+            Console.WriteLine("?? Time Series Feature Engineering...");
+            
+            // Create lag features
+            manager.FeatureEngineering.ApplyLogTransformation(
+                selectedFeatures: new[] { "sales", "demand", "inventory" });
+            
+            // Rolling window statistics
+            manager.FeatureEngineering.GeneratePolynomialFeatures(
+                selectedFeatures: new[] { "sales_lag_1", "sales_lag_7", "sales_lag_30" },
+                degree: 2,
+                interactionOnly: true);
+            
+            // 3. Time Series Augmentation
+            Console.WriteLine("?? Time Series Data Augmentation...");
+            
+            // Apply time series augmentation techniques
+            manager.TimeSeries.TimeSeriesAugmentation(
+                timeSeriesColumns: new[] { "sales", "demand" },
+                augmentationType: "jittering",
+                parameter: 0.1);
+            
+            manager.TimeSeries.TimeSeriesAugmentation(
+                timeSeriesColumns: new[] { "sales", "demand" },
+                augmentationType: "scaling",
+                parameter: 0.9);
+            
+            // 4. Handle seasonality and trends
+            manager.DataPreprocessing.StandardizeData(
+                selectedFeatures: new[] { "sales", "demand", "seasonal_component", "trend_component" });
+            
+            // 5. Feature selection for time series
+            manager.FeatureSelection.ApplyVarianceThreshold(threshold: 0.01);
+            manager.FeatureSelection.ApplyCorrelationThreshold(threshold: 0.95);
+            
+            // 6. Train time series forecasting models
+            Console.WriteLine("?? Training Forecasting Models...");
+            
+            // Random Forest for time series
+            var tsModelId = "sales_forecaster";
+            var tsParameters = new Dictionary&lt;string, object&gt;
+            {
+                ["n_estimators"] = 200,
+                ["max_depth"] = 15,
+                ["min_samples_split"] = 5,
+                ["random_state"] = 42,
+                ["bootstrap"] = true
+            };
+            
+            var forecastFeatures = features.Where(f => 
+                f != "sales" && 
+                f != "date_original" && 
+                !f.Contains("future")).ToArray();
+            
+            mlManager.TrainModel(
+                tsModelId,
+                MachineLearningAlgorithm.RandomForestRegressor,
+                tsParameters,
+                forecastFeatures,
+                "sales");
+            
+            // 7. Model evaluation for time series
+            var scores = mlManager.GetModelRegressionScores(tsModelId);
+            
+            Console.WriteLine($"?? Time Series Forecasting Results:");
+            Console.WriteLine($"   R² Score: {scores.Item1:F4}");
+            Console.WriteLine($"   MSE: {scores.Item2:F4}");
+            Console.WriteLine($"   MAE: {scores.Item3:F4}");
+            
+            // 8. Cross-validation with time series considerations
+            manager.CrossValidation.PerformCrossValidation(tsModelId, numFolds: 5);
+            
+            // 9. Generate forecasting visualizations
+            manager.Visualization.CreateLearningCurve(tsModelId, "ts_learning_curve.png");
+            manager.Visualization.CreateFeatureImportance(tsModelId, "ts_feature_importance.png");
+            manager.Visualization.GenerateEvaluationReport(tsModelId, "time_series_forecast_report.html");
+            
+            // 10. Generate future predictions
+            var predictions = mlManager.PredictRegression(forecastFeatures);
+            
+            // Export forecasting results
+            manager.Utilities.ExportTestResult(
+                "forecasts/sales_forecast.csv", 
+                "date", 
+                "predicted_sales");
+            
+            return new TimeSeriesForecastResult
+            {
+                Success = true,
+                R2Score = scores.Item1,
+                MSE = scores.Item2,
+                MAE = scores.Item3,
+                ModelId = tsModelId,
+                ForecastPath = "forecasts/sales_forecast.csv"
+            };
+        }
+        
+        throw new InvalidOperationException("Failed to cast to PythonMLManager");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"? Time series forecasting failed: {ex.Message}");
+        return new TimeSeriesForecastResult { Success = false, ErrorMessage = ex.Message };
+    }
+}
+
+public class TimeSeriesForecastResult
+{
+    public bool Success { get; set; }
+    public double R2Score { get; set; }
+    public double MSE { get; set; }
+    public double MAE { get; set; }
+    public string ModelId { get; set; }
+    public string ForecastPath { get; set; }
+    public string ErrorMessage { get; set; }
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Best Practices -->
+                <section class="section" id="best-practices">
+                    <h2>? Advanced Best Practices</h2>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="tip">
+                                <h5><i class="bi bi-lightbulb"></i> Enterprise ML Patterns</h5>
+                                <ul>
+                                    <li><strong>Session Management:</strong> Always configure sessions with meaningful user identifiers</li>
+                                    <li><strong>Error Handling:</strong> Implement comprehensive try-catch blocks with specific exception handling</li>
+                                    <li><strong>Assistant Chaining:</strong> Chain assistant operations in logical order for optimal results</li>
+                                    <li><strong>Resource Management:</strong> Dispose of managers and clean up resources properly</li>
+                                    <li><strong>Async Operations:</strong> Use async methods for long-running ML operations in production</li>
+                                    <li><strong>Model Comparison:</strong> Train multiple models and select the best performer</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="warning">
+                                <h5><i class="bi bi-exclamation-triangle"></i> Production Considerations</h5>
+                                <ul>
+                                    <li><strong>Data Validation:</strong> Always validate input data before processing</li>
+                                    <li><strong>Feature Engineering:</strong> Apply feature engineering consistently across train/test splits</li>
+                                    <li><strong>Model Persistence:</strong> Save and version models for production deployment</li>
+                                    <li><strong>Performance Monitoring:</strong> Monitor model performance and data drift in production</li>
+                                    <li><strong>Scalability:</strong> Consider data size and computational resources for large datasets</li>
+                                    <li><strong>Security:</strong> Implement proper access controls and data encryption</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="index.html" class="btn-beep">
+                        <i class="bi bi-house"></i> Home
+                    </a>
+                    <a href="assistant-classes.html" class="btn-beep">
+                        <i class="bi bi-tools"></i> Assistant Classes
+                    </a>
+                    <a href="api-reference.html" class="btn-beep">
+                        <i class="bi bi-book"></i> API Reference
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.ML Advanced Examples</p>
+                            <p>Enterprise ML Workflows for .NET 6, 7, 8, and 9</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="#customer-churn">Customer Churn</a>
+                            <a href="#fraud-detection">Fraud Detection</a>
+                            <a href="#text-classification">Text Classification</a>
+                            <a href="#time-series">Time Series</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="assets/navigation.js"></script>
+</body>
+</html>

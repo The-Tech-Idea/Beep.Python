@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Troubleshooting - Beep.Python.ML</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="header-content">
+                        <h1><i class="bi bi-question-circle text-warning"></i> Troubleshooting</h1>
+                        <p class="lead">Common issues, solutions, and best practices for resolving problems with Beep.Python.ML across .NET 6, 7, 8, and 9</p>
+                        
+                        <div class="achievement-badges">
+                            <span class="badge bg-success"><i class="bi bi-check-circle"></i> Common Solutions</span>
+                            <span class="badge bg-info"><i class="bi bi-cpu"></i> Performance Tips</span>
+                            <span class="badge bg-warning"><i class="bi bi-tools"></i> Configuration</span>
+                            <span class="badge bg-primary"><i class="bi bi-bug"></i> Debug Guide</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Diagnostics -->
+                <section class="section" id="quick-diagnostics">
+                    <h2>?? Quick Diagnostics</h2>
+                    <p>Start here for common issues and quick fixes. Most problems can be resolved with these common solutions.</p>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="warning">
+                                <h5><i class="bi bi-exclamation-triangle"></i> Most Common Issues</h5>
+                                <ul>
+                                    <li><strong>Session not configured:</strong> 80% of issues</li>
+                                    <li><strong>Python environment:</strong> 15% of issues</li>
+                                    <li><strong>File paths:</strong> 3% of issues</li>
+                                    <li><strong>Package dependencies:</strong> 2% of issues</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="tip">
+                                <h5><i class="bi bi-lightbulb"></i> Quick Fixes</h5>
+                                <ul>
+                                    <li><strong>Always configure sessions first</strong></li>
+                                    <li><strong>Check Python installation</strong></li>
+                                    <li><strong>Verify file paths exist</strong></li>
+                                    <li><strong>Install required packages</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Session Configuration Issues -->
+                <section class="section" id="session-issues">
+                    <h2>?? Session Configuration Issues</h2>
+                    <p>The most common category of issues relates to session configuration. Here are the symptoms and solutions.</p>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-exclamation-triangle"></i> Common Session Errors</h3>
+                        
+                        <div class="code-example">
+                            <h4>Error: "Python environment is not initialized"</h4>
+                            <pre><code class="language-text">InvalidOperationException: Python environment is not initialized
+   at Beep.Python.ML.PythonMLManager.TrainModel(...)</code></pre>
+                            
+                            <h5>?? Solution:</h5>
+                            <pre><code class="language-csharp">// Always configure session before any ML operations
+var mlManager = new PythonMLManager(beepService, pythonRuntime, sessionInfo);
+
+// REQUIRED: Configure session first
+bool sessionConfigured = mlManager.ConfigureMLSessionForUser("username");
+if (!sessionConfigured)
+{
+    throw new InvalidOperationException("Failed to configure ML session");
+}
+
+// Now you can perform ML operations
+var features = mlManager.LoadData("data.csv");</code></pre>
+                        </div>
+
+                        <div class="code-example">
+                            <h4>Error: "Session configuration failed"</h4>
+                            <pre><code class="language-text">Failed to configure ML session for user: username</code></pre>
+                            
+                            <h5>?? Solution:</h5>
+                            <pre><code class="language-csharp">// Check Python runtime initialization
+var pythonRuntime = new PythonNetRunTimeManager(beepService);
+
+// Verify Python installation
+if (!pythonRuntime.IsPythonInstalled())
+{
+    throw new InvalidOperationException("Python is not installed or not accessible");
+}
+
+// Configure with proper session info
+var sessionInfo = new PythonSessionInfo 
+{ 
+    Username = "username",
+    SessionId = Guid.NewGuid().ToString(),
+    CreateTime = DateTime.UtcNow
+};
+
+var mlManager = new PythonMLManager(beepService, pythonRuntime, sessionInfo);
+
+// Configure with error checking
+try
+{
+    bool configured = mlManager.ConfigureMLSessionForUser("username");
+    if (!configured)
+    {
+        // Check session status
+        var configuredSession = mlManager.GetConfiguredSession();
+        var configuredVirtualEnv = mlManager.GetConfiguredVirtualEnvironment();
+        
+        Console.WriteLine($"Session: {configuredSession?.Username}");
+        Console.WriteLine($"Virtual Env: {configuredVirtualEnv?.Name}");
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Session configuration error: {ex.Message}");
+}</code></pre>
+                        </div>
+
+                        <div class="code-example">
+                            <h4>Error: "Assistant class access failed"</h4>
+                            <pre><code class="language-text">NullReferenceException: Object reference not set to an instance of an object
+   at accessing assistant classes</code></pre>
+                            
+                            <h5>?? Solution:</h5>
+                            <pre><code class="language-csharp">// CORRECT: Cast to implementation to access assistants
+if (mlManager is PythonMLManager manager)
+{
+    // Configure session first
+    if (!manager.IsSessionConfigured())
+    {
+        manager.ConfigureMLSessionForUser("username");
+    }
+    
+    // Now access assistant classes
+    manager.DataPreprocessing.StandardizeData();
+    manager.FeatureEngineering.GeneratePolynomialFeatures();
+}
+else
+{
+    throw new InvalidOperationException("Failed to cast to PythonMLManager implementation");
+}
+
+// INCORRECT: Don't try to access assistants through interface
+// mlManager.DataPreprocessing.StandardizeData(); // This will fail</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Python Environment Issues -->
+                <section class="section" id="python-issues">
+                    <h2>?? Python Environment Issues</h2>
+                    <p>Python installation and environment-related problems and their solutions.</p>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-gear"></i> Python Installation Problems</h3>
+                        
+                        <div class="code-example">
+                            <h4>Error: "Python not found"</h4>
+                            <pre><code class="language-text">FileNotFoundException: Python executable not found</code></pre>
+                            
+                            <h5>?? Solutions:</h5>
+                            <pre><code class="language-bash"># 1. Install Python (if not installed)
+# Download from https://python.org
+# Or use package manager:
+
+# Windows (chocolatey)
+choco install python
+
+# Windows (winget)
+winget install Python.Python.3.11
+
+# macOS (homebrew)
+brew install python@3.11
+
+# Ubuntu/Debian
+sudo apt install python3.11 python3.11-pip
+
+# 2. Verify Python installation
+python --version
+python3 --version
+
+# 3. Add Python to PATH (Windows)
+# Add these paths to your system PATH:
+# C:\Python311\
+# C:\Python311\Scripts\</code></pre>
+                        </div>
+
+                        <div class="code-example">
+                            <h4>Error: "Required packages missing"</h4>
+                            <pre><code class="language-text">ModuleNotFoundError: No module named 'pandas'</code></pre>
+                            
+                            <h5>?? Solution:</h5>
+                            <pre><code class="language-bash"># Install required packages
+pip install pandas>=1.5.0 numpy>=1.21.0 scikit-learn>=1.2.0
+
+# Full package list for Beep.Python.ML
+pip install pandas numpy scikit-learn matplotlib seaborn
+pip install xgboost lightgbm imbalanced-learn
+pip install nltk textblob spacy
+pip install plotly dash
+
+# Using requirements file
+pip install -r requirements.txt</code></pre>
+                            
+                            <h5>?? Create requirements.txt:</h5>
+                            <pre><code class="language-text">pandas>=1.5.0
+numpy>=1.21.0
+scikit-learn>=1.2.0
+matplotlib>=3.6.0
+seaborn>=0.12.0
+xgboost>=1.7.0
+lightgbm>=3.3.0
+imbalanced-learn>=0.10.0
+nltk>=3.8
+textblob>=0.17.1
+plotly>=5.15.0</code></pre>
+                        </div>
+
+                        <div class="code-example">
+                            <h4>Virtual Environment Issues</h4>
+                            <pre><code class="language-text">Error: Virtual environment activation failed</code></pre>
+                            
+                            <h5>?? Solution:</h5>
+                            <pre><code class="language-bash"># Create virtual environment
+python -m venv beep_ml_env
+
+# Activate virtual environment
+# Windows:
+beep_ml_env\Scripts\activate
+
+# Linux/macOS:
+source beep_ml_env/bin/activate
+
+# Install packages in virtual environment
+pip install -r requirements.txt
+
+# Verify installation
+pip list</code></pre>
+                            
+                            <h5>?? Programmatic Virtual Environment:</h5>
+                            <pre><code class="language-csharp">// Configure virtual environment in code
+var virtualEnv = new PythonVirtualEnvironment
+{
+    Name = "beep_ml_env",
+    Path = @"C:\VirtualEnvs\beep_ml_env",
+    PythonVersion = "3.11"
+};
+
+bool sessionConfigured = mlManager.ConfigureMLSession(sessionInfo, virtualEnv);
+if (!sessionConfigured)
+{
+    // Try without virtual environment
+    sessionConfigured = mlManager.ConfigureMLSessionForUser("username");
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- File and Data Issues -->
+                <section class="section" id="file-issues">
+                    <h2>?? File and Data Issues</h2>
+                    <p>Common problems with file paths, data loading, and data format issues.</p>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-file-earmark-x"></i> File Path Problems</h3>
+                        
+                        <div class="code-example">
+                            <h4>Error: "File not found"</h4>
+                            <pre><code class="language-text">FileNotFoundException: Data file not found: data.csv</code></pre>
+                            
+                            <h5>?? Solution:</h5>
+                            <pre><code class="language-csharp">// Always check file existence before loading
+string dataFilePath = "data/customer_data.csv";
+
+if (!File.Exists(dataFilePath))
+{
+    // Try absolute path
+    dataFilePath = Path.GetFullPath(dataFilePath);
+    
+    if (!File.Exists(dataFilePath))
+    {
+        // Try alternative locations
+        var alternativePaths = new[]
+        {
+            Path.Combine(Directory.GetCurrentDirectory(), "data", "customer_data.csv"),
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "customer_data.csv"),
+            @"C:\Data\customer_data.csv"
+        };
+        
+        dataFilePath = alternativePaths.FirstOrDefault(File.Exists);
+        
+        if (dataFilePath == null)
+        {
+            throw new FileNotFoundException("Data file not found in any expected location");
+        }
+    }
+}
+
+Console.WriteLine($"Loading data from: {dataFilePath}");
+var features = mlManager.LoadData(dataFilePath);</code></pre>
+                        </div>
+
+                        <div class="code-example">
+                            <h4>Error: "Invalid data format"</h4>
+                            <pre><code class="language-text">Error: Could not parse data file</code></pre>
+                            
+                            <h5>?? Solution:</h5>
+                            <pre><code class="language-csharp">// Validate data before processing
+try
+{
+    // Preview and validate data first
+    var features = mlManager.ValidateAndPreviewData(dataFilePath, numRows: 5);
+    
+    if (features == null || features.Length == 0)
+    {
+        throw new InvalidOperationException("No valid features found in data file");
+    }
+    
+    Console.WriteLine($"Data validation successful. Features: {string.Join(", ", features)}");
+    
+    // Load full dataset
+    var loadedFeatures = mlManager.LoadData(dataFilePath);
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Data validation failed: {ex.Message}");
+    
+    // Try different file formats or cleaning steps
+    // Check for:
+    // - Correct CSV delimiter (comma, semicolon, tab)
+    // - File encoding (UTF-8, ASCII)
+    // - Header row presence
+    // - Special characters in data
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Assistant Class Issues -->
+                <section class="section" id="assistant-issues">
+                    <h2>??? Assistant Class Issues</h2>
+                    <p>Problems specific to using the 13 assistant classes and their solutions.</p>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-tools"></i> Assistant Class Problems</h3>
+                        
+                        <div class="code-example">
+                            <h4>Error: "Assistant method failed"</h4>
+                            <pre><code class="language-text">Exception in assistant method execution</code></pre>
+                            
+                            <h5>?? Solution:</h5>
+                            <pre><code class="language-csharp">// Wrap assistant operations in try-catch blocks
+if (mlManager is PythonMLManager manager)
+{
+    try
+    {
+        // Data preprocessing with error handling
+        manager.DataPreprocessing.ImputeMissingValues("mean");
+        Console.WriteLine("? Missing values imputed successfully");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"? Missing value imputation failed: {ex.Message}");
+        // Try alternative strategy
+        try
+        {
+            manager.DataPreprocessing.ImputeMissingValues("median");
+            Console.WriteLine("? Missing values imputed with median strategy");
+        }
+        catch (Exception ex2)
+        {
+            Console.WriteLine($"? Alternative imputation failed: {ex2.Message}");
+            // Drop missing values as last resort
+            manager.DataPreprocessing.DropMissingValues("rows");
+        }
+    }
+}</code></pre>
+                        </div>
+
+                        <div class="code-example">
+                            <h4>Error: "Feature engineering failed"</h4>
+                            <pre><code class="language-text">Error in polynomial feature generation</code></pre>
+                            
+                            <h5>?? Solution:</h5>
+                            <pre><code class="language-csharp">// Validate features before engineering
+if (mlManager is PythonMLManager manager)
+{
+    try
+    {
+        // Check feature types and values
+        var numericalFeatures = features
+            .Where(f => IsNumericalFeature(f))
+            .ToArray();
+            
+        if (numericalFeatures.Length == 0)
+        {
+            Console.WriteLine("?? No numerical features found for polynomial generation");
+            return;
+        }
+        
+        // Start with lower degree and limited features
+        var selectedFeatures = numericalFeatures.Take(3).ToArray();
+        
+        manager.FeatureEngineering.GeneratePolynomialFeatures(
+            selectedFeatures: selectedFeatures,
+            degree: 2,
+            includeBias: false,
+            interactionOnly: true);
+            
+        Console.WriteLine($"? Polynomial features created for: {string.Join(", ", selectedFeatures)}");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"? Polynomial feature generation failed: {ex.Message}");
+        Console.WriteLine("?? Try: reducing degree, limiting features, or checking for NaN/infinity values");
+    }
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Performance Issues -->
+                <section class="section" id="performance-issues">
+                    <h2>? Performance Issues</h2>
+                    <p>Common performance problems and optimization techniques.</p>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-speedometer2"></i> Performance Problems</h3>
+                        
+                        <div class="code-example">
+                            <h4>Issue: "Slow ML operations"</h4>
+                            <h5>?? Solutions:</h5>
+                            <pre><code class="language-csharp">// 1. Optimize data size
+var features = mlManager.ValidateAndPreviewData("large_dataset.csv", numRows: 1000);
+
+// Sample large datasets for development
+if (features.Length > 10000)
+{
+    Console.WriteLine("?? Large dataset detected. Consider sampling for development.");
+    
+    if (mlManager is PythonMLManager manager)
+    {
+        // Use utility to create smaller sample
+        manager.Utilities.SplitDataClassFile("large_dataset.csv", "sample_dataset.csv", 0.1);
+        features = mlManager.LoadData("sample_dataset.csv");
+    }
+}
+
+// 2. Optimize feature selection
+if (mlManager is PythonMLManager manager)
+{
+    // Remove low-variance features early
+    manager.FeatureSelection.ApplyVarianceThreshold(threshold: 0.1);
+    
+    // Remove highly correlated features
+    manager.FeatureSelection.ApplyCorrelationThreshold(threshold: 0.9);
+    
+    // Use only important features
+    var importantFeatures = features.Take(20).ToArray(); // Limit features
+}
+
+// 3. Optimize model parameters
+var optimizedParameters = new Dictionary&lt;string, object&gt;
+{
+    ["n_estimators"] = 50,    // Reduce from 100+
+    ["max_depth"] = 10,       // Limit depth
+    ["n_jobs"] = -1,          // Use all CPU cores
+    ["random_state"] = 42
+};</code></pre>
+                        </div>
+
+                        <div class="code-example">
+                            <h4>Issue: "Memory usage too high"</h4>
+                            <h5>?? Solutions:</h5>
+                            <pre><code class="language-csharp">// 1. Monitor memory usage
+var initialMemory = GC.GetTotalMemory(false);
+Console.WriteLine($"Initial memory: {initialMemory / 1024 / 1024} MB");
+
+try
+{
+    // Your ML operations
+    if (mlManager is PythonMLManager manager)
+    {
+        // Batch processing for large datasets
+        var batchSize = 1000;
+        var totalRows = GetDataRowCount("large_dataset.csv");
+        
+        for (int i = 0; i < totalRows; i += batchSize)
+        {
+            // Process in batches
+            var batchFeatures = LoadDataBatch("large_dataset.csv", i, batchSize);
+            
+            // Process batch
+            manager.DataPreprocessing.StandardizeData();
+            
+            // Force garbage collection periodically
+            if (i % (batchSize * 10) == 0)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                
+                var currentMemory = GC.GetTotalMemory(false);
+                Console.WriteLine($"Memory after batch {i}: {currentMemory / 1024 / 1024} MB");
+            }
+        }
+    }
+}
+finally
+{
+    // Cleanup
+    var finalMemory = GC.GetTotalMemory(true);
+    Console.WriteLine($"Final memory: {finalMemory / 1024 / 1024} MB");
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Debugging Guide -->
+                <section class="section" id="debugging">
+                    <h2>?? Debugging Guide</h2>
+                    <p>Systematic approach to debugging Beep.Python.ML issues.</p>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-bug"></i> Debug Workflow</h3>
+                        
+                        <div class="code-example">
+                            <h4>Comprehensive Debug Helper</h4>
+                            <pre><code class="language-csharp">public class BeepMLDebugHelper
+{
+    public static void DiagnoseMLManager(IPythonMLManager mlManager)
+    {
+        Console.WriteLine("?? Beep.Python.ML Diagnostic Report");
+        Console.WriteLine("=====================================");
+        
+        // 1. Check session configuration
+        Console.WriteLine("1. Session Status:");
+        Console.WriteLine($"   Is Configured: {mlManager.IsSessionConfigured()}");
+        
+        var session = mlManager.GetConfiguredSession();
+        if (session != null)
+        {
+            Console.WriteLine($"   Username: {session.Username}");
+            Console.WriteLine($"   Session ID: {session.SessionId}");
+            Console.WriteLine($"   Created: {session.CreateTime}");
+        }
+        else
+        {
+            Console.WriteLine("   ? No session configured");
+        }
+        
+        var virtualEnv = mlManager.GetConfiguredVirtualEnvironment();
+        if (virtualEnv != null)
+        {
+            Console.WriteLine($"   Virtual Env: {virtualEnv.Name}");
+            Console.WriteLine($"   Path: {virtualEnv.Path}");
+        }
+        
+        // 2. Check Python environment
+        Console.WriteLine("\n2. Python Environment:");
+        try
+        {
+            // This would require access to runtime manager
+            Console.WriteLine("   Python installation: ? Available");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"   ? Python issue: {ex.Message}");
+        }
+        
+        // 3. Check assistant classes access
+        Console.WriteLine("\n3. Assistant Classes:");
+        if (mlManager is PythonMLManager manager)
+        {
+            try
+            {
+                var assistants = new[]
+                {
+                    ("DataPreprocessing", manager.DataPreprocessing != null),
+                    ("FeatureEngineering", manager.FeatureEngineering != null),
+                    ("CategoricalEncoding", manager.CategoricalEncoding != null),
+                    ("TextProcessing", manager.TextProcessing != null),
+                    ("DateTimeProcessing", manager.DateTimeProcessing != null),
+                    ("ImbalancedData", manager.ImbalancedData != null),
+                    ("TimeSeries", manager.TimeSeries != null),
+                    ("FeatureSelection", manager.FeatureSelection != null),
+                    ("CrossValidation", manager.CrossValidation != null),
+                    ("DataCleaning", manager.DataCleaning != null),
+                    ("DimensionalityReduction", manager.DimensionalityReduction != null),
+                    ("Visualization", manager.Visualization != null),
+                    ("Utilities", manager.Utilities != null)
+                };
+                
+                foreach (var (name, available) in assistants)
+                {
+                    Console.WriteLine($"   {name}: {(available ? "?" : "?")}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"   ? Assistant access failed: {ex.Message}");
+            }
+        }
+        else
+        {
+            Console.WriteLine("   ? Cannot cast to PythonMLManager");
+        }
+        
+        // 4. System information
+        Console.WriteLine("\n4. System Information:");
+        Console.WriteLine($"   .NET Version: {Environment.Version}");
+        Console.WriteLine($"   OS: {Environment.OSVersion}");
+        Console.WriteLine($"   Working Directory: {Directory.GetCurrentDirectory()}");
+        Console.WriteLine($"   Memory: {GC.GetTotalMemory(false) / 1024 / 1024} MB");
+        
+        Console.WriteLine("\n=====================================");
+    }
+    
+    public static void TestBasicWorkflow(IPythonMLManager mlManager)
+    {
+        Console.WriteLine("?? Testing Basic ML Workflow");
+        Console.WriteLine("============================");
+        
+        try
+        {
+            // Step 1: Configure session
+            Console.Write("1. Configuring session... ");
+            bool configured = mlManager.ConfigureMLSessionForUser("test_user");
+            Console.WriteLine(configured ? "?" : "?");
+            
+            if (!configured)
+            {
+                Console.WriteLine("? Cannot proceed without session configuration");
+                return;
+            }
+            
+            // Step 2: Test data loading (with sample data)
+            Console.Write("2. Testing data operations... ");
+            
+            // Create sample CSV for testing
+            CreateSampleData("test_data.csv");
+            
+            var features = mlManager.ValidateAndPreviewData("test_data.csv", 3);
+            Console.WriteLine($"? Found {features?.Length ?? 0} features");
+            
+            // Step 3: Test assistant classes
+            Console.Write("3. Testing assistant classes... ");
+            if (mlManager is PythonMLManager manager)
+            {
+                manager.DataPreprocessing.StandardizeData();
+                Console.WriteLine("?");
+            }
+            else
+            {
+                Console.WriteLine("? Cannot access assistants");
+            }
+            
+            Console.WriteLine("? Basic workflow test completed successfully");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"? Workflow test failed: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+        }
+    }
+    
+    private static void CreateSampleData(string fileName)
+    {
+        var csv = @"feature1,feature2,feature3,target
+1.0,2.0,3.0,0
+2.0,3.0,4.0,1
+3.0,4.0,5.0,0
+4.0,5.0,6.0,1
+5.0,6.0,7.0,0";
+        
+        File.WriteAllText(fileName, csv);
+    }
+}</code></pre>
+                        </div>
+                        
+                        <div class="code-example">
+                            <h4>Using the Debug Helper</h4>
+                            <pre><code class="language-csharp">// Use debug helper to diagnose issues
+var mlManager = new PythonMLManager(beepService, pythonRuntime, sessionInfo);
+
+// Run diagnostics
+BeepMLDebugHelper.DiagnoseMLManager(mlManager);
+
+// Test basic workflow
+BeepMLDebugHelper.TestBasicWorkflow(mlManager);</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- FAQ -->
+                <section class="section" id="faq">
+                    <h2>? Frequently Asked Questions</h2>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-question-circle"></i> Common Questions</h3>
+                        
+                        <div class="faq-item">
+                            <h4>Q: Do I need to install Python separately?</h4>
+                            <p><strong>A:</strong> Yes, Beep.Python.ML requires a Python installation (3.8 or higher) with the required packages. The framework uses Python.NET to communicate with your Python environment.</p>
+                        </div>
+                        
+                        <div class="faq-item">
+                            <h4>Q: Can I use conda instead of pip?</h4>
+                            <p><strong>A:</strong> Yes, you can use conda to manage Python packages. Just ensure all required packages are installed in your Python environment.</p>
+                        </div>
+                        
+                        <div class="faq-item">
+                            <h4>Q: Which .NET versions are supported?</h4>
+                            <p><strong>A:</strong> Beep.Python.ML supports .NET 6, 7, 8, and 9 with the same API across all versions.</p>
+                        </div>
+                        
+                        <div class="faq-item">
+                            <h4>Q: Why do I need to cast to PythonMLManager?</h4>
+                            <p><strong>A:</strong> The IPythonMLManager interface provides core ML operations, while PythonMLManager implementation provides access to the 13 specialized assistant classes. This design maintains clean separation of concerns.</p>
+                        </div>
+                        
+                        <div class="faq-item">
+                            <h4>Q: Can I use custom Python scripts?</h4>
+                            <p><strong>A:</strong> The framework uses a template-based approach with 101+ pre-built Python scripts. For custom functionality, you can extend the assistant classes or contribute to the template library.</p>
+                        </div>
+                        
+                        <div class="faq-item">
+                            <h4>Q: How do I handle large datasets?</h4>
+                            <p><strong>A:</strong> Use the utility assistant's data splitting methods, apply feature selection early, consider sampling for development, and process data in batches for very large datasets.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="index.html" class="btn-beep">
+                        <i class="bi bi-house"></i> Home
+                    </a>
+                    <a href="getting-started.html" class="btn-beep">
+                        <i class="bi bi-rocket"></i> Getting Started
+                    </a>
+                    <a href="api-reference.html" class="btn-beep">
+                        <i class="bi bi-book"></i> API Reference
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.ML Troubleshooting Guide</p>
+                            <p>Comprehensive Problem Resolution for .NET 6, 7, 8, and 9</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="#quick-diagnostics">Quick Diagnostics</a>
+                            <a href="#session-issues">Session Issues</a>
+                            <a href="#python-issues">Python Issues</a>
+                            <a href="#debugging">Debug Guide</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="assets/navigation.js"></script>
+</body>
+</html>

@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistant Classes - Beep.Python.ML</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="header-content">
+                        <h1><i class="bi bi-tools text-success"></i> Assistant Classes</h1>
+                        <p class="lead">13 specialized assistant classes providing domain-specific ML operations with template-based Python script execution and clean separation of concerns</p>
+                        
+                        <div class="achievement-badges">
+                            <span class="badge bg-success"><i class="bi bi-check-circle"></i> 13 Assistant Classes</span>
+                            <span class="badge bg-info"><i class="bi bi-cpu"></i> Lazy Initialization</span>
+                            <span class="badge bg-warning"><i class="bi bi-file-code"></i> Template-Based</span>
+                            <span class="badge bg-primary"><i class="bi bi-gear-wide-connected"></i> Clean APIs</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Overview -->
+                <section class="section" id="overview">
+                    <h2>?? Overview</h2>
+                    <p>The Beep.Python.ML framework includes 13 specialized assistant classes, each responsible for a specific domain of machine learning operations. These assistants provide clean APIs, use template-based Python script execution, and are lazily initialized for optimal performance.</p>
+                    
+                    <div class="info-box">
+                        <h5><i class="bi bi-info-circle"></i> Architecture Benefits</h5>
+                        <ul>
+                            <li><strong>Domain Specialization:</strong> Each assistant handles one specific ML domain</li>
+                            <li><strong>Template-Based:</strong> All operations use pre-built Python scripts with parameter substitution</li>
+                            <li><strong>Lazy Initialization:</strong> Assistants are created only when first accessed</li>
+                            <li><strong>Clean APIs:</strong> Intuitive method names with comprehensive parameter support</li>
+                            <li><strong>Session Isolation:</strong> Each assistant operates within isolated Python sessions</li>
+                            <li><strong>Error Handling:</strong> Comprehensive exception handling and logging</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Assistant Classes Grid -->
+                <section class="section" id="assistant-classes-grid">
+                    <h2>??? All Assistant Classes</h2>
+                    
+                    <div class="assistant-classes-grid">
+                        <!-- Data Preprocessing Assistant -->
+                        <div class="assistant-card">
+                            <div class="assistant-header">
+                                <h4><i class="bi bi-database text-primary"></i> PythonDataPreprocessingAssistant</h4>
+                                <span class="badge bg-primary">Core Preprocessing</span>
+                            </div>
+                            <p>Handles data cleaning, scaling, normalization, and missing value imputation with various strategies and feature selection options.</p>
+                            
+                            <div class="methods-list">
+                                <h6>Key Methods:</h6>
+                                <ul>
+                                    <li><code>ImputeMissingValues(strategy)</code></li>
+                                    <li><code>StandardizeData()</code></li>
+                                    <li><code>MinMaxScaleData(min, max)</code></li>
+                                    <li><code>RobustScaleData()</code></li>
+                                    <li><code>NormalizeData(norm)</code></li>
+                                    <li><code>DropMissingValues(axis)</code></li>
+                                </ul>
+                            </div>
+                            
+                            <div class="code-example-small">
+                                <pre><code class="language-csharp">// Data preprocessing operations
+manager.DataPreprocessing.ImputeMissingValues("mean");
+manager.DataPreprocessing.StandardizeData();
+manager.DataPreprocessing.MinMaxScaleData(0, 1);</code></pre>
+                            </div>
+                        </div>
+
+                        <!-- Feature Engineering Assistant -->
+                        <div class="assistant-card">
+                            <div class="assistant-header">
+                                <h4><i class="bi bi-gear text-success"></i> PythonFeatureEngineeringAssistant</h4>
+                                <span class="badge bg-success">Feature Creation</span>
+                            </div>
+                            <p>Advanced feature creation and transformation including polynomial features, log transformations, binning, and feature hashing.</p>
+                            
+                            <div class="methods-list">
+                                <h6>Key Methods:</h6>
+                                <ul>
+                                    <li><code>GeneratePolynomialFeatures(degree, includeBias)</code></li>
+                                    <li><code>ApplyLogTransformation(features)</code></li>
+                                    <li><code>ApplyBinning(features, numberOfBins)</code></li>
+                                    <li><code>ApplyFeatureHashing(features, nFeatures)</code></li>
+                                </ul>
+                            </div>
+                            
+                            <div class="code-example-small">
+                                <pre><code class="language-csharp">// Feature engineering operations
+manager.FeatureEngineering.GeneratePolynomialFeatures(degree: 2);
+manager.FeatureEngineering.ApplyLogTransformation(selectedFeatures);
+manager.FeatureEngineering.ApplyBinning(features, numberOfBins: 5);</code></pre>
+                            </div>
+                        </div>
+
+                        <!-- Categorical Encoding Assistant -->
+                        <div class="assistant-card">
+                            <div class="assistant-header">
+                                <h4><i class="bi bi-tags text-info"></i> PythonCategoricalEncodingAssistant</h4>
+                                <span class="badge bg-info">Categorical Variables</span>
+                            </div>
+                            <p>Comprehensive categorical variable encoding with one-hot, label, target, binary, and frequency encoding strategies.</p>
+                            
+                            <div class="methods-list">
+                                <h6>Key Methods:</h6>
+                                <ul>
+                                    <li><code>OneHotEncode(categoricalFeatures)</code></li>
+                                    <li><code>LabelEncode(categoricalFeatures)</code></li>
+                                    <li><code>TargetEncode(features, labelColumn)</code></li>
+                                    <li><code>BinaryEncode(categoricalFeatures)</code></li>
+                                    <li><code>FrequencyEncode(categoricalFeatures)</code></li>
+                                </ul>
+                            </div>
+                            
+                            <div class="code-example-small">
+                                <pre><code class="language-csharp">// Categorical encoding operations
+var categoricalFeatures = new[] { "category", "type", "region" };
+manager.CategoricalEncoding.OneHotEncode(categoricalFeatures);
+manager.CategoricalEncoding.TargetEncode(categoricalFeatures, "target");</code></pre>
+                            </div>
+                        </div>
+
+                        <!-- Text Processing Assistant -->
+                        <div class="assistant-card">
+                            <div class="assistant-header">
+                                <h4><i class="bi bi-chat-text text-warning"></i> PythonTextProcessingAssistant</h4>
+                                <span class="badge bg-warning">NLP Operations</span>
+                            </div>
+                            <p>Natural language processing operations including tokenization, stemming, lemmatization, and TF-IDF vectorization.</p>
+                            
+                            <div class="methods-list">
+                                <h6>Key Methods:</h6>
+                                <ul>
+                                    <li><code>ConvertTextToLowercase(columnName)</code></li>
+                                    <li><code>RemovePunctuation(columnName)</code></li>
+                                    <li><code>RemoveStopwords(columnName, language)</code></li>
+                                    <li><code>ApplyStemming(columnName)</code></li>
+                                    <li><code>ApplyLemmatization(columnName)</code></li>
+                                    <li><code>ApplyTFIDFVectorization(columnName, maxFeatures)</code></li>
+                                </ul>
+                            </div>
+                            
+                            <div class="code-example-small">
+                                <pre><code class="language-csharp">// Text processing operations
+manager.TextProcessing.ConvertTextToLowercase("review_text");
+manager.TextProcessing.RemoveStopwords("review_text", "english");
+manager.TextProcessing.ApplyTFIDFVectorization("review_text", maxFeatures: 1000);</code></pre>
+                            </div>
+                        </div>
+
+                        <!-- DateTime Processing Assistant -->
+                        <div class="assistant-card">
+                            <div class="assistant-header">
+                                <h4><i class="bi bi-calendar text-secondary"></i> PythonDateTimeProcessingAssistant</h4>
+                                <span class="badge bg-secondary">Temporal Data</span>
+                            </div>
+                            <p>Date and time processing operations including component extraction, time difference calculation, and cyclical feature handling.</p>
+                            
+                            <div class="methods-list">
+                                <h6>Key Methods:</h6>
+                                <ul>
+                                    <li><code>ExtractDateTimeComponents(columnName)</code></li>
+                                    <li><code>CalculateTimeDifference(startColumn, endColumn, newColumnName)</code></li>
+                                    <li><code>HandleCyclicalTimeFeatures(columnName, featureType)</code></li>
+                                    <li><code>ParseDateColumn(columnName)</code></li>
+                                    <li><code>HandleMissingDates(columnName, method, fillValue)</code></li>
+                                </ul>
+                            </div>
+                            
+                            <div class="code-example-small">
+                                <pre><code class="language-csharp">// DateTime processing operations
+manager.DateTimeProcessing.ExtractDateTimeComponents("timestamp");
+manager.DateTimeProcessing.CalculateTimeDifference("start_date", "end_date", "duration");
+manager.DateTimeProcessing.HandleCyclicalTimeFeatures("hour", "hour");</code></pre>
+                            </div>
+                        </div>
+
+                        <!-- Imbalanced Data Assistant -->
+                        <div class="assistant-card">
+                            <div class="assistant-header">
+                                <h4><i class="bi bi-balance text-danger"></i> PythonImbalancedDataAssistant</h4>
+                                <span class="badge bg-danger">Class Balance</span>
+                            </div>
+                            <p>Advanced techniques for handling imbalanced datasets including SMOTE, undersampling, oversampling, and class weight adjustment.</p>
+                            
+                            <div class="methods-list">
+                                <h6>Key Methods:</h6>
+                                <ul>
+                                    <li><code>ApplyRandomUndersampling(targetColumn, samplingStrategy)</code></li>
+                                    <li><code>ApplyRandomOversampling(targetColumn, samplingStrategy)</code></li>
+                                    <li><code>ApplySMOTE(targetColumn, samplingStrategy)</code></li>
+                                    <li><code>ApplyNearMiss(targetColumn, version)</code></li>
+                                    <li><code>ApplyBalancedRandomForest(targetColumn, nEstimators)</code></li>
+                                </ul>
+                            </div>
+                            
+                            <div class="code-example-small">
+                                <pre><code class="language-csharp">// Imbalanced data handling
+manager.ImbalancedData.ApplySMOTE("churn", samplingStrategy: 1.0f);
+manager.ImbalancedData.ApplyRandomUndersampling("churn", 0.5f);
+manager.ImbalancedData.ApplyBalancedRandomForest("churn", nEstimators: 100);</code></pre>
+                            </div>
+                        </div>
+
+                        <!-- Time Series Assistant -->
+                        <div class="assistant-card">
+                            <div class="assistant-header">
+                                <h4><i class="bi bi-graph-up text-success"></i> PythonTimeSeriesAssistant</h4>
+                                <span class="badge bg-success">Time Series</span>
+                            </div>
+                            <p>Time series analysis and forecasting operations including augmentation, trend analysis, and seasonal decomposition.</p>
+                            
+                            <div class="methods-list">
+                                <h6>Key Methods:</h6>
+                                <ul>
+                                    <li><code>TimeSeriesAugmentation(timeSeriesColumns, augmentationType, parameter)</code></li>
+                                </ul>
+                            </div>
+                            
+                            <div class="code-example-small">
+                                <pre><code class="language-csharp">// Time series operations
+var timeSeriesColumns = new[] { "price", "volume" };
+manager.TimeSeries.TimeSeriesAugmentation(timeSeriesColumns, "noise", 0.1);</code></pre>
+                            </div>
+                        </div>
+
+                        <!-- Feature Selection Assistant -->
+                        <div class="assistant-card">
+                            <div class="assistant-header">
+                                <h4><i class="bi bi-funnel text-primary"></i> PythonFeatureSelectionAssistant</h4>
+                                <span class="badge bg-primary">Feature Selection</span>
+                            </div>
+                            <p>Feature selection and importance analysis using variance threshold, correlation analysis, RFE, and L1 regularization.</p>
+                            
+                            <div class="methods-list">
+                                <h6>Key Methods:</h6>
+                                <ul>
+                                    <li><code>ApplyVarianceThreshold(threshold, featureList)</code></li>
+                                    <li><code>ApplyCorrelationThreshold(threshold)</code></li>
+                                    <li><code>ApplyRFE(modelId, n_features_to_select)</code></li>
+                                    <li><code>ApplyL1Regularization(alpha)</code></li>
+                                    <li><code>ApplyTreeBasedFeatureSelection(modelId)</code></li>
+                                </ul>
+                            </div>
+                            
+                            <div class="code-example-small">
+                                <pre><code class="language-csharp">// Feature selection operations
+manager.FeatureSelection.ApplyVarianceThreshold(threshold: 0.01);
+manager.FeatureSelection.ApplyCorrelationThreshold(threshold: 0.95);
+manager.FeatureSelection.ApplyRFE("model1", n_features_to_select: 10);</code></pre>
+                            </div>
+                        </div>
+
+                        <!-- Cross Validation Assistant -->
+                        <div class="assistant-card">
+                            <div class="assistant-header">
+                                <h4><i class="bi bi-check2-all text-info"></i> PythonCrossValidationAssistant</h4>
+                                <span class="badge bg-info">Model Validation</span>
+                            </div>
+                            <p>Cross-validation strategies and sampling techniques for robust model evaluation and performance assessment.</p>
+                            
+                            <div class="methods-list">
+                                <h6>Key Methods:</h6>
+                                <ul>
+                                    <li><code>PerformCrossValidation(modelId, numFolds)</code></li>
+                                    <li><code>PerformStratifiedSampling(testSize, trainFilePath, testFilePath)</code></li>
+                                </ul>
+                            </div>
+                            
+                            <div class="code-example-small">
+                                <pre><code class="language-csharp">// Cross-validation operations
+manager.CrossValidation.PerformCrossValidation("model1", numFolds: 10);
+manager.CrossValidation.PerformStratifiedSampling(0.2f, "train.csv", "test.csv");</code></pre>
+                            </div>
+                        </div>
+
+                        <!-- Data Cleaning Assistant -->
+                        <div class="assistant-card">
+                            <div class="assistant-header">
+                                <h4><i class="bi bi-broom text-warning"></i> PythonDataCleaningAssistant</h4>
+                                <span class="badge bg-warning">Data Quality</span>
+                            </div>
+                            <p>Data quality operations including outlier detection and removal, duplicate handling, and categorical value standardization.</p>
+                            
+                            <div class="methods-list">
+                                <h6>Key Methods:</h6>
+                                <ul>
+                                    <li><code>RemoveOutliers(featureList, zThreshold)</code></li>
+                                    <li><code>DropDuplicates(featureList)</code></li>
+                                    <li><code>StandardizeCategories(featureList, replacements)</code></li>
+                                </ul>
+                            </div>
+                            
+                            <div class="code-example-small">
+                                <pre><code class="language-csharp">// Data cleaning operations
+manager.DataCleaning.RemoveOutliers(featureList: null, zThreshold: 3.0);
+manager.DataCleaning.DropDuplicates();
+manager.DataCleaning.StandardizeCategories(features, replacements);</code></pre>
+                            </div>
+                        </div>
+
+                        <!-- Dimensionality Reduction Assistant -->
+                        <div class="assistant-card">
+                            <div class="assistant-header">
+                                <h4><i class="bi bi-arrows-collapse text-secondary"></i> PythonDimensionalityReductionAssistant</h4>
+                                <span class="badge bg-secondary">Dimensionality</span>
+                            </div>
+                            <p>Dimensionality reduction techniques including PCA, LDA, and other advanced methods for feature space optimization.</p>
+                            
+                            <div class="methods-list">
+                                <h6>Key Methods:</h6>
+                                <ul>
+                                    <li><code>ApplyPCA(nComponents, featureList)</code></li>
+                                    <li><code>ApplyLDA(labelColumn, nComponents, featureList)</code></li>
+                                </ul>
+                            </div>
+                            
+                            <div class="code-example-small">
+                                <pre><code class="language-csharp">// Dimensionality reduction operations
+manager.DimensionalityReduction.ApplyPCA(nComponents: 10);
+manager.DimensionalityReduction.ApplyLDA("target", nComponents: 5);</code></pre>
+                            </div>
+                        </div>
+
+                        <!-- Visualization Assistant -->
+                        <div class="assistant-card">
+                            <div class="assistant-header">
+                                <h4><i class="bi bi-bar-chart text-success"></i> PythonVisualizationAssistant</h4>
+                                <span class="badge bg-success">Visualization</span>
+                            </div>
+                            <p>Comprehensive visualization capabilities including ROC curves, confusion matrices, learning curves, and feature importance plots.</p>
+                            
+                            <div class="methods-list">
+                                <h6>Key Methods:</h6>
+                                <ul>
+                                    <li><code>CreateROC(modelId, imagePath)</code></li>
+                                    <li><code>CreateConfusionMatrix(modelId, imagePath)</code></li>
+                                    <li><code>CreateLearningCurve(modelId, imagePath)</code></li>
+                                    <li><code>CreatePrecisionRecallCurve(modelId, imagePath)</code></li>
+                                    <li><code>CreateFeatureImportance(modelId, imagePath)</code></li>
+                                    <li><code>GenerateEvaluationReport(modelId, outputHtmlPath)</code></li>
+                                </ul>
+                            </div>
+                            
+                            <div class="code-example-small">
+                                <pre><code class="language-csharp">// Visualization operations
+manager.Visualization.CreateROC("model1", "roc_curve.png");
+manager.Visualization.CreateConfusionMatrix("model1", "confusion_matrix.png");
+manager.Visualization.GenerateEvaluationReport("model1", "report.html");</code></pre>
+                            </div>
+                        </div>
+
+                        <!-- Utility Assistant -->
+                        <div class="assistant-card">
+                            <div class="assistant-header">
+                                <h4><i class="bi bi-tools text-primary"></i> PythonUtilityAssistant</h4>
+                                <span class="badge bg-primary">Utilities</span>
+                            </div>
+                            <p>Utility operations including data splitting, export functions, and label column management for complete ML workflows.</p>
+                            
+                            <div class="methods-list">
+                                <h6>Key Methods:</h6>
+                                <ul>
+                                    <li><code>SplitData(testSize, trainFilePath, testFilePath)</code></li>
+                                    <li><code>SplitData(dataFilePath, testSize, trainFilePath, testFilePath, validationFilePath)</code></li>
+                                    <li><code>ExportTestResult(filePath, iDColumn, labelColumn)</code></li>
+                                    <li><code>AddLabelColumnIfMissing(labelColumn)</code></li>
+                                </ul>
+                            </div>
+                            
+                            <div class="code-example-small">
+                                <pre><code class="language-csharp">// Utility operations
+var splitPaths = manager.Utilities.SplitData("data.csv", 0.2f, 
+    "train.csv", "test.csv", "validation.csv", "id", "target");
+manager.Utilities.ExportTestResult("results.csv", "id", "prediction");</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Complete Workflow Example -->
+                <section class="section" id="complete-workflow">
+                    <h2>?? Complete Workflow Example</h2>
+                    <p>Here's a comprehensive example using multiple assistant classes in a complete ML workflow:</p>
+                    
+                    <div class="code-example">
+                        <h4>Advanced ML Pipeline with Multiple Assistants</h4>
+                        <pre><code class="language-csharp">public async Task CompleteMLWorkflowWithAssistants()
+{
+    // Initialize ML manager
+    var mlManager = new PythonMLManager(beepService, pythonRuntime, sessionInfo);
+    mlManager.ConfigureMLSessionForUser("advanced_user");
+
+    // Load and validate data
+    var features = mlManager.ValidateAndPreviewData("customer_data.csv", numRows: 10);
+    var loadedFeatures = mlManager.LoadData("customer_data.csv");
+
+    // Cast to access assistant classes
+    if (mlManager is PythonMLManager manager)
+    {
+        // 1. Data Preprocessing Pipeline
+        Console.WriteLine("Starting data preprocessing...");
+        
+        // Handle missing values with multiple strategies
+        manager.DataPreprocessing.ImputeMissingValues("median");
+        manager.DataPreprocessing.ImputeMissingValuesWithFill("bfill");
+        
+        // Apply scaling and normalization
+        manager.DataPreprocessing.RobustScaleData();
+        manager.DataPreprocessing.NormalizeData("l2");
+
+        // 2. Feature Engineering Pipeline
+        Console.WriteLine("Applying feature engineering...");
+        
+        // Generate polynomial features for interactions
+        manager.FeatureEngineering.GeneratePolynomialFeatures(
+            selectedFeatures: new[] { "age", "income", "score" }, 
+            degree: 2, 
+            interactionOnly: true);
+        
+        // Apply log transformation to skewed features
+        manager.FeatureEngineering.ApplyLogTransformation(
+            selectedFeatures: new[] { "income", "spending" });
+        
+        // Create binned features for continuous variables
+        manager.FeatureEngineering.ApplyBinning(
+            selectedFeatures: new[] { "age" }, 
+            numberOfBins: 5, 
+            encodeAsOrdinal: true);
+
+        // 3. Categorical Encoding Pipeline
+        Console.WriteLine("Encoding categorical variables...");
+        
+        var categoricalFeatures = new[] { "country", "product_category", "customer_segment" };
+        
+        // Apply target encoding for high-cardinality features
+        manager.CategoricalEncoding.TargetEncode(categoricalFeatures, "churn");
+        
+        // One-hot encode low-cardinality features
+        var lowCardinalityFeatures = new[] { "gender", "subscription_type" };
+        manager.CategoricalEncoding.OneHotEncode(lowCardinalityFeatures);
+
+        // 4. Text Processing Pipeline (if text data exists)
+        Console.WriteLine("Processing text data...");
+        
+        if (loadedFeatures.Contains("review_text"))
+        {
+            manager.TextProcessing.ConvertTextToLowercase("review_text");
+            manager.TextProcessing.RemovePunctuation("review_text");
+            manager.TextProcessing.RemoveStopwords("review_text", "english");
+            manager.TextProcessing.ApplyLemmatization("review_text");
+            manager.TextProcessing.ApplyTFIDFVectorization("review_text", maxFeatures: 1000);
+        }
+
+        // 5. DateTime Processing Pipeline (if temporal data exists)
+        Console.WriteLine("Processing temporal data...");
+        
+        if (loadedFeatures.Contains("registration_date"))
+        {
+            manager.DateTimeProcessing.ExtractDateTimeComponents("registration_date");
+            manager.DateTimeProcessing.HandleCyclicalTimeFeatures("registration_hour", "hour");
+        }
+        
+        if (loadedFeatures.Contains("last_login") && loadedFeatures.Contains("registration_date"))
+        {
+            manager.DateTimeProcessing.CalculateTimeDifference(
+                "registration_date", "last_login", "days_since_registration");
+        }
+
+        // 6. Feature Selection Pipeline
+        Console.WriteLine("Selecting relevant features...");
+        
+        // Remove low-variance features
+        manager.FeatureSelection.ApplyVarianceThreshold(threshold: 0.01);
+        
+        // Remove highly correlated features
+        manager.FeatureSelection.ApplyCorrelationThreshold(threshold: 0.95);
+
+        // 7. Handle Imbalanced Data
+        Console.WriteLine("Handling class imbalance...");
+        
+        // Apply SMOTE for synthetic minority oversampling
+        manager.ImbalancedData.ApplySMOTE("churn", samplingStrategy: 1.0f);
+
+        // 8. Data Quality Checks
+        Console.WriteLine("Performing data quality checks...");
+        
+        // Remove statistical outliers
+        manager.DataCleaning.RemoveOutliers(zThreshold: 3.0);
+        
+        // Remove duplicate records
+        manager.DataCleaning.DropDuplicates();
+        
+        // Standardize categorical values
+        var categoryReplacements = new Dictionary&lt;string, string&gt;
+        {
+            ["M"] = "Male",
+            ["F"] = "Female",
+            ["m"] = "Male",
+            ["f"] = "Female"
+        };
+        manager.DataCleaning.StandardizeCategories(
+            featureList: new[] { "gender" }, 
+            replacements: categoryReplacements);
+
+        // 9. Dimensionality Reduction (if needed)
+        Console.WriteLine("Applying dimensionality reduction...");
+        
+        // Apply PCA to reduce feature space while retaining 95% variance
+        manager.DimensionalityReduction.ApplyPCA(nComponents: 20);
+
+        // 10. Data Splitting
+        Console.WriteLine("Splitting data for training...");
+        
+        var splitPaths = manager.Utilities.SplitData(
+            dataFilePath: "processed_customer_data.csv",
+            testSize: 0.2f,
+            validationSize: 0.1f,
+            trainFilePath: "train_data.csv",
+            testFilePath: "test_data.csv",
+            validationFilePath: "validation_data.csv",
+            primaryFeatureKeyID: "customer_id",
+            labelColumn: "churn");
+
+        Console.WriteLine($"Data split into: {string.Join(", ", splitPaths)}");
+    }
+
+    // 11. Model Training (using core ML manager)
+    Console.WriteLine("Training machine learning model...");
+    
+    var modelId = Guid.NewGuid().ToString();
+    var parameters = new Dictionary&lt;string, object&gt;
+    {
+        ["n_estimators"] = 200,
+        ["max_depth"] = 15,
+        ["min_samples_split"] = 5,
+        ["class_weight"] = "balanced",
+        ["random_state"] = 42
+    };
+
+    mlManager.TrainModel(modelId, MachineLearningAlgorithm.RandomForestClassifier, 
+                        parameters, loadedFeatures, "churn");
+
+    // 12. Model Evaluation and Cross-Validation
+    Console.WriteLine("Evaluating model performance...");
+    
+    if (mlManager is PythonMLManager evalManager)
+    {
+        // Perform cross-validation
+        evalManager.CrossValidation.PerformCrossValidation(modelId, numFolds: 10);
+        
+        // Get classification scores
+        var scores = mlManager.GetModelClassificationScore(modelId);
+        Console.WriteLine($"Model Performance - Accuracy: {scores.Item1:F4}, F1-Score: {scores.Item2:F4}");
+        
+        // 13. Create Comprehensive Visualizations
+        Console.WriteLine("Generating visualizations...");
+        
+        evalManager.Visualization.CreateROC(modelId, "model_roc_curve.png");
+        evalManager.Visualization.CreateConfusionMatrix(modelId, "confusion_matrix.png");
+        evalManager.Visualization.CreateLearningCurve(modelId, "learning_curve.png");
+        evalManager.Visualization.CreatePrecisionRecallCurve(modelId, "pr_curve.png");
+        evalManager.Visualization.CreateFeatureImportance(modelId, "feature_importance.png");
+        
+        // Generate comprehensive HTML report
+        evalManager.Visualization.GenerateEvaluationReport(modelId, "model_evaluation_report.html");
+        
+        // 14. Export Results
+        Console.WriteLine("Exporting results...");
+        
+        evalManager.Utilities.ExportTestResult("predictions.csv", "customer_id", "churn_prediction");
+    }
+
+    Console.WriteLine("? Complete ML workflow finished successfully!");
+    Console.WriteLine("?? Generated files:");
+    Console.WriteLine("   - model_roc_curve.png");
+    Console.WriteLine("   - confusion_matrix.png");
+    Console.WriteLine("   - learning_curve.png");
+    Console.WriteLine("   - feature_importance.png");
+    Console.WriteLine("   - model_evaluation_report.html");
+    Console.WriteLine("   - predictions.csv");
+}</code></pre>
+                    </div>
+                </section>
+
+                <!-- Best Practices -->
+                <section class="section" id="best-practices">
+                    <h2>? Best Practices for Assistant Classes</h2>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="tip">
+                                <h5><i class="bi bi-lightbulb"></i> Usage Guidelines</h5>
+                                <ul>
+                                    <li><strong>Cast to Implementation:</strong> Cast IPythonMLManager to PythonMLManager to access assistants</li>
+                                    <li><strong>Sequential Operations:</strong> Apply operations in logical order (preprocessing ? feature engineering ? selection)</li>
+                                    <li><strong>Session Management:</strong> Ensure sessions are configured before using assistants</li>
+                                    <li><strong>Error Handling:</strong> Wrap assistant operations in try-catch blocks</li>
+                                    <li><strong>Parameter Validation:</strong> Validate parameters before calling assistant methods</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="warning">
+                                <h5><i class="bi bi-exclamation-triangle"></i> Performance Tips</h5>
+                                <ul>
+                                    <li><strong>Lazy Loading:</strong> Assistants are created only when first accessed</li>
+                                    <li><strong>Session Reuse:</strong> Reuse the same session for multiple operations</li>
+                                    <li><strong>Batch Operations:</strong> Combine related operations when possible</li>
+                                    <li><strong>Memory Management:</strong> Dispose of managers properly after use</li>
+                                    <li><strong>Script Caching:</strong> Template scripts are cached for performance</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="index.html" class="btn-beep">
+                        <i class="bi bi-house"></i> Home
+                    </a>
+                    <a href="python-scripts.html" class="btn-beep">
+                        <i class="bi bi-file-code"></i> Python Scripts
+                    </a>
+                    <a href="advanced-examples.html" class="btn-beep">
+                        <i class="bi bi-code-square"></i> Advanced Examples
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.ML Assistant Classes Documentation</p>
+                            <p>13 Specialized Assistant Classes for Enterprise Machine Learning</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="#overview">Overview</a>
+                            <a href="#assistant-classes-grid">All Assistants</a>
+                            <a href="#complete-workflow">Complete Workflow</a>
+                            <a href="#best-practices">Best Practices</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="assets/navigation.js"></script>
+</body>
+</html>

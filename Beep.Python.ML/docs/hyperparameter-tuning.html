@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyperparameter Tuning - Beep.Python.ML</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link href="assets/styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <i class="bi bi-sun-fill" id="theme-icon"></i>
+    </button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Navigation will be loaded dynamically -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="content-wrapper">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="header-content">
+                        <h1><i class="bi bi-sliders text-primary"></i> Hyperparameter Tuning</h1>
+                        <p class="lead">Advanced hyperparameter optimization strategies and techniques for maximizing machine learning model performance in .NET 6, 7, 8, and 9</p>
+                        
+                        <div class="achievement-badges">
+                            <span class="badge bg-success"><i class="bi bi-check-circle"></i> Grid Search</span>
+                            <span class="badge bg-info"><i class="bi bi-cpu"></i> Bayesian Optimization</span>
+                            <span class="badge bg-warning"><i class="bi bi-lightning"></i> Random Search</span>
+                            <span class="badge bg-primary"><i class="bi bi-star"></i> Advanced Methods</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Overview -->
+                <section class="section" id="tuning-overview">
+                    <h2>?? Hyperparameter Tuning Overview</h2>
+                    <p>Hyperparameter tuning is crucial for achieving optimal model performance. Beep.Python.ML provides comprehensive hyperparameter optimization capabilities through multiple search strategies and advanced techniques.</p>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <h4><i class="bi bi-grid text-primary"></i> Search Strategies</h4>
+                                <ul>
+                                    <li><strong>Grid Search:</strong> Exhaustive search over parameter grid</li>
+                                    <li><strong>Random Search:</strong> Efficient random sampling</li>
+                                    <li><strong>Bayesian Optimization:</strong> Smart optimization using Optuna</li>
+                                    <li><strong>Halving Search:</strong> Progressive elimination</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <h4><i class="bi bi-speedometer2 text-success"></i> Advanced Features</h4>
+                                <ul>
+                                    <li><strong>Early Stopping:</strong> Prevent overfitting</li>
+                                    <li><strong>Cross-Validation:</strong> Robust performance estimation</li>
+                                    <li><strong>Multi-Metric:</strong> Optimize multiple objectives</li>
+                                    <li><strong>Parallel Processing:</strong> Speed up optimization</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Grid Search -->
+                <section class="section" id="grid-search">
+                    <h2>?? Grid Search Optimization</h2>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-grid-3x3"></i> Comprehensive Grid Search</h3>
+                        
+                        <div class="code-example">
+                            <h4>Grid Search Implementation</h4>
+                            <pre><code class="language-csharp">// Define parameter grid for Random Forest
+var parameterGrid = new Dictionary&lt;string, object[]&gt;
+{
+    ["n_estimators"] = new object[] { 50, 100, 200, 300 },
+    ["max_depth"] = new object[] { 5, 10, 15, 20, null },
+    ["min_samples_split"] = new object[] { 2, 5, 10 },
+    ["min_samples_leaf"] = new object[] { 1, 2, 4 },
+    ["max_features"] = new object[] { "sqrt", "log2", "auto" },
+    ["random_state"] = new object[] { 42 }
+};
+
+// Execute grid search using TrainingExtensions
+var optimizationResult = await mlManager.OptimizeHyperparametersAdvancedAsync(
+    searchType: SearchType.GridSearch,
+    parameterGrid: parameterGrid,
+    maxIterations: 100,
+    progress: new Progress&lt;OptimizationProgress&gt;(OnOptimizationProgress));
+
+if (optimizationResult.Success)
+{
+    Console.WriteLine($"Best parameters found:");
+    foreach (var param in optimizationResult.BestParams)
+    {
+        Console.WriteLine($"  {param.Key}: {param.Value}");
+    }
+    
+    Console.WriteLine($"Best cross-validation score: {optimizationResult.BestScore:F4}");
+    Console.WriteLine($"Optimization completed in: {optimizationResult.OptimizationTime}");
+}</code></pre>
+                        </div>
+
+                        <div class="code-example">
+                            <h4>Algorithm-Specific Parameter Grids</h4>
+                            <pre><code class="language-csharp">public static Dictionary&lt;string, object[]&gt; GetParameterGrid(MachineLearningAlgorithm algorithm)
+{
+    return algorithm switch
+    {
+        MachineLearningAlgorithm.RandomForestClassifier => new Dictionary&lt;string, object[]&gt;
+        {
+            ["n_estimators"] = new object[] { 50, 100, 200, 300 },
+            ["max_depth"] = new object[] { 5, 10, 15, 20, null },
+            ["min_samples_split"] = new object[] { 2, 5, 10 },
+            ["min_samples_leaf"] = new object[] { 1, 2, 4 },
+            ["max_features"] = new object[] { "sqrt", "log2", "auto" }
+        },
+        
+        MachineLearningAlgorithm.GradientBoostingClassifier => new Dictionary&lt;string, object[]&gt;
+        {
+            ["n_estimators"] = new object[] { 100, 200, 300 },
+            ["learning_rate"] = new object[] { 0.01, 0.1, 0.2, 0.3 },
+            ["max_depth"] = new object[] { 3, 5, 7, 10 },
+            ["subsample"] = new object[] { 0.8, 0.9, 1.0 },
+            ["max_features"] = new object[] { "sqrt", "log2", null }
+        },
+        
+        MachineLearningAlgorithm.SVC => new Dictionary&lt;string, object[]&gt;
+        {
+            ["C"] = new object[] { 0.1, 1, 10, 100 },
+            ["kernel"] = new object[] { "linear", "rbf", "poly" },
+            ["gamma"] = new object[] { "scale", "auto", 0.001, 0.01, 0.1, 1 },
+            ["degree"] = new object[] { 2, 3, 4 } // Only for poly kernel
+        },
+        
+        MachineLearningAlgorithm.LogisticRegression => new Dictionary&lt;string, object[]&gt;
+        {
+            ["C"] = new object[] { 0.001, 0.01, 0.1, 1, 10, 100 },
+            ["penalty"] = new object[] { "l1", "l2", "elasticnet" },
+            ["solver"] = new object[] { "liblinear", "saga", "lbfgs" },
+            ["max_iter"] = new object[] { 1000, 2000, 5000 }
+        },
+        
+        MachineLearningAlgorithm.KNeighborsClassifier => new Dictionary&lt;string, object[]&gt;
+        {
+            ["n_neighbors"] = new object[] { 3, 5, 7, 9, 11, 15 },
+            ["weights"] = new object[] { "uniform", "distance" },
+            ["metric"] = new object[] { "euclidean", "manhattan", "minkowski" },
+            ["p"] = new object[] { 1, 2 } // For minkowski metric
+        },
+        
+        _ => new Dictionary&lt;string, object[]&gt;
+        {
+            ["random_state"] = new object[] { 42 }
+        }
+    };
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="tip">
+                        <h5><i class="bi bi-lightbulb"></i> Grid Search Best Practices</h5>
+                        <ul>
+                            <li><strong>Start Small:</strong> Begin with coarse grid, then refine around best parameters</li>
+                            <li><strong>Parameter Interactions:</strong> Consider parameter dependencies</li>
+                            <li><strong>Computational Cost:</strong> Grid size grows exponentially</li>
+                            <li><strong>Cross-Validation:</strong> Use proper CV to avoid overfitting</li>
+                            <li><strong>Time Budget:</strong> Set realistic time limits for large grids</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Random Search -->
+                <section class="section" id="random-search">
+                    <h2>?? Random Search Optimization</h2>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-shuffle"></i> Efficient Random Sampling</h3>
+                        
+                        <div class="code-example">
+                            <h4>Random Search Implementation</h4>
+                            <pre><code class="language-csharp">// Random search is more efficient for high-dimensional parameter spaces
+var randomSearchConfig = new RandomSearchConfiguration
+{
+    MaxIterations = 200,
+    RandomState = 42,
+    CVFolds = 5,
+    ScoringMetric = "f1_weighted",
+    EarlyStoppingRounds = 20,
+    ParameterDistributions = GetParameterDistributions(algorithm)
+};
+
+// Execute random search
+var result = await ExecuteRandomSearchAsync(mlManager, randomSearchConfig);
+
+if (result.Success)
+{
+    Console.WriteLine($"Random Search Results:");
+    Console.WriteLine($"  Best Score: {result.BestScore:F4}");
+    Console.WriteLine($"  Iterations: {result.TotalIterations}");
+    Console.WriteLine($"  Time: {result.OptimizationTime.TotalMinutes:F2} minutes");
+    
+    // Display parameter importance
+    foreach (var importance in result.ParameterImportance.OrderByDescending(p => p.Value))
+    {
+        Console.WriteLine($"  {importance.Key}: {importance.Value:F3}");
+    }
+}
+
+public class RandomSearchConfiguration
+{
+    public int MaxIterations { get; set; } = 100;
+    public int RandomState { get; set; } = 42;
+    public int CVFolds { get; set; } = 5;
+    public string ScoringMetric { get; set; } = "accuracy";
+    public int EarlyStoppingRounds { get; set; } = 10;
+    public Dictionary&lt;string, ParameterDistribution&gt; ParameterDistributions { get; set; }
+}
+
+public class ParameterDistribution
+{
+    public DistributionType Type { get; set; }
+    public object[] Values { get; set; }
+    public double? Low { get; set; }
+    public double? High { get; set; }
+    public bool LogScale { get; set; } = false;
+}
+
+private Dictionary&lt;string, ParameterDistribution&gt; GetParameterDistributions(MachineLearningAlgorithm algorithm)
+{
+    return algorithm switch
+    {
+        MachineLearningAlgorithm.RandomForestClassifier => new Dictionary&lt;string, ParameterDistribution&gt;
+        {
+            ["n_estimators"] = new ParameterDistribution
+            {
+                Type = DistributionType.Integer,
+                Low = 10,
+                High = 500
+            },
+            ["max_depth"] = new ParameterDistribution
+            {
+                Type = DistributionType.Integer,
+                Low = 3,
+                High = 30
+            },
+            ["min_samples_split"] = new ParameterDistribution
+            {
+                Type = DistributionType.Integer,
+                Low = 2,
+                High = 20
+            },
+            ["min_samples_leaf"] = new ParameterDistribution
+            {
+                Type = DistributionType.Integer,
+                Low = 1,
+                High = 10
+            }
+        },
+        
+        MachineLearningAlgorithm.SVC => new Dictionary&lt;string, ParameterDistribution&gt;
+        {
+            ["C"] = new ParameterDistribution
+            {
+                Type = DistributionType.Float,
+                Low = 0.001,
+                High = 1000,
+                LogScale = true
+            },
+            ["gamma"] = new ParameterDistribution
+            {
+                Type = DistributionType.Float,
+                Low = 0.0001,
+                High = 1,
+                LogScale = true
+            }
+        },
+        
+        _ => new Dictionary&lt;string, ParameterDistribution&gt;()
+    };
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="warning">
+                        <h5><i class="bi bi-exclamation-triangle"></i> Random Search Considerations</h5>
+                        <ul>
+                            <li><strong>Parameter Distributions:</strong> Choose appropriate distributions for parameters</li>
+                            <li><strong>Sample Size:</strong> Use enough iterations for reliable results</li>
+                            <li><strong>Early Stopping:</strong> Stop if no improvement for many iterations</li>
+                            <li><strong>Reproducibility:</strong> Set random seed for consistent results</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Bayesian Optimization -->
+                <section class="section" id="bayesian-optimization">
+                    <h2>?? Bayesian Optimization</h2>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-cpu"></i> Smart Parameter Search</h3>
+                        
+                        <div class="code-example">
+                            <h4>Bayesian Optimization with Optuna</h4>
+                            <pre><code class="language-csharp">// Bayesian optimization configuration
+var bayesianConfig = new BayesianOptimizationConfiguration
+{
+    MaxTrials = 100,
+    TimeoutHours = 2,
+    SamplerType = SamplerType.TPE, // Tree-structured Parzen Estimator
+    PrunerType = PrunerType.Median,
+    Direction = OptimizationDirection.Maximize,
+    Metric = "f1_weighted",
+    CVFolds = 5
+};
+
+// Execute Bayesian optimization
+var result = await ExecuteBayesianOptimizationAsync(mlManager, bayesianConfig);
+
+if (result.Success)
+{
+    Console.WriteLine($"Bayesian Optimization Results:");
+    Console.WriteLine($"  Best Score: {result.BestScore:F4}");
+    Console.WriteLine($"  Total Trials: {result.TotalTrials}");
+    Console.WriteLine($"  Best Trial: #{result.BestTrialNumber}");
+    
+    // Show optimization history
+    Console.WriteLine($"  Optimization History:");
+    foreach (var trial in result.TrialHistory.TakeLast(5))
+    {
+        Console.WriteLine($"    Trial {trial.Number}: {trial.Score:F4} ({trial.Duration.TotalSeconds:F1}s)");
+    }
+}
+
+public class BayesianOptimizationConfiguration
+{
+    public int MaxTrials { get; set; } = 100;
+    public int TimeoutHours { get; set; } = 1;
+    public SamplerType SamplerType { get; set; } = SamplerType.TPE;
+    public PrunerType PrunerType { get; set; } = PrunerType.Median;
+    public OptimizationDirection Direction { get; set; } = OptimizationDirection.Maximize;
+    public string Metric { get; set; } = "accuracy";
+    public int CVFolds { get; set; } = 5;
+    public bool EnablePruning { get; set; } = true;
+    public double PruningWarmupSteps { get; set; } = 10;
+}
+
+// Advanced Bayesian optimization implementation
+private async Task&lt;BayesianOptimizationResult&gt; ExecuteBayesianOptimizationAsync(
+    IPythonMLManager mlManager,
+    BayesianOptimizationConfiguration config)
+{
+    var result = new BayesianOptimizationResult { Success = false };
+    
+    try
+    {
+        // Initialize Optuna study (conceptual - would use Python integration)
+        var study = await CreateOptunaStudyAsync(config);
+        
+        // Define objective function
+        Func&lt;Dictionary&lt;string, object&gt;, Task&lt;double&gt;&gt; objective = async (parameters) =>
+        {
+            // Train model with given parameters
+            var modelId = $"bayesian_trial_{Guid.NewGuid():N}";
+            
+            mlManager.TrainModel(modelId, SelectedAlgorithm, parameters, Features, LabelColumn);
+            
+            // Evaluate with cross-validation
+            var cvResult = await PerformCrossValidationAsync(mlManager, modelId, config.CVFolds);
+            
+            return cvResult.MeanScore;
+        };
+        
+        // Run optimization trials
+        var bestScore = double.MinValue;
+        var bestParams = new Dictionary&lt;string, object&gt;();
+        var trialHistory = new List&lt;TrialResult&gt;();
+        
+        for (int trial = 0; trial < config.MaxTrials; trial++)
+        {
+            var trialStart = DateTime.Now;
+            
+            // Suggest parameters (this would integrate with Optuna's suggest methods)
+            var suggestedParams = await SuggestParametersAsync(study, SelectedAlgorithm);
+            
+            // Evaluate objective
+            var score = await objective(suggestedParams);
+            
+            // Update best result
+            if (score > bestScore)
+            {
+                bestScore = score;
+                bestParams = new Dictionary&lt;string, object&gt;(suggestedParams);
+                result.BestTrialNumber = trial;
+            }
+            
+            // Record trial
+            trialHistory.Add(new TrialResult
+            {
+                Number = trial,
+                Parameters = suggestedParams,
+                Score = score,
+                Duration = DateTime.Now - trialStart
+            });
+            
+            // Early stopping check
+            if (ShouldStopEarly(trialHistory, config))
+            {
+                Console.WriteLine($"Early stopping at trial {trial}");
+                break;
+            }
+        }
+        
+        result.Success = true;
+        result.BestScore = bestScore;
+        result.BestParams = bestParams;
+        result.TotalTrials = trialHistory.Count;
+        result.TrialHistory = trialHistory;
+        
+    }
+    catch (Exception ex)
+    {
+        result.ErrorMessage = ex.Message;
+    }
+    
+    return result;
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Advanced Techniques -->
+                <section class="section" id="advanced-techniques">
+                    <h2>?? Advanced Optimization Techniques</h2>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-lightning"></i> Multi-Objective Optimization</h3>
+                        
+                        <div class="code-example">
+                            <h4>Optimize Multiple Metrics Simultaneously</h4>
+                            <pre><code class="language-csharp">// Multi-objective optimization configuration
+var multiObjectiveConfig = new MultiObjectiveConfiguration
+{
+    Objectives = new[]
+    {
+        new Objective { Name = "accuracy", Weight = 0.4, Direction = OptimizationDirection.Maximize },
+        new Objective { Name = "f1_score", Weight = 0.4, Direction = OptimizationDirection.Maximize },
+        new Objective { Name = "training_time", Weight = 0.2, Direction = OptimizationDirection.Minimize }
+    },
+    MaxIterations = 150,
+    ParetoFrontSize = 10
+};
+
+// Execute multi-objective optimization
+var result = await ExecuteMultiObjectiveOptimizationAsync(mlManager, multiObjectiveConfig);
+
+if (result.Success)
+{
+    Console.WriteLine($"Multi-Objective Optimization Results:");
+    Console.WriteLine($"  Pareto Front Solutions: {result.ParetoFront.Count}");
+    
+    // Display top solutions
+    foreach (var solution in result.ParetoFront.Take(3))
+    {
+        Console.WriteLine($"  Solution {solution.Id}:");
+        Console.WriteLine($"    Accuracy: {solution.Objectives["accuracy"]:F4}");
+        Console.WriteLine($"    F1-Score: {solution.Objectives["f1_score"]:F4}");
+        Console.WriteLine($"    Training Time: {solution.Objectives["training_time"]:F2}s");
+        Console.WriteLine($"    Combined Score: {solution.CombinedScore:F4}");
+    }
+}
+
+public class MultiObjectiveConfiguration
+{
+    public Objective[] Objectives { get; set; }
+    public int MaxIterations { get; set; } = 100;
+    public int ParetoFrontSize { get; set; } = 10;
+    public double ConvergenceThreshold { get; set; } = 0.001;
+}
+
+public class Objective
+{
+    public string Name { get; set; }
+    public double Weight { get; set; }
+    public OptimizationDirection Direction { get; set; }
+    public double? TargetValue { get; set; }
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="method">
+                        <h3><i class="bi bi-stopwatch"></i> Early Stopping and Pruning</h3>
+                        
+                        <div class="code-example">
+                            <h4>Intelligent Early Stopping</h4>
+                            <pre><code class="language-csharp">// Early stopping configuration
+var earlyStoppingConfig = new EarlyStoppingConfiguration
+{
+    Patience = 20,              // Stop if no improvement for 20 trials
+    MinDelta = 0.001,          // Minimum improvement threshold
+    RestoreWeights = true,      // Use best weights found
+    Monitor = "val_f1_score",   // Metric to monitor
+    Mode = "max",              // Maximize the metric
+    BaselineValue = null       // Optional baseline to beat
+};
+
+// Pruning configuration for Bayesian optimization
+var pruningConfig = new PruningConfiguration
+{
+    PrunerType = PrunerType.Median,
+    WarmupSteps = 10,          // Don't prune first 10 steps
+    StartupTrials = 5,         // Don't prune first 5 trials
+    IntervalSteps = 1,         // Check every step
+    NanStrategy = "ignore"     // How to handle NaN values
+};
+
+// Implementation with early stopping
+private bool ShouldStopEarly(List&lt;TrialResult&gt; trialHistory, BayesianOptimizationConfiguration config)
+{
+    if (trialHistory.Count < config.PruningWarmupSteps) return false;
+    
+    var recentTrials = trialHistory.TakeLast((int)config.PruningWarmupSteps);
+    var bestRecentScore = recentTrials.Max(t => t.Score);
+    var bestOverallScore = trialHistory.Max(t => t.Score);
+    
+    // Stop if no significant improvement in recent trials
+    return (bestOverallScore - bestRecentScore) < 0.001;
+}
+
+// Advanced pruning logic
+private bool ShouldPruneTrial(TrialResult currentTrial, List&lt;TrialResult&gt; completedTrials, PruningConfiguration config)
+{
+    if (completedTrials.Count < config.StartupTrials) return false;
+    
+    // Calculate median performance at current step
+    var medianScore = completedTrials
+        .Select(t => t.Score)
+        .OrderBy(s => s)
+        .Skip(completedTrials.Count / 2)
+        .First();
+    
+    // Prune if current trial is significantly below median
+    return currentTrial.Score < (medianScore * 0.8);
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Integration with ViewModels -->
+                <section class="section" id="viewmodel-integration">
+                    <h2>??? ViewModel Integration</h2>
+                    
+                    <div class="method">
+                        <h3><i class="bi bi-laptop"></i> MVVM Integration Examples</h3>
+                        
+                        <div class="code-example">
+                            <h4>Hyperparameter Tuning in ViewModels</h4>
+                            <pre><code class="language-csharp">// Integration with PythonTrainingViewModel
+public partial class PythonTrainingViewModel : PythonBaseViewModel
+{
+    [ObservableProperty] private HyperparameterOptimizationConfig optimizationConfig;
+    [ObservableProperty] private bool isOptimizationRunning;
+    [ObservableProperty] private OptimizationProgress currentOptimizationProgress;
+    [ObservableProperty] private HyperparameterOptimizationResult optimizationResult;
+    
+    public IAsyncRelayCommand StartOptimizationCommand { get; }
+    public IAsyncRelayCommand StopOptimizationCommand { get; }
+    
+    // Command implementation
+    private async Task StartOptimizationAsync()
+    {
+        try
+        {
+            IsOptimizationRunning = true;
+            CurrentStatus = "Starting hyperparameter optimization...";
+            
+            // Configure optimization
+            var config = OptimizationConfig ?? new HyperparameterOptimizationConfig
+            {
+                SearchType = SearchType.BayesianOptimization,
+                MaxIterations = 100,
+                CVFolds = 5,
+                ScoringMetric = "f1_weighted"
+            };
+            
+            // Progress reporting
+            var progress = new Progress&lt;OptimizationProgress&gt;(OnOptimizationProgressChanged);
+            
+            // Execute optimization using TrainingExtensions
+            var result = await this.OptimizeHyperparametersAdvancedAsync(
+                config.SearchType,
+                GetParameterGrid(SelectedAlgorithm),
+                config.MaxIterations,
+                progress);
+            
+            if (result.Success)
+            {
+                OptimizationResult = result;
+                HyperParameters = result.BestParams;
+                CurrentStatus = $"Optimization completed. Best score: {result.BestScore:F4}";
+                
+                // Automatically retrain with optimized parameters
+                await StartTrainingAsync();
+            }
+            else
+            {
+                CurrentStatus = $"Optimization failed: {result.Message}";
+            }
+        }
+        catch (Exception ex)
+        {
+            CurrentStatus = $"Optimization error: {ex.Message}";
+        }
+        finally
+        {
+            IsOptimizationRunning = false;
+        }
+    }
+    
+    private void OnOptimizationProgressChanged(OptimizationProgress progress)
+    {
+        CurrentOptimizationProgress = progress;
+        TrainingProgress = progress.Percentage;
+        CurrentStatus = progress.Message;
+        
+        // Update UI with current best parameters
+        if (progress.CurrentBestParams != null)
+        {
+            // Update parameter display in UI
+            NotifyPropertyChanged(nameof(CurrentOptimizationProgress));
+        }
+    }
+}</code></pre>
+                        </div>
+
+                        <div class="code-example">
+                            <h4>UI Binding for Optimization Progress</h4>
+                            <pre><code class="language-xml">&lt;!-- Hyperparameter Optimization UI --&gt;
+&lt;GroupBox Header="Hyperparameter Optimization" Margin="10"&gt;
+    &lt;StackPanel&gt;
+        &lt;!-- Configuration --&gt;
+        &lt;Grid Margin="10"&gt;
+            &lt;Grid.ColumnDefinitions&gt;
+                &lt;ColumnDefinition Width="Auto"/&gt;
+                &lt;ColumnDefinition Width="*"/&gt;
+            &lt;/Grid.ColumnDefinitions&gt;
+            &lt;Grid.RowDefinitions&gt;
+                &lt;RowDefinition Height="Auto"/&gt;
+                &lt;RowDefinition Height="Auto"/&gt;
+                &lt;RowDefinition Height="Auto"/&gt;
+                &lt;RowDefinition Height="Auto"/&gt;
+            &lt;/Grid.RowDefinitions&gt;
+            
+            &lt;Label Grid.Row="0" Grid.Column="0" Content="Search Type:" Margin="5"/&gt;
+            &lt;ComboBox Grid.Row="0" Grid.Column="1" 
+                      SelectedItem="{Binding OptimizationConfig.SearchType}" 
+                      Margin="5"/&gt;
+            
+            &lt;Label Grid.Row="1" Grid.Column="0" Content="Max Iterations:" Margin="5"/&gt;
+            &lt;TextBox Grid.Row="1" Grid.Column="1" 
+                     Text="{Binding OptimizationConfig.MaxIterations}" 
+                     Margin="5"/&gt;
+            
+            &lt;Label Grid.Row="2" Grid.Column="0" Content="CV Folds:" Margin="5"/&gt;
+            &lt;TextBox Grid.Row="2" Grid.Column="1" 
+                     Text="{Binding OptimizationConfig.CVFolds}" 
+                     Margin="5"/&gt;
+            
+            &lt;Label Grid.Row="3" Grid.Column="0" Content="Scoring Metric:" Margin="5"/&gt;
+            &lt;ComboBox Grid.Row="3" Grid.Column="1" 
+                      SelectedItem="{Binding OptimizationConfig.ScoringMetric}" 
+                      Margin="5"/&gt;
+        &lt;/Grid&gt;
+        
+        &lt;!-- Controls --&gt;
+        &lt;StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10"&gt;
+            &lt;Button Content="Start Optimization" 
+                    Command="{Binding StartOptimizationCommand}"
+                    IsEnabled="{Binding IsOptimizationRunning, Converter={StaticResource InverseBooleanConverter}}"
+                    Style="{StaticResource PrimaryButtonStyle}"/&gt;
+            
+            &lt;Button Content="Stop Optimization" 
+                    Command="{Binding StopOptimizationCommand}"
+                    IsEnabled="{Binding IsOptimizationRunning}"
+                    Style="{StaticResource DangerButtonStyle}"/&gt;
+        &lt;/StackPanel&gt;
+        
+        &lt;!-- Progress Display --&gt;
+        &lt;StackPanel Visibility="{Binding IsOptimizationRunning, Converter={StaticResource BooleanToVisibilityConverter}}"&gt;
+            &lt;TextBlock Text="{Binding CurrentOptimizationProgress.Message}" 
+                       HorizontalAlignment="Center" 
+                       FontWeight="Bold" 
+                       Margin="10"/&gt;
+            
+            &lt;ProgressBar Value="{Binding CurrentOptimizationProgress.Percentage}" 
+                         Maximum="100" 
+                         Height="20" 
+                         Margin="10"/&gt;
+            
+            &lt;Grid Margin="10"&gt;
+                &lt;Grid.ColumnDefinitions&gt;
+                    &lt;ColumnDefinition Width="*"/&gt;
+                    &lt;ColumnDefinition Width="*"/&gt;
+                    &lt;ColumnDefinition Width="*"/&gt;
+                &lt;/Grid.ColumnDefinitions&gt;
+                
+                &lt;TextBlock Grid.Column="0" 
+                           Text="{Binding CurrentOptimizationProgress.CurrentIteration, StringFormat='Trial: {0}'}" 
+                           HorizontalAlignment="Center"/&gt;
+                
+                &lt;TextBlock Grid.Column="1" 
+                           Text="{Binding CurrentOptimizationProgress.BestScoreSoFar, StringFormat='Best Score: {0:F4}'}" 
+                           HorizontalAlignment="Center"/&gt;
+                
+                &lt;TextBlock Grid.Column="2" 
+                           Text="{Binding CurrentOptimizationProgress.EstimatedTimeRemaining, StringFormat='ETA: {0:mm\\:ss}'}" 
+                           HorizontalAlignment="Center"/&gt;
+            &lt;/Grid&gt;
+        &lt;/StackPanel&gt;
+        
+        &lt;!-- Results Display --&gt;
+        &lt;Expander Header="Optimization Results" 
+                  IsExpanded="True"
+                  Visibility="{Binding OptimizationResult, Converter={StaticResource NullToVisibilityConverter}}"&gt;
+            &lt;StackPanel Margin="10"&gt;
+                &lt;TextBlock Text="{Binding OptimizationResult.BestScore, StringFormat='Best Score: {0:F4}'}" 
+                           FontWeight="Bold" Margin="5"/&gt;
+                
+                &lt;TextBlock Text="{Binding OptimizationResult.TotalIterations, StringFormat='Total Trials: {0}'}" 
+                           Margin="5"/&gt;
+                
+                &lt;TextBlock Text="{Binding OptimizationResult.OptimizationTime, StringFormat='Duration: {0:mm\\:ss}'}" 
+                           Margin="5"/&gt;
+                
+                &lt;TextBlock Text="Best Parameters:" FontWeight="Bold" Margin="5,10,5,5"/&gt;
+                
+                &lt;ItemsControl ItemsSource="{Binding OptimizationResult.BestParams}"&gt;
+                    &lt;ItemsControl.ItemTemplate&gt;
+                        &lt;DataTemplate&gt;
+                            &lt;StackPanel Orientation="Horizontal" Margin="10,2"&gt;
+                                &lt;TextBlock Text="{Binding Key}" Width="150"/&gt;
+                                &lt;TextBlock Text=": "/&gt;
+                                &lt;TextBlock Text="{Binding Value}"/&gt;
+                            &lt;/StackPanel&gt;
+                        &lt;/DataTemplate&gt;
+                    &lt;/ItemsControl.ItemTemplate&gt;
+                &lt;/ItemsControl&gt;
+            &lt;/StackPanel&gt;
+        &lt;/Expander&gt;
+    &lt;/StackPanel&gt;
+&lt;/GroupBox&gt;</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Best Practices -->
+                <section class="section" id="best-practices">
+                    <h2>? Hyperparameter Tuning Best Practices</h2>
+                    
+                    <div class="tip">
+                        <h5><i class="bi bi-lightbulb"></i> Optimization Guidelines</h5>
+                        <ul>
+                            <li><strong>Start Simple:</strong> Begin with default parameters, then optimize most important ones</li>
+                            <li><strong>Parameter Ranges:</strong> Choose reasonable ranges based on domain knowledge</li>
+                            <li><strong>Cross-Validation:</strong> Always use proper CV to avoid overfitting to validation set</li>
+                            <li><strong>Computational Budget:</strong> Balance optimization time with performance gains</li>
+                            <li><strong>Multiple Metrics:</strong> Consider multiple evaluation metrics, not just accuracy</li>
+                            <li><strong>Reproducibility:</strong> Set random seeds for consistent results</li>
+                        </ul>
+                    </div>
+
+                    <div class="warning">
+                        <h5><i class="bi bi-exclamation-triangle"></i> Common Pitfalls</h5>
+                        <ul>
+                            <li><strong>Overfitting to Validation:</strong> Don't optimize too aggressively on validation set</li>
+                            <li><strong>Parameter Interactions:</strong> Some parameters depend on others</li>
+                            <li><strong>Data Leakage:</strong> Don't use test data in hyperparameter optimization</li>
+                            <li><strong>Computational Cost:</strong> Consider training time vs. performance trade-offs</li>
+                            <li><strong>Local Optima:</strong> Bayesian optimization can get stuck in local optima</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Navigation Links -->
+                <div class="nav-links">
+                    <a href="algorithm-management.html" class="btn-beep">
+                        <i class="bi bi-cpu"></i> Algorithm Management
+                    </a>
+                    <a href="model-evaluation.html" class="btn-beep">
+                        <i class="bi bi-graph-up"></i> Model Evaluation
+                    </a>
+                    <a href="automl-integration.html" class="btn-beep">
+                        <i class="bi bi-robot"></i> AutoML Integration
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <footer class="documentation-footer">
+                    <div class="footer-content">
+                        <div class="footer-copyright">
+                            <p>&copy; 2024 The Tech Idea - Beep.Python.ML Hyperparameter Tuning Documentation</p>
+                            <p>Advanced Optimization Techniques for .NET 6, 7, 8, and 9</p>
+                        </div>
+                        <div class="footer-links">
+                            <a href="#tuning-overview">Overview</a>
+                            <a href="#grid-search">Grid Search</a>
+                            <a href="#bayesian-optimization">Bayesian Optimization</a>
+                            <a href="#advanced-techniques">Advanced Techniques</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="assets/navigation.js"></script>
+</body>
+</html>

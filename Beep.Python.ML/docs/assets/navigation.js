@@ -1,11 +1,11 @@
-// Enhanced Navigation Manager for Beep Python Documentation
-class PythonDocumentationNavigationManager {
+// Enhanced Navigation Manager for Beep Python ML Documentation
+class PythonMLDocumentationNavigationManager {
     constructor() {
         this.currentPage = this.getCurrentPageName();
         this.searchIndex = [];
         this.isInitialized = false;
         
-        console.log('?? Initializing Python Documentation Navigation...');
+        console.log('?? Initializing Python ML Documentation Navigation...');
     }
 
     async loadNavigation() {
@@ -19,7 +19,7 @@ class PythonDocumentationNavigationManager {
             this.setActiveNavigation();
             
             this.isInitialized = true;
-            console.log('? Python Documentation Navigation loaded successfully');
+            console.log('? Python ML Documentation Navigation loaded successfully');
         } catch (error) {
             console.error('? Failed to load navigation:', error);
             this.createFallbackNavigation();
@@ -47,14 +47,11 @@ class PythonDocumentationNavigationManager {
     }
 
     generateNavigationHTML() {
-        // Determine project type from URL or page title
-        const projectType = this.detectProjectType();
-        
         return `
             <div class="logo">
                 <div class="logo-text">
-                    <h2>${this.getProjectTitle(projectType)}</h2>
-                    <span class="version">${this.getProjectVersion(projectType)}</span>
+                    <h2>Python ML Integration</h2>
+                    <span class="version">v1.0.0</span>
                 </div>
             </div>
             
@@ -65,173 +62,92 @@ class PythonDocumentationNavigationManager {
             
             <nav>
                 <ul class="nav-menu" id="navMenu">
-                    ${this.generateMenuItems(projectType)}
+                    ${this.generateMenuItems()}
                 </ul>
             </nav>
         `;
     }
 
-    detectProjectType() {
-        const url = window.location.href.toLowerCase();
-        const title = document.title.toLowerCase();
-        
-        if (url.includes('packagemanagement') || title.includes('package')) {
-            return 'packagemanagement';
-        } else if (url.includes('ml') || title.includes('machine learning')) {
-            return 'ml';
-        } else if (url.includes('nodes') || title.includes('node')) {
-            return 'nodes';
-        } else if (url.includes('runtime') || title.includes('runtime')) {
-            return 'runtime';
-        } else if (url.includes('datamanagement') || title.includes('data')) {
-            return 'datamanagement';
-        } else if (url.includes('transformers') || url.includes('hugginface')) {
-            return 'transformers';
-        }
-        
-        return 'general';
-    }
-
-    getProjectTitle(projectType) {
-        const titles = {
-            'packagemanagement': 'Python Package Management',
-            'ml': 'Python ML Integration',
-            'nodes': 'Python Visual Nodes',
-            'runtime': 'Python Runtime',
-            'datamanagement': 'Python Data Management',
-            'transformers': 'Python AI Transformers',
-            'general': 'Beep Python Suite'
-        };
-        
-        return titles[projectType] || 'Beep Python';
-    }
-
-    getProjectVersion(projectType) {
-        const versions = {
-            'packagemanagement': 'v1.0.0',
-            'ml': 'v1.0.0',
-            'nodes': 'v1.0.0',
-            'runtime': 'v1.0.43',
-            'datamanagement': 'v1.0.0',
-            'transformers': 'v1.0.0',
-            'general': 'v1.0.43'
-        };
-        
-        return versions[projectType] || 'v1.0.0';
-    }
-
-    generateMenuItems(projectType) {
-        const commonItems = `
+    generateMenuItems() {
+        return `
+            <!-- Home -->
             <li><a href="index.html" class="${this.currentPage === 'index' ? 'active' : ''}">
                 <i class="bi bi-house"></i> Home
             </a></li>
-        `;
-
-        const gettingStartedSection = `
+            
+            <!-- Getting Started -->
             <li class="has-submenu">
                 <a href="#"><i class="bi bi-rocket"></i> Getting Started</a>
                 <ul class="submenu">
-                    <li><a href="installation.html">Installation</a></li>
-                    <li><a href="getting-started.html">Quick Start</a></li>
-                    <li><a href="examples.html">Examples</a></li>
+                    <li><a href="installation.html">?? Installation</a></li>
+                    <li><a href="getting-started.html">?? Quick Start</a></li>
+                    <li><a href="examples.html">?? Basic Examples</a></li>
+                    <li><a href="advanced-examples.html">?? Advanced Examples</a></li>
                 </ul>
             </li>
-        `;
-
-        const projectSpecificItems = this.getProjectSpecificItems(projectType);
-        
-        const commonEndItems = `
+            
+            <!-- Core Components -->
+            <li class="has-submenu">
+                <a href="#"><i class="bi bi-cpu"></i> Core Components</a>
+                <ul class="submenu">
+                    <li><a href="PythonMLManager.html">?? PythonMLManager</a></li>
+                    <li><a href="algorithm-management.html">?? Algorithm Management</a></li>
+                    <li><a href="model-evaluation.html">?? Model Evaluation</a></li>
+                    <li><a href="training-workflows.html">?? Training Workflows</a></li>
+                </ul>
+            </li>
+            
+            <!-- MVVM ViewModels -->
+            <li class="has-submenu">
+                <a href="#"><i class="bi bi-laptop"></i> MVVM ViewModels</a>
+                <ul class="submenu">
+                    <li><a href="PythonMachineLearningViewModel.html">?? ML ViewModel</a></li>
+                    <li><a href="PythonTrainingViewModel.html">?? Training ViewModel</a></li>
+                    <li><a href="ModelEvaluationGraphsViewModel.html">?? Evaluation Graphs ViewModel</a></li>
+                    <li><a href="PythonAlgorithimsViewModel.html">?? Algorithms ViewModel</a></li>
+                </ul>
+            </li>
+            
+            <!-- Advanced ML -->
+            <li class="has-submenu">
+                <a href="#"><i class="bi bi-graph-up"></i> Advanced ML</a>
+                <ul class="submenu">
+                    <li><a href="automl-integration.html">?? AutoML Integration</a></li>
+                    <li><a href="ensemble-methods.html">??? Ensemble Methods</a></li>
+                    <li><a href="model-interpretability.html">??? Model Interpretability</a></li>
+                    <li><a href="hyperparameter-tuning.html">??? Hyperparameter Tuning</a></li>
+                </ul>
+            </li>
+            
+            <!-- Assistant Classes -->
+            <li class="has-submenu">
+                <a href="#"><i class="bi bi-tools"></i> Assistant Classes</a>
+                <ul class="submenu">
+                    <li><a href="assistant-classes.html">??? All Assistants Overview</a></li>
+                    <li><a href="python-data-preprocessing.html">?? Data Preprocessing</a></li>
+                    <li><a href="python-feature-engineering.html">?? Feature Engineering</a></li>
+                    <li><a href="python-visualization.html">?? Visualization</a></li>
+                    <li><a href="python-time-series.html">?? Time Series</a></li>
+                    <li><a href="python-text-processing.html">?? Text Processing</a></li>
+                </ul>
+            </li>
+            
+            <!-- Python Scripts -->
+            <li class="has-submenu">
+                <a href="#"><i class="bi bi-file-code"></i> Python Scripts</a>
+                <ul class="submenu">
+                    <li><a href="python-scripts.html">?? Template Scripts (101+)</a></li>
+                    <li><a href="script-categories.html">?? Script Categories</a></li>
+                    <li><a href="custom-scripts.html">??? Custom Scripts</a></li>
+                </ul>
+            </li>
+            
+            <!-- API Reference -->
             <li><a href="api-reference.html"><i class="bi bi-code-square"></i> API Reference</a></li>
+            
+            <!-- Troubleshooting -->
             <li><a href="troubleshooting.html"><i class="bi bi-question-circle"></i> Troubleshooting</a></li>
         `;
-
-        return commonItems + gettingStartedSection + projectSpecificItems + commonEndItems;
-    }
-
-    getProjectSpecificItems(projectType) {
-        const projectMenus = {
-            'packagemanagement': `
-                <li class="has-submenu">
-                    <a href="#"><i class="bi bi-box-seam"></i> Core Classes</a>
-                    <ul class="submenu">
-                        <li><a href="PythonPackageManager.html">PythonPackageManager</a></li>
-                        <li><a href="PackageCategoryManager.html">PackageCategoryManager</a></li>
-                        <li><a href="PackageSetManager.html">PackageSetManager</a></li>
-                        <li><a href="RequirementsFileManager.html">RequirementsFileManager</a></li>
-                        <li><a href="PackageOperationManager.html">PackageOperationManager</a></li>
-                    </ul>
-                </li>
-                <li class="has-submenu">
-                    <a href="#"><i class="bi bi-gear"></i> Advanced Features</a>
-                    <ul class="submenu">
-                        <li><a href="security-compliance.html">Security & Compliance</a></li>
-                        <li><a href="dependency-analysis.html">Dependency Analysis</a></li>
-                        <li><a href="private-repositories.html">Private Repositories</a></li>
-                        <li><a href="enterprise-integration.html">Enterprise Integration</a></li>
-                    </ul>
-                </li>
-            `,
-            'ml': `
-                <li class="has-submenu">
-                    <a href="#"><i class="bi bi-cpu"></i> Core Components</a>
-                    <ul class="submenu">
-                        <li><a href="PythonMLManager.html">PythonMLManager</a></li>
-                        <li><a href="algorithm-management.html">Algorithm Management</a></li>
-                        <li><a href="model-evaluation.html">Model Evaluation</a></li>
-                        <li><a href="training-workflows.html">Training Workflows</a></li>
-                    </ul>
-                </li>
-                <li class="has-submenu">
-                    <a href="#"><i class="bi bi-laptop"></i> MVVM ViewModels</a>
-                    <ul class="submenu">
-                        <li><a href="PythonMachineLearningViewModel.html">ML ViewModel</a></li>
-                        <li><a href="PythonTrainingViewModel.html">Training ViewModel</a></li>
-                        <li><a href="ModelEvaluationGraphsViewModel.html">Evaluation ViewModel</a></li>
-                        <li><a href="PythonAlgorithimsViewModel.html">Algorithms ViewModel</a></li>
-                    </ul>
-                </li>
-                <li class="has-submenu">
-                    <a href="#"><i class="bi bi-graph-up"></i> Advanced ML</a>
-                    <ul class="submenu">
-                        <li><a href="automl-integration.html">AutoML</a></li>
-                        <li><a href="ensemble-methods.html">Ensemble Methods</a></li>
-                        <li><a href="model-interpretability.html">Model Interpretability</a></li>
-                        <li><a href="hyperparameter-tuning.html">Hyperparameter Tuning</a></li>
-                    </ul>
-                </li>
-            `,
-            'nodes': `
-                <li class="has-submenu">
-                    <a href="#"><i class="bi bi-diagram-3"></i> Node Types</a>
-                    <ul class="submenu">
-                        <li><a href="PythonRuntimeNode.html">Runtime Node</a></li>
-                        <li><a href="PythonVirtualEnvNode.html">Virtual Env Node</a></li>
-                        <li><a href="AICPythonNode.html">AI Python Node</a></li>
-                        <li><a href="custom-nodes.html">Custom Nodes</a></li>
-                    </ul>
-                </li>
-                <li class="has-submenu">
-                    <a href="#"><i class="bi bi-palette"></i> Visual Designer</a>
-                    <ul class="submenu">
-                        <li><a href="workflow-designer.html">Workflow Designer</a></li>
-                        <li><a href="node-development.html">Node Development</a></li>
-                        <li><a href="visual-programming.html">Visual Programming</a></li>
-                        <li><a href="data-flow.html">Data Flow Management</a></li>
-                    </ul>
-                </li>
-                <li class="has-submenu">
-                    <a href="#"><i class="bi bi-building"></i> Enterprise</a>
-                    <ul class="submenu">
-                        <li><a href="node-security.html">Security & Governance</a></li>
-                        <li><a href="performance-monitoring.html">Performance Monitoring</a></li>
-                        <li><a href="node-deployment.html">Node Deployment</a></li>
-                        <li><a href="workflow-orchestration.html">Workflow Orchestration</a></li>
-                    </ul>
-                </li>
-            `
-        };
-
-        return projectMenus[projectType] || '';
     }
 
     setupEventListeners() {
@@ -269,7 +185,7 @@ class PythonDocumentationNavigationManager {
 
     setupThemeToggle() {
         // Load saved theme
-        const savedTheme = localStorage.getItem('beep-python-docs-theme') || 'light';
+        const savedTheme = localStorage.getItem('beep-python-ml-docs-theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
         
         const themeIcon = document.getElementById('theme-icon');
@@ -286,8 +202,14 @@ class PythonDocumentationNavigationManager {
                 this.performSearch(e.target.value);
             });
             
-            // Add search suggestions
-            this.createSearchSuggestions();
+            // Add keyboard shortcuts
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    e.target.value = '';
+                    this.performSearch('');
+                    e.target.blur();
+                }
+            });
         }
     }
 
@@ -376,28 +298,29 @@ class PythonDocumentationNavigationManager {
         const navLinks = document.querySelectorAll('.nav-menu a');
         
         navLinks.forEach(link => {
-            const linkPath = new URL(link.href).pathname;
-            if (linkPath === currentPath) {
-                link.classList.add('active');
-                
-                // Expand parent submenu
-                const parentSubmenu = link.closest('.has-submenu');
-                if (parentSubmenu) {
-                    parentSubmenu.classList.add('open');
+            try {
+                const linkPath = new URL(link.href).pathname;
+                if (linkPath === currentPath || link.href.includes(this.currentPage + '.html')) {
+                    link.classList.add('active');
+                    
+                    // Expand parent submenu
+                    const parentSubmenu = link.closest('.has-submenu');
+                    if (parentSubmenu) {
+                        parentSubmenu.classList.add('open');
+                    }
+                }
+            } catch (e) {
+                // Handle relative URLs
+                if (link.getAttribute('href') === this.currentPage + '.html') {
+                    link.classList.add('active');
+                    
+                    const parentSubmenu = link.closest('.has-submenu');
+                    if (parentSubmenu) {
+                        parentSubmenu.classList.add('open');
+                    }
                 }
             }
         });
-    }
-
-    createSearchSuggestions() {
-        // Add search suggestions dropdown (future enhancement)
-        const searchContainer = document.querySelector('.search-container');
-        if (searchContainer) {
-            const suggestionsDiv = document.createElement('div');
-            suggestionsDiv.className = 'search-suggestions';
-            suggestionsDiv.style.display = 'none';
-            searchContainer.appendChild(suggestionsDiv);
-        }
     }
 
     createFallbackNavigation() {
@@ -409,7 +332,7 @@ class PythonDocumentationNavigationManager {
         sidebar.innerHTML = `
             <div class="logo">
                 <div class="logo-text">
-                    <h2>Beep Python Documentation</h2>
+                    <h2>Python ML Documentation</h2>
                     <span class="version">v1.0.0</span>
                 </div>
             </div>
@@ -418,8 +341,14 @@ class PythonDocumentationNavigationManager {
                 <ul class="nav-menu">
                     <li><a href="index.html" class="active"><i class="bi bi-house"></i> Home</a></li>
                     <li><a href="getting-started.html"><i class="bi bi-rocket"></i> Getting Started</a></li>
+                    <li><a href="PythonMLManager.html"><i class="bi bi-cpu"></i> ML Manager</a></li>
+                    <li><a href="PythonMachineLearningViewModel.html"><i class="bi bi-laptop"></i> ML ViewModel</a></li>
+                    <li><a href="ModelEvaluationGraphsViewModel.html"><i class="bi bi-graph-up"></i> Evaluation Graphs</a></li>
+                    <li><a href="PythonAlgorithimsViewModel.html"><i class="bi bi-cpu"></i> Algorithms ViewModel</a></li>
+                    <li><a href="automl-integration.html"><i class="bi bi-robot"></i> AutoML</a></li>
+                    <li><a href="model-interpretability.html"><i class="bi bi-eye"></i> Model Interpretability</a></li>
                     <li><a href="api-reference.html"><i class="bi bi-code-square"></i> API Reference</a></li>
-                    <li><a href="examples.html"><i class="bi bi-play-circle"></i> Examples</a></li>
+                    <li><a href="troubleshooting.html"><i class="bi bi-question-circle"></i> Troubleshooting</a></li>
                 </ul>
             </nav>
         `;
@@ -427,25 +356,25 @@ class PythonDocumentationNavigationManager {
 }
 
 // Global navigation manager instance
-let pythonNavigationManager;
+let pythonMLNavigationManager;
 
 // Initialize navigation when DOM is loaded
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('?? Initializing Beep Python documentation navigation...');
+    console.log('?? Initializing Beep Python ML documentation navigation...');
     
     try {
         // Create navigation manager
-        pythonNavigationManager = new PythonDocumentationNavigationManager();
+        pythonMLNavigationManager = new PythonMLDocumentationNavigationManager();
         
         // Load navigation
-        await pythonNavigationManager.loadNavigation();
+        await pythonMLNavigationManager.loadNavigation();
         
         // Initialize other features
         initializeCodeHighlighting();
         initializeTooltips();
         initializeMobileMenu();
         
-        console.log('? Python documentation navigation initialized successfully');
+        console.log('? Python ML documentation navigation initialized successfully');
     } catch (error) {
         console.error('? Failed to initialize navigation:', error);
     }
@@ -457,7 +386,7 @@ function toggleTheme() {
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     
     document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('beep-python-docs-theme', newTheme);
+    localStorage.setItem('beep-python-ml-docs-theme', newTheme);
     
     // Update theme icon
     const themeIcon = document.getElementById('theme-icon');
@@ -481,8 +410,8 @@ function toggleSidebar() {
 
 // Enhanced search function
 function searchDocs(query = '') {
-    if (pythonNavigationManager && pythonNavigationManager.isInitialized) {
-        pythonNavigationManager.performSearch(query);
+    if (pythonMLNavigationManager && pythonMLNavigationManager.isInitialized) {
+        pythonMLNavigationManager.performSearch(query);
     } else {
         // Fallback search
         basicSearch(query);
@@ -613,9 +542,10 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// Add CSS for copy buttons and language labels
+// Add CSS for copy buttons, language labels, and enhanced navigation
 const additionalStyles = `
 <style>
+/* Copy button styles */
 .copy-button {
     position: absolute;
     top: 10px;
@@ -629,12 +559,14 @@ const additionalStyles = `
     font-size: 12px;
     opacity: 0;
     transition: opacity 0.3s ease;
+    z-index: 10;
 }
 
 pre:hover .copy-button {
     opacity: 1;
 }
 
+/* Language label styles */
 .language-label {
     position: absolute;
     top: 10px;
@@ -646,20 +578,67 @@ pre:hover .copy-button {
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
+    z-index: 10;
 }
 
+/* Enhanced navigation styles */
+.nav-menu .has-submenu > a::after {
+    content: '?';
+    float: right;
+    font-size: 12px;
+    transition: transform 0.3s ease;
+}
+
+.nav-menu .has-submenu.open > a::after {
+    transform: rotate(90deg);
+}
+
+.nav-menu .submenu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.nav-menu .has-submenu.open .submenu {
+    max-height: 500px;
+}
+
+.nav-menu .submenu li a {
+    padding-left: 40px;
+    font-size: 14px;
+}
+
+.nav-menu a.active {
+    background-color: var(--primary-color, #007bff);
+    color: white;
+    border-radius: 4px;
+}
+
+/* Search suggestions */
 .search-suggestions {
     position: absolute;
     top: 100%;
     left: 0;
     right: 0;
-    background: var(--bg-color);
-    border: 1px solid var(--border-color);
+    background: var(--bg-color, white);
+    border: 1px solid var(--border-color, #ddd);
     border-radius: 0 0 8px 8px;
     max-height: 300px;
     overflow-y: auto;
     z-index: 1000;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .sidebar.mobile-open {
+        transform: translateX(0);
+    }
 }
 </style>
 `;
@@ -667,4 +646,4 @@ pre:hover .copy-button {
 // Inject additional styles
 document.head.insertAdjacentHTML('beforeend', additionalStyles);
 
-console.log('?? Beep Python Documentation Navigation System Loaded');
+console.log('?? Beep Python ML Documentation Navigation System Loaded');
