@@ -90,18 +90,20 @@
             KMeans,
             DBSCAN, // Density-Based Spatial Clustering of Applications with Noise
             AgglomerativeClustering,
+        SVC,
+        KNeighborsClassifier,
 
-            //// Neural Networks and Deep Learning (These might require libraries like TensorFlow or PyTorch)
-            //CNN, // Convolutional Neural Network
-            //RNN, // Recurrent Neural Network
-            //LSTM, // Long Short-Term Memory
-            //GAN, // Generative Adversarial Network
+        //// Neural Networks and Deep Learning (These might require libraries like TensorFlow or PyTorch)
+        //CNN, // Convolutional Neural Network
+        //RNN, // Recurrent Neural Network
+        //LSTM, // Long Short-Term Memory
+        //GAN, // Generative Adversarial Network
 
-            //// Other Specialized Algorithms
-            //PCA, // Principal Component Analysis
-            //LDA // Linear Discriminant Analysis
-            //    // ... Add more as required
-        }
+        //// Other Specialized Algorithms
+        //PCA, // Principal Component Analysis
+        //LDA // Linear Discriminant Analysis
+        //    // ... Add more as required
+    }
     /// <summary>
     /// Enum representing categories of machine learning algorithms.
     /// </summary>

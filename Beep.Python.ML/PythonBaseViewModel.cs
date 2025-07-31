@@ -80,24 +80,26 @@ namespace Beep.Python.ML
         public ObservableBindingList<PythonRunTime> AvailablePythonInstallations => pythonRuntime?.PythonInstallations ?? new ObservableBindingList<PythonRunTime>();
         #endregion
 
-        #region Constructor
+        #region Constructors
         public PythonBaseViewModel(
             IBeepService beepservice, 
             IPythonRunTimeManager pythonRuntimeManager, 
             PythonSessionInfo sessionInfo)
         {
             Beepservice = beepservice ?? throw new ArgumentNullException(nameof(beepservice));
-            Editor = beepservice.DMEEditor;
             PythonRuntime = pythonRuntimeManager ?? throw new ArgumentNullException(nameof(pythonRuntimeManager));
-            SessionInfo = sessionInfo;
+            SessionInfo = sessionInfo ?? throw new ArgumentNullException(nameof(sessionInfo));
 
-            // Get related managers from the runtime manager
+            Editor = beepservice.DMEEditor;
+            Progress = beepservice.DMEEditor.progress;
+            
             VirtualEnvManager = pythonRuntimeManager.VirtualEnvmanager;
             SessionManager = pythonRuntimeManager.SessionManager;
 
-            InitializeTokenSource();
-            InitializeAlgorithmData();
-            InitializeProgressReporting();
+            TokenSource = new CancellationTokenSource();
+            Token = TokenSource.Token;
+
+            InitializeCommonComponents();
         }
 
         /// <summary>
@@ -111,58 +113,109 @@ namespace Beep.Python.ML
             PythonSessionInfo sessionInfo)
         {
             Beepservice = beepservice ?? throw new ArgumentNullException(nameof(beepservice));
-            Editor = beepservice.DMEEditor;
             PythonRuntime = pythonRuntimeManager ?? throw new ArgumentNullException(nameof(pythonRuntimeManager));
             VirtualEnvManager = virtualEnvManager ?? throw new ArgumentNullException(nameof(virtualEnvManager));
             SessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
-            SessionInfo = sessionInfo;
+            SessionInfo = sessionInfo ?? throw new ArgumentNullException(nameof(sessionInfo));
 
-            InitializeTokenSource();
-            InitializeAlgorithmData();
-            InitializeProgressReporting();
-        }
-        #endregion
+            Editor = beepservice.DMEEditor;
+            Progress = beepservice.DMEEditor.progress;
 
-        #region Initialization Methods
-        private void InitializeTokenSource()
-        {
             TokenSource = new CancellationTokenSource();
             Token = TokenSource.Token;
-        }
 
-        private void InitializeAlgorithmData()
-        {
-            ListofAlgorithims = new List<LOVData>();
-            foreach (var item in Enum.GetNames(typeof(MachineLearningAlgorithm)))
-            {
-                var algorithm = (MachineLearningAlgorithm)Enum.Parse(typeof(MachineLearningAlgorithm), item);
-                LOVData data = new LOVData() 
-                { 
-                    ID = item, 
-                    DisplayValue = item, 
-                    LOVDESCRIPTION = MLAlgorithmsHelpers.GenerateAlgorithmDescription(algorithm) 
-                };
-                ListofAlgorithims.Add(data);
-            }
-            
-            Algorithims = MLAlgorithmsHelpers.GetAlgorithms();
-            ParameterDictionaryForAlgorithms = MLAlgorithmsHelpers.GetParameterDictionaryForAlgorithms();
-        }
-
-        private void InitializeProgressReporting()
-        {
-            Progress = new Progress<PassedArgs>(args =>
-            {
-                if (Editor != null)
-                {
-                    var errorLevel = args.EventType == "Error" ? Errors.Failed : Errors.Ok;
-                    Editor.AddLogMessage("Python ML", args.Messege, DateTime.Now, -1, null, errorLevel);
-                }
-            });
+            InitializeCommonComponents();
         }
         #endregion
 
-        #region Session and Environment Configuration
+        #region Initialization
+        private void InitializeCommonComponents()
+        {
+            InitializeParameterDictionary();
+            InitializePythonDataFolder();
+            InitializeAlgorithmsList();
+            
+            IsInitialized = PythonRuntime?.IsInitialized ?? false;
+        }
+
+        private void InitializeParameterDictionary()
+        {
+            try
+            {
+                ParameterDictionaryForAlgorithms = MLAlgorithmsHelpers.GetParameterDictionaryForAlgorithms();
+            }
+            catch (Exception ex)
+            {
+                Editor?.AddLogMessage("PythonBaseViewModel", $"Failed to initialize parameter dictionary: {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
+                ParameterDictionaryForAlgorithms = new List<ParameterDictionaryForAlgorithm>();
+            }
+        }
+
+        private void InitializePythonDataFolder()
+        {
+            try
+            {
+                // Use a default path if Editor or Config is not available
+                string basePath = Editor?.ConfigEditor?.Config?.Folders?.FirstOrDefault()?.FolderPath ?? 
+                                  System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData);
+                PythonDatafolder = System.IO.Path.Combine(basePath, "Beep", "Python", "ML");
+                System.IO.Directory.CreateDirectory(PythonDatafolder);
+            }
+            catch (Exception ex)
+            {
+                Editor?.AddLogMessage("PythonBaseViewModel", $"Failed to initialize Python data folder: {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
+                PythonDatafolder = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData), "Beep", "Python", "ML");
+            }
+        }
+
+        private void InitializeAlgorithmsList()
+        {
+            try
+            {
+                ListofAlgorithims = new List<LOVData>();
+                Algorithims = new List<string>();
+
+                foreach (var algorithmName in Enum.GetNames(typeof(MachineLearningAlgorithm)))
+                {
+                    var algorithm = (MachineLearningAlgorithm)Enum.Parse(typeof(MachineLearningAlgorithm), algorithmName);
+                    var description = MLAlgorithmsHelpers.GenerateAlgorithmDescription(algorithm);
+                    
+                    ListofAlgorithims.Add(new LOVData 
+                    { 
+                        ID = algorithmName, 
+                        DisplayValue = algorithmName, 
+                        LOVDESCRIPTION = description 
+                    });
+                    
+                    Algorithims.Add(algorithmName);
+                }
+            }
+            catch (Exception ex)
+            {
+                Editor?.AddLogMessage("PythonBaseViewModel", $"Failed to initialize algorithms list: {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
+                ListofAlgorithims = new List<LOVData>();
+                Algorithims = new List<string>();
+            }
+        }
+
+        protected virtual void InitializePythonEnvironment()
+        {
+            if (!IsInitialized && PythonRuntime != null)
+            {
+                try
+                {
+                    // Basic Python environment setup can be done here if needed
+                    IsInitialized = PythonRuntime.IsInitialized;
+                }
+                catch (Exception ex)
+                {
+                    Editor?.AddLogMessage("PythonBaseViewModel", $"Failed to initialize Python environment: {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
+                }
+            }
+        }
+        #endregion
+
+        #region Enhanced Session Management
         /// <summary>
         /// Configure the view model to use a specific Python session and virtual environment
         /// </summary>
@@ -173,47 +226,42 @@ namespace Beep.Python.ML
         {
             if (session == null)
                 throw new ArgumentNullException(nameof(session));
-
+            
             if (virtualEnvironment == null)
                 throw new ArgumentNullException(nameof(virtualEnvironment));
 
-            // Validate that session is associated with the environment
-            if (session.VirtualEnvironmentId != virtualEnvironment.ID)
+            try
             {
-                throw new ArgumentException("Session must be associated with the provided virtual environment");
-            }
+                ConfiguredSession = session;
+                ConfiguredVirtualEnvironment = virtualEnvironment;
+                SessionInfo = session;
 
-            // Validate session is active
-            if (session.Status != PythonSessionStatus.Active)
-            {
-                throw new ArgumentException("Session must be in Active status");
-            }
-
-            ConfiguredSession = session;
-            ConfiguredVirtualEnvironment = virtualEnvironment;
-            SessionInfo = session; // Update the session info
-
-            // Get or create the session scope
-            if (PythonRuntime.HasScope(session))
-            {
-                SessionScope = PythonRuntime.GetScope(session);
-            }
-            else
-            {
-                if (PythonRuntime.CreateScope(session, virtualEnvironment))
+                // Get or create the session scope
+                if (PythonRuntime.HasScope(session))
                 {
                     SessionScope = PythonRuntime.GetScope(session);
                 }
                 else
                 {
-                    throw new InvalidOperationException("Failed to create Python scope for session");
+                    if (PythonRuntime.CreateScope(session, virtualEnvironment))
+                    {
+                        SessionScope = PythonRuntime.GetScope(session);
+                    }
+                    else
+                    {
+                        Editor?.AddLogMessage("PythonBaseViewModel", "Failed to create Python scope for session", DateTime.Now, -1, null, Errors.Failed);
+                        return false;
+                    }
                 }
+
+                InitializePythonEnvironment();
+                return true;
             }
-
-            // Initialize basic Python environment
-            InitializePythonEnvironment();
-
-            return true;
+            catch (Exception ex)
+            {
+                Editor?.AddLogMessage("PythonBaseViewModel", $"Failed to configure session: {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
+                return false;
+            }
         }
 
         /// <summary>
@@ -224,72 +272,54 @@ namespace Beep.Python.ML
         /// <returns>True if configuration successful</returns>
         public virtual bool ConfigureSessionForUser(string username, string? environmentId = null)
         {
-            if (string.IsNullOrWhiteSpace(username))
+            if (string.IsNullOrEmpty(username))
                 throw new ArgumentException("Username cannot be null or empty", nameof(username));
 
-            if (SessionManager == null)
-                throw new InvalidOperationException("Session manager is not available");
-
-            // Create or get existing session for the user
-            var session = SessionManager.CreateSession(username, environmentId);
-            if (session == null)
+            try
             {
-                throw new InvalidOperationException($"Failed to create session for user: {username}");
-            }
+                // Create or get session for user
+                var session = SessionManager?.CreateSession(username, environmentId);
+                if (session == null)
+                {
+                    Editor?.AddLogMessage("PythonBaseViewModel", $"Failed to create session for user: {username}", DateTime.Now, -1, null, Errors.Failed);
+                    return false;
+                }
 
-            // Get the virtual environment for this session
-            var virtualEnvironment = VirtualEnvManager?.GetEnvironmentById(session.VirtualEnvironmentId);
-            if (virtualEnvironment == null)
+                // Get the associated virtual environment
+                var environment = VirtualEnvManager?.GetEnvironmentByPath(session.VirtualEnvironmentId);
+                if (environment == null)
+                {
+                    Editor?.AddLogMessage("PythonBaseViewModel", $"Failed to get environment for session: {session.SessionId}", DateTime.Now, -1, null, Errors.Failed);
+                    return false;
+                }
+
+                return ConfigureSession(session, environment);
+            }
+            catch (Exception ex)
             {
-                throw new InvalidOperationException($"Virtual environment not found for session: {session.SessionId}");
+                Editor?.AddLogMessage("PythonBaseViewModel", $"Failed to configure session for user {username}: {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
+                return false;
             }
-
-            return ConfigureSession(session, virtualEnvironment);
         }
 
         /// <summary>
         /// Get the currently configured session
         /// </summary>
-        public PythonSessionInfo? GetConfiguredSession() => ConfiguredSession;
+        public PythonSessionInfo? GetConfiguredSession()
+        {
+            return ConfiguredSession;
+        }
 
         /// <summary>
         /// Get the currently configured virtual environment
         /// </summary>
-        public PythonVirtualEnvironment? GetConfiguredVirtualEnvironment() => ConfiguredVirtualEnvironment;
-
-        protected virtual void InitializePythonEnvironment()
+        public PythonVirtualEnvironment? GetConfiguredVirtualEnvironment()
         {
-            if (!IsSessionConfigured)
-                throw new InvalidOperationException("Session must be configured before initializing Python environment");
-
-            try
-            {
-                ExecuteInSession(() =>
-                {
-                    string initScript = @"
-import sys
-import os
-import traceback
-try:
-    print('Basic Python environment initialized successfully')
-except Exception as e:
-    print(f'Environment initialization error: {e}')
-    traceback.print_exc()
-";
-                    SessionScope!.Exec(initScript);
-                });
-
-                IsInitialized = true;
-                ReportProgress("Python environment initialized successfully");
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Failed to initialize Python environment: {ex.Message}", ex);
-            }
+            return ConfiguredVirtualEnvironment;
         }
         #endregion
 
-        #region Core Helper Methods
+        #region Session-based Execution Helpers
         /// <summary>
         /// Executes code safely within the session context
         /// </summary>
@@ -310,44 +340,26 @@ except Exception as e:
                 }
                 catch (PythonException pythonEx)
                 {
+                    Editor?.AddLogMessage("PythonBaseViewModel", $"Python execution error: {pythonEx.Message}", DateTime.Now, -1, null, Errors.Failed);
                     throw new InvalidOperationException($"Python execution error: {pythonEx.Message}", pythonEx);
                 }
                 catch (Exception ex)
                 {
+                    Editor?.AddLogMessage("PythonBaseViewModel", $"Session execution error: {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
                     throw new InvalidOperationException($"Session execution error: {ex.Message}", ex);
                 }
             }
         }
 
         /// <summary>
-        /// Executes code safely within the session context and returns a result
+        /// Executes Python code using the session scope instead of manual GIL management
         /// </summary>
-        /// <typeparam name="T">Type of result to return</typeparam>
-        /// <param name="func">Function to execute in session</param>
-        /// <returns>Result of the function</returns>
-        protected T ExecuteInSession<T>(Func<T> func)
+        protected bool ExecuteInSession(string script)
         {
-            if (_isDisposed)
-                throw new ObjectDisposedException(nameof(PythonBaseViewModel));
+            if (!IsSessionConfigured || SessionInfo == null)
+                return false;
 
-            if (!IsSessionConfigured)
-                throw new InvalidOperationException("Session must be configured before executing operations");
-
-            lock (_operationLock)
-            {
-                try
-                {
-                    return func();
-                }
-                catch (PythonException pythonEx)
-                {
-                    throw new InvalidOperationException($"Python execution error: {pythonEx.Message}", pythonEx);
-                }
-                catch (Exception ex)
-                {
-                    throw new InvalidOperationException($"Session execution error: {ex.Message}", ex);
-                }
-            }
+            return PythonRuntime.ExecuteManager.RunPythonScript(script, null, SessionInfo);
         }
 
         /// <summary>
@@ -363,164 +375,172 @@ except Exception as e:
 
             try
             {
-                var result = await PythonRuntime.ExecuteManager.RunCode(ConfiguredSession!, code, Progress, cancellationToken);
-                return result.Flag == Errors.Ok;
+                var result = await PythonRuntime.ExecuteManager.ExecuteCodeAsync(code, SessionInfo, 120, Progress);
+                return result.Success;
+            }
+            catch (OperationCanceledException)
+            {
+                return false;
             }
             catch (Exception ex)
             {
-                ReportError($"Async execution error: {ex.Message}");
+                Editor?.AddLogMessage("PythonBaseViewModel", $"Async execution error: {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Gets string array from Python session using ExecuteManager
+        /// </summary>
+        protected string[] GetStringArrayFromSession(string variableName)
+        {
+            if (!IsSessionConfigured || SessionInfo == null)
+                return Array.Empty<string>();
+
+            try
+            {
+                string script = $@"
+import json
+if '{variableName}' in globals():
+    result_json = json.dumps({variableName})
+else:
+    result_json = '[]'
+";
+                ExecuteInSession(script);
+                
+                var jsonResult = PythonRuntime.ExecuteManager.RunPythonCodeAndGetOutput(null, "result_json", SessionInfo);
+                
+                if (!string.IsNullOrEmpty(jsonResult?.ToString()))
+                {
+                    var cleanJson = jsonResult.ToString().Trim('"').Replace("\\\"", "\"");
+                    var result = System.Text.Json.JsonSerializer.Deserialize<string[]>(cleanJson);
+                    return result ?? Array.Empty<string>();
+                }
+            }
+            catch (Exception ex)
+            {
+                Editor?.AddLogMessage("PythonBaseViewModel", $"Failed to get string array from session: {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
+            }
+
+            return Array.Empty<string>();
+        }
+
+        /// <summary>
+        /// Gets data from Python session scope without manual GIL management
+        /// </summary>
+        protected T GetFromSessionScope<T>(string variableName, T defaultValue = default(T))
+        {
+            if (!IsSessionConfigured || SessionInfo == null)
+                return defaultValue;
+
+            try
+            {
+                string script = $@"
+import json
+if '{variableName}' in globals():
+    if isinstance({variableName}, (list, dict, str, int, float, bool)):
+        result_json = json.dumps({variableName})
+    else:
+        result_json = json.dumps(str({variableName}))
+else:
+    result_json = 'null'
+";
+                ExecuteInSession(script);
+                
+                var jsonResult = PythonRuntime.ExecuteManager.RunPythonCodeAndGetOutput(null, "result_json", SessionInfo);
+                
+                if (!string.IsNullOrEmpty(jsonResult?.ToString()))
+                {
+                    var cleanJson = jsonResult.ToString().Trim('"').Replace("\\\"", "\"");
+                    if (cleanJson != "null")
+                    {
+                        var result = System.Text.Json.JsonSerializer.Deserialize<T>(cleanJson);
+                        return result;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Editor?.AddLogMessage("PythonBaseViewModel", $"Failed to get data from session scope: {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
+            }
+
+            return defaultValue;
+        }
+        #endregion
+
+        #region Python Module Management
+        public virtual void ImportPythonModule(string moduleName)
+        {
+            if (!IsSessionConfigured)
+                throw new InvalidOperationException("Session must be configured before importing modules");
+
+            string script = $"import {moduleName}";
+            ExecuteInSession(script);
         }
         #endregion
 
         #region Utility Methods
-        public string GetAlgorithimName(string algorithim)
-        {
-            return Enum.GetName(typeof(MachineLearningAlgorithm), algorithim) ?? algorithim;
-        }
-
-        public virtual void ImportPythonModule(string moduleName)
-        {
-            if (!IsSessionConfigured)
-            {
-                ReportError("Session must be configured before importing modules");
-                return;
-            }
-
-            try
-            {
-                string script = $"import {moduleName}";
-                ExecuteInSession(() => SessionScope!.Exec(script));
-                ReportProgress($"Successfully imported module: {moduleName}");
-            }
-            catch (Exception ex)
-            {
-                ReportError($"Failed to import module {moduleName}: {ex.Message}");
-            }
-        }
-
-        public void SendMessege(string messege = null)
-        {
-            if (Progress != null)
-            {
-                PassedArgs ps = new PassedArgs 
-                { 
-                    EventType = "Update", 
-                    Messege = messege, 
-                    ParameterString1 = Editor?.ErrorObject?.Message 
-                };
-                Progress.Report(ps);
-            }
-        }
-
         public async Task RefreshPythonInstallationsAsync()
         {
-            IsBusy = true;
-            try
+            await Task.Run(() =>
             {
-                await Task.Run(() => {
-                    PythonRuntime.RefreshPythonInstalltions();
-                });
-
-                // Update any UI properties
-                OnPropertyChanged(nameof(AvailablePythonInstallations));
-                ReportProgress("Python installations refreshed");
-            }
-            catch (Exception ex)
-            {
-                ReportError($"Failed to refresh Python installations: {ex.Message}");
-            }
-            finally
-            {
-                IsBusy = false;
-            }
+                try
+                {
+                    PythonRuntime?.RefreshPythonInstalltions();
+                }
+                catch (Exception ex)
+                {
+                    Editor?.AddLogMessage("PythonBaseViewModel", $"Failed to refresh Python installations: {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
+                }
+            });
         }
 
         public async Task<bool> AddCustomPythonInstallation(string path)
         {
-            try
-            {
-                var report = await Task.Run(() => PythonEnvironmentDiagnostics.RunFullDiagnostics(path));
-
-                if (report.PythonFound)
-                {
-                    var config = PythonRunTimeDiagnostics.GetPythonConfig(path);
-                    if (config != null)
-                    {
-                        PythonRuntime.PythonInstallations.Add(config);
-                        PythonRuntime.SaveConfig();
-                        ReportProgress($"Added custom Python installation: {path}");
-                        return true;
-                    }
-                }
-
-                ReportError($"Failed to add custom Python installation: {path}");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                ReportError($"Error adding custom Python installation: {ex.Message}");
-                return false;
-            }
-        }
-        #endregion
-
-        #region Logging and Error Handling
-        protected void ReportProgress(string message)
-        {
-            Progress?.Report(new PassedArgs
-            {
-                Messege = message,
-                EventType = "Info"
-            });
-
-            Editor?.AddLogMessage("Python ML", message, DateTime.Now, -1, null, Errors.Ok);
-        }
-
-        protected void ReportError(string message)
-        {
-            Progress?.Report(new PassedArgs
-            {
-                Messege = message,
-                EventType = "Error",
-                Flag = Errors.Failed
-            });
-
-            Editor?.AddLogMessage("Python ML", message, DateTime.Now, -1, null, Errors.Failed);
-        }
-        #endregion
-
-        #region IDisposable Implementation
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_isDisposed && disposing)
+            return await Task.Run(() =>
             {
                 try
                 {
-                    TokenSource?.Cancel();
-                    TokenSource?.Dispose();
-                    
-                    // Clean up session resources if needed
-                    if (ConfiguredSession != null && SessionManager != null)
-                    {
-                        SessionManager.CleanupSession(ConfiguredSession);
-                    }
+                    var runtime = PythonRuntime?.Initialize(path);
+                    return runtime != null;
                 }
                 catch (Exception ex)
                 {
-                    // Log disposal errors but don't throw
-                    Console.WriteLine($"Warning during disposal: {ex.Message}");
+                    Editor?.AddLogMessage("PythonBaseViewModel", $"Failed to add custom Python installation: {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
+                    return false;
                 }
-                finally
+            });
+        }
+        #endregion
+
+        #region Disposal
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_isDisposed)
+            {
+                if (disposing)
                 {
-                    _isDisposed = true;
-                    disposedValue = true;
+                    try
+                    {
+                        TokenSource?.Cancel();
+                        TokenSource?.Dispose();
+                        
+                        // Clean up session resources
+                        if (ConfiguredSession != null)
+                        {
+                            SessionManager?.CleanupSession(ConfiguredSession);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Editor?.AddLogMessage("PythonBaseViewModel", $"Error during disposal: {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
+                    }
                 }
+                _isDisposed = true;
             }
         }
 
-        public virtual void Dispose()
+        public void Dispose()
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
