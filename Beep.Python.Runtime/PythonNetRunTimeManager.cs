@@ -12,6 +12,7 @@ using TheTechIdea.Beep.Addin;
 using TheTechIdea.Beep.Editor;
 using TheTechIdea.Beep.Container.Services;
 using Beep.Python.RuntimeEngine.Helpers;
+using Environment = System.Environment;
 
 namespace Beep.Python.RuntimeEngine
 {

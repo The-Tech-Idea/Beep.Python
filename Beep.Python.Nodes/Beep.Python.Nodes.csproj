@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
+		<TargetFrameworks> net8.0;net9.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<LangVersion>Latest</LangVersion>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -43,8 +43,9 @@
 		</None>
 	</ItemGroup>
 	<ItemGroup>
-	  <PackageReference Include="Beep.Python.Model" Version="1.0.16" />
+	  <PackageReference Include="Beep.Python.Model" Version="1.0.17" />
 	  <PackageReference Include="Beep.Python.Runtime.PythonNet" Version="1.0.43" />
+	  <PackageReference Include="System.Text.Json" Version="9.0.7" />
 	  <PackageReference Include="TheTechIdea.Beep.Vis.Modules" Version="2.0.7" />
 	</ItemGroup>
 </Project>

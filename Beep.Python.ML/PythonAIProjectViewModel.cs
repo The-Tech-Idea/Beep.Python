@@ -15,11 +15,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 using TheTechIdea.Beep.Container.Services;
-using Beep.Python.RuntimeEngine.Helpers;
+using Beep.Python.ML.Helpers;
 
-namespace Beep.Python.RuntimeEngine.ViewModels
+namespace Beep.Python.ML
 {
-    public partial class PythonAIProjectViewModel:PythonBaseViewModel, IPythonAIProjectViewModel
+    public partial class PythonAIProjectViewModel : PythonBaseViewModel, IPythonAIProjectViewModel
     {
         public bool IsDataReady { get; private set; }
         public bool IsTrainingReady { get; private set; }
@@ -56,20 +56,19 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         public UnitofWork<PythonProject> UnitofWork { get; set; }
         IPythonMLManager PythonMLManager;
     
+        // Cast to PythonMLManager to access assistants
+        private PythonMLManager MLManager => PythonMLManager as PythonMLManager;
 
         public PythonAIProjectViewModel(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager, PythonSessionInfo sessionInfo, IPythonMLManager pythonMLmanager) : base(beepservice, pythonRuntimeManager, sessionInfo)
         {
-
-
-            PythonMLManager=pythonMLmanager;
-
+            PythonMLManager = pythonMLmanager;
         }
        
         public bool InitPythonMLModule()
         {
             try
             {
-              if(PythonMLManager==null) { return false; };
+                if(PythonMLManager == null) { return false; };
                 PythonMLManager.ImportPythonModule("numpy as np");
                 PythonMLManager.ImportPythonModule("pandas as pd");
                 IsInit = true;
@@ -77,22 +76,21 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             }
             catch (Exception ex)
             {
-                Editor.AddLogMessage("Beep", $"Error in Python Init - {ex.Message}", DateTime.Now, -1, null,    Errors.Failed);
+                Editor.AddLogMessage("Beep", $"Error in Python Init - {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
                 IsInit = false;
                 return false;
             }
-
         }
+        
         public void initialize()
         {
-           
-            UnitofWork = new UnitofWork<PythonProject>(Editor,true,new ObservableBindingList<PythonProject>() { }, "ProjectGuidValue");
-            UnitofWork.PrimaryKey= "ProjectGuidValue";
+            UnitofWork = new UnitofWork<PythonProject>(Editor, true, new ObservableBindingList<PythonProject>() { }, "ProjectGuidValue");
+            UnitofWork.PrimaryKey = "ProjectGuidValue";
             ListofAlgorithims = new List<LOVData>();
 
             LoadProjects();
-            
         }
+        
         public void LoadProjects()
         {
             List<PythonProject> ls = Editor.ConfigEditor.JsonLoader.DeserializeObject<PythonProject>(Path.Combine(PythonDatafolder, "Projects.json"));
@@ -103,10 +101,12 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             else
                 UnitofWork.Units = new ObservableBindingList<PythonProject>();
         }
+        
         public void SaveProject()
         {
             Editor.ConfigEditor.JsonLoader.Serialize(Path.Combine(PythonDatafolder, "Projects.json"), UnitofWork.Units);
         }
+        
         public void Get(string currentEntity)
         {
             UnitofWork.Get(new List<TheTechIdea.Beep.Report.AppFilter>() { new TheTechIdea.Beep.Report.AppFilter() { FieldName = "ProjectName", Operator = "=", FilterValue = $"{currentEntity}" } });
@@ -114,8 +114,8 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             {
                 CurrentProject = UnitofWork.Units[0];
             }
-            
         }
+        
         public bool CreateProject(string projectname)
         {
             try
@@ -126,21 +126,31 @@ namespace Beep.Python.RuntimeEngine.ViewModels
                 UnitofWork.Units.Add(pythonProject);
                 CurrentProject = UnitofWork.Units[UnitofWork.Getindex(pythonProject)];
                 CreateProjectFolder(projectname);
-
             }
             catch (Exception ex)
             {
                 Editor.AddLogMessage("Beep", $"Error in Create Project - {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
                 return false;
             }
-         return true;
+            return true;
         }
+        
         public bool SetupTraining()
         {
             try
             {
                 InitPythonMLModule();
-                CurrentProject.FeaturesArray = PythonMLManager.SplitData(CurrentProject.DataFile, CurrentProject.Splitratio, GetTrainingFileString(), GetTestFileString());
+                
+                // Use the Utilities assistant for SplitData
+                if (MLManager != null)
+                {
+                    CurrentProject.FeaturesArray = MLManager.Utilities.SplitData(CurrentProject.DataFile, CurrentProject.Splitratio, GetTrainingFileString(), GetTestFileString());
+                }
+                else
+                {
+                    throw new InvalidOperationException("MLManager is not available or not cast to PythonMLManager");
+                }
+                
                 CleanData();
                 GetFeatures();
                 IsDataReady = true;
@@ -164,6 +174,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
                 return false;
             }
         }
+        
         public bool Train()
         {
             try
@@ -174,9 +185,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
                     IsModelTrained = true;
                     IsModelEvaluated = false;
                     IsModelPredicted = false;
-                   
                 }
-
             }
             catch (Exception ex)
             {
@@ -190,6 +199,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
 
             return true;
         }
+        
         public bool Eval()
         {
             try
@@ -209,14 +219,10 @@ namespace Beep.Python.RuntimeEngine.ViewModels
                         F1Accuracy = Math.Round(PredictScore.Item2, 3);
                         EvalScore = Math.Round(PredictScore.Item1, 3);
                     }
-                    // Tuple<double, double> PredictScore = PythonMLManager.GetModelClassificationScore(CurrentAlgorithim.ALGORITHIM);
-                    // F1Accuracy = Math.Round(PredictScore.Item2, 3);
-                    //  EvalScore = Math.Round(PredictScore.Item1, 3);
                     IsModelEvaluated = true;
                     IsModelPredicted = false;
                   
                 }
-
             }
             catch (Exception ex)
             {
@@ -229,6 +235,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
 
             return true;
         }
+        
         public bool Predict()
         {
             try
@@ -247,8 +254,6 @@ namespace Beep.Python.RuntimeEngine.ViewModels
 
                     IsModelPredicted = true;
                 }
-
-
             }
             catch (Exception ex)
             {
@@ -259,15 +264,18 @@ namespace Beep.Python.RuntimeEngine.ViewModels
 
             return true;
         }
+        
         #region "Utility Functions"    
         public string GetTrainingFileString()
         {
             return Path.Combine(CurrentProjectFolder, "train_data.csv");
         }
+        
         public string GetTestFileString()
         {
             return Path.Combine(CurrentProjectFolder, "test_data.csv");
         }
+        
         public Dictionary<string, object> GetParameters()
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
@@ -277,16 +285,24 @@ namespace Beep.Python.RuntimeEngine.ViewModels
                 {
                     parameters.Add(item.PARAMETERNAME, item.PARAMETERVALUE);
                 }
-
             }
             return parameters;
         }
+        
         public bool CleanData()
         {
             try
             {
-                PythonMLManager.RemoveSpecialCharacters("train_data");
-                PythonMLManager.RemoveSpecialCharacters("test_data");
+                // Use the DataPreprocessing assistant for RemoveSpecialCharacters
+                if (MLManager != null)
+                {
+                    MLManager.DataPreprocessing.RemoveSpecialCharacters("train_data");
+                    MLManager.DataPreprocessing.RemoveSpecialCharacters("test_data");
+                }
+                else
+                {
+                    throw new InvalidOperationException("MLManager is not available or not cast to PythonMLManager");
+                }
                 return true;
             }
             catch (Exception ex)
@@ -295,6 +311,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
                 return false;
             }
         }
+        
         private bool CreateProjectFolder(string projectname)
         {
             try
@@ -304,7 +321,6 @@ namespace Beep.Python.RuntimeEngine.ViewModels
                 {
                     Directory.CreateDirectory(projectfolder);
                 }
-
             }
             catch (Exception ex)
             {
@@ -313,6 +329,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             }
             return true;
         }
+        
         public void CreateParameters()
         {
             foreach (var item in ParameterDictionaryForAlgorithms.Where(p => p.Algorithm.ToString() == CurrentProject.Algorithm))
@@ -322,14 +339,13 @@ namespace Beep.Python.RuntimeEngine.ViewModels
                     PythonalgorithmParams doc = new PythonalgorithmParams();
                     doc.ALGORITHIM = CurrentProject.Algorithm;
                     doc.PARAMETERNAME = item.ParameterName;
-
                     doc.PARAMETERDESCRIPTION = item.Description + $" - example : ({item.Example})";
                     doc.ROW_CREATE_DATE = DateTime.Now;
                     CurrentProject.PythonAlgorithmParams.Add(doc);
                 }
-
             }
         }
+        
         public bool GetFeatures()
         {
             try
@@ -342,21 +358,14 @@ namespace Beep.Python.RuntimeEngine.ViewModels
                         LOVData x = new LOVData() { ID = item, DisplayValue = item };
                         CurrentProject.Features.Add(x);
                     }
-
                 }
-                // IsFeaturesReady = true;
+                return true;
             }
             catch (Exception ex)
             {
-                //   IsFeaturesReady = false;
                 return false;
             }
-
-            return true;
         }
-
-       
         #endregion
-
     }
 }

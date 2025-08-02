@@ -9,7 +9,8 @@ using TheTechIdea.Beep.ConfigUtil;
 using TheTechIdea.Beep.Addin;
 using TheTechIdea.Beep.Editor;
 using TheTechIdea.Beep.Container.Services;
-using Beep.Python.RuntimeEngine.Helpers;
+using Beep.Python.ML.Helpers;
+
 
 namespace Beep.Python.ML
 {
@@ -89,7 +90,7 @@ namespace Beep.Python.ML
             Beepservice = beepservice ?? throw new ArgumentNullException(nameof(beepservice));
             PythonRuntime = pythonRuntimeManager ?? throw new ArgumentNullException(nameof(pythonRuntimeManager));
             SessionInfo = sessionInfo ?? throw new ArgumentNullException(nameof(sessionInfo));
-
+           
             Editor = beepservice.DMEEditor;
             Progress = beepservice.DMEEditor.progress;
             

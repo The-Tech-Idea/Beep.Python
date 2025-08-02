@@ -170,7 +170,7 @@ namespace Beep.Python.RuntimeEngine.Helpers
         /// <returns>Full path to the AI folder.</returns>
         public static string SetAiFolderPath(IDMEEditor DMEditor)
         {
-            string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string documentsPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
             string aiFolderPath = Path.Combine(documentsPath, "AI");
 
             if (!Directory.Exists(aiFolderPath))

@@ -359,7 +359,7 @@ namespace Beep.Python.RuntimeEngine
             }
 
             // Try to find conda in PATH
-            var pathDirs = Environment.GetEnvironmentVariable("PATH").Split(Path.PathSeparator);
+            var pathDirs = System.Environment.GetEnvironmentVariable("PATH").Split(Path.PathSeparator);
             foreach (var dir in pathDirs)
             {
                 if (string.IsNullOrEmpty(dir)) continue;
@@ -780,7 +780,7 @@ namespace Beep.Python.RuntimeEngine
 
             // Single user mode conditions
             if (env.Name.Equals("SingleUser", StringComparison.OrdinalIgnoreCase) ||
-                env.CreatedBy == Environment.UserName)
+                env.CreatedBy == System.Environment.UserName)
             {
                 return PythonEngineMode.SingleUser;
             }

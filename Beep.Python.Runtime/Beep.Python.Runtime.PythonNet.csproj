@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
+    <TargetFrameworks> net8.0;net9.0</TargetFrameworks>
 	  <LangVersion>latest</LangVersion>
 	  <RootNamespace>Beep.Python.RuntimeEngine</RootNamespace>
 	  <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -36,12 +36,12 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Autofac" Version="8.3.0" />
-    <PackageReference Include="Beep.Python.Model" Version="1.0.16" />
+    <PackageReference Include="Beep.Python.Model" Version="1.0.17" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.7" />
     <PackageReference Include="pythonnet" Version="3.0.5" />
     <PackageReference Include="TheTechIdea.Beep.Container.Model" Version="1.0.0.47" />
-    <PackageReference Include="TheTechIdea.Beep.DataManagementEngine" Version="2.0.33" />
+    <PackageReference Include="TheTechIdea.Beep.DataManagementEngine" Version="2.0.34" />
   </ItemGroup>
 
 

@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
+    <TargetFrameworks> net8.0;net9.0</TargetFrameworks>
     <LangVersion>13.0</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Beep.Python.ML</PackageId>
-    <Version>1.0.44</Version>
+    <Version>1.0.45</Version>
     <Authors>The Tech Idea</Authors>
     <Description>Enhanced Python machine learning integration for .NET with session management, virtual environment support, and comprehensive ML operations.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -18,7 +18,8 @@
 
   <ItemGroup>
     <PackageReference Include="Beep.Python.Runtime.PythonNet" Version="1.0.43" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="System.Text.Json" Version="9.0.7" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,6 +40,5 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Extensions\" />
-    <Folder Include="Helpers\" />
   </ItemGroup>
 </Project>

@@ -1,5 +1,4 @@
-﻿using Beep.Python.Model;
-using Beep.Python.RuntimeEngine.Helpers;
+using Beep.Python.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +10,7 @@ using TheTechIdea.Beep.DataBase;
 using TheTechIdea.Beep.Editor;
 using TheTechIdea.Beep.Vis;
 using TheTechIdea.Beep.Vis.Modules;
+using SystemEnvironment = System.Environment;
 
 namespace Beep.Python.Nodes
 {
@@ -54,6 +54,7 @@ namespace Beep.Python.Nodes
         public string BranchClass { get ; set ; } = "Python Runtime";
 
         public PythonRunTime PythonRunTime { get; set; } = new PythonRunTime();
+        
         public IBranch CreateCategoryNode(CategoryFolder p)
         {
             throw new NotImplementedException();
@@ -63,41 +64,56 @@ namespace Beep.Python.Nodes
         {
             try
             {
-                if(PythonRunTime.PackageType== PackageType.conda)
+                // Create virtual environment nodes - using the VirtualEnvironments collection from PythonRunTime
+                if (PythonRunTime?.VirtualEnvironments != null)
                 {
-                    PythonRunTime.VirtualEnvironments = PythonEnvironmentDiagnostics.GetCondaEnvironmentsFromRuntime(PythonRunTime);
-                }
-                else
-                     PythonRunTime.VirtualEnvironments = PythonEnvironmentDiagnostics.GetPythonEnvironmentsFromRuntime(PythonRunTime);
-                foreach (var runtime in PythonRunTime.VirtualEnvironments)
-                {
-                    // Create a new branch for each runtime
-                    // if not already exists
-                    if (runtime == null || string.IsNullOrEmpty(runtime.ID) || string.IsNullOrEmpty(runtime.RuntimePath))
-                        continue;
-                    PythonVirtualEnvNode node = ChildBranchs.FirstOrDefault(n => n is PythonVirtualEnvNode && n.GuidID == runtime.ID) as PythonVirtualEnvNode;
-                    if (node == null)
+                    foreach (var runtimeEnv in PythonRunTime.VirtualEnvironments)
                     {
-                        node = new PythonVirtualEnvNode();
-                        node.GuidID = runtime.ID;
-                        node.DMEEditor = DMEEditor;
-                        node.TreeEditor = TreeEditor;
-                        node.ParentBranch = this;
-                        node.ID = TreeEditor.SeqID;
-                        node.PythonRunTime = PythonRunTime;
-                        node.VirtualEnvironment = runtime;
-                        node.BranchText = runtime.RuntimePath;
-                        //   ChildBranchs.Add(node);
+                        // Create a new branch for each virtual environment
+                        // if not already exists
+                        if (runtimeEnv == null || string.IsNullOrEmpty(runtimeEnv.ID) || string.IsNullOrEmpty(runtimeEnv.RuntimePath))
+                            continue;
+                            
+                        PythonVirtualEnvNode node = ChildBranchs.FirstOrDefault(n => n is PythonVirtualEnvNode && n.GuidID == runtimeEnv.ID) as PythonVirtualEnvNode;
+                        if (node == null)
+                        {
+                            node = new PythonVirtualEnvNode();
+                            node.GuidID = runtimeEnv.ID;
+                            node.DMEEditor = DMEEditor;
+                            node.TreeEditor = TreeEditor;
+                            node.ParentBranch = this;
+                            node.ID = TreeEditor.SeqID;
+                            node.PythonRunTime = PythonRunTime;
+                            
+                            // Convert PythonRunTime to PythonVirtualEnvironment
+                            node.VirtualEnvironment = new PythonVirtualEnvironment
+                            {
+                                ID = runtimeEnv.ID,
+                                Name = runtimeEnv.Name ?? "Virtual Environment",
+                                Path = runtimeEnv.RuntimePath,
+                                PythonConfigID = PythonRunTime.ID,
+                                BaseInterpreterPath = PythonRunTime.RuntimePath,
+                                PythonVersion = runtimeEnv.PythonVersion,
+                                PythonBinary = runtimeEnv.Binary,
+                                CreatedBy = "system",
+                                CreatedOn = DateTime.Now
+                            };
+                            
+                            node.BranchText = runtimeEnv.Name ?? runtimeEnv.RuntimePath;
 
-                        //  TreeEditor.AddBranchToParentInBranchsOnly(this, node);
-                        TreeEditor.Treebranchhandler.AddBranch(this, node);
-                       
+                            TreeEditor.Treebranchhandler.AddBranch(this, node);
+                        }
                     }
                 }
+                else
+                {
+                    // Log that no virtual environments are available
+                    DMEEditor.AddLogMessage("Info", "No virtual environments found for this Python runtime", DateTime.Now, 0, null, Errors.Ok);
+                }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                DMEEditor.AddLogMessage("Error", $"Could not create child nodes: {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
                 throw;
             }
             return DMEEditor.ErrorObject;
@@ -116,7 +132,6 @@ namespace Beep.Python.Nodes
             }
             catch (Exception)
             {
-
                 throw;
             }
             return DMEEditor.ErrorObject;
@@ -130,7 +145,6 @@ namespace Beep.Python.Nodes
             }
             catch (Exception)
             {
-
                 throw;
             }
             return DMEEditor.ErrorObject;
@@ -144,7 +158,6 @@ namespace Beep.Python.Nodes
             }
             catch (Exception)
             {
-
                 throw;
             }
             return DMEEditor.ErrorObject;

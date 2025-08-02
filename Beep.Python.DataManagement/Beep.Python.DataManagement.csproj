@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- Target .NET 8 for optimal performance and modern features -->
-    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
+    <TargetFrameworks> net8.0;net9.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
@@ -44,6 +44,7 @@
   <!-- Core dependencies -->
   <ItemGroup>
     <PackageReference Include="Beep.Python.Runtime.PythonNet" Version="1.0.43" />
+    <PackageReference Include="System.Text.Json" Version="9.0.7" />
   </ItemGroup>
 
   <!-- Project references -->

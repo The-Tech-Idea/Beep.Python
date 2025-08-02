@@ -753,7 +753,7 @@ namespace Beep.Python.RuntimeEngine
         /// <summary>
         /// Maximum number of concurrent sessions allowed.
         /// </summary>
-        public int MaxConcurrentSessions { get; set; } = Environment.ProcessorCount * 2;
+        public int MaxConcurrentSessions { get; set; } = System.Environment.ProcessorCount * 2;
 
         /// <summary>
         /// How often to run the session cleanup process.
