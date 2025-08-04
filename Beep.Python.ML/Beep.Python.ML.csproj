@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Beep.Python.ML</PackageId>
-    <Version>1.0.45</Version>
+    <Version>1.0.46</Version>
     <Authors>The Tech Idea</Authors>
     <Description>Enhanced Python machine learning integration for .NET with session management, virtual environment support, and comprehensive ML operations.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -17,13 +17,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Beep.Python.Runtime.PythonNet" Version="1.0.43" />
+    <PackageReference Include="Beep.Python.Model" Version="1.0.17" />
+    <PackageReference Include="Beep.Python.Runtime.PythonNet" Version="1.0.44" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="System.Text.Json" Version="9.0.7" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Beep.Python.Model\Beep.Python.Model.csproj" />
+    <PackageReference Include="TheTechIdea.Beep.Container.Model" Version="1.0.0.48" />
+    <PackageReference Include="TheTechIdea.Beep.DataManagementModels" Version="2.0.67" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Copy SourceFiles="$(TargetDir)$(PackageId).dll" DestinationFolder="$(ProjectDir)..\..\outputDLL\$(PackageId)\$(TargetFramework)" SkipUnchangedFiles="false" />

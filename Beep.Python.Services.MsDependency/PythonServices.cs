@@ -7,7 +7,8 @@ using TheTechIdea.Beep.Editor;
 using TheTechIdea.Beep.Container;
 using System;
 using Beep.Python.RuntimeEngine.PackageManagement;
-using Beep.Python.RuntimeEngine.ML;
+using Beep.Python.RuntimeEngine;
+using Beep.Python.ML;
 
 namespace Beep.Python.RuntimeEngine.Services
 {
@@ -52,7 +53,7 @@ namespace Beep.Python.RuntimeEngine.Services
             services.AddSingleton<IPythonPackageManager, PythonPackageManager>();
             services.AddSingleton<IPythonMLManager, PythonMLManager>();
             services.AddSingleton<IPythonAIProjectViewModel, PythonAIProjectViewModel>();
-            services.AddSingleton<IPythonModelEvaluationGraphsViewModel, PythonModelEvaluationGraphsViewModel>();
+           
             CreateFolder();
             return services;
         }
@@ -109,13 +110,7 @@ namespace Beep.Python.RuntimeEngine.Services
 
             return services;
         }
-        public static IServiceCollection RegisterPythonModelEvaluationGraphsService(this IServiceCollection services)
-        {
-
-            services.AddSingleton<IPythonModelEvaluationGraphsViewModel, PythonModelEvaluationGraphsViewModel>();
-
-            return services;
-        }
+      
 
         #endregion "Add Services"
         #region "Get Services"

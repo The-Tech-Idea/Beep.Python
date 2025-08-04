@@ -29,8 +29,11 @@
 	</ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Beep.Python.Model" Version="1.0.16" />
-    <PackageReference Include="Beep.Python.Runtime.PythonNet" Version="1.0.43" />
+    <PackageReference Include="Beep.Python.DataManagement" Version="1.0.44" />
+    <PackageReference Include="Beep.Python.ML" Version="1.0.46" />
+    <PackageReference Include="Beep.Python.Model" Version="1.0.17" />
+    <PackageReference Include="Beep.Python.PackageManagement" Version="1.0.16" />
+    <PackageReference Include="Beep.Python.Runtime.PythonNet" Version="1.0.44" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.7" />
     <PackageReference Include="System.Text.Json" Version="9.0.7" />
   </ItemGroup>

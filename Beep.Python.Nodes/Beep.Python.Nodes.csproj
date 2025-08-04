@@ -44,7 +44,7 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <PackageReference Include="Beep.Python.Model" Version="1.0.17" />
-	  <PackageReference Include="Beep.Python.Runtime.PythonNet" Version="1.0.43" />
+	  <PackageReference Include="Beep.Python.Runtime.PythonNet" Version="1.0.44" />
 	  <PackageReference Include="System.Text.Json" Version="9.0.7" />
 	  <PackageReference Include="TheTechIdea.Beep.Vis.Modules" Version="2.0.7" />
 	</ItemGroup>

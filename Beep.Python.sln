@@ -17,6 +17,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beep.Python.PackageManageme
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beep.Python.ML", "Beep.Python.ML\Beep.Python.ML.csproj", "{AEF798CC-15F3-4382-B25A-6A1651A1D77A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beep.Python.Services.AutoFac", "Beep.Python.Services.AutoFac\Beep.Python.Services.AutoFac.csproj", "{FDDD10E4-E8EC-5CBA-0E89-8299BF4B9B38}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beep.Python.Services.MsDependency", "Beep.Python.Services.MsDependency\Beep.Python.Services.MsDependency.csproj", "{48F2726C-8F33-6253-38E1-104D3AE7B222}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beep.Python.Winform", "Beep.Python.Winform\Beep.Python.Winform.csproj", "{D2197B3F-A714-4B94-A512-103CCB5E30EE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +87,30 @@ Global
 		{AEF798CC-15F3-4382-B25A-6A1651A1D77A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AEF798CC-15F3-4382-B25A-6A1651A1D77A}.Release|x64.ActiveCfg = Release|Any CPU
 		{AEF798CC-15F3-4382-B25A-6A1651A1D77A}.Release|x64.Build.0 = Release|Any CPU
+		{FDDD10E4-E8EC-5CBA-0E89-8299BF4B9B38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDDD10E4-E8EC-5CBA-0E89-8299BF4B9B38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDDD10E4-E8EC-5CBA-0E89-8299BF4B9B38}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FDDD10E4-E8EC-5CBA-0E89-8299BF4B9B38}.Debug|x64.Build.0 = Debug|Any CPU
+		{FDDD10E4-E8EC-5CBA-0E89-8299BF4B9B38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDDD10E4-E8EC-5CBA-0E89-8299BF4B9B38}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDDD10E4-E8EC-5CBA-0E89-8299BF4B9B38}.Release|x64.ActiveCfg = Release|Any CPU
+		{FDDD10E4-E8EC-5CBA-0E89-8299BF4B9B38}.Release|x64.Build.0 = Release|Any CPU
+		{48F2726C-8F33-6253-38E1-104D3AE7B222}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48F2726C-8F33-6253-38E1-104D3AE7B222}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48F2726C-8F33-6253-38E1-104D3AE7B222}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{48F2726C-8F33-6253-38E1-104D3AE7B222}.Debug|x64.Build.0 = Debug|Any CPU
+		{48F2726C-8F33-6253-38E1-104D3AE7B222}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48F2726C-8F33-6253-38E1-104D3AE7B222}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48F2726C-8F33-6253-38E1-104D3AE7B222}.Release|x64.ActiveCfg = Release|Any CPU
+		{48F2726C-8F33-6253-38E1-104D3AE7B222}.Release|x64.Build.0 = Release|Any CPU
+		{D2197B3F-A714-4B94-A512-103CCB5E30EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2197B3F-A714-4B94-A512-103CCB5E30EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2197B3F-A714-4B94-A512-103CCB5E30EE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D2197B3F-A714-4B94-A512-103CCB5E30EE}.Debug|x64.Build.0 = Debug|Any CPU
+		{D2197B3F-A714-4B94-A512-103CCB5E30EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2197B3F-A714-4B94-A512-103CCB5E30EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2197B3F-A714-4B94-A512-103CCB5E30EE}.Release|x64.ActiveCfg = Release|Any CPU
+		{D2197B3F-A714-4B94-A512-103CCB5E30EE}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

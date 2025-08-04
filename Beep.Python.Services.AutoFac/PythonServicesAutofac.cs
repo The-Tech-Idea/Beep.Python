@@ -4,7 +4,7 @@ using Beep.Python.RuntimeEngine.ViewModels;
 using TheTechIdea.Beep.Editor;
 using System;
 using Beep.Python.RuntimeEngine.PackageManagement;
-using Beep.Python.RuntimeEngine.ML;
+using Beep.Python.ML;
 
 namespace Beep.Python.RuntimeEngine.Services
 {
@@ -82,8 +82,7 @@ namespace Beep.Python.RuntimeEngine.Services
             builder.RegisterType<PythonPackageManager>().As<IPythonPackageManager>().SingleInstance();
             builder.RegisterType<PythonMLManager>().As<IPythonMLManager>().SingleInstance();
             builder.RegisterType<PythonAIProjectViewModel>().As<IPythonAIProjectViewModel>().SingleInstance();
-            builder.RegisterType<PythonModelEvaluationGraphsViewModel>().As<IPythonModelEvaluationGraphsViewModel>().SingleInstance();
-
+       
             CreateFolder();
             return builder;
         }
@@ -157,16 +156,7 @@ namespace Beep.Python.RuntimeEngine.Services
             return builder;
         }
 
-        /// <summary>
-        /// Registers the Python model evaluation graphs service.
-        /// </summary>
-        /// <param name="builder">The Autofac container builder.</param>
-        /// <returns>The container builder for method chaining.</returns>
-        public static ContainerBuilder RegisterPythonModelEvaluationGraphsService(this ContainerBuilder builder)
-        {
-            builder.RegisterType<PythonModelEvaluationGraphsViewModel>().As<IPythonModelEvaluationGraphsViewModel>().SingleInstance();
-            return builder;
-        }
+       
 
         #endregion "Add Services"
 
