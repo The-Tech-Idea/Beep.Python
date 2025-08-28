@@ -10,7 +10,7 @@ using Beep.Python.RuntimeEngine.PackageManagement;
 using Beep.Python.RuntimeEngine;
 using Beep.Python.ML;
 
-namespace Beep.Python.RuntimeEngine.Services
+namespace Beep.Python.Services
 {
     public static class PythonServices
     {
