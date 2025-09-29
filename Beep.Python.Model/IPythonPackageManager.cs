@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using TheTechIdea.Beep.Editor;
+using TheTechIdea.Beep.Editor.UOW;
 
 namespace Beep.Python.Model
 {

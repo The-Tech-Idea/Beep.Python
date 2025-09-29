@@ -4,6 +4,7 @@ using TheTechIdea.Beep.ConfigUtil;
 using TheTechIdea.Beep.Addin;
 using TheTechIdea.Beep.DriversConfigurations;
 using TheTechIdea.Beep.Editor;
+using TheTechIdea.Beep.Editor.UOW;
 
 namespace Beep.Python.Model
 {
