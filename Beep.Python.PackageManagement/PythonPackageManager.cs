@@ -12,6 +12,7 @@ using TheTechIdea.Beep.Addin;
 using TheTechIdea.Beep.ConfigUtil;
 using TheTechIdea.Beep.Container.Services;
 using TheTechIdea.Beep.Editor;
+using TheTechIdea.Beep.Editor.UOW;
 
 namespace Beep.Python.RuntimeEngine.PackageManagement
 {

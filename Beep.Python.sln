@@ -19,7 +19,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beep.Python.ML", "Beep.Pyth
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beep.Python.Winform", "Beep.Python.Winform\Beep.Python.Winform.csproj", "{D2197B3F-A714-4B94-A512-103CCB5E30EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beep.Python.Services", "Beep.Python.Services.MsDependency\Beep.Python.Services.csproj", "{E593921B-3893-842A-1026-D154625257A9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beep.Python.Services", "Beep.Python.Services\Beep.Python.Services.csproj", "{E593921B-3893-842A-1026-D154625257A9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -351,6 +351,103 @@ namespace Beep.Python.RuntimeEngine.PackageManagement
             };
             _packageSets["deep_learning"] = deepLearning;
 
+            // Transformer and multimodal AI workloads
+            var transformers = new PackageSet
+            {
+                Name = "AI Transformers",
+                Description = "Packages for Hugging Face, OpenAI, Azure, and multimodal transformer orchestration",
+                Category = PackageCategory.MachineLearning,
+                Packages = new List<PackageDefinition>
+                {
+                    new PackageDefinition { PackageName = "transformers", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "accelerate", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "datasets", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "safetensors", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "sentencepiece", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "torch", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "bitsandbytes", Status = PackageStatus.Available }
+                },
+                Versions = new Dictionary<string, string>()
+            };
+            _packageSets["ai_transformers"] = transformers;
+
+            // Vector store integrations
+            var vectorStores = new PackageSet
+            {
+                Name = "Vector Stores",
+                Description = "Vector database connectors and embedding utilities for retrieval-augmented generation",
+                Category = PackageCategory.VectorDB,
+                Packages = new List<PackageDefinition>
+                {
+                    new PackageDefinition { PackageName = "faiss-cpu", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "qdrant-client", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "pinecone-client", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "chromadb", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "weaviate-client", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "sentence-transformers", Status = PackageStatus.Available }
+                },
+                Versions = new Dictionary<string, string>()
+            };
+            _packageSets["vector_stores"] = vectorStores;
+
+            // Streaming ingestion connectors
+            var streaming = new PackageSet
+            {
+                Name = "Streaming Ingestion",
+                Description = "Event streaming connectors and processing frameworks for real-time ingestion",
+                Category = PackageCategory.Networking,
+                Packages = new List<PackageDefinition>
+                {
+                    new PackageDefinition { PackageName = "kafka-python", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "confluent-kafka", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "fastavro", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "pyspark", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "watchdog", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "aiohttp", Status = PackageStatus.Available }
+                },
+                Versions = new Dictionary<string, string>()
+            };
+            _packageSets["streaming_ingestion"] = streaming;
+
+            // Document AI pipelines
+            var documentAi = new PackageSet
+            {
+                Name = "Document AI",
+                Description = "OCR, PDF processing, and layout understanding packages for document enrichment",
+                Category = PackageCategory.FileProcessing,
+                Packages = new List<PackageDefinition>
+                {
+                    new PackageDefinition { PackageName = "pytesseract", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "pypdf", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "pdfplumber", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "python-docx", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "textract", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "layoutparser", Status = PackageStatus.Available }
+                },
+                Versions = new Dictionary<string, string>()
+            };
+            _packageSets["document_ai"] = documentAi;
+
+            // Agentic automation
+            var autoAgents = new PackageSet
+            {
+                Name = "Auto Agents",
+                Description = "Agent orchestration, planning, and tool integration packages",
+                Category = PackageCategory.Ragging,
+                Packages = new List<PackageDefinition>
+                {
+                    new PackageDefinition { PackageName = "langchain", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "langgraph", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "openai", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "anthropic", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "google-generativeai", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "cohere", Status = PackageStatus.Available },
+                    new PackageDefinition { PackageName = "tenacity", Status = PackageStatus.Available }
+                },
+                Versions = new Dictionary<string, string>()
+            };
+            _packageSets["auto_agents"] = autoAgents;
+
             // Load any custom package sets from files
             LoadPackageSetsFromFiles();
         }
