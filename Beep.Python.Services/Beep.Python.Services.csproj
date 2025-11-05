@@ -34,8 +34,8 @@
     <PackageReference Include="Beep.Python.Model" Version="1.0.17" />
     <PackageReference Include="Beep.Python.PackageManagement" Version="1.0.16" />
     <PackageReference Include="Beep.Python.Runtime.PythonNet" Version="1.0.45" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.9" />
-    <PackageReference Include="System.Text.Json" Version="9.0.9" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
+    <PackageReference Include="System.Text.Json" Version="9.0.10" />
   </ItemGroup>
 
 </Project>
