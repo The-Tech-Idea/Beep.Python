@@ -40,7 +40,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
     <PackageReference Include="pythonnet" Version="3.0.5" />
     <PackageReference Include="TheTechIdea.Beep.Container.Model" Version="1.0.0.49" />
-    <PackageReference Include="TheTechIdea.Beep.DataManagementEngine" Version="2.0.51" />
+    <PackageReference Include="TheTechIdea.Beep.DataManagementEngine" Version="2.0.52" />
   </ItemGroup>
 
 
