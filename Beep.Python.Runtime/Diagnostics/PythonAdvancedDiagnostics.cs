@@ -10,7 +10,7 @@ using Beep.Python.Model;
 using Beep.Python.RuntimeEngine.Helpers;
 using Beep.Python.RuntimeEngine.Infrastructure;
 using TheTechIdea.Beep.ConfigUtil;
-using TheTechIdea.Beep.Container.Services;
+ 
 using TheTechIdea.Beep.Editor;
 using SysEnv = System.Environment;
 
@@ -21,13 +21,13 @@ namespace Beep.Python.RuntimeEngine.Diagnostics
     /// </summary>
     public class PythonAdvancedDiagnostics
     {
-        private readonly IBeepService _beepService;
-        private readonly IDMEEditor _dmEditor;
+       
 
-        public PythonAdvancedDiagnostics(IBeepService beepService)
+
+        public PythonAdvancedDiagnostics()
         {
-            _beepService = beepService ?? throw new ArgumentNullException(nameof(beepService));
-            _dmEditor = beepService.DMEEditor;
+             
+           
         }
 
         /// <summary>
@@ -71,13 +71,13 @@ namespace Beep.Python.RuntimeEngine.Diagnostics
                 report.EndTime = DateTime.UtcNow;
                 report.IsSuccessful = true;
 
-                _dmEditor?.AddLogMessage("Beep", $"Comprehensive diagnostics completed for {runtime.Name}", DateTime.Now, 0, null, Errors.Ok);
+            //    _dmEditor?.AddLogMessage("Beep", $"Comprehensive diagnostics completed for {runtime.Name}", DateTime.Now, 0, null, Errors.Ok);
             }
             catch (Exception ex)
             {
                 report.IsSuccessful = false;
                 report.ErrorMessage = ex.Message;
-                _dmEditor?.AddLogMessage("Beep", $"Diagnostics failed: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
+              //  _dmEditor?.AddLogMessage("Beep", $"Diagnostics failed: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
             }
 
             return report;

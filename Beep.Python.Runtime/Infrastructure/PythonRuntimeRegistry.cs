@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TheTechIdea.Beep.ConfigUtil;
-using TheTechIdea.Beep.Container.Services;
+ 
 using TheTechIdea.Beep.Editor;
 using SysEnv = System.Environment;
 
@@ -19,18 +19,17 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
     /// </summary>
     public class PythonRuntimeRegistry : IPythonRuntimeRegistry
     {
-        private readonly IBeepService _beepService;
+       
         private readonly IDMEEditor _dmEditor;
         private readonly string _registryPath;
         private readonly List<PythonRuntimeInfo> _runtimes = new();
         private PythonRuntimeInfo _defaultRuntime;
         private readonly object _lock = new();
 
-        public PythonRuntimeRegistry(IBeepService beepService)
+        public PythonRuntimeRegistry( )
         {
-            _beepService = beepService ?? throw new ArgumentNullException(nameof(beepService));
-            _dmEditor = beepService.DMEEditor;
-            
+             
+          
             var baseDir = Path.Combine(
                 SysEnv.GetFolderPath(SysEnv.SpecialFolder.UserProfile),
                 ".beep-python");

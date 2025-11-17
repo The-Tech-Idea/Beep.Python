@@ -8,8 +8,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TheTechIdea.Beep.ConfigUtil;
-using TheTechIdea.Beep.Container.Model.Data;
-using TheTechIdea.Beep.Container.Services;
+ 
+ 
 using TheTechIdea.Beep.Editor;
 using SysEnv = System.Environment;
 
@@ -189,22 +189,21 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
         private readonly IPythonRuntimeRegistry _registry;
         private readonly IPackageRequirementsManager _packageManager;
         private readonly IPythonVirtualEnvManager _venvManager;
-        private readonly IBeepService _beepService;
+       
         private readonly IDMEEditor _dmEditor;
 
         public PythonBootstrapManager(
             IPythonEmbeddedProvisioner provisioner,
             IPythonRuntimeRegistry registry,
             IPackageRequirementsManager packageManager,
-            IPythonVirtualEnvManager venvManager,
-            IBeepService beepService)
+            IPythonVirtualEnvManager venvManager)
         {
             _provisioner = provisioner ?? throw new ArgumentNullException(nameof(provisioner));
             _registry = registry ?? throw new ArgumentNullException(nameof(registry));
             _packageManager = packageManager ?? throw new ArgumentNullException(nameof(packageManager));
             _venvManager = venvManager ?? throw new ArgumentNullException(nameof(venvManager));
-            _beepService = beepService ?? throw new ArgumentNullException(nameof(beepService));
-            _dmEditor = beepService.DMEEditor;
+             
+            
         }
 
         /// <summary>

@@ -10,7 +10,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using TheTechIdea.Beep.ConfigUtil;
-using TheTechIdea.Beep.Container.Services;
+ 
 using TheTechIdea.Beep.Editor;
 using Environment = System.Environment;
 
@@ -22,15 +22,42 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
     /// </summary>
     public class PythonEmbeddedProvisioner : IPythonEmbeddedProvisioner
     {
-        private readonly IBeepService _beepService;
+       
         private readonly IDMEEditor _dmEditor;
         private readonly EmbeddedPythonConfig _config;
 
-        public PythonEmbeddedProvisioner(IBeepService beepService, EmbeddedPythonConfig config = null)
+        public PythonEmbeddedProvisioner(  EmbeddedPythonConfig config = null)
         {
-            _beepService = beepService ?? throw new ArgumentNullException(nameof(beepService));
-            _dmEditor = beepService.DMEEditor;
+             
+         
             _config = config ?? new EmbeddedPythonConfig();
+        }
+
+        /// <summary>
+        /// Convenience wrapper for orchestrator: provision embedded Python (or reuse
+        /// existing) and return the installation root path. This mirrors the
+        /// "GetOrDownloadEmbeddedPythonAsync" usage expected by the orchestrator.
+        /// </summary>
+        /// <param name="progress">Optional textual progress reporter.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>Root path of the embedded Python installation.</returns>
+        public async Task<string> GetOrDownloadEmbeddedPythonAsync(
+            IProgress<string> progress = null,
+            CancellationToken cancellationToken = default)
+        {
+            var provisioningProgress = progress != null
+                ? new Progress<ProvisioningProgress>(p =>
+                    progress.Report($"{p.Phase}: {p.Message}"))
+                : null;
+
+            var runtime = await ProvisionEmbeddedPythonAsync(
+                null,
+                provisioningProgress,
+                cancellationToken);
+
+            // Fallback to configured install path if runtime does not expose a
+            // dedicated root/path property.
+            return runtime?.RuntimePath ?? _config.InstallPath;
         }
 
         /// <summary>

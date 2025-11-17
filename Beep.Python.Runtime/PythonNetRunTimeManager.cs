@@ -10,7 +10,7 @@ using TheTechIdea.Beep.ConfigUtil;
 using System.Linq;
 using TheTechIdea.Beep.Addin;
 using TheTechIdea.Beep.Editor;
-using TheTechIdea.Beep.Container.Services;
+ 
 using Beep.Python.RuntimeEngine.Helpers;
 using Environment = System.Environment;
 
@@ -25,7 +25,7 @@ namespace Beep.Python.RuntimeEngine
         #region "Fields"
         private bool _IsInitialized = false;
         private bool disposedValue;
-        private readonly IBeepService _beepService;
+       
         /// <summary>
         /// Gets the current <see cref="IProgress{PassedArgs}"/> object for reporting progress.
         /// </summary>
@@ -110,14 +110,15 @@ namespace Beep.Python.RuntimeEngine
         /// Initializes a new instance of <see cref="PythonNetRunTimeManager"/> with a specified <see cref="IBeepService"/>.
         /// </summary>
         /// <param name="beepService">Service used for logging, configuration, and editor access.</param>
-        public PythonNetRunTimeManager(IBeepService beepService)
+        public PythonNetRunTimeManager()
         {
-            _beepService = beepService;
-            DMEditor = beepService.DMEEditor;
-            JsonLoader = DMEditor.ConfigEditor.JsonLoader;
+            JsonLoader = DMEditor?.ConfigEditor?.JsonLoader;
+
+            // Determine a base directory for Python virtual environments
+            var baseEnvDir = GetPythonEnvironmentsPath();
 
             // Create a VirtualEnvManager instance instead of implementing the functionality directly
-            VirtualEnvmanager = new PythonVirtualEnvManager(beepService, this);
+            VirtualEnvmanager = new PythonVirtualEnvManager(this, baseEnvDir);
         }
 
         /// <summary>

@@ -9,7 +9,7 @@ using TheTechIdea.Beep.ConfigUtil;
 using TheTechIdea.Beep.Addin;
 using TheTechIdea.Beep.Editor;
 
-using TheTechIdea.Beep.Container.Services;
+ 
 using Beep.Python.RuntimeEngine.Helpers;
 
 
@@ -42,7 +42,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         List<ParameterDictionaryForAlgorithm> parameterDictionaryForAlgorithms;
         [ObservableProperty]
         List<string> algorithims;
-        public readonly IBeepService Beepservice;
+     
         public PythonSessionInfo SessionInfo;
 
         public bool IsInitialized { get; private set; } = false;
@@ -53,10 +53,9 @@ namespace Beep.Python.RuntimeEngine.ViewModels
             return Enum.GetName(typeof(MachineLearningAlgorithm), algorithim);
         }
 
-        public PythonBaseViewModel(IBeepService beepservice,IPythonRunTimeManager pythonRuntimeManager,PythonSessionInfo sessionInfo)
+        public PythonBaseViewModel( IPythonRunTimeManager pythonRuntimeManager,PythonSessionInfo sessionInfo)
         {
-            Beepservice=beepservice;
-            Editor= beepservice.DMEEditor;
+           
             this.PythonRuntime = pythonRuntimeManager;
             SessionInfo = sessionInfo;
 

@@ -204,7 +204,7 @@ public class MyApplication
 public class ResilientPythonManager
 {
     private readonly IPythonHealthMonitor _monitor;
-    private readonly IBeepService _beepService;
+   
     
     public async Task<bool> EnsureHealthyRuntimeAsync()
     {

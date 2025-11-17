@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TheTechIdea.Beep.Addin;
 using TheTechIdea.Beep.ConfigUtil;
-using TheTechIdea.Beep.Container.Services;
+ 
 using TheTechIdea.Beep.Editor;
 using SysEnv = System.Environment;
 
@@ -21,16 +21,17 @@ namespace Beep.Python.RuntimeEngine.Configuration
     /// </summary>
     public class PackageRequirementsManager : IPackageRequirementsManager
     {
-        private readonly IBeepService _beepService;
         private readonly IDMEEditor _dmEditor;
         private readonly string _configPath;
         private PackageRequirementsConfig _config;
 
-        public PackageRequirementsManager(IBeepService beepService, string configPath = null)
+        public PackageRequirementsManager(IDMEEditor dmEditor = null, string configPath = null)
         {
-            _beepService = beepService ?? throw new ArgumentNullException(nameof(beepService));
-            _dmEditor = beepService.DMEEditor;
-            
+            _dmEditor = dmEditor;
+
+            // Allow caller (e.g., orchestrator/shell) to control where the
+            // package requirements file lives by passing configPath. If not
+            // provided, fall back to the current user-profile-based path.
             _configPath = configPath ?? Path.Combine(
                 SysEnv.GetFolderPath(SysEnv.SpecialFolder.UserProfile),
                 ".beep-python",

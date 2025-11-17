@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TheTechIdea.Beep.ConfigUtil;
-using TheTechIdea.Beep.Container.Services;
+ 
 using TheTechIdea.Beep.Editor;
 
 namespace Beep.Python.RuntimeEngine.Monitoring
@@ -20,18 +20,17 @@ namespace Beep.Python.RuntimeEngine.Monitoring
     public class PythonHealthMonitor : IPythonHealthMonitor
     {
         private readonly IPythonRuntimeRegistry _registry;
-        private readonly IBeepService _beepService;
+       
         private readonly IDMEEditor _dmEditor;
         private Timer _healthCheckTimer;
         private readonly object _lock = new object();
 
         public PythonHealthMonitor(
-            IPythonRuntimeRegistry registry,
-            IBeepService beepService)
+            IPythonRuntimeRegistry registry          )
         {
             _registry = registry ?? throw new ArgumentNullException(nameof(registry));
-            _beepService = beepService ?? throw new ArgumentNullException(nameof(beepService));
-            _dmEditor = beepService.DMEEditor;
+             
+            
         }
 
         /// <summary>

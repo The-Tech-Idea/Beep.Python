@@ -7,7 +7,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using TheTechIdea.Beep.ConfigUtil;
-using TheTechIdea.Beep.Container.Services;
+using TheTechIdea.Beep.Editor;
+using SysEnv = System.Environment;
 
 namespace Beep.Python.RuntimeEngine.Integration
 {
@@ -21,10 +22,14 @@ namespace Beep.Python.RuntimeEngine.Integration
         /// Creates a fully configured bootstrap manager with all dependencies.
         /// </summary>
         public static PythonBootstrapManager CreateBootstrapManager(
-            IBeepService beepService,
             IPythonRunTimeManager pythonRuntime = null,
-            IPythonVirtualEnvManager venvManager = null)
+            IPythonVirtualEnvManager venvManager = null,
+            string baseEnvironmentDirectory = null,
+            string packageConfigPath = null,
+            IDMEEditor dmEditor = null)
         {
+            pythonRuntime ??= new PythonNetRunTimeManager();
+
             // Create configuration for embedded provisioner
             var embeddedConfig = new EmbeddedPythonConfig
             {
@@ -36,36 +41,43 @@ namespace Beep.Python.RuntimeEngine.Integration
             };
 
             // Create provisioner
-            var provisioner = new PythonEmbeddedProvisioner(beepService, embeddedConfig);
+            var provisioner = new PythonEmbeddedProvisioner( embeddedConfig);
 
             // Create registry
-            var registry = new PythonRuntimeRegistry(beepService);
+            var registry = new PythonRuntimeRegistry();
 
-            // Create package manager
-            var packageManager = new PackageRequirementsManager(beepService);
+            // Create package manager (allow caller to override config path and editor)
+            var packageManager = new PackageRequirementsManager(dmEditor, packageConfigPath);
 
-            // Use provided or create new virtual env manager
-            venvManager ??= new PythonVirtualEnvManager(beepService, pythonRuntime);
+            // Use provided or create new virtual env manager. If no baseEnvironmentDirectory
+            // is supplied, fall back to the embedded install path's parent.
+            if (venvManager == null)
+            {
+                var envBase = baseEnvironmentDirectory ??
+                              System.IO.Path.GetDirectoryName(embeddedConfig.InstallPath) ??
+                              SysEnv.GetFolderPath(SysEnv.SpecialFolder.UserProfile);
+
+                venvManager = new PythonVirtualEnvManager(pythonRuntime, envBase);
+            }
 
             // Create and return bootstrap manager
             return new PythonBootstrapManager(
                 provisioner,
                 registry,
                 packageManager,
-                venvManager,
-                beepService);
+                venvManager) ;
         }
 
         /// <summary>
         /// Quick setup using a template - one line initialization.
         /// </summary>
         public static async Task<BootstrapResult> QuickSetupAsync(
-            IBeepService beepService,
+             
             string templateName = "data-science",
             IProgress<BootstrapProgress> progress = null,
             CancellationToken cancellationToken = default)
         {
-            var bootstrapManager = CreateBootstrapManager(beepService);
+            var bootstrapManager = CreateBootstrapManager(  );
             var template = EnvironmentTemplates.GetTemplate(templateName);
 
             if (template == null)
@@ -80,12 +92,12 @@ namespace Beep.Python.RuntimeEngine.Integration
         /// Setup with custom options.
         /// </summary>
         public static async Task<BootstrapResult> CustomSetupAsync(
-            IBeepService beepService,
+             
             BootstrapOptions options,
             IProgress<BootstrapProgress> progress = null,
             CancellationToken cancellationToken = default)
         {
-            var bootstrapManager = CreateBootstrapManager(beepService);
+            var bootstrapManager = CreateBootstrapManager();
             return await bootstrapManager.EnsurePythonEnvironmentAsync(options, progress, cancellationToken);
         }
 
@@ -93,20 +105,20 @@ namespace Beep.Python.RuntimeEngine.Integration
         /// Initialize with health monitoring enabled.
         /// </summary>
         public static async Task<(BootstrapResult result, IPythonHealthMonitor monitor)> SetupWithMonitoringAsync(
-            IBeepService beepService,
+             
             BootstrapOptions options,
             int monitoringIntervalMinutes = 30,
             IProgress<BootstrapProgress> progress = null,
             CancellationToken cancellationToken = default)
         {
-            var bootstrapManager = CreateBootstrapManager(beepService);
+            var bootstrapManager = CreateBootstrapManager();
             var result = await bootstrapManager.EnsurePythonEnvironmentAsync(options, progress, cancellationToken);
 
             // Create and start health monitor
-            var registry = new PythonRuntimeRegistry(beepService);
+            var registry = new PythonRuntimeRegistry(   );
             await registry.InitializeAsync();
 
-            var monitor = new PythonHealthMonitor(registry, beepService);
+            var monitor = new PythonHealthMonitor(registry);
             monitor.StartMonitoring(monitoringIntervalMinutes);
 
             return (result, monitor);
@@ -117,11 +129,11 @@ namespace Beep.Python.RuntimeEngine.Integration
         /// Returns runtime information for use with existing managers.
         /// </summary>
         public static async Task<PythonRunTime> EnsureRuntimeAsync(
-            IBeepService beepService,
+             
             string templateName = "minimal",
             CancellationToken cancellationToken = default)
         {
-            var result = await QuickSetupAsync(beepService, templateName, cancellationToken: cancellationToken);
+            var result = await QuickSetupAsync(templateName, cancellationToken: cancellationToken);
 
             if (!result.IsSuccessful)
             {
@@ -129,7 +141,7 @@ namespace Beep.Python.RuntimeEngine.Integration
             }
 
             // Get the runtime registry to retrieve runtime info
-            var registry = new PythonRuntimeRegistry(beepService);
+            var registry = new PythonRuntimeRegistry();
             await registry.InitializeAsync();
 
             var runtime = registry.GetRuntime(result.BaseRuntimeId);
@@ -180,20 +192,14 @@ namespace Beep.Python.RuntimeEngine.Integration
         /// <summary>
         /// Creates a simple progress reporter that logs to DMEEditor.
         /// </summary>
-        public static IProgress<BootstrapProgress> CreateLogProgress(IBeepService beepService)
+        public static IProgress<BootstrapProgress> CreateLogProgress( )
         {
             return new Progress<BootstrapProgress>(p =>
             {
-                var dmEditor = beepService?.DMEEditor;
+              
                 var errorLevel = p.Stage == BootstrapStage.Failed ? Errors.Failed : Errors.Ok;
                 
-                dmEditor?.AddLogMessage(
-                    "Beep.Python.Bootstrap",
-                    $"[{p.PercentComplete}%] {p.Stage}: {p.Message}",
-                    DateTime.Now,
-                    0,
-                    null,
-                    errorLevel);
+               
             });
         }
     }
@@ -204,24 +210,36 @@ namespace Beep.Python.RuntimeEngine.Integration
     public static class BootstrapExtensions
     {
         /// <summary>
-        /// Extension method for IBeepService to enable quick Python setup.
+        /// Extension method for IDMEEditor to enable quick Python setup.
         /// </summary>
         public static async Task<BootstrapResult> EnsurePythonAsync(
-            this IBeepService beepService,
+            this IDMEEditor dmEditor,
             string template = "minimal",
-            IProgress<BootstrapProgress> progress = null)
+            IProgress<BootstrapProgress> progress = null,
+            CancellationToken cancellationToken = default)
         {
-            return await BootstrapIntegration.QuickSetupAsync(beepService, template, progress);
+            _ = dmEditor ?? throw new ArgumentNullException(nameof(dmEditor));
+            // Ensure package manager logging can use the supplied editor
+            var bootstrapManager = BootstrapIntegration.CreateBootstrapManager(dmEditor: dmEditor);
+            var templateInfo = EnvironmentTemplates.GetTemplate(template);
+            if (templateInfo == null)
+            {
+                throw new ArgumentException($"Template '{template}' not found. Available templates: {string.Join(", ", EnvironmentTemplates.GetAvailableTemplates())}");
+            }
+
+            return await bootstrapManager.EnsurePythonEnvironmentAsync(templateInfo, progress, cancellationToken);
         }
 
         /// <summary>
-        /// Extension method for IBeepService to get a configured Python runtime.
+        /// Extension method for IDMEEditor to get a configured Python runtime.
         /// </summary>
         public static async Task<PythonRunTime> GetPythonRuntimeAsync(
-            this IBeepService beepService,
-            string template = "minimal")
+            this IDMEEditor dmEditor,
+            string template = "minimal",
+            CancellationToken cancellationToken = default)
         {
-            return await BootstrapIntegration.EnsureRuntimeAsync(beepService, template);
+            _ = dmEditor ?? throw new ArgumentNullException(nameof(dmEditor));
+            return await BootstrapIntegration.EnsureRuntimeAsync(template, cancellationToken);
         }
     }
 }

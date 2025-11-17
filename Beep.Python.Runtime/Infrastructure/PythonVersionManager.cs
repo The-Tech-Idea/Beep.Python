@@ -10,7 +10,7 @@ using Beep.Python.Model;
 using Beep.Python.RuntimeEngine.Helpers;
 using TheTechIdea.Beep.Editor;
 using TheTechIdea.Beep.ConfigUtil;
-using TheTechIdea.Beep.Container.Services;
+ 
 using SysEnv = System.Environment;
 
 namespace Beep.Python.RuntimeEngine.Infrastructure
@@ -20,7 +20,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
     /// </summary>
     public class PythonVersionManager
     {
-        private readonly IBeepService _beepService;
+       
         private readonly IDMEEditor _dmEditor;
         private readonly PythonRuntimeRegistry _registry;
         private readonly PythonEmbeddedProvisioner _provisioner;
@@ -28,12 +28,11 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
         private readonly Dictionary<string, PythonVersionInfo> _availableVersions;
 
         public PythonVersionManager(
-            IBeepService beepService,
+             
             PythonRuntimeRegistry registry,
             PythonEmbeddedProvisioner provisioner)
         {
-            _beepService = beepService;
-            _dmEditor = beepService?.DMEEditor;
+            
             _registry = registry;
             _provisioner = provisioner;
             _versionsDirectory = Path.Combine(
@@ -239,7 +238,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
 
                 await _registry.InitializeAsync();
                 var runtime = _registry.GetAvailableRuntimes()
-                    .FirstOrDefault(r => r.Type == RuntimeType.Embedded && r.Name == version);
+                    .FirstOrDefault(r => r.Type == PythonRuntimeType.Embedded && r.Name == version);
 
                 if (runtime == null)
                 {
@@ -292,7 +291,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
 
                 await _registry.InitializeAsync();
                 var runtime = _registry.GetAvailableRuntimes()
-                    .FirstOrDefault(r => r.Type == RuntimeType.Embedded && r.Name == version);
+                    .FirstOrDefault(r => r.Type == PythonRuntimeType.Embedded && r.Name == version);
 
                 if (runtime == null)
                 {

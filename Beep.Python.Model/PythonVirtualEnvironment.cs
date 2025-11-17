@@ -170,6 +170,37 @@ namespace Beep.Python.Model
             {
                 _installedpackages = value;
                 SetProperty(ref _installedpackages, value);
+                Packagelist = value?.ToList();
+            }
+        }
+
+        private List<PackageDefinition> _packagelist = new List<PackageDefinition>();
+        public List<PackageDefinition> Packagelist
+        {
+            get
+            {
+                return _packagelist;
+            }
+            set
+            {
+                var newValue = value ?? new List<PackageDefinition>();
+                _packagelist = newValue;
+                SetProperty(ref _packagelist, newValue);
+            }
+        }
+
+        private List<string> _packageProfiles = new List<string>();
+        public List<string> PackageProfiles
+        {
+            get
+            {
+                return _packageProfiles;
+            }
+            set
+            {
+                var newValue = value ?? new List<string>();
+                _packageProfiles = newValue;
+                SetProperty(ref _packageProfiles, newValue);
             }
         }
         private bool _isconfigloaded= false;
@@ -209,6 +240,20 @@ namespace Beep.Python.Model
             {
                 _isinitialized = value;
                 SetProperty(ref _isinitialized, value);
+            }
+        }
+
+        private bool _isActive;
+        public bool IsActive
+        {
+            get
+            {
+                return _isActive;
+            }
+            set
+            {
+                _isActive = value;
+                SetProperty(ref _isActive, value);
             }
         }
       

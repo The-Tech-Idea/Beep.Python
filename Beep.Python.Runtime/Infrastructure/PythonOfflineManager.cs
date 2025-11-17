@@ -11,7 +11,7 @@ using Beep.Python.Model;
 using Beep.Python.RuntimeEngine.Helpers;
 using Newtonsoft.Json;
 using TheTechIdea.Beep.ConfigUtil;
-using TheTechIdea.Beep.Container.Services;
+ 
 using TheTechIdea.Beep.Editor;
 using SysEnv = System.Environment;
 
@@ -23,7 +23,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
     /// </summary>
     public class PythonOfflineManager
     {
-        private readonly IBeepService _beepService;
+       
         private readonly IDMEEditor _dmEditor;
         private readonly PythonRuntimeRegistry _registry;
         private readonly string _cacheDirectory;
@@ -32,11 +32,10 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
         private readonly string _manifestPath;
 
         public PythonOfflineManager(
-            IBeepService beepService,
+             
             PythonRuntimeRegistry registry)
         {
-            _beepService = beepService ?? throw new ArgumentNullException(nameof(beepService));
-            _dmEditor = beepService.DMEEditor;
+            //_dmEditor = beepService.DMEEditor;
             _registry = registry;
 
             _cacheDirectory = Path.Combine(

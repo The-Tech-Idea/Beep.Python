@@ -5,7 +5,7 @@ using Python.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TheTechIdea.Beep.Container.Services;
+ 
 
 namespace Beep.Python.RuntimeEngine.Graphics
 {
@@ -14,7 +14,7 @@ namespace Beep.Python.RuntimeEngine.Graphics
     public class PythonPlotManager : PythonBaseViewModel
     {
 
-        public PythonPlotManager(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager, PythonSessionInfo sessionInfo) : base(beepservice, pythonRuntimeManager, sessionInfo)
+        public PythonPlotManager(  IPythonRunTimeManager pythonRuntimeManager, PythonSessionInfo sessionInfo) : base( pythonRuntimeManager, sessionInfo)
         {
 
            // InitializePythonEnvironment();

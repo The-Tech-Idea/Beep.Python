@@ -10,7 +10,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using TheTechIdea.Beep.Addin;
 using TheTechIdea.Beep.ConfigUtil;
-using TheTechIdea.Beep.Container.Services;
+ 
 using TheTechIdea.Beep.Editor;
 
 namespace Beep.Python.RuntimeEngine
@@ -23,7 +23,7 @@ namespace Beep.Python.RuntimeEngine
     {
         #region Fields
         private readonly IPythonRunTimeManager _pythonRuntime;
-        private readonly IBeepService _beepService;
+       
         private readonly IDMEEditor _dmEditor;
         private volatile bool _shouldStop = false;
         private bool _disposed = false;
@@ -56,11 +56,11 @@ namespace Beep.Python.RuntimeEngine
         /// </summary>
         /// <param name="pythonRuntime">The runtime manager providing Python environment access.</param>
         /// <param name="beepService">The service providing access to editor and logging functionality.</param>
-        public PythonCodeExecuteManager(IPythonRunTimeManager pythonRuntime, IBeepService beepService)
+        public PythonCodeExecuteManager(IPythonRunTimeManager pythonRuntime)
         {
             _pythonRuntime = pythonRuntime ?? throw new ArgumentNullException(nameof(pythonRuntime));
-            _beepService = beepService ?? throw new ArgumentNullException(nameof(beepService));
-            _dmEditor = beepService.DMEEditor;
+             
+           
             Progress = _dmEditor?.progress;
         }
         #endregion

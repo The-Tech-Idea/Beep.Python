@@ -38,7 +38,7 @@ namespace Beep.Python.Model
                 SetProperty(ref _sessionName, value);
             }
         }
-        private DateTime _startedAt;
+        private DateTime _startedAt = System.DateTime.UtcNow;
         public DateTime StartedAt
         {
             get { return _startedAt; }
@@ -46,6 +46,16 @@ namespace Beep.Python.Model
             {
                 _startedAt = value;
                 SetProperty(ref _startedAt, value);
+            }
+        }
+        private DateTime _createdAt = System.DateTime.UtcNow;
+        public DateTime CreatedAt
+        {
+            get { return _createdAt; }
+            set
+            {
+                _createdAt = value;
+                SetProperty(ref _createdAt, value);
             }
         }
         private DateTime? DateTime;
@@ -56,6 +66,16 @@ namespace Beep.Python.Model
             {
                 DateTime = value;
                 SetProperty(ref DateTime, value);
+            }
+        }
+        private DateTime _lastActivityAt = System.DateTime.UtcNow;
+        public DateTime LastActivityAt
+        {
+            get { return _lastActivityAt; }
+            set
+            {
+                _lastActivityAt = value;
+                SetProperty(ref _lastActivityAt, value);
             }
         }
         private bool _wasSuccessful;

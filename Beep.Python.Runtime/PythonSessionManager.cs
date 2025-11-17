@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TheTechIdea.Beep.ConfigUtil;
-using TheTechIdea.Beep.Container.Services;
+ 
 using TheTechIdea.Beep.Editor;
 
 namespace Beep.Python.RuntimeEngine
@@ -28,7 +28,7 @@ namespace Beep.Python.RuntimeEngine
         private readonly ConcurrentDictionary<string, int> _environmentLoadCounter = new();
 
         // Dependencies
-        private readonly IBeepService _beepService;
+       
         private readonly IPythonRunTimeManager _pythonRunTimeManager;
 
         // Session cleanup timer
@@ -49,11 +49,11 @@ namespace Beep.Python.RuntimeEngine
         /// <param name="pythonRunTimeManager">Python runtime manager dependency</param>
         /// <param name="configuration">Optional configuration settings</param>
         public PythonSessionManager(
-            IBeepService beepService,
+             
             IPythonRunTimeManager pythonRunTimeManager,
             SessionManagerConfiguration configuration = null)
         {
-            _beepService = beepService ?? throw new ArgumentNullException(nameof(beepService));
+             
             _pythonRunTimeManager = pythonRunTimeManager ?? throw new ArgumentNullException(nameof(pythonRunTimeManager));
             _configuration = configuration ?? new SessionManagerConfiguration();
 
@@ -97,11 +97,14 @@ namespace Beep.Python.RuntimeEngine
                     actualEnvironmentId = SelectEnvironmentWithLoadBalancing();
                 }
 
+                var now = DateTime.UtcNow;
                 var session = new PythonSessionInfo
                 {
                     Username = username,
                     VirtualEnvironmentId = actualEnvironmentId,
-                    StartedAt = DateTime.Now,
+                    StartedAt = now,
+                    CreatedAt = now,
+                    LastActivityAt = now,
                     SessionName = $"Session_{username}_{DateTime.Now.Ticks}",
                     Status = PythonSessionStatus.Active,
 
@@ -109,7 +112,7 @@ namespace Beep.Python.RuntimeEngine
                     Metadata = new Dictionary<string, object>
                     {
                         ["IsContainerized"] = IsContainerizedEnvironment(actualEnvironmentId),
-                        ["LastActivity"] = DateTime.Now
+                        ["LastActivity"] = now
                     }
                 };
 
@@ -226,9 +229,17 @@ namespace Beep.Python.RuntimeEngine
         public void UpdateSessionActivity(string sessionId)
         {
             var session = GetSession(sessionId);
-            if (session?.Metadata != null)
+            if (session == null)
             {
-                session.Metadata["LastActivity"] = DateTime.Now;
+                return;
+            }
+
+            var lastActivity = DateTime.UtcNow;
+            session.LastActivityAt = lastActivity;
+
+            if (session.Metadata != null)
+            {
+                session.Metadata["LastActivity"] = lastActivity;
             }
         }
 

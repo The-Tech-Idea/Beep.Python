@@ -63,10 +63,10 @@
                     <div class="code-example">
                         <h3>Initialization</h3>
                         <pre><code class="language-csharp">public PythonVirtualEnvManager(
-    IBeepService beepservice, 
+      
     IPythonRunTimeManager pythonRuntimeManager)
 {
-    _beepservice = beepservice ?? throw new ArgumentNullException(nameof(beepservice));
+     
     _pythonRuntime = pythonRuntimeManager ?? throw new ArgumentNullException(nameof(pythonRuntimeManager));
     IsBusy = false;
 }</code></pre>
@@ -321,7 +321,7 @@ manager.Dispose();</code></pre>
                     <div class="code-example">
                         <h3>Full Environment Management Workflow</h3>
                         <pre><code class="language-csharp">using Beep.Python.RuntimeEngine;
-using TheTechIdea.Beep.Container.Services;
+ 
 
 // Initialize components
 var beepService = new BeepService();

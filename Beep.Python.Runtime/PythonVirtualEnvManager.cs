@@ -9,10 +9,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TheTechIdea.Beep.ConfigUtil;
-using TheTechIdea.Beep.Container.Model;
-using TheTechIdea.Beep.Container.Services;
+
 using TheTechIdea.Beep.Editor;
 
 namespace Beep.Python.RuntimeEngine
@@ -24,8 +24,9 @@ namespace Beep.Python.RuntimeEngine
     public class PythonVirtualEnvManager : IPythonVirtualEnvManager, IDisposable
     {
         private bool disposedValue;
-        private readonly IBeepService _beepservice;
+
         private readonly IPythonRunTimeManager _pythonRuntime;
+        private readonly string _baseEnvironmentDirectory;
         private readonly object _environmentsLock = new object();
         private readonly ConcurrentDictionary<string, DateTime> _lastEnvironmentUsage = new ConcurrentDictionary<string, DateTime>();
         private const string ADMIN_SESSION_USERNAME = "admin";
@@ -45,12 +46,12 @@ namespace Beep.Python.RuntimeEngine
         /// <summary>
         /// Initializes a new instance of PythonVirtualEnvManager.
         /// </summary>
-        /// <param name="beepservice">The BEEP service for accessing application services.</param>
         /// <param name="pythonRuntimeManager">The Python runtime manager.</param>
-        public PythonVirtualEnvManager(IBeepService beepservice, IPythonRunTimeManager pythonRuntimeManager)
+        /// <param name="baseEnvironmentDirectory">Base directory under which Python environments will be created.</param>
+        public PythonVirtualEnvManager(IPythonRunTimeManager pythonRuntimeManager, string baseEnvironmentDirectory)
         {
-            _beepservice = beepservice ?? throw new ArgumentNullException(nameof(beepservice));
             _pythonRuntime = pythonRuntimeManager ?? throw new ArgumentNullException(nameof(pythonRuntimeManager));
+            _baseEnvironmentDirectory = baseEnvironmentDirectory ?? throw new ArgumentNullException(nameof(baseEnvironmentDirectory));
             IsBusy = false;
         }
 
@@ -471,9 +472,9 @@ namespace Beep.Python.RuntimeEngine
                 return false;
             }
 
-            // Determine the base path for environments
+            // Determine the base path for environments using the injected base directory
             string baseEnvPath = Path.Combine(
-                _beepservice.DMEEditor.ConfigEditor.ConfigPath,
+                _baseEnvironmentDirectory,
                 "PythonEnvironments");
 
             // Create an environment based on the username in the session
@@ -991,17 +992,17 @@ namespace Beep.Python.RuntimeEngine
 
         private void LogInfo(string message)
         {
-            _beepservice.DMEEditor?.AddLogMessage("PythonVirtualEnvManager", message, DateTime.Now, -1, null, Errors.Ok);
+            //_beepservice.DMEEditor?.AddLogMessage("PythonVirtualEnvManager", message, DateTime.Now, -1, null, Errors.Ok);
         }
 
         private void LogWarning(string message)
         {
-            _beepservice.DMEEditor?.AddLogMessage("PythonVirtualEnvManager", message, DateTime.Now, -1, null, Errors.Warning);
+            //_beepservice.DMEEditor?.AddLogMessage("PythonVirtualEnvManager", message, DateTime.Now, -1, null, Errors.Warning);
         }
 
         private void LogError(string message)
         {
-            _beepservice.DMEEditor?.AddLogMessage("PythonVirtualEnvManager", message, DateTime.Now, -1, null, Errors.Failed);
+            //_beepservice.DMEEditor?.AddLogMessage("PythonVirtualEnvManager", message, DateTime.Now, -1, null, Errors.Failed);
         }
 
         #endregion
