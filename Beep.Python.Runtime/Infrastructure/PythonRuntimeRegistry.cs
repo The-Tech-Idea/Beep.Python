@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using TheTechIdea.Beep.ConfigUtil;
+//using TheTechIdea.Beep.ConfigUtil;
  
-using TheTechIdea.Beep.Editor;
+//using TheTechIdea.Beep.Editor;
 using SysEnv = System.Environment;
 
 namespace Beep.Python.RuntimeEngine.Infrastructure
@@ -20,7 +20,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
     public class PythonRuntimeRegistry : IPythonRuntimeRegistry
     {
        
-        private readonly IDMEEditor _dmEditor;
+      
         private readonly string _registryPath;
         private readonly List<PythonRuntimeInfo> _runtimes = new();
         private PythonRuntimeInfo _defaultRuntime;
@@ -45,7 +45,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
         {
             try
             {
-                _dmEditor?.AddLogMessage("Beep", "Initializing Python runtime registry...", DateTime.Now, 0, null, Errors.Ok);
+               Messaging.AddLogMessage("Beep", "Initializing Python runtime registry...", DateTime.Now, 0, null, Errors.Ok);
 
                 // Load persisted runtimes
                 await LoadRuntimeConfigurationsAsync();
@@ -53,7 +53,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
                 // Discover system runtimes if registry is empty
                 if (!_runtimes.Any())
                 {
-                    _dmEditor?.AddLogMessage("Beep", "No runtimes in registry, discovering system installations...", DateTime.Now, 0, null, Errors.Ok);
+                   Messaging.AddLogMessage("Beep", "No runtimes in registry, discovering system installations...", DateTime.Now, 0, null, Errors.Ok);
                     await DiscoverRuntimesAsync();
                 }
 
@@ -63,17 +63,17 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
                     _defaultRuntime = _runtimes.FirstOrDefault(r => r.Status == PythonRuntimeStatus.Ready)
                                    ?? _runtimes.First();
                     
-                    _dmEditor?.AddLogMessage("Beep", $"Default runtime set to: {_defaultRuntime.Name}", DateTime.Now, 0, null, Errors.Ok);
+                   Messaging.AddLogMessage("Beep", $"Default runtime set to: {_defaultRuntime.Name}", DateTime.Now, 0, null, Errors.Ok);
                 }
 
                 await SaveRuntimeConfigurationsAsync();
 
-                _dmEditor?.AddLogMessage("Beep", $"Runtime registry initialized with {_runtimes.Count} runtime(s)", DateTime.Now, 0, null, Errors.Ok);
+               Messaging.AddLogMessage("Beep", $"Runtime registry initialized with {_runtimes.Count} runtime(s)", DateTime.Now, 0, null, Errors.Ok);
                 return true;
             }
             catch (Exception ex)
             {
-                _dmEditor?.AddLogMessage("Beep", $"Failed to initialize runtime registry: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
+               Messaging.AddLogMessage("Beep", $"Failed to initialize runtime registry: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
                 return false;
             }
         }
@@ -123,7 +123,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
                     return false;
 
                 _defaultRuntime = runtime;
-                _dmEditor?.AddLogMessage("Beep", $"Default runtime changed to: {runtime.Name} ({runtimeId})", DateTime.Now, 0, null, Errors.Ok);
+               Messaging.AddLogMessage("Beep", $"Default runtime changed to: {runtime.Name} ({runtimeId})", DateTime.Now, 0, null, Errors.Ok);
             }
 
             await SaveRuntimeConfigurationsAsync();
@@ -165,7 +165,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
 
             await SaveRuntimeConfigurationsAsync();
 
-            _dmEditor?.AddLogMessage("Beep", $"Registered managed runtime: {name} ({runtimeId}) at {runtimeDir}", DateTime.Now, 0, null, Errors.Ok);
+           Messaging.AddLogMessage("Beep", $"Registered managed runtime: {name} ({runtimeId}) at {runtimeDir}", DateTime.Now, 0, null, Errors.Ok);
             return runtimeId;
         }
 
@@ -204,12 +204,12 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
 
                 await SaveRuntimeConfigurationsAsync();
 
-                _dmEditor?.AddLogMessage("Beep", $"Deleted runtime: {runtime.Name} ({runtimeId})", DateTime.Now, 0, null, Errors.Ok);
+               Messaging.AddLogMessage("Beep", $"Deleted runtime: {runtime.Name} ({runtimeId})", DateTime.Now, 0, null, Errors.Ok);
                 return true;
             }
             catch (Exception ex)
             {
-                _dmEditor?.AddLogMessage("Beep", $"Failed to delete runtime {runtimeId}: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
+               Messaging.AddLogMessage("Beep", $"Failed to delete runtime {runtimeId}: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
                 return false;
             }
         }
@@ -223,7 +223,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
 
             try
             {
-                _dmEditor?.AddLogMessage("Beep", "Discovering Python runtimes...", DateTime.Now, 0, null,   Errors.Ok);
+               Messaging.AddLogMessage("Beep", "Discovering Python runtimes...", DateTime.Now, 0, null,   Errors.Ok);
 
                 var reports = await Task.Run(() => PythonEnvironmentDiagnostics.LookForPythonInstallations());
 
@@ -273,11 +273,11 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
                     }
                 }
 
-                _dmEditor?.AddLogMessage("Beep", $"Discovered {discovered.Count} new Python runtime(s)", DateTime.Now, 0, null, Errors.Ok);
+               Messaging.AddLogMessage("Beep", $"Discovered {discovered.Count} new Python runtime(s)", DateTime.Now, 0, null, Errors.Ok);
             }
             catch (Exception ex)
             {
-                _dmEditor?.AddLogMessage("Beep", $"Error during runtime discovery: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
+               Messaging.AddLogMessage("Beep", $"Error during runtime discovery: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
             }
 
             return discovered;
@@ -327,12 +327,12 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
                         }
                     }
 
-                    _dmEditor?.AddLogMessage("Beep", $"Loaded {_runtimes.Count} runtime(s) from registry", DateTime.Now, 0, null, Errors.Ok);
+                   Messaging.AddLogMessage("Beep", $"Loaded {_runtimes.Count} runtime(s) from registry", DateTime.Now, 0, null, Errors.Ok);
                 }
             }
             catch (Exception ex)
             {
-                _dmEditor?.AddLogMessage("Beep", $"Failed to load runtime configurations: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
+               Messaging.AddLogMessage("Beep", $"Failed to load runtime configurations: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
             }
         }
 
@@ -362,7 +362,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
             }
             catch (Exception ex)
             {
-                _dmEditor?.AddLogMessage("Beep", $"Failed to save runtime configurations: {ex.Message}", DateTime.Now, 0, null,     Errors.Failed);
+               Messaging.AddLogMessage("Beep", $"Failed to save runtime configurations: {ex.Message}", DateTime.Now, 0, null,     Errors.Failed);
             }
         }
     }

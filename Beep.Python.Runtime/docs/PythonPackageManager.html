@@ -142,7 +142,7 @@
                             </tr>
                             <tr>
                                 <td><code>Progress</code></td>
-                                <td>IProgress&lt;PassedArgs&gt;</td>
+                                <td>IProgress&lt;PassedParameters&gt;</td>
                                 <td>Gets or sets the progress reporter for operations</td>
                             </tr>
                             <tr>
@@ -432,7 +432,7 @@ if (upgraded)
                     <div class="code-example">
                         <h3>Advanced Package Operations with Progress Tracking</h3>
                         <pre><code class="language-csharp">// Set up progress tracking
-packageManager.Progress = new Progress&lt;PassedArgs&gt;(args =>
+packageManager.Progress = new Progress&lt;PassedParameters&gt;(args =>
 {
     Console.WriteLine($"[{args.EventType}] {args.Messege}");
     if (args.Flag == Errors.Failed)

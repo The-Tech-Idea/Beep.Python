@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TheTechIdea.Beep.Editor;
+ 
 
 namespace Beep.Python.Model
 {
@@ -159,8 +159,8 @@ namespace Beep.Python.Model
                 SetProperty(ref _createdon, value);
             }
         }
-        private ObservableBindingList<PackageDefinition> _installedpackages = new ObservableBindingList<PackageDefinition>();
-        public ObservableBindingList<PackageDefinition> InstalledPackages {
+        private List<PackageDefinition> _installedpackages = new List<PackageDefinition>();
+        public List<PackageDefinition> InstalledPackages {
 
             get
             {
@@ -258,8 +258,8 @@ namespace Beep.Python.Model
         }
       
         // === New: Session Tracking ===
-        private ObservableBindingList<PythonSessionInfo> _sessions = new();
-        public ObservableBindingList<PythonSessionInfo> Sessions
+        private List<PythonSessionInfo> _sessions = new();
+        public List<PythonSessionInfo> Sessions
         {
             get
             {

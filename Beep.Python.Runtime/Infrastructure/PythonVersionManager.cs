@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Beep.Python.Model;
 using Beep.Python.RuntimeEngine.Helpers;
-using TheTechIdea.Beep.Editor;
-using TheTechIdea.Beep.ConfigUtil;
+//using TheTechIdea.Beep.Editor;
+//using TheTechIdea.Beep.ConfigUtil;
  
 using SysEnv = System.Environment;
 
@@ -21,7 +21,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
     public class PythonVersionManager
     {
        
-        private readonly IDMEEditor _dmEditor;
+      
         private readonly PythonRuntimeRegistry _registry;
         private readonly PythonEmbeddedProvisioner _provisioner;
         private readonly string _versionsDirectory;
@@ -133,7 +133,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
 
             if (!_availableVersions.ContainsKey(version))
             {
-                _dmEditor?.AddLogMessage("Beep", $"Unsupported Python version: {version}", DateTime.Now, 0, null, Errors.Failed);
+               Messaging.AddLogMessage("Beep", $"Unsupported Python version: {version}", DateTime.Now, 0, null, Errors.Failed);
                 throw new NotSupportedException($"Python version {version} is not supported");
             }
 
@@ -200,7 +200,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
                 Percentage = 100
             });
 
-            _dmEditor?.AddLogMessage("Beep", $"Python {version} installed at: {runtime?.Path}", DateTime.Now, 0, null, Errors.Ok);
+           Messaging.AddLogMessage("Beep", $"Python {version} installed at: {runtime?.Path}", DateTime.Now, 0, null, Errors.Ok);
 
             return runtime;
         }
@@ -266,13 +266,13 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
                 // await _registry.UnregisterRuntimeAsync(runtime.Id);
 
                 progress?.Report($"Python {version} uninstalled successfully");
-                _dmEditor?.AddLogMessage("Beep", $"Python {version} uninstalled", DateTime.Now, 0, null, Errors.Ok);
+               Messaging.AddLogMessage("Beep", $"Python {version} uninstalled", DateTime.Now, 0, null, Errors.Ok);
 
                 return true;
             }
             catch (Exception ex)
             {
-                _dmEditor?.AddLogMessage("Beep", $"Error uninstalling Python {version}: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
+               Messaging.AddLogMessage("Beep", $"Error uninstalling Python {version}: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
                 progress?.Report($"Error: {ex.Message}");
                 return false;
             }
@@ -302,13 +302,13 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
                 await _registry.SetDefaultRuntimeAsync(runtime.Id);
 
                 progress?.Report($"Python {version} is now the default runtime");
-                _dmEditor?.AddLogMessage("Beep", $"Default Python set to {version}", DateTime.Now, 0, null, Errors.Ok);
+               Messaging.AddLogMessage("Beep", $"Default Python set to {version}", DateTime.Now, 0, null, Errors.Ok);
 
                 return true;
             }
             catch (Exception ex)
             {
-                _dmEditor?.AddLogMessage("Beep", $"Error setting default Python: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
+               Messaging.AddLogMessage("Beep", $"Error setting default Python: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
                 progress?.Report($"Error: {ex.Message}");
                 return false;
             }

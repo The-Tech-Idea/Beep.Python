@@ -7,9 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TheTechIdea.Beep.ConfigUtil;
+//using TheTechIdea.Beep.ConfigUtil;
  
-using TheTechIdea.Beep.Editor;
+//using TheTechIdea.Beep.Editor;
 
 namespace Beep.Python.RuntimeEngine
 {
@@ -40,7 +40,7 @@ namespace Beep.Python.RuntimeEngine
         /// <summary>
         /// All active and recently terminated sessions.
         /// </summary>
-        public ObservableBindingList<PythonSessionInfo> Sessions { get; set; } = new();
+        public List<PythonSessionInfo> Sessions { get; set; } = new();
 
         /// <summary>
         /// Initializes a new instance of the PythonSessionManager.
@@ -448,9 +448,9 @@ namespace Beep.Python.RuntimeEngine
         /// </summary>
         /// <param name="sessionId">The ID of the session to terminate.</param>
         /// <returns>Error information, if any.</returns>
-        public IErrorsInfo TerminateSession(string sessionId)
+        public PassedParameters TerminateSession(string sessionId)
         {
-            var er = new ErrorsInfo { Flag = Errors.Ok };
+            var er = new PassedParameters { Flag = Errors.Ok };
             var session = GetSession(sessionId);
 
             if (session == null)

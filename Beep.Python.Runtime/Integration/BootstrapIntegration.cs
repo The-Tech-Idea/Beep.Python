@@ -6,8 +6,8 @@ using Beep.Python.RuntimeEngine.Templates;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using TheTechIdea.Beep.ConfigUtil;
-using TheTechIdea.Beep.Editor;
+//using TheTechIdea.Beep.ConfigUtil;
+//using TheTechIdea.Beep.Editor;
 using SysEnv = System.Environment;
 
 namespace Beep.Python.RuntimeEngine.Integration
@@ -25,8 +25,8 @@ namespace Beep.Python.RuntimeEngine.Integration
             IPythonRunTimeManager pythonRuntime = null,
             IPythonVirtualEnvManager venvManager = null,
             string baseEnvironmentDirectory = null,
-            string packageConfigPath = null,
-            IDMEEditor dmEditor = null)
+            string packageConfigPath = null
+            )
         {
             pythonRuntime ??= new PythonNetRunTimeManager();
 
@@ -47,7 +47,7 @@ namespace Beep.Python.RuntimeEngine.Integration
             var registry = new PythonRuntimeRegistry();
 
             // Create package manager (allow caller to override config path and editor)
-            var packageManager = new PackageRequirementsManager(dmEditor, packageConfigPath);
+            var packageManager = new PackageRequirementsManager( packageConfigPath);
 
             // Use provided or create new virtual env manager. If no baseEnvironmentDirectory
             // is supplied, fall back to the embedded install path's parent.
@@ -213,14 +213,14 @@ namespace Beep.Python.RuntimeEngine.Integration
         /// Extension method for IDMEEditor to enable quick Python setup.
         /// </summary>
         public static async Task<BootstrapResult> EnsurePythonAsync(
-            this IDMEEditor dmEditor,
+          
             string template = "minimal",
             IProgress<BootstrapProgress> progress = null,
             CancellationToken cancellationToken = default)
         {
-            _ = dmEditor ?? throw new ArgumentNullException(nameof(dmEditor));
+           
             // Ensure package manager logging can use the supplied editor
-            var bootstrapManager = BootstrapIntegration.CreateBootstrapManager(dmEditor: dmEditor);
+            var bootstrapManager = BootstrapIntegration.CreateBootstrapManager();
             var templateInfo = EnvironmentTemplates.GetTemplate(template);
             if (templateInfo == null)
             {
@@ -234,11 +234,11 @@ namespace Beep.Python.RuntimeEngine.Integration
         /// Extension method for IDMEEditor to get a configured Python runtime.
         /// </summary>
         public static async Task<PythonRunTime> GetPythonRuntimeAsync(
-            this IDMEEditor dmEditor,
+         
             string template = "minimal",
             CancellationToken cancellationToken = default)
         {
-            _ = dmEditor ?? throw new ArgumentNullException(nameof(dmEditor));
+
             return await BootstrapIntegration.EnsureRuntimeAsync(template, cancellationToken);
         }
     }

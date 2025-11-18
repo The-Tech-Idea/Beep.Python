@@ -129,7 +129,7 @@ var packageManager = new PythonPackageManager(
 );
 
 // Set up progress reporting
-packageManager.Progress = new Progress<PassedArgs>(args => 
+packageManager.Progress = new Progress<PassedParameters>(args => 
 {
     Console.WriteLine($"Package Operation: {args.Messege}");
 });

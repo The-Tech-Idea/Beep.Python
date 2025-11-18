@@ -1,5 +1,5 @@
 ﻿using System.Collections.ObjectModel;
-using TheTechIdea.Beep.Editor;
+ 
 
 namespace Beep.Python.Model
 {
@@ -19,8 +19,8 @@ namespace Beep.Python.Model
                 SetProperty(ref _packgeofflinepath, value);
             }
         }
-        private ObservableBindingList<FolderStructure> _folders = new ObservableBindingList<FolderStructure>();
-        public ObservableBindingList<FolderStructure> Folders
+        private List<FolderStructure> _folders = new List<FolderStructure>();
+        public List<FolderStructure> Folders
         {
             get { return _folders; }
             set
@@ -29,7 +29,7 @@ namespace Beep.Python.Model
                 SetProperty(ref _folders, value);
             }
         }
-        public ObservableBindingList<PythonRunTime> Runtimes { get; set; }= new ObservableBindingList<PythonRunTime>();
+        public List<PythonRunTime> Runtimes { get; set; }= new List<PythonRunTime>();
         //  public int RunTimeIndex { get; set; } = -1;
         public int RunTimeIndex { get; set; } = -1;
         

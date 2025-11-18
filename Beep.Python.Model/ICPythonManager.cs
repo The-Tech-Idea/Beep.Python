@@ -1,16 +1,16 @@
-﻿using TheTechIdea.Beep.ConfigUtil;
-using TheTechIdea.Beep.Editor;
+﻿ 
+ 
 
 namespace Beep.Python.Model
 {
     public interface ICPythonManager
     {
         event EventHandler<string> SendMessege;
-        IDMEEditor DMEEditor { get; set; }
+       
         IPIPManager PIPManager { get; set; }
         IFileManager FileManager { get; set; }
         IProcessManager ProcessManager { get; set; }
-        IErrorsInfo SetRuntimePath(string runtimepath);
+        PassedParameters SetRuntimePath(string runtimepath);
         PythonRunTime Config { get; set; }
         string LastfilePath { get; set; }
         string RuntimePath { get; set; }

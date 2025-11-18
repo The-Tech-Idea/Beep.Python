@@ -7,10 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TheTechIdea.Beep.ConfigUtil;
+//using TheTechIdea.Beep.ConfigUtil;
  
  
-using TheTechIdea.Beep.Editor;
+//using TheTechIdea.Beep.Editor;
 using SysEnv = System.Environment;
 
 namespace Beep.Python.RuntimeEngine.Infrastructure
@@ -189,8 +189,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
         private readonly IPythonRuntimeRegistry _registry;
         private readonly IPackageRequirementsManager _packageManager;
         private readonly IPythonVirtualEnvManager _venvManager;
-       
-        private readonly IDMEEditor _dmEditor;
+     
 
         public PythonBootstrapManager(
             IPythonEmbeddedProvisioner provisioner,
@@ -221,7 +220,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
         {
             try
             {
-                _dmEditor?.AddLogMessage("Beep", "🚀 Starting Python environment bootstrap...", DateTime.Now, 0, null, Errors.Ok);
+               Messaging.AddLogMessage("Beep", "🚀 Starting Python environment bootstrap...", DateTime.Now, 0, null, Errors.Ok);
                 ReportProgress(progress, BootstrapStage.Initializing, 0, "Initializing bootstrap process...");
 
                 var result = new BootstrapResult
@@ -286,13 +285,13 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
                 result.EndTime = DateTime.UtcNow;
                 ReportProgress(progress, BootstrapStage.Complete, 100, "Bootstrap complete!");
 
-                _dmEditor?.AddLogMessage("Beep", $"✅ Bootstrap completed in {(result.EndTime - result.StartTime).TotalSeconds:F2}s", DateTime.Now, 0, null, Errors.Ok);
+               Messaging.AddLogMessage("Beep", $"✅ Bootstrap completed in {(result.EndTime - result.StartTime).TotalSeconds:F2}s", DateTime.Now, 0, null, Errors.Ok);
 
                 return result;
             }
             catch (Exception ex)
             {
-                _dmEditor?.AddLogMessage("Beep", $"❌ Bootstrap failed: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
+               Messaging.AddLogMessage("Beep", $"❌ Bootstrap failed: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
                 ReportProgress(progress, BootstrapStage.Failed, 0, $"Bootstrap failed: {ex.Message}");
                 throw;
             }
@@ -314,7 +313,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
 
             if (existingRuntime != null)
             {
-                _dmEditor?.AddLogMessage("Beep", $"✓ Using existing embedded Python: {existingRuntime.Name}", DateTime.Now, 0, null, Errors.Ok);
+               Messaging.AddLogMessage("Beep", $"✓ Using existing embedded Python: {existingRuntime.Name}", DateTime.Now, 0, null, Errors.Ok);
                 return existingRuntime;
             }
 
@@ -376,7 +375,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
             // Check if virtual environment already exists
             if (Directory.Exists(envPath))
             {
-                _dmEditor?.AddLogMessage("Beep", $"✓ Using existing virtual environment: {envPath}", DateTime.Now, 0, null, Errors.Ok);
+               Messaging.AddLogMessage("Beep", $"✓ Using existing virtual environment: {envPath}", DateTime.Now, 0, null, Errors.Ok);
                 return await Task.FromResult(envPath);
             }
 
@@ -391,7 +390,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
                     throw new Exception($"Failed to create virtual environment at {envPath}");
                 }
 
-                _dmEditor?.AddLogMessage("Beep", $"✅ Created virtual environment: {envPath}", DateTime.Now, 0, null, Errors.Ok);
+               Messaging.AddLogMessage("Beep", $"✅ Created virtual environment: {envPath}", DateTime.Now, 0, null, Errors.Ok);
                 return envPath;
             }, cancellationToken);
         }
@@ -422,7 +421,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
                 installProgress,
                 cancellationToken);
 
-            _dmEditor?.AddLogMessage("Beep", $"✅ Installed {profileNames.Count()} package profile(s)", DateTime.Now, 0, null, Errors.Ok);
+           Messaging.AddLogMessage("Beep", $"✅ Installed {profileNames.Count()} package profile(s)", DateTime.Now, 0, null, Errors.Ok);
         }
 
         /// <summary>

@@ -1,11 +1,11 @@
-﻿using TheTechIdea.Beep.ConfigUtil;
-using TheTechIdea.Beep.Editor;
+﻿ 
+ 
 
 namespace Beep.Python.Model
 {
     public interface IPythonVirtualEnvManager : IDisposable
     {
-        ObservableBindingList<PythonVirtualEnvironment> ManagedVirtualEnvironments { get; set; }
+        List<PythonVirtualEnvironment> ManagedVirtualEnvironments { get; set; }
         bool IsBusy { get; }
         PythonVirtualEnvironment GetEnvironmentByPath(string path);
         PythonVirtualEnvironment GetEnvironmentById(string id);
@@ -23,7 +23,7 @@ namespace Beep.Python.Model
         void InitializePythonEnvironment(PythonVirtualEnvironment env);
         void SaveEnvironments(string filePath);
         void LoadEnvironments(string filePath);
-        IErrorsInfo ShutDown(PythonVirtualEnvironment env);
+        PassedParameters ShutDown(PythonVirtualEnvironment env);
 
         /// <summary>
         /// Checks if a virtual environment exists in the system for pip or conda.

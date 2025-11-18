@@ -3,9 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using TheTechIdea.Beep.Addin;
-using TheTechIdea.Beep.ConfigUtil;
-using TheTechIdea.Beep.Editor;
 
 namespace Beep.Python.RuntimeEngine
 {
@@ -61,12 +58,12 @@ namespace Beep.Python.RuntimeEngine
         /// <summary>
         /// Gets all available Python installations.
         /// </summary>
-        ObservableBindingList<PythonRunTime> AvailablePythonInstallations { get; }
+        List<PythonRunTime> AvailablePythonInstallations { get; }
 
         /// <summary>
         /// Gets all managed virtual environments.
         /// </summary>
-        ObservableBindingList<PythonVirtualEnvironment> ManagedEnvironments { get; }
+        List<PythonVirtualEnvironment> ManagedEnvironments { get; }
 
         /// <summary>
         /// Gets or sets the working directory for Python environments.
@@ -153,7 +150,7 @@ namespace Beep.Python.RuntimeEngine
         Task<(bool Success, string Output)> ExecuteAsync(
             string code,
             int timeout = 120,
-            IProgress<PassedArgs> progress = null);
+            IProgress<PassedParameters> progress = null);
 
         /// <summary>
         /// Gets the current session for single-user mode.
@@ -201,14 +198,14 @@ namespace Beep.Python.RuntimeEngine
             string username,
             string code,
             int timeout = 120,
-            IProgress<PassedArgs> progress = null);
+            IProgress<PassedParameters> progress = null);
 
         /// <summary>
         /// Terminates a user's session.
         /// </summary>
         /// <param name="username">Username</param>
         /// <returns>Error information</returns>
-        IErrorsInfo TerminateUserSession(string username);
+        PassedParameters TerminateUserSession(string username);
 
         #endregion
 
@@ -276,7 +273,7 @@ namespace Beep.Python.RuntimeEngine
             string code,
             Dictionary<string, object> variables,
             int timeout = 120,
-            IProgress<PassedArgs> progress = null);
+            IProgress<PassedParameters> progress = null);
 
         /// <summary>
         /// Executes a Python script file in a session.
@@ -290,7 +287,7 @@ namespace Beep.Python.RuntimeEngine
             PythonSessionInfo session,
             string filePath,
             int timeout = 300,
-            IProgress<PassedArgs> progress = null);
+            IProgress<PassedParameters> progress = null);
 
         /// <summary>
         /// Executes batch commands in a session.
@@ -302,7 +299,7 @@ namespace Beep.Python.RuntimeEngine
         Task<List<object>> ExecuteBatchAsync(
             PythonSessionInfo session,
             IList<string> commands,
-            IProgress<PassedArgs> progress = null);
+            IProgress<PassedParameters> progress = null);
 
         #endregion
 

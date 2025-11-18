@@ -1,4 +1,5 @@
 using Beep.Python.Model;
+using Beep.Python.RuntimeEngine.Helpers;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -7,10 +8,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TheTechIdea.Beep.Addin;
-using TheTechIdea.Beep.ConfigUtil;
+//using TheTechIdea.Beep.Addin;
+//using TheTechIdea.Beep.ConfigUtil;
  
-using TheTechIdea.Beep.Editor;
+//using TheTechIdea.Beep.Editor;
 using SysEnv = System.Environment;
 
 namespace Beep.Python.RuntimeEngine.Configuration
@@ -21,13 +22,13 @@ namespace Beep.Python.RuntimeEngine.Configuration
     /// </summary>
     public class PackageRequirementsManager : IPackageRequirementsManager
     {
-        private readonly IDMEEditor _dmEditor;
+       
         private readonly string _configPath;
         private PackageRequirementsConfig _config;
 
-        public PackageRequirementsManager(IDMEEditor dmEditor = null, string configPath = null)
+        public PackageRequirementsManager(string configPath = null)
         {
-            _dmEditor = dmEditor;
+           
 
             // Allow caller (e.g., orchestrator/shell) to control where the
             // package requirements file lives by passing configPath. If not
@@ -49,7 +50,7 @@ namespace Beep.Python.RuntimeEngine.Configuration
 
                 if (!File.Exists(path))
                 {
-                    _dmEditor?.AddLogMessage("Beep", "Package requirements config not found, creating default...", DateTime.Now, 0, null, Errors.Ok);
+                   Messaging.AddLogMessage("Beep", "Package requirements config not found, creating default...", DateTime.Now, 0, null, Errors.Ok);
                     await CreateDefaultConfigAsync(path);
                 }
 
@@ -58,16 +59,16 @@ namespace Beep.Python.RuntimeEngine.Configuration
 
                 if (_config == null)
                 {
-                    _dmEditor?.AddLogMessage("Beep", "Failed to load package requirements config", DateTime.Now, 0, null, Errors.Failed);
+                   Messaging.AddLogMessage("Beep", "Failed to load package requirements config", DateTime.Now, 0, null, Errors.Failed);
                     return false;
                 }
 
-                _dmEditor?.AddLogMessage("Beep", $"Loaded {_config.Profiles.Count} package profile(s)", DateTime.Now, 0, null, Errors.Ok);
+               Messaging.AddLogMessage("Beep", $"Loaded {_config.Profiles.Count} package profile(s)", DateTime.Now, 0, null, Errors.Ok);
                 return true;
             }
             catch (Exception ex)
             {
-                _dmEditor?.AddLogMessage("Beep", $"Error loading package requirements: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
+               Messaging.AddLogMessage("Beep", $"Error loading package requirements: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
                 return false;
             }
         }
@@ -110,22 +111,22 @@ namespace Beep.Python.RuntimeEngine.Configuration
             var profile = GetProfile(profileName);
             if (profile == null)
             {
-                _dmEditor?.AddLogMessage("Beep", $"Profile '{profileName}' not found", DateTime.Now, 0, null, Errors.Failed);
+               Messaging.AddLogMessage("Beep", $"Profile '{profileName}' not found", DateTime.Now, 0, null, Errors.Failed);
                 return false;
             }
 
             if (runtime == null || string.IsNullOrEmpty(runtime.RuntimePath))
             {
-                _dmEditor?.AddLogMessage("Beep", "Invalid runtime provided", DateTime.Now, 0, null, Errors.Failed);
+               Messaging.AddLogMessage("Beep", "Invalid runtime provided", DateTime.Now, 0, null, Errors.Failed);
                 return false;
             }
 
-            _dmEditor?.AddLogMessage("Beep", $"Installing profile '{profileName}' with {profile.Packages.Count} package(s)", DateTime.Now, 0, null, Errors.Ok);
+           Messaging.AddLogMessage("Beep", $"Installing profile '{profileName}' with {profile.Packages.Count} package(s)", DateTime.Now, 0, null, Errors.Ok);
 
             var pythonExe = Path.Combine(runtime.RuntimePath, "python.exe");
             if (!File.Exists(pythonExe))
             {
-                _dmEditor?.AddLogMessage("Beep", $"Python executable not found at {pythonExe}", DateTime.Now, 0, null, Errors.Failed);
+               Messaging.AddLogMessage("Beep", $"Python executable not found at {pythonExe}", DateTime.Now, 0, null, Errors.Failed);
                 return false;
             }
 
@@ -152,12 +153,12 @@ namespace Beep.Python.RuntimeEngine.Configuration
 
                 if (!success)
                 {
-                    _dmEditor?.AddLogMessage("Beep", $"Failed to install package: {package}", DateTime.Now, 0, null, Errors.Failed);
+                   Messaging.AddLogMessage("Beep", $"Failed to install package: {package}", DateTime.Now, 0, null, Errors.Failed);
                     return false;
                 }
             }
 
-            _dmEditor?.AddLogMessage("Beep", $"Profile '{profileName}' installed successfully", DateTime.Now, 0, null, Errors.Ok);
+           Messaging.AddLogMessage("Beep", $"Profile '{profileName}' installed successfully", DateTime.Now, 0, null, Errors.Ok);
             return true;
         }
 
@@ -232,7 +233,7 @@ namespace Beep.Python.RuntimeEngine.Configuration
             }
             catch (Exception ex)
             {
-                _dmEditor?.AddLogMessage("Beep", $"Error installing package {packageSpec}: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
+               Messaging.AddLogMessage("Beep", $"Error installing package {packageSpec}: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
                 return false;
             }
         }
@@ -353,7 +354,7 @@ namespace Beep.Python.RuntimeEngine.Configuration
             }
             catch (Exception ex)
             {
-                _dmEditor?.AddLogMessage("Beep", $"Failed to save package requirements config: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
+               Messaging.AddLogMessage("Beep", $"Failed to save package requirements config: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
                 return false;
             }
         }

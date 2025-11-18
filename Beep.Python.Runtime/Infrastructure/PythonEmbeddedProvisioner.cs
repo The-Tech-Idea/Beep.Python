@@ -9,9 +9,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using TheTechIdea.Beep.ConfigUtil;
+//using TheTechIdea.Beep.ConfigUtil;
  
-using TheTechIdea.Beep.Editor;
+//using TheTechIdea.Beep.Editor;
 using Environment = System.Environment;
 
 namespace Beep.Python.RuntimeEngine.Infrastructure
@@ -23,7 +23,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
     public class PythonEmbeddedProvisioner : IPythonEmbeddedProvisioner
     {
        
-        private readonly IDMEEditor _dmEditor;
+       
         private readonly EmbeddedPythonConfig _config;
 
         public PythonEmbeddedProvisioner(  EmbeddedPythonConfig config = null)
@@ -73,7 +73,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
 
             try
             {
-                _dmEditor?.AddLogMessage("Beep", $"Starting embedded Python {version} provisioning", DateTime.Now, 0, null, Errors.Ok);
+               Messaging.AddLogMessage("Beep", $"Starting embedded Python {version} provisioning", DateTime.Now, 0, null, Errors.Ok);
 
                 // Step 1: Check if already installed
                 if (await VerifyEmbeddedInstallationAsync(installPath))
@@ -186,13 +186,13 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
                     Percentage = 100
                 });
 
-                _dmEditor?.AddLogMessage("Beep", $"Embedded Python {version} provisioned successfully at {installPath}", DateTime.Now, 0, null, Errors.Ok);
+               Messaging.AddLogMessage("Beep", $"Embedded Python {version} provisioned successfully at {installPath}", DateTime.Now, 0, null, Errors.Ok);
 
                 return PythonEnvironmentDiagnostics.GetPythonRunTime(installPath);
             }
             catch (OperationCanceledException)
             {
-                _dmEditor?.AddLogMessage("Beep", "Embedded Python provisioning cancelled", DateTime.Now, 0, null, Errors.Failed);
+               Messaging.AddLogMessage("Beep", "Embedded Python provisioning cancelled", DateTime.Now, 0, null, Errors.Failed);
                 
                 // Cleanup partial installation
                 if (Directory.Exists(installPath))
@@ -204,7 +204,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
             }
             catch (Exception ex)
             {
-                _dmEditor?.AddLogMessage("Beep", $"Failed to provision embedded Python: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
+               Messaging.AddLogMessage("Beep", $"Failed to provision embedded Python: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
                 
                 // Cleanup partial installation
                 if (Directory.Exists(installPath))
@@ -412,7 +412,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
             }
             catch (Exception ex)
             {
-                _dmEditor?.AddLogMessage("Beep", $"Failed to setup pip: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
+               Messaging.AddLogMessage("Beep", $"Failed to setup pip: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
                 return false;
             }
         }

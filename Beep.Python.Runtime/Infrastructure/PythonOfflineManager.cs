@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 using Beep.Python.Model;
 using Beep.Python.RuntimeEngine.Helpers;
 using Newtonsoft.Json;
-using TheTechIdea.Beep.ConfigUtil;
+//using TheTechIdea.Beep.ConfigUtil;
  
-using TheTechIdea.Beep.Editor;
+//using TheTechIdea.Beep.Editor;
 using SysEnv = System.Environment;
 
 namespace Beep.Python.RuntimeEngine.Infrastructure
@@ -24,7 +24,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
     public class PythonOfflineManager
     {
        
-        private readonly IDMEEditor _dmEditor;
+       
         private readonly PythonRuntimeRegistry _registry;
         private readonly string _cacheDirectory;
         private readonly string _distributionsDirectory;
@@ -61,7 +61,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
         {
             try
             {
-                _dmEditor?.AddLogMessage("Beep", "Creating offline package...", DateTime.Now, 0, null, Errors.Ok);
+               Messaging.AddLogMessage("Beep", "Creating offline package...", DateTime.Now, 0, null, Errors.Ok);
 
                 progress?.Report(new OfflineProgress
                 {
@@ -157,7 +157,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
                         Percentage = 100
                     });
 
-                    _dmEditor?.AddLogMessage("Beep", $"Offline package created at: {outputPath}", DateTime.Now, 0, null, Errors.Ok);
+                   Messaging.AddLogMessage("Beep", $"Offline package created at: {outputPath}", DateTime.Now, 0, null, Errors.Ok);
 
                     return outputPath;
                 }
@@ -172,7 +172,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
             }
             catch (Exception ex)
             {
-                _dmEditor?.AddLogMessage("Beep", $"Error creating offline package: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
+               Messaging.AddLogMessage("Beep", $"Error creating offline package: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
                 progress?.Report(new OfflineProgress
                 {
                     Stage = OfflineStage.Failed,
@@ -195,7 +195,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
                 if (!File.Exists(packagePath))
                     throw new FileNotFoundException($"Offline package not found: {packagePath}");
 
-                _dmEditor?.AddLogMessage("Beep", $"Installing from offline package: {packagePath}", DateTime.Now, 0, null, Errors.Ok);
+               Messaging.AddLogMessage("Beep", $"Installing from offline package: {packagePath}", DateTime.Now, 0, null, Errors.Ok);
 
                 progress?.Report(new OfflineProgress
                 {
@@ -275,7 +275,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
                         Percentage = 100
                     });
 
-                    _dmEditor?.AddLogMessage("Beep", $"Offline installation complete: {installPath}", DateTime.Now, 0, null, Errors.Ok);
+                   Messaging.AddLogMessage("Beep", $"Offline installation complete: {installPath}", DateTime.Now, 0, null, Errors.Ok);
 
                     return runtime;
                 }
@@ -290,7 +290,7 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
             }
             catch (Exception ex)
             {
-                _dmEditor?.AddLogMessage("Beep", $"Error installing from offline package: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
+               Messaging.AddLogMessage("Beep", $"Error installing from offline package: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
                 progress?.Report(new OfflineProgress
                 {
                     Stage = OfflineStage.Failed,
@@ -313,13 +313,13 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
 
             if (File.Exists(cachePath))
             {
-                _dmEditor?.AddLogMessage("Beep", $"Python {version} already cached", DateTime.Now, 0, null, Errors.Ok);
+               Messaging.AddLogMessage("Beep", $"Python {version} already cached", DateTime.Now, 0, null, Errors.Ok);
                 return cachePath;
             }
 
             File.Copy(sourcePath, cachePath, true);
 
-            _dmEditor?.AddLogMessage("Beep", $"Cached Python {version} distribution", DateTime.Now, 0, null, Errors.Ok);
+           Messaging.AddLogMessage("Beep", $"Cached Python {version} distribution", DateTime.Now, 0, null, Errors.Ok);
 
             return cachePath;
         }
@@ -380,13 +380,13 @@ namespace Beep.Python.RuntimeEngine.Infrastructure
                     Directory.CreateDirectory(_packagesDirectory);
                 }
 
-                _dmEditor?.AddLogMessage("Beep", "Offline cache cleared", DateTime.Now, 0, null, Errors.Ok);
+               Messaging.AddLogMessage("Beep", "Offline cache cleared", DateTime.Now, 0, null, Errors.Ok);
 
                 return true;
             }
             catch (Exception ex)
             {
-                _dmEditor?.AddLogMessage("Beep", $"Error clearing cache: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
+               Messaging.AddLogMessage("Beep", $"Error clearing cache: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
                 return false;
             }
         }

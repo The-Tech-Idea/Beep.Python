@@ -1,5 +1,20 @@
 ﻿namespace Beep.Python.Model
 {
+    public enum Errors
+    {
+        Ok,
+        Failed,
+        Warning,
+        None,
+        PackageNotFound,
+        InstallationFailed,
+        VersionMismatch,
+        DependencyConflict,
+        NetworkError,
+        PermissionDenied,
+        InvalidPackageName,
+        UnknownError
+    }
     /// <summary>
     /// Categorizes Python packages by their primary purpose.
     /// </summary>

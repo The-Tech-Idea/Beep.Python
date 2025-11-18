@@ -10,7 +10,7 @@ using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using TheTechIdea.Beep.Editor;
+//using TheTechIdea.Beep.Editor;
 
 namespace Beep.Python.RuntimeEngine.Helpers
 {
@@ -168,7 +168,7 @@ namespace Beep.Python.RuntimeEngine.Helpers
         /// </summary>
         /// <param name="DMEditor">Reference to the IDMEEditor for configuration access.</param>
         /// <returns>Full path to the AI folder.</returns>
-        public static string SetAiFolderPath(IDMEEditor DMEditor)
+        public static string SetAiFolderPath()
         {
             string documentsPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
             string aiFolderPath = Path.Combine(documentsPath, "AI");

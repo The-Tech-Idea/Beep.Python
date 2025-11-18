@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.ObjectModel;
 using Beep.Python.Model;
-using TheTechIdea.Beep.ConfigUtil;
+//using TheTechIdea.Beep.ConfigUtil;
 using System.Linq;
-using TheTechIdea.Beep.Addin;
-using TheTechIdea.Beep.Editor;
+//using TheTechIdea.Beep.Addin;
+//using TheTechIdea.Beep.Editor;
  
 using Beep.Python.RuntimeEngine.Helpers;
 using Environment = System.Environment;
@@ -27,9 +27,9 @@ namespace Beep.Python.RuntimeEngine
         private bool disposedValue;
        
         /// <summary>
-        /// Gets the current <see cref="IProgress{PassedArgs}"/> object for reporting progress.
+        /// Gets the current <see cref="IProgress{PassedParameters}"/> object for reporting progress.
         /// </summary>
-        public IProgress<PassedArgs> Progress { get; private set; }
+        public IProgress<PassedParameters> Progress { get; private set; }
 
         /// <summary>
         /// Gets or sets the token used for cancellation operations.
@@ -70,7 +70,7 @@ namespace Beep.Python.RuntimeEngine
         /// <summary>
         /// The Python configuration object, containing a list of runtimes and the currently selected one.
         /// </summary>
-        public ObservableBindingList<PythonRunTime> PythonInstallations { get; set; } = new();
+        public List<PythonRunTime> PythonInstallations { get; set; } = new();
 
         /// <summary>
         /// Indicates whether a Python script is currently running.
@@ -92,27 +92,16 @@ namespace Beep.Python.RuntimeEngine
         /// </summary>
         public string NewPath { get; set; } = null;
 
-        /// <summary>
-        /// Gets or sets the global <see cref="IDMEEditor"/> used for logging, messages, etc.
-        /// </summary>
-        public IDMEEditor DMEditor { get; set; }
-
-        /// <summary>
-        /// Gets or sets the JSON loader used for reading/writing configuration files.
-        /// </summary>
-        public IJsonLoader JsonLoader { get; set; }
+        
         public string RequirementsFile { get; private set; }
         #endregion "Status and Configuration"
         #endregion "Properties"
 
         #region "Constructors"
-        /// <summary>
-        /// Initializes a new instance of <see cref="PythonNetRunTimeManager"/> with a specified <see cref="IBeepService"/>.
-        /// </summary>
-        /// <param name="beepService">Service used for logging, configuration, and editor access.</param>
+       
         public PythonNetRunTimeManager()
         {
-            JsonLoader = DMEditor?.ConfigEditor?.JsonLoader;
+        
 
             // Determine a base directory for Python virtual environments
             var baseEnvDir = GetPythonEnvironmentsPath();
@@ -816,7 +805,7 @@ venv_name = '{venv.Name}'
                     ReportProgress($"Using admin session '{adminSession.SessionId}' for package installation");
 
                     var installTask = ExecuteManager.RunPythonCommandLineAsync(
-                        Progress ?? DMEditor?.progress,
+                        Progress ,
                         $"install -r \"{venv.RequirementsFile}\"",
                         venv.PythonBinary == PythonBinary.Conda,
                         adminSession,
@@ -846,9 +835,9 @@ venv_name = '{venv.Name}'
         }
         /// Shuts down the Python engine, disposing of any persistent scope and clearing active environment state.
         /// </summary>
-        public IErrorsInfo ShutDown()
+        public PassedParameters ShutDown()
         {
-            var er = new ErrorsInfo { Flag = Errors.Ok };
+            var er = new PassedParameters { Flag = Errors.Ok };
             if (IsBusy) return er;
             IsBusy = true;
 
@@ -1029,9 +1018,10 @@ venv_name = '{venv.Name}'
             else
             {
                 // Create a new environment
-                string defaultEnvPath = Path.Combine(
-                    DMEditor.ConfigEditor.ContainerName,
-                    "PythonEnvironments");
+               string defaultEnvPath = GetPythonEnvironmentsPath();
+                //string defaultEnvPath = Path.Combine(
+                //    DMEditor.ConfigEditor.ContainerName,
+                //    "PythonEnvironments");
 
                 return CreateSessionForSingleUserMode(runtime, defaultEnvPath, username);
             }
@@ -1110,7 +1100,7 @@ venv_name = '{venv.Name}'
 
                 // Clear existing installations or create a new collection if needed
                 if (PythonInstallations == null)
-                    PythonInstallations = new ObservableBindingList<PythonRunTime>();
+                    PythonInstallations = new List<PythonRunTime>();
 
                 // Store existing IDs to avoid duplicates
                 var existingIds = new HashSet<string>(
@@ -1382,7 +1372,7 @@ venv_name = '{venv.Name}'
         /// <summary>
         /// Reports progress messages using Progress if available; otherwise uses DMEditor.
         /// </summary>
-        private void ReportProgress(PassedArgs args)
+        private void ReportProgress(PassedParameters args)
         {
             if (Progress != null)
             {
@@ -1397,23 +1387,11 @@ venv_name = '{venv.Name}'
         {
             if (Progress != null)
             {
-                PassedArgs args = new PassedArgs();
-                args.Messege = messege;
+                PassedParameters args = new PassedParameters();
+                args.Message = messege;
                 Progress.Report(args);
             }
-            else if (DMEditor != null)
-            {
-                if (DMEditor.progress != null)
-                {
-                    Progress = DMEditor.progress;
-                    PassedArgs args = new PassedArgs
-                    {
-                        Messege = messege
-                    };
-                    Progress.Report(args);
-                }
-                DMEditor.AddLogMessage("Beep AI Python", messege, DateTime.Now, 0, null, flag);
-            }
+        
         }
 
         /// <summary>
@@ -1477,9 +1455,9 @@ venv_name = '{venv.Name}'
         /// <summary>
         /// Overload of ShutDown that allows specifying which session to shut down.
         /// </summary>
-        public IErrorsInfo ShutDownSession(PythonSessionInfo session)
+        public PassedParameters ShutDownSession(PythonSessionInfo session)
         {
-            var er = new ErrorsInfo { Flag = Errors.Ok };
+            var er = new PassedParameters { Flag = Errors.Ok };
             if (session == null)
                 return er;
 

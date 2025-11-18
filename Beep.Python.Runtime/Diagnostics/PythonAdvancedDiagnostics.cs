@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 using Beep.Python.Model;
 using Beep.Python.RuntimeEngine.Helpers;
 using Beep.Python.RuntimeEngine.Infrastructure;
-using TheTechIdea.Beep.ConfigUtil;
+//using TheTechIdea.Beep.ConfigUtil;
  
-using TheTechIdea.Beep.Editor;
+//using TheTechIdea.Beep.Editor;
 using SysEnv = System.Environment;
 
 namespace Beep.Python.RuntimeEngine.Diagnostics
@@ -71,13 +71,13 @@ namespace Beep.Python.RuntimeEngine.Diagnostics
                 report.EndTime = DateTime.UtcNow;
                 report.IsSuccessful = true;
 
-            //    _dmEditor?.AddLogMessage("Beep", $"Comprehensive diagnostics completed for {runtime.Name}", DateTime.Now, 0, null, Errors.Ok);
+            //   Messaging.AddLogMessage("Beep", $"Comprehensive diagnostics completed for {runtime.Name}", DateTime.Now, 0, null, Errors.Ok);
             }
             catch (Exception ex)
             {
                 report.IsSuccessful = false;
                 report.ErrorMessage = ex.Message;
-              //  _dmEditor?.AddLogMessage("Beep", $"Diagnostics failed: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
+              // Messaging.AddLogMessage("Beep", $"Diagnostics failed: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
             }
 
             return report;

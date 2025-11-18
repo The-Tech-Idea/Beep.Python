@@ -7,9 +7,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TheTechIdea.Beep.ConfigUtil;
+//using TheTechIdea.Beep.ConfigUtil;
  
-using TheTechIdea.Beep.Editor;
+//using TheTechIdea.Beep.Editor;
 
 namespace Beep.Python.RuntimeEngine.Monitoring
 {
@@ -21,7 +21,7 @@ namespace Beep.Python.RuntimeEngine.Monitoring
     {
         private readonly IPythonRuntimeRegistry _registry;
        
-        private readonly IDMEEditor _dmEditor;
+       
         private Timer _healthCheckTimer;
         private readonly object _lock = new object();
 
@@ -50,7 +50,7 @@ namespace Beep.Python.RuntimeEngine.Monitoring
                     TimeSpan.Zero,
                     interval);
 
-                _dmEditor?.AddLogMessage("Beep", $"🔍 Health monitoring started (interval: {intervalMinutes} minutes)", DateTime.Now, 0, null, Errors.Ok);
+               Messaging.AddLogMessage("Beep", $"🔍 Health monitoring started (interval: {intervalMinutes} minutes)", DateTime.Now, 0, null, Errors.Ok);
             }
         }
 
@@ -63,7 +63,7 @@ namespace Beep.Python.RuntimeEngine.Monitoring
             {
                 _healthCheckTimer?.Dispose();
                 _healthCheckTimer = null;
-                _dmEditor?.AddLogMessage("Beep", "Health monitoring stopped", DateTime.Now, 0, null, Errors.Ok);
+               Messaging.AddLogMessage("Beep", "Health monitoring stopped", DateTime.Now, 0, null, Errors.Ok);
             }
         }
 
@@ -102,11 +102,11 @@ namespace Beep.Python.RuntimeEngine.Monitoring
 
                 report.Summary = $"{healthyRuntimes}/{totalRuntimes} runtimes healthy";
 
-                _dmEditor?.AddLogMessage("Beep", $"Health check complete: {report.Summary}", DateTime.Now, 0, null, Errors.Ok);
+               Messaging.AddLogMessage("Beep", $"Health check complete: {report.Summary}", DateTime.Now, 0, null, Errors.Ok);
             }
             catch (Exception ex)
             {
-                _dmEditor?.AddLogMessage("Beep", $"Health check failed: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
+               Messaging.AddLogMessage("Beep", $"Health check failed: {ex.Message}", DateTime.Now, 0, null, Errors.Failed);
                 report.OverallHealth = HealthStatus.Unknown;
                 report.Summary = $"Health check failed: {ex.Message}";
             }

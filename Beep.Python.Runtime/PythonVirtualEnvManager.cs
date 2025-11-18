@@ -11,9 +11,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TheTechIdea.Beep.ConfigUtil;
+//using TheTechIdea.Beep.ConfigUtil;
 
-using TheTechIdea.Beep.Editor;
+//using TheTechIdea.Beep.Editor;
 
 namespace Beep.Python.RuntimeEngine
 {
@@ -41,7 +41,7 @@ namespace Beep.Python.RuntimeEngine
         /// <summary>
         /// Collection of all managed virtual environments.
         /// </summary>
-        public ObservableBindingList<PythonVirtualEnvironment> ManagedVirtualEnvironments { get; set; } = new();
+        public List<PythonVirtualEnvironment> ManagedVirtualEnvironments { get; set; } = new();
 
         /// <summary>
         /// Initializes a new instance of PythonVirtualEnvManager.
@@ -861,9 +861,9 @@ namespace Beep.Python.RuntimeEngine
         /// </summary>
         /// <param name="env">The environment to shut down.</param>
         /// <returns>Error information, if any.</returns>
-        public IErrorsInfo ShutDown(PythonVirtualEnvironment env)
+        public PassedParameters ShutDown(PythonVirtualEnvironment env)
         {
-            ErrorsInfo er = new ErrorsInfo { Flag = Errors.Ok };
+            PassedParameters er = new PassedParameters { Flag = Errors.Ok };
             if (IsBusy) return er;
 
             try
@@ -959,7 +959,7 @@ namespace Beep.Python.RuntimeEngine
                 if (File.Exists(filePath))
                 {
                     var json = File.ReadAllText(filePath);
-                    var loadedEnvironments = JsonConvert.DeserializeObject<ObservableBindingList<PythonVirtualEnvironment>>(json);
+                    var loadedEnvironments = JsonConvert.DeserializeObject<List<PythonVirtualEnvironment>>(json);
 
                     if (loadedEnvironments != null)
                     {

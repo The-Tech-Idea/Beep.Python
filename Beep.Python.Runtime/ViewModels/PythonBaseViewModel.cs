@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using TheTechIdea.Beep.ConfigUtil;
-using TheTechIdea.Beep.Addin;
-using TheTechIdea.Beep.Editor;
+//using TheTechIdea.Beep.ConfigUtil;
+//using TheTechIdea.Beep.Addin;
+//using TheTechIdea.Beep.Editor;
 
  
 using Beep.Python.RuntimeEngine.Helpers;
@@ -29,9 +29,8 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         [ObservableProperty]
         public CancellationToken token;
         [ObservableProperty]
-        public IProgress<PassedArgs> progress;
-        [ObservableProperty]
-        IDMEEditor editor;
+        public IProgress<PassedParameters> progress;
+ 
         [ObservableProperty]
         bool isBusy;
         [ObservableProperty]
@@ -46,7 +45,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
         public PythonSessionInfo SessionInfo;
 
         public bool IsInitialized { get; private set; } = false;
-        public ObservableBindingList<PythonRunTime> AvailablePythonInstallations =>pythonRuntime.PythonInstallations;
+        public List<PythonRunTime> AvailablePythonInstallations =>pythonRuntime.PythonInstallations;
 
         public string GetAlgorithimName(string algorithim)
         {
@@ -77,7 +76,7 @@ namespace Beep.Python.RuntimeEngine.ViewModels
 
             if (Progress != null)
             {
-                PassedArgs ps = new PassedArgs { EventType = "Update", Messege = messege, ParameterString1 = Editor.ErrorObject.Message };
+                PassedParameters ps = new PassedParameters { EventType = "Update", Message = messege };
                 Progress.Report(ps);
             }
 

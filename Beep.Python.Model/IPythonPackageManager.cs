@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
-using TheTechIdea.Beep.Editor;
-using TheTechIdea.Beep.Editor.UOW;
+
 
 namespace Beep.Python.Model
 {
@@ -13,7 +11,7 @@ namespace Beep.Python.Model
     /// </summary>
     public interface IPythonPackageManager : IDisposable
     {
-        UnitofWork<PackageDefinition> UnitofWork { get; set; }
+    
 
         #region Session and Environment Management
         /// <summary>
@@ -105,7 +103,7 @@ namespace Beep.Python.Model
 
         #region Package Category Management
         // New methods for categorized package management
-        ObservableBindingList<PackageDefinition> GetPackagesByCategory(PackageCategory category);
+        List<PackageDefinition> GetPackagesByCategory(PackageCategory category);
         void SetPackageCategory(string packageName, PackageCategory category);
         void UpdatePackageCategories(Dictionary<string, PackageCategory> packageCategories);
 

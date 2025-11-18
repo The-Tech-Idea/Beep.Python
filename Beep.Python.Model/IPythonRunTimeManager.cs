@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
-using TheTechIdea.Beep.Addin;
-using TheTechIdea.Beep.ConfigUtil;
-using TheTechIdea.Beep.Editor;
+
+ 
+ 
 
 namespace Beep.Python.Model
 {
@@ -22,13 +22,13 @@ namespace Beep.Python.Model
         Dictionary<string, PyModule> SessionScopes { get; }
 
         /// <summary>All known Python runtime configurations.</summary>
-        ObservableBindingList<PythonRunTime> PythonInstallations { get; set; }
+        List<PythonRunTime> PythonInstallations { get; set; }
 
         
 
         /// <summary>Acquire the GIL state for thread-safe Python calls.</summary>
         Py.GILState GIL();
-        IDMEEditor DMEditor { get; set; }
+        
         ObservableCollection<string> OutputLines { get; set; }
         bool IsBusy { get; set; }
         bool IsInitialized { get; }
@@ -79,12 +79,12 @@ namespace Beep.Python.Model
         /// <summary>
         /// Shuts down the Python runtime.
         /// </summary>
-        IErrorsInfo ShutDown();
+        PassedParameters ShutDown();
 
         /// <summary>
         /// Shuts down a specific session.
         /// </summary>
-        IErrorsInfo ShutDownSession(PythonSessionInfo session);
+        PassedParameters ShutDownSession(PythonSessionInfo session);
 
         /// <summary>
         /// Cleans up resources associated with a session.

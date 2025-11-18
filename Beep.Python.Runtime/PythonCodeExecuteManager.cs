@@ -8,10 +8,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using TheTechIdea.Beep.Addin;
-using TheTechIdea.Beep.ConfigUtil;
+//using TheTechIdea.Beep.Addin;
+//using TheTechIdea.Beep.ConfigUtil;
  
-using TheTechIdea.Beep.Editor;
+//using TheTechIdea.Beep.Editor;
 
 namespace Beep.Python.RuntimeEngine
 {
@@ -24,7 +24,7 @@ namespace Beep.Python.RuntimeEngine
         #region Fields
         private readonly IPythonRunTimeManager _pythonRuntime;
        
-        private readonly IDMEEditor _dmEditor;
+   
         private volatile bool _shouldStop = false;
         private bool _disposed = false;
         private readonly SemaphoreSlim _executionSemaphore = new SemaphoreSlim(1, 1);
@@ -35,7 +35,7 @@ namespace Beep.Python.RuntimeEngine
         /// <summary>
         /// Gets or sets the progress reporter for Python code execution.
         /// </summary>
-        public IProgress<PassedArgs> Progress { get; set; }
+        public IProgress<PassedParameters> Progress { get; set; }
 
         /// <summary>
         /// Gets or sets the cancellation token for stopping operations.
@@ -61,7 +61,6 @@ namespace Beep.Python.RuntimeEngine
             _pythonRuntime = pythonRuntime ?? throw new ArgumentNullException(nameof(pythonRuntime));
              
            
-            Progress = _dmEditor?.progress;
         }
         #endregion
 
@@ -79,7 +78,7 @@ namespace Beep.Python.RuntimeEngine
             string code,
             PythonSessionInfo session,
             int timeoutSeconds = 120,
-            IProgress<PassedArgs> progress = null)
+            IProgress<PassedParameters> progress = null)
         {
             if (string.IsNullOrEmpty(code))
             {
@@ -147,7 +146,7 @@ namespace Beep.Python.RuntimeEngine
             string code,
             PythonSessionInfo session,
             CancellationToken cancellationToken,
-            IProgress<PassedArgs> progress = null)
+            IProgress<PassedParameters> progress = null)
         {
             // The Python wrapper code to capture output
             string wrapperCode = @"
@@ -386,7 +385,7 @@ def execute_with_capture(code_to_execute, globals_dict, output_callback, should_
             string filePath,
             PythonSessionInfo session,
             int timeoutSeconds = 300,
-            IProgress<PassedArgs> progress = null)
+            IProgress<PassedParameters> progress = null)
         {
             if (string.IsNullOrEmpty(filePath))
             {
@@ -424,7 +423,7 @@ def execute_with_capture(code_to_execute, globals_dict, output_callback, should_
         public async Task<object> ExecuteCommandAsync(
             string command,
             PythonSessionInfo session,
-            IProgress<PassedArgs> progress = null)
+            IProgress<PassedParameters> progress = null)
         {
             if (string.IsNullOrEmpty(command))
             {
@@ -469,7 +468,7 @@ def execute_with_capture(code_to_execute, globals_dict, output_callback, should_
             string code,
             PythonSessionInfo session,
             Dictionary<string, object> variables,
-            IProgress<PassedArgs> progress = null)
+            IProgress<PassedParameters> progress = null)
         {
             if (string.IsNullOrEmpty(code))
             {
@@ -578,29 +577,29 @@ def execute_with_capture(code_to_execute, globals_dict, output_callback, should_
         /// <summary>
         /// Reports progress using the provided progress reporter or a fallback.
         /// </summary>
-        private void ReportProgress(string message, Errors flag = Errors.Ok, IProgress<PassedArgs> customProgress = null)
+        private void ReportProgress(string message, Errors flag = Errors.Ok, IProgress<PassedParameters> customProgress = null)
         {
-            var progressToUse = customProgress ?? Progress ?? _dmEditor?.progress;
+            var progressToUse = customProgress ?? Progress ;
 
             if (progressToUse != null)
             {
-                progressToUse.Report(new PassedArgs
+                progressToUse.Report(new PassedParameters
                 {
-                    Messege = message,
+                    Message = message,
                     Flag = flag,
                     EventType = "PythonExecution"
                 });
             }
 
             // Also log to the editor if available
-            _dmEditor?.AddLogMessage("Python Execution", message, DateTime.Now, -1, null, flag);
+           Messaging.AddLogMessage("Python Execution", message, DateTime.Now, -1, null, flag);
         }
         // Add a method for profiled execution
         public async Task<(bool Success, string Output, TimeSpan ExecutionTime)> ExecuteCodeWithProfilingAsync(
             string code,
             PythonSessionInfo session,
             int timeoutSeconds = 120,
-            IProgress<PassedArgs> progress = null)
+            IProgress<PassedParameters> progress = null)
         {
             var stopwatch = Stopwatch.StartNew();
             var result = await ExecuteCodeAsync(code, session, timeoutSeconds, progress);
@@ -673,7 +672,7 @@ def execute_with_capture(code_to_execute, globals_dict, output_callback, should_
         public async Task<List<object>> ExecuteBatchAsync(
             IList<string> commands,
             PythonSessionInfo session,
-            IProgress<PassedArgs> progress = null)
+            IProgress<PassedParameters> progress = null)
         {
             if (commands == null || commands.Count == 0)
             {
@@ -775,7 +774,7 @@ def execute_with_capture(code_to_execute, globals_dict, output_callback, should_
             string functionName,
             PythonSessionInfo session,
             Action<object> onItemYielded,
-            IProgress<PassedArgs> progress = null)
+            IProgress<PassedParameters> progress = null)
         {
             if (string.IsNullOrEmpty(generatorCode) || string.IsNullOrEmpty(functionName))
             {
@@ -889,7 +888,7 @@ def process_generator(generator_func, callback):
             IList<string> codeSegments,
             PythonSessionInfo session,
             bool stopOnError = false,
-            IProgress<PassedArgs> progress = null)
+            IProgress<PassedParameters> progress = null)
         {
             if (codeSegments == null || codeSegments.Count == 0)
             {
@@ -937,7 +936,7 @@ def process_generator(generator_func, callback):
         /// <summary>
         /// Runs Python code asynchronously within a session.
         /// </summary>
-        public async Task<IErrorsInfo> RunCode(PythonSessionInfo session, string code, IProgress<PassedArgs> progress, CancellationToken token)
+        public async Task<PassedParameters> RunCode(PythonSessionInfo session, string code, IProgress<PassedParameters> progress, CancellationToken token)
         {
             // Store the token for cancellation
             CancellationToken = token;
@@ -945,8 +944,8 @@ def process_generator(generator_func, callback):
             // Execute the code using the new method
             var result = await ExecuteCodeAsync(code, session, 300, progress);
 
-            // Create an ErrorsInfo object to return
-            var errorInfo = new ErrorsInfo();
+            // Create an PassedParameters object to return
+            var errorInfo = new PassedParameters();
 
             if (result.Success)
             {
@@ -965,7 +964,7 @@ def process_generator(generator_func, callback):
         /// <summary>
         /// Runs a Python command asynchronously within a session.
         /// </summary>
-        public async Task<dynamic> RunCommand(PythonSessionInfo session, string command, IProgress<PassedArgs> progress, CancellationToken token)
+        public async Task<dynamic> RunCommand(PythonSessionInfo session, string command, IProgress<PassedParameters> progress, CancellationToken token)
         {
             // Store the token for cancellation
             CancellationToken = token;
@@ -977,7 +976,7 @@ def process_generator(generator_func, callback):
         /// <summary>
         /// Runs a Python file asynchronously within a session.
         /// </summary>
-        public async Task<IErrorsInfo> RunFile(PythonSessionInfo session, string file, IProgress<PassedArgs> progress, CancellationToken token)
+        public async Task<PassedParameters> RunFile(PythonSessionInfo session, string file, IProgress<PassedParameters> progress, CancellationToken token)
         {
             // Store the token for cancellation
             CancellationToken = token;
@@ -985,8 +984,8 @@ def process_generator(generator_func, callback):
             // Execute the file using the new method
             var result = await ExecuteScriptFileAsync(file, session, 300, progress);
 
-            // Create an ErrorsInfo object to return
-            var errorInfo = new ErrorsInfo();
+            // Create an PassedParameters object to return
+            var errorInfo = new PassedParameters();
 
             if (result.Success)
             {
@@ -1006,7 +1005,7 @@ def process_generator(generator_func, callback):
         /// Runs a pip/command-line instruction in the given session/environment.
         /// </summary>
         public async Task<string> RunPythonCommandLineAsync(
-            IProgress<PassedArgs> progress,
+            IProgress<PassedParameters> progress,
             string commandString,
             bool useConda,
             PythonSessionInfo session,
@@ -1093,7 +1092,7 @@ except Exception as e:
             PythonSessionInfo session,
             string environmentName,
             string code,
-            IProgress<PassedArgs> progress)
+            IProgress<PassedParameters> progress)
         {
             // Simply delegate to ExecuteCodeAsync
             var result = await ExecuteCodeAsync(code, session, 300, progress);
@@ -1103,7 +1102,7 @@ except Exception as e:
         /// <summary>
         /// Runs Python code and captures output.
         /// </summary>
-        public async Task<string> RunPythonCodeAndGetOutput(IProgress<PassedArgs> progress, string code, PythonSessionInfo session = null)
+        public async Task<string> RunPythonCodeAndGetOutput(IProgress<PassedParameters> progress, string code, PythonSessionInfo session = null)
         {
             // Check if session is provided
             if (session == null)

@@ -1,6 +1,6 @@
 ﻿using Python.Runtime;
 using System.Diagnostics;
-using TheTechIdea.Beep.Editor;
+ 
 
 namespace Beep.Python.Model
 {

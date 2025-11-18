@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TheTechIdea.Beep.ConfigUtil;
-using TheTechIdea.Beep.Editor;
+ 
+ 
 
 namespace Beep.Python.Model
 {
@@ -15,7 +15,7 @@ namespace Beep.Python.Model
         /// <summary>
         /// Collection of all sessions managed by this session manager.
         /// </summary>
-        ObservableBindingList<PythonSessionInfo> Sessions { get; }
+        List<PythonSessionInfo> Sessions { get; }
 
         /// <summary>
         /// Creates a new Python session associated with a specific user and environment.
@@ -70,7 +70,7 @@ namespace Beep.Python.Model
         /// </summary>
         /// <param name="sessionId">The ID of the session to terminate.</param>
         /// <returns>Error information, if any.</returns>
-        IErrorsInfo TerminateSession(string sessionId);
+        PassedParameters TerminateSession(string sessionId);
 
         /// <summary>
         /// Performs cleanup of sessions older than the specified maximum age.

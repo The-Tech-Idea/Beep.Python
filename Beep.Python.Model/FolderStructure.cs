@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using TheTechIdea.Beep.Editor;
+ 
 
 namespace Beep.Python.Model
 {
@@ -11,8 +11,8 @@ namespace Beep.Python.Model
         {
             
         }
-        private ObservableBindingList<FolderStructure> _folders = new ObservableBindingList<FolderStructure>();
-        public ObservableBindingList<FolderStructure> Folders
+        private List<FolderStructure> _folders = new List<FolderStructure>();
+        public List<FolderStructure> Folders
         {
             get { return _folders; }
             set

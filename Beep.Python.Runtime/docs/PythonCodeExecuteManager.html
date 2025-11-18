@@ -95,7 +95,7 @@
                         
                         <li>
                             <div class="member-name">Progress</div>
-                            <div class="member-type">IProgress&lt;PassedArgs&gt;</div>
+                            <div class="member-type">IProgress&lt;PassedParameters&gt;</div>
                             <div class="member-desc">Gets or sets the progress reporter for Python code execution.</div>
                         </li>
                         
@@ -114,7 +114,7 @@
                     <h3>Code Execution Methods</h3>
                     <ul class="member-list">
                         <li>
-                            <div class="member-name">ExecuteCodeAsync(string code, PythonSessionInfo session, int timeoutSeconds = 120, IProgress&lt;PassedArgs&gt; progress = null)</div>
+                            <div class="member-name">ExecuteCodeAsync(string code, PythonSessionInfo session, int timeoutSeconds = 120, IProgress&lt;PassedParameters&gt; progress = null)</div>
                             <div class="member-type">Task&lt;(bool Success, string Output)&gt;</div>
                             <div class="member-desc">
                                 Executes Python code asynchronously with output capturing and error handling.
@@ -122,7 +122,7 @@
                         </li>
                         
                         <li>
-                            <div class="member-name">ExecuteScriptFileAsync(string filePath, PythonSessionInfo session, int timeoutSeconds = 300, IProgress&lt;PassedArgs&gt; progress = null)</div>
+                            <div class="member-name">ExecuteScriptFileAsync(string filePath, PythonSessionInfo session, int timeoutSeconds = 300, IProgress&lt;PassedParameters&gt; progress = null)</div>
                             <div class="member-type">Task&lt;(bool Success, string Output)&gt;</div>
                             <div class="member-desc">
                                 Executes a Python script file asynchronously within a session.
@@ -130,7 +130,7 @@
                         </li>
                         
                         <li>
-                            <div class="member-name">ExecuteCommandAsync(string command, PythonSessionInfo session, IProgress&lt;PassedArgs&gt; progress = null)</div>
+                            <div class="member-name">ExecuteCommandAsync(string command, PythonSessionInfo session, IProgress&lt;PassedParameters&gt; progress = null)</div>
                             <div class="member-type">Task&lt;object&gt;</div>
                             <div class="member-desc">
                                 Executes a Python command and returns the result.
@@ -138,7 +138,7 @@
                         </li>
                         
                         <li>
-                            <div class="member-name">ExecuteWithVariablesAsync(string code, PythonSessionInfo session, Dictionary&lt;string, object&gt; variables, IProgress&lt;PassedArgs&gt; progress = null)</div>
+                            <div class="member-name">ExecuteWithVariablesAsync(string code, PythonSessionInfo session, Dictionary&lt;string, object&gt; variables, IProgress&lt;PassedParameters&gt; progress = null)</div>
                             <div class="member-type">Task&lt;object&gt;</div>
                             <div class="member-desc">
                                 Executes Python code with multiple inputs/variables and returns the result.
@@ -146,7 +146,7 @@
                         </li>
                         
                         <li>
-                            <div class="member-name">ExecuteCodeWithProfilingAsync(string code, PythonSessionInfo session, int timeoutSeconds = 120, IProgress&lt;PassedArgs&gt; progress = null)</div>
+                            <div class="member-name">ExecuteCodeWithProfilingAsync(string code, PythonSessionInfo session, int timeoutSeconds = 120, IProgress&lt;PassedParameters&gt; progress = null)</div>
                             <div class="member-type">Task&lt;(bool Success, string Output, TimeSpan ExecutionTime)&gt;</div>
                             <div class="member-desc">
                                 Executes Python code with performance profiling information.
@@ -165,7 +165,7 @@
                     <h3>Advanced Execution Methods</h3>
                     <ul class="member-list">
                         <li>
-                            <div class="member-name">ExecuteBatchAsync(IList&lt;string&gt; commands, PythonSessionInfo session, IProgress&lt;PassedArgs&gt; progress = null)</div>
+                            <div class="member-name">ExecuteBatchAsync(IList&lt;string&gt; commands, PythonSessionInfo session, IProgress&lt;PassedParameters&gt; progress = null)</div>
                             <div class="member-type">Task&lt;List&lt;object&gt;&gt;</div>
                             <div class="member-desc">
                                 Executes Python code in a batch, optimizing GIL usage.
@@ -173,7 +173,7 @@
                         </li>
                         
                         <li>
-                            <div class="member-name">ExecuteGeneratorAsync(string generatorCode, string functionName, PythonSessionInfo session, Action&lt;object&gt; onItemYielded, IProgress&lt;PassedArgs&gt; progress = null)</div>
+                            <div class="member-name">ExecuteGeneratorAsync(string generatorCode, string functionName, PythonSessionInfo session, Action&lt;object&gt; onItemYielded, IProgress&lt;PassedParameters&gt; progress = null)</div>
                             <div class="member-type">Task&lt;bool&gt;</div>
                             <div class="member-desc">
                                 Executes Python code that returns an iterator or generator, processing items as they are yielded.
@@ -181,7 +181,7 @@
                         </li>
                         
                         <li>
-                            <div class="member-name">ExecuteInteractiveAsync(IList&lt;string&gt; codeSegments, PythonSessionInfo session, bool stopOnError = false, IProgress&lt;PassedArgs&gt; progress = null)</div>
+                            <div class="member-name">ExecuteInteractiveAsync(IList&lt;string&gt; codeSegments, PythonSessionInfo session, bool stopOnError = false, IProgress&lt;PassedParameters&gt; progress = null)</div>
                             <div class="member-type">Task&lt;List&lt;(bool Success, string Output)&gt;&gt;</div>
                             <div class="member-desc">
                                 Executes Python code in interactive mode, allowing for incremental execution.

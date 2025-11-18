@@ -7,10 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TheTechIdea.Beep.Addin;
-using TheTechIdea.Beep.ConfigUtil;
+//using TheTechIdea.Beep.Addin;
+//using TheTechIdea.Beep.ConfigUtil;
  
-using TheTechIdea.Beep.Editor;
+//using TheTechIdea.Beep.Editor;
 using Environment = System.Environment;
 
 namespace Beep.Python.RuntimeEngine
@@ -25,7 +25,7 @@ namespace Beep.Python.RuntimeEngine
         #region Fields
 
        
-        private readonly IDMEEditor _dmEditor;
+       
         private bool _disposed = false;
         private PythonRunTime _basePythonRuntime;
         private string _pythonBasePath;
@@ -57,8 +57,8 @@ namespace Beep.Python.RuntimeEngine
         public bool IsInitialized { get; private set; }
         public PythonVirtualEnvironment AdminEnvironment => _adminEnvironment;
         public PythonVirtualEnvironment CurrentEnvironment => _currentEnvironment;
-        public ObservableBindingList<PythonRunTime> AvailablePythonInstallations => RuntimeManager?.PythonInstallations;
-        public ObservableBindingList<PythonVirtualEnvironment> ManagedEnvironments => VirtualEnvManager?.ManagedVirtualEnvironments;
+        public List<PythonRunTime> AvailablePythonInstallations => RuntimeManager?.PythonInstallations;
+        public List<PythonVirtualEnvironment> ManagedEnvironments => VirtualEnvManager?.ManagedVirtualEnvironments;
 
         /// <summary>
         /// Gets or sets the working directory for Python environments.
@@ -467,7 +467,7 @@ namespace Beep.Python.RuntimeEngine
         public async Task<(bool Success, string Output)> ExecuteAsync(
             string code,
             int timeout = 120,
-            IProgress<PassedArgs> progress = null)
+            IProgress<PassedParameters> progress = null)
         {
             try
             {
@@ -636,7 +636,7 @@ namespace Beep.Python.RuntimeEngine
             string username,
             string code,
             int timeout = 120,
-            IProgress<PassedArgs> progress = null)
+            IProgress<PassedParameters> progress = null)
         {
             try
             {
@@ -670,13 +670,13 @@ namespace Beep.Python.RuntimeEngine
         /// <summary>
         /// Terminates a user's session.
         /// </summary>
-        public IErrorsInfo TerminateUserSession(string username)
+        public PassedParameters TerminateUserSession(string username)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(username))
                 {
-                    return new ErrorsInfo { Flag = Errors.Failed, Message = "Username is required" };
+                    return new PassedParameters { Flag = Errors.Failed, Message = "Username is required" };
                 }
 
                 lock (_lockObject)
@@ -690,13 +690,13 @@ namespace Beep.Python.RuntimeEngine
                         return result;
                     }
 
-                    return new ErrorsInfo { Flag = Errors.Ok, Message = "No active session found" };
+                    return new PassedParameters { Flag = Errors.Ok, Message = "No active session found" };
                 }
             }
             catch (Exception ex)
             {
                 LogError($"Failed to terminate user session: {ex.Message}", ex);
-                return new ErrorsInfo { Flag = Errors.Failed, Message = ex.Message };
+                return new PassedParameters { Flag = Errors.Failed, Message = ex.Message };
             }
         }
 
@@ -921,7 +921,7 @@ namespace Beep.Python.RuntimeEngine
             string code,
             Dictionary<string, object> variables,
             int timeout = 120,
-            IProgress<PassedArgs> progress = null)
+            IProgress<PassedParameters> progress = null)
         {
             try
             {
@@ -951,7 +951,7 @@ namespace Beep.Python.RuntimeEngine
             PythonSessionInfo session,
             string filePath,
             int timeout = 300,
-            IProgress<PassedArgs> progress = null)
+            IProgress<PassedParameters> progress = null)
         {
             try
             {
@@ -986,7 +986,7 @@ namespace Beep.Python.RuntimeEngine
         public async Task<List<object>> ExecuteBatchAsync(
             PythonSessionInfo session,
             IList<string> commands,
-            IProgress<PassedArgs> progress = null)
+            IProgress<PassedParameters> progress = null)
         {
             try
             {
@@ -1102,18 +1102,18 @@ namespace Beep.Python.RuntimeEngine
 
         private void LogInfo(string message)
         {
-            _dmEditor?.AddLogMessage("PythonOrchestrator", message, DateTime.Now, 0, null, Errors.Ok);
+           Messaging.AddLogMessage("PythonOrchestrator", message, DateTime.Now, 0, null, Errors.Ok);
         }
 
         private void LogWarning(string message)
         {
-            _dmEditor?.AddLogMessage("PythonOrchestrator", message, DateTime.Now, 0, null, Errors.Failed);
+           Messaging.AddLogMessage("PythonOrchestrator", message, DateTime.Now, 0, null, Errors.Failed);
         }
 
         private void LogError(string message, Exception ex = null)
         {
             var fullMessage = ex != null ? $"{message}: {ex.Message}" : message;
-            _dmEditor?.AddLogMessage("PythonOrchestrator", fullMessage, DateTime.Now, 0, null, Errors.Failed);
+           Messaging.AddLogMessage("PythonOrchestrator", fullMessage, DateTime.Now, 0, null, Errors.Failed);
         }
 
         #endregion
