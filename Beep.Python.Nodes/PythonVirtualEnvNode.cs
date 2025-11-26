@@ -10,7 +10,7 @@ using TheTechIdea.Beep.DataBase;
 using TheTechIdea.Beep.Editor;
 using TheTechIdea.Beep.Vis;
 using TheTechIdea.Beep.Vis.Modules;
-using Errors = Beep.Python.Model.Errors;
+
 
 namespace Beep.Python.Nodes
 {
