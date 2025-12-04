@@ -8,6 +8,7 @@ using TheTechIdea.Beep.ConfigUtil;
 using TheTechIdea.Beep.Editor;
 using TheTechIdea.Beep.Vis.Modules;
 using Beep.Python.Model;
+using Errors = TheTechIdea.Beep.ConfigUtil.Errors;
 
 
 namespace Beep.Python.Nodes

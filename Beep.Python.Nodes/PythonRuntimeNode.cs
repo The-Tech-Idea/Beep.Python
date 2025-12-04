@@ -10,7 +10,7 @@ using TheTechIdea.Beep.DataBase;
 using TheTechIdea.Beep.Editor;
 using TheTechIdea.Beep.Vis;
 using TheTechIdea.Beep.Vis.Modules;
-
+using Errors = TheTechIdea.Beep.ConfigUtil.Errors;
 using SystemEnvironment = System.Environment;
 
 namespace Beep.Python.Nodes
@@ -109,7 +109,7 @@ namespace Beep.Python.Nodes
                 else
                 {
                     // Log that no virtual environments are available
-                    DMEEditor.AddLogMessage("Info", "No virtual environments found for this Python runtime", DateTime.Now, 0, null, Errors.Ok);
+                    DMEEditor.AddLogMessage("Info", "No virtual environments found for this Python runtime", DateTime.Now, 0, null, TheTechIdea.Beep.ConfigUtil.Errors.Ok);
                 }
             }
             catch (Exception ex)

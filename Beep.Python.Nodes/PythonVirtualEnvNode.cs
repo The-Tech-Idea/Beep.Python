@@ -67,11 +67,11 @@ namespace Beep.Python.Nodes
             {
                 // Virtual environment nodes typically don't have children
                 // Could add package nodes or session nodes here if needed
-                DMEEditor.AddLogMessage("Info", $"Virtual environment '{VirtualEnvironment?.Name ?? "Unknown"}' loaded", DateTime.Now, 0, null, Errors.Ok);
+                DMEEditor.AddLogMessage("Info", $"Virtual environment '{VirtualEnvironment?.Name ?? "Unknown"}' loaded", DateTime.Now, 0, null, TheTechIdea.Beep.ConfigUtil.Errors.Ok);
             }
             catch (Exception ex)
             {
-                DMEEditor.AddLogMessage("Error", $"Could not process virtual environment: {ex.Message}", DateTime.Now, -1, null, Errors.Failed);
+                DMEEditor.AddLogMessage("Error", $"Could not process virtual environment: {ex.Message}", DateTime.Now, -1, null, TheTechIdea.Beep.ConfigUtil.Errors.Failed);
                 throw;
             }
             return DMEEditor.ErrorObject;
