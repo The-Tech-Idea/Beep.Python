@@ -1,0 +1,799 @@
+{% extends "base.html" %}
+
+{% block title %}Sync Jobs{% endblock %}
+
+{% block extra_css %}
+<style>
+    .job-card {
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    .job-card:hover {
+        border-color: #0d6efd !important;
+    }
+    .job-card.selected {
+        border-color: #0d6efd !important;
+        box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+    }
+    .status-running {
+        animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    .log-output {
+        max-height: 300px;
+        overflow-y: auto;
+        font-family: monospace;
+        font-size: 0.85rem;
+        background: #1a1a2e;
+        padding: 1rem;
+        border-radius: 0.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h3 mb-1"><i class="fas fa-sync me-2"></i>Sync Jobs</h1>
+        <p class="text-muted mb-0">Schedule automatic document refresh from data sources</p>
+    </div>
+    <div>
+        <a href="{{ url_for('rag.data_sources_page') }}" class="btn btn-outline-info me-2">
+            <i class="fas fa-database me-1"></i>Data Sources
+        </a>
+        <a href="{{ url_for('rag.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to RAG
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Scheduler Status -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-dark border-secondary">
+            <div class="card-body d-flex justify-content-between align-items-center py-2">
+                <div>
+                    <i class="fas fa-clock me-2"></i>
+                    <strong>Scheduler Status:</strong>
+                    <span id="scheduler-status" class="badge bg-secondary ms-2">Checking...</span>
+                </div>
+                <div id="scheduler-info" class="text-muted small"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Sync Jobs List -->
+    <div class="col-lg-5 mb-4">
+        <div class="card bg-dark border-secondary">
+            <div class="card-header border-secondary d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-tasks me-2"></i>Sync Jobs</h5>
+                <button class="btn btn-sm btn-primary" onclick="showAddJobModal()">
+                    <i class="fas fa-plus me-1"></i>New Job
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <div id="jobs-list" class="list-group list-group-flush">
+                    <div class="text-center py-4 text-muted">
+                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                        <p class="mt-2 small mb-0">Loading sync jobs...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Job Details -->
+    <div class="col-lg-7 mb-4">
+        <div class="card bg-dark border-secondary h-100">
+            <div class="card-header border-secondary d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Job Details
+                    <span id="selected-job-name" class="text-muted small ms-2"></span>
+                </h5>
+                <div id="job-actions" style="display: none;">
+                    <button class="btn btn-sm btn-success me-1" onclick="runSelectedJob()" title="Run Now">
+                        <i class="fas fa-play"></i> Run Now
+                    </button>
+                    <button class="btn btn-sm btn-primary me-1" onclick="editSelectedJob()" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteSelectedJob()" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="job-details-content">
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-arrow-left fa-2x mb-3"></i>
+                        <p>Select a sync job to view details</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Run History -->
+<div class="row" id="history-section" style="display: none;">
+    <div class="col-12">
+        <div class="card bg-dark border-secondary">
+            <div class="card-header border-secondary">
+                <h5 class="mb-0"><i class="fas fa-history me-2"></i>Run History</h5>
+            </div>
+            <div class="card-body">
+                <div id="run-history">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Job Modal -->
+<div class="modal fade" id="jobModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="jobModalTitle">
+                    <i class="fas fa-plus-circle me-2"></i>New Sync Job
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="job-form">
+                    <input type="hidden" id="job-id">
+                    
+                    <!-- Basic Info -->
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Job Name *</label>
+                            <input type="text" class="form-control bg-secondary border-0 text-white" 
+                                   id="job-name" required placeholder="Daily Document Sync">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Status</label>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="job-active" checked>
+                                <label class="form-check-label" for="job-active">Active</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <input type="text" class="form-control bg-secondary border-0 text-white" 
+                               id="job-description" placeholder="Optional description">
+                    </div>
+                    
+                    <!-- Source Selection -->
+                    <hr class="border-secondary">
+                    <h6 class="text-muted mb-3"><i class="fas fa-database me-1"></i>Data Source</h6>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Source Type</label>
+                            <select class="form-select bg-secondary border-0 text-white" id="job-source-type"
+                                    onchange="updateJobSourceFields()">
+                                <option value="data_source">Use Data Source</option>
+                                <option value="file_system">File System (Direct)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6" id="data-source-select">
+                            <label class="form-label">Data Source</label>
+                            <select class="form-select bg-secondary border-0 text-white" id="job-data-source">
+                                <option value="">-- Select Data Source --</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- File System Fields -->
+                    <div id="job-fs-fields" style="display: none;">
+                        <div class="mb-3">
+                            <label class="form-label">File Path *</label>
+                            <input type="text" class="form-control bg-secondary border-0 text-white" 
+                                   id="job-file-path" placeholder="/path/to/documents">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">File Patterns</label>
+                            <input type="text" class="form-control bg-secondary border-0 text-white" 
+                                   id="job-file-patterns" placeholder="*.txt, *.md, *.pdf">
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="job-recursive" checked>
+                            <label class="form-check-label" for="job-recursive">Include subdirectories</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Target Collection -->
+                    <div class="mb-3">
+                        <label class="form-label">Target Collection *</label>
+                        <select class="form-select bg-secondary border-0 text-white" id="job-collection" required>
+                            <option value="">-- Select Collection --</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Schedule -->
+                    <hr class="border-secondary">
+                    <h6 class="text-muted mb-3"><i class="fas fa-clock me-1"></i>Schedule</h6>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Schedule Type</label>
+                            <select class="form-select bg-secondary border-0 text-white" id="job-schedule-type"
+                                    onchange="updateScheduleFields()">
+                                <option value="manual">Manual Only</option>
+                                <option value="interval">Interval</option>
+                                <option value="cron">Cron Expression</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4" id="interval-field" style="display: none;">
+                            <label class="form-label">Interval (minutes)</label>
+                            <input type="number" class="form-control bg-secondary border-0 text-white" 
+                                   id="job-interval" min="1" value="60">
+                        </div>
+                        <div class="col-md-4" id="cron-field" style="display: none;">
+                            <label class="form-label">Cron Expression</label>
+                            <input type="text" class="form-control bg-secondary border-0 text-white" 
+                                   id="job-cron" placeholder="0 * * * *">
+                            <small class="text-muted">min hour day month weekday</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Sync Options -->
+                    <hr class="border-secondary">
+                    <h6 class="text-muted mb-3"><i class="fas fa-cogs me-1"></i>Sync Options</h6>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Sync Mode</label>
+                            <select class="form-select bg-secondary border-0 text-white" id="job-sync-mode">
+                                <option value="incremental">Incremental (only new/changed)</option>
+                                <option value="full">Full (re-sync all)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input" type="checkbox" id="job-delete-missing">
+                                <label class="form-check-label" for="job-delete-missing">
+                                    Delete documents missing from source
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveJob()">
+                    <i class="fas fa-save me-1"></i>Save
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let selectedJobId = null;
+let jobModal = null;
+let dataSources = [];
+let collections = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    jobModal = new bootstrap.Modal(document.getElementById('jobModal'));
+    loadSchedulerStatus();
+    loadSyncJobs();
+    loadDataSources();
+    loadCollections();
+    
+    // Check if we should pre-select a data source (from data sources page)
+    const urlParams = new URLSearchParams(window.location.search);
+    const sourceId = urlParams.get('source');
+    if (sourceId) {
+        setTimeout(() => {
+            showAddJobModal(parseInt(sourceId));
+        }, 500);
+    }
+});
+
+function loadSchedulerStatus() {
+    fetch('/rag/api/scheduler/status')
+        .then(response => response.json())
+        .then(data => {
+            const statusEl = document.getElementById('scheduler-status');
+            const infoEl = document.getElementById('scheduler-info');
+            
+            if (!data.available) {
+                statusEl.className = 'badge bg-warning ms-2';
+                statusEl.textContent = 'Not Available';
+                infoEl.innerHTML = `
+                    <span class="me-3">APScheduler not installed in RAG environment</span>
+                    <button class="btn btn-sm btn-success" onclick="installScheduler()">
+                        <i class="fas fa-download me-1"></i>Install APScheduler
+                    </button>
+                `;
+            } else if (data.running) {
+                statusEl.className = 'badge bg-success ms-2';
+                statusEl.textContent = 'Running';
+                infoEl.textContent = `${data.scheduled_jobs.length} scheduled job(s)`;
+            } else {
+                statusEl.className = 'badge bg-secondary ms-2';
+                statusEl.textContent = 'Stopped';
+            }
+        })
+        .catch(err => {
+            document.getElementById('scheduler-status').className = 'badge bg-danger ms-2';
+            document.getElementById('scheduler-status').textContent = 'Error';
+        });
+}
+
+async function installScheduler() {
+    const statusEl = document.getElementById('scheduler-status');
+    const infoEl = document.getElementById('scheduler-info');
+    
+    statusEl.className = 'badge bg-info ms-2';
+    statusEl.textContent = 'Installing...';
+    infoEl.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Installing APScheduler (1-2 min)...';
+    
+    try {
+        const response = await fetch('/rag/api/env/install-scheduler', { method: 'POST' });
+        const data = await response.json();
+        
+        if (data.success) {
+            // Poll for completion
+            pollForScheduler();
+        } else {
+            showToast(data.error || 'Failed to start APScheduler installation', 'danger');
+            loadSchedulerStatus();
+        }
+    } catch (err) {
+        showToast('Error installing APScheduler: ' + err.message, 'danger');
+        loadSchedulerStatus();
+    }
+}
+
+function pollForScheduler() {
+    const statusEl = document.getElementById('scheduler-status');
+    const infoEl = document.getElementById('scheduler-info');
+    let attempts = 0;
+    const maxAttempts = 60; // 2 minutes max
+    
+    const checkInterval = setInterval(async () => {
+        attempts++;
+        
+        try {
+            const response = await fetch('/rag/api/env/check-package/apscheduler');
+            const data = await response.json();
+            
+            if (data.installed) {
+                clearInterval(checkInterval);
+                showToast('APScheduler installed successfully!', 'success');
+                // Reload to reinitialize scheduler
+                setTimeout(() => location.reload(), 1000);
+            } else if (attempts >= maxAttempts) {
+                clearInterval(checkInterval);
+                showToast('Installation taking too long. Check environment page.', 'warning');
+                loadSchedulerStatus();
+            } else {
+                infoEl.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Installing APScheduler (${attempts}s)...`;
+            }
+        } catch (err) {
+            // Continue polling
+        }
+    }, 2000); // Check every 2 seconds
+}
+
+function loadSyncJobs() {
+    fetch('/rag/api/sync-jobs')
+        .then(response => response.json())
+        .then(data => {
+            const list = document.getElementById('jobs-list');
+            
+            if (!data.sync_jobs || data.sync_jobs.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-tasks fa-2x mb-2"></i>
+                        <p class="mb-2">No sync jobs configured</p>
+                        <button class="btn btn-sm btn-primary" onclick="showAddJobModal()">
+                            <i class="fas fa-plus me-1"></i>Create First Job
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            list.innerHTML = data.sync_jobs.map(job => `
+                <a href="#" class="list-group-item list-group-item-action bg-dark text-white border-secondary job-card"
+                   onclick="selectJob(${job.id})" data-id="${job.id}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${job.name}</strong>
+                            <small class="text-muted ms-2">${job.schedule_type}</small>
+                        </div>
+                        <div>
+                            ${getStatusBadge(job)}
+                            <span class="badge ${job.is_active ? 'bg-success' : 'bg-secondary'} ms-1">
+                                ${job.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-1">
+                        <small class="text-muted">
+                            <i class="fas fa-layer-group me-1"></i>${job.collection_id}
+                        </small>
+                        ${job.next_run_at ? `<small class="text-muted">Next: ${formatDate(job.next_run_at)}</small>` : ''}
+                    </div>
+                </a>
+            `).join('');
+        })
+        .catch(err => {
+            document.getElementById('jobs-list').innerHTML = 
+                '<div class="text-danger p-3">Failed to load sync jobs</div>';
+        });
+}
+
+function loadDataSources() {
+    fetch('/rag/api/data-sources')
+        .then(response => response.json())
+        .then(data => {
+            dataSources = data.data_sources || [];
+            updateDataSourceDropdown();
+        });
+}
+
+function loadCollections() {
+    fetch('/rag/api/collections')
+        .then(response => response.json())
+        .then(data => {
+            collections = data.collections || [];
+            updateCollectionDropdown();
+        });
+}
+
+function updateDataSourceDropdown() {
+    const select = document.getElementById('job-data-source');
+    select.innerHTML = '<option value="">-- Select Data Source --</option>' +
+        dataSources.map(s => `<option value="${s.id}">${s.name} (${s.source_type})</option>`).join('');
+}
+
+function updateCollectionDropdown() {
+    const select = document.getElementById('job-collection');
+    select.innerHTML = '<option value="">-- Select Collection --</option>' +
+        collections.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+}
+
+function getStatusBadge(job) {
+    if (job.last_status === 'running') {
+        return '<span class="badge bg-primary status-running"><i class="fas fa-spinner fa-spin me-1"></i>Running</span>';
+    } else if (job.last_status === 'completed') {
+        return '<span class="badge bg-success"><i class="fas fa-check me-1"></i>OK</span>';
+    } else if (job.last_status === 'failed') {
+        return '<span class="badge bg-danger"><i class="fas fa-times me-1"></i>Failed</span>';
+    }
+    return '<span class="badge bg-secondary">Never Run</span>';
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    return new Date(dateStr).toLocaleString();
+}
+
+function selectJob(jobId) {
+    selectedJobId = jobId;
+    
+    document.querySelectorAll('.job-card').forEach(el => el.classList.remove('selected'));
+    document.querySelector(`.job-card[data-id="${jobId}"]`)?.classList.add('selected');
+    
+    document.getElementById('job-actions').style.display = 'block';
+    document.getElementById('history-section').style.display = 'block';
+    
+    loadJobDetails(jobId);
+    loadJobHistory(jobId);
+}
+
+function loadJobDetails(jobId) {
+    const content = document.getElementById('job-details-content');
+    content.innerHTML = '<div class="text-center py-4"><div class="spinner-border spinner-border-sm"></div></div>';
+    
+    fetch(`/rag/api/sync-jobs/${jobId}`)
+        .then(response => response.json())
+        .then(data => {
+            const job = data.sync_job;
+            document.getElementById('selected-job-name').textContent = `(${job.name})`;
+            
+            let scheduleInfo = 'Manual only';
+            if (job.schedule_type === 'interval') {
+                scheduleInfo = `Every ${job.interval_minutes} minutes`;
+            } else if (job.schedule_type === 'cron') {
+                scheduleInfo = `Cron: ${job.cron_expression}`;
+            }
+            
+            content.innerHTML = `
+                <table class="table table-dark table-sm">
+                    <tr><th width="30%">Name</th><td>${job.name}</td></tr>
+                    <tr><th>Description</th><td>${job.description || '-'}</td></tr>
+                    <tr><th>Status</th><td>${getStatusBadge(job)} 
+                        <span class="badge ${job.is_active ? 'bg-success' : 'bg-secondary'} ms-1">${job.is_active ? 'Active' : 'Inactive'}</span></td></tr>
+                    <tr><th>Source</th><td>${job.data_source_name || job.source_type || 'File System'}</td></tr>
+                    ${job.file_path ? `<tr><th>Path</th><td><code>${job.file_path}</code></td></tr>` : ''}
+                    <tr><th>Collection</th><td><code>${job.collection_id}</code></td></tr>
+                    <tr><th>Schedule</th><td>${scheduleInfo}</td></tr>
+                    <tr><th>Sync Mode</th><td>${job.sync_mode} ${job.delete_missing ? '(delete missing)' : ''}</td></tr>
+                    <tr><th>Last Run</th><td>${formatDate(job.last_run_at)}</td></tr>
+                    ${job.last_error ? `<tr><th>Last Error</th><td class="text-danger">${job.last_error}</td></tr>` : ''}
+                    <tr><th>Next Run</th><td>${job.scheduler_status?.scheduled ? formatDate(job.next_run_at) : 'Not scheduled'}</td></tr>
+                    <tr><th>Docs Added (last)</th><td>${job.last_doc_count || 0}</td></tr>
+                </table>
+            `;
+        })
+        .catch(err => {
+            content.innerHTML = '<div class="text-danger">Failed to load job details</div>';
+        });
+}
+
+function loadJobHistory(jobId) {
+    fetch(`/rag/api/sync-jobs/${jobId}/runs?limit=10`)
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('run-history');
+            
+            if (!data.runs || data.runs.length === 0) {
+                container.innerHTML = '<p class="text-muted">No run history yet.</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <table class="table table-dark table-sm">
+                    <thead>
+                        <tr>
+                            <th>Started</th>
+                            <th>Duration</th>
+                            <th>Status</th>
+                            <th>Added</th>
+                            <th>Updated</th>
+                            <th>Deleted</th>
+                            <th>Failed</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.runs.map(run => `
+                            <tr>
+                                <td>${formatDate(run.started_at)}</td>
+                                <td>${run.duration_seconds ? run.duration_seconds.toFixed(1) + 's' : '-'}</td>
+                                <td>${getRunStatusBadge(run.status)}</td>
+                                <td class="text-success">${run.documents_added}</td>
+                                <td class="text-info">${run.documents_updated}</td>
+                                <td class="text-warning">${run.documents_deleted}</td>
+                                <td class="text-danger">${run.documents_failed}</td>
+                            </tr>
+                            ${run.error_message ? `<tr><td colspan="7" class="text-danger small">${run.error_message}</td></tr>` : ''}
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        });
+}
+
+function getRunStatusBadge(status) {
+    const badges = {
+        'running': '<span class="badge bg-primary">Running</span>',
+        'completed': '<span class="badge bg-success">Completed</span>',
+        'failed': '<span class="badge bg-danger">Failed</span>',
+        'cancelled': '<span class="badge bg-warning">Cancelled</span>'
+    };
+    return badges[status] || `<span class="badge bg-secondary">${status}</span>`;
+}
+
+function showAddJobModal(preSelectedSourceId = null) {
+    document.getElementById('jobModalTitle').innerHTML = '<i class="fas fa-plus-circle me-2"></i>New Sync Job';
+    document.getElementById('job-form').reset();
+    document.getElementById('job-id').value = '';
+    document.getElementById('job-active').checked = true;
+    
+    updateJobSourceFields();
+    updateScheduleFields();
+    
+    if (preSelectedSourceId) {
+        document.getElementById('job-source-type').value = 'data_source';
+        updateJobSourceFields();
+        document.getElementById('job-data-source').value = preSelectedSourceId;
+    }
+    
+    jobModal.show();
+}
+
+function editSelectedJob() {
+    if (!selectedJobId) return;
+    
+    fetch(`/rag/api/sync-jobs/${selectedJobId}`)
+        .then(response => response.json())
+        .then(data => {
+            const job = data.sync_job;
+            
+            document.getElementById('jobModalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Edit Sync Job';
+            document.getElementById('job-id').value = job.id;
+            document.getElementById('job-name').value = job.name;
+            document.getElementById('job-description').value = job.description || '';
+            document.getElementById('job-active').checked = job.is_active;
+            
+            if (job.data_source_id) {
+                document.getElementById('job-source-type').value = 'data_source';
+                updateJobSourceFields();
+                document.getElementById('job-data-source').value = job.data_source_id;
+            } else {
+                document.getElementById('job-source-type').value = 'file_system';
+                updateJobSourceFields();
+                document.getElementById('job-file-path').value = job.file_path || '';
+                document.getElementById('job-file-patterns').value = (job.file_patterns || []).join(', ');
+                document.getElementById('job-recursive').checked = job.recursive !== false;
+            }
+            
+            document.getElementById('job-collection').value = job.collection_id;
+            document.getElementById('job-schedule-type').value = job.schedule_type;
+            updateScheduleFields();
+            
+            if (job.interval_minutes) {
+                document.getElementById('job-interval').value = job.interval_minutes;
+            }
+            if (job.cron_expression) {
+                document.getElementById('job-cron').value = job.cron_expression;
+            }
+            
+            document.getElementById('job-sync-mode').value = job.sync_mode || 'incremental';
+            document.getElementById('job-delete-missing').checked = job.delete_missing;
+            
+            jobModal.show();
+        });
+}
+
+function updateJobSourceFields() {
+    const sourceType = document.getElementById('job-source-type').value;
+    
+    if (sourceType === 'data_source') {
+        document.getElementById('data-source-select').style.display = 'block';
+        document.getElementById('job-fs-fields').style.display = 'none';
+    } else {
+        document.getElementById('data-source-select').style.display = 'none';
+        document.getElementById('job-fs-fields').style.display = 'block';
+    }
+}
+
+function updateScheduleFields() {
+    const scheduleType = document.getElementById('job-schedule-type').value;
+    
+    document.getElementById('interval-field').style.display = scheduleType === 'interval' ? 'block' : 'none';
+    document.getElementById('cron-field').style.display = scheduleType === 'cron' ? 'block' : 'none';
+}
+
+function saveJob() {
+    const jobId = document.getElementById('job-id').value;
+    const sourceType = document.getElementById('job-source-type').value;
+    
+    if (!document.getElementById('job-name').value) {
+        alert('Job name is required');
+        return;
+    }
+    
+    if (!document.getElementById('job-collection').value) {
+        alert('Target collection is required');
+        return;
+    }
+    
+    const data = {
+        name: document.getElementById('job-name').value,
+        description: document.getElementById('job-description').value,
+        is_active: document.getElementById('job-active').checked,
+        collection_id: document.getElementById('job-collection').value,
+        schedule_type: document.getElementById('job-schedule-type').value,
+        sync_mode: document.getElementById('job-sync-mode').value,
+        delete_missing: document.getElementById('job-delete-missing').checked
+    };
+    
+    if (sourceType === 'data_source') {
+        data.data_source_id = parseInt(document.getElementById('job-data-source').value) || null;
+    } else {
+        data.source_type = 'file_system';
+        data.file_path = document.getElementById('job-file-path').value;
+        data.file_patterns = document.getElementById('job-file-patterns').value
+            .split(',').map(p => p.trim()).filter(p => p);
+        data.recursive = document.getElementById('job-recursive').checked;
+    }
+    
+    if (data.schedule_type === 'interval') {
+        data.interval_minutes = parseInt(document.getElementById('job-interval').value) || 60;
+    } else if (data.schedule_type === 'cron') {
+        data.cron_expression = document.getElementById('job-cron').value || '0 * * * *';
+    }
+    
+    const url = jobId ? `/rag/api/sync-jobs/${jobId}` : '/rag/api/sync-jobs';
+    const method = jobId ? 'PUT' : 'POST';
+    
+    fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            jobModal.hide();
+            loadSyncJobs();
+            loadSchedulerStatus();
+            if (result.id) {
+                selectJob(result.id);
+            }
+        } else {
+            alert('Error: ' + (result.error || 'Failed to save'));
+        }
+    })
+    .catch(err => alert('Error: ' + err.message));
+}
+
+function deleteSelectedJob() {
+    if (!selectedJobId) return;
+    
+    if (!confirm('Delete this sync job?')) return;
+    
+    fetch(`/rag/api/sync-jobs/${selectedJobId}`, { method: 'DELETE' })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                selectedJobId = null;
+                document.getElementById('job-actions').style.display = 'none';
+                document.getElementById('history-section').style.display = 'none';
+                document.getElementById('job-details-content').innerHTML = `
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-arrow-left fa-2x mb-3"></i>
+                        <p>Select a sync job to view details</p>
+                    </div>
+                `;
+                loadSyncJobs();
+                loadSchedulerStatus();
+            } else {
+                alert('Error: ' + (result.error || 'Failed to delete'));
+            }
+        });
+}
+
+function runSelectedJob() {
+    if (!selectedJobId) return;
+    
+    const content = document.getElementById('job-details-content');
+    const originalContent = content.innerHTML;
+    content.innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border" role="status"></div>
+            <p class="mt-2">Running sync job...</p>
+        </div>
+    `;
+    
+    fetch(`/rag/api/sync-jobs/${selectedJobId}/run`, { method: 'POST' })
+        .then(response => response.json())
+        .then(result => {
+            loadJobDetails(selectedJobId);
+            loadJobHistory(selectedJobId);
+            loadSyncJobs();
+            
+            if (result.success) {
+                alert(`Sync completed!\nAdded: ${result.result.documents_added}\nFailed: ${result.result.documents_failed}`);
+            } else {
+                alert('Sync failed: ' + (result.error || result.result?.error || 'Unknown error'));
+            }
+        })
+        .catch(err => {
+            content.innerHTML = originalContent;
+            alert('Error: ' + err.message);
+        });
+}
+</script>
+{% endblock %}

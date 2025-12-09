@@ -1,0 +1,466 @@
+{% extends "base.html" %}
+
+{% block title %}Context API Pipeline - Python Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-diagram-3 me-2"></i>External Context API Pipeline</h2>
+    <a href="{{ url_for('rag.rag_dashboard') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to RAG
+    </a>
+</div>
+
+<!-- Status Alert -->
+<div id="statusAlert" class="alert d-none mb-3"></div>
+
+<!-- Pipeline Overview -->
+<div class="card bg-dark mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Pipeline Flow</h5>
+    </div>
+    <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="text-center p-3 bg-secondary bg-opacity-25 rounded flex-fill">
+                <i class="bi bi-person-circle display-6 d-block mb-2"></i>
+                <strong>User Query</strong>
+            </div>
+            <i class="bi bi-arrow-right text-muted"></i>
+            <div class="text-center p-3 rounded flex-fill {{ 'bg-success bg-opacity-25' if settings.use_auth_api else 'bg-secondary bg-opacity-10' }}">
+                <i class="bi bi-shield-check display-6 d-block mb-2 {{ 'text-success' if settings.use_auth_api else 'text-muted' }}"></i>
+                <strong>Auth API</strong>
+                <span class="badge {{ 'bg-success' if settings.use_auth_api else 'bg-secondary' }} d-block mt-1">
+                    {{ 'Enabled' if settings.use_auth_api else 'Disabled' }}
+                </span>
+            </div>
+            <i class="bi bi-arrow-right text-muted"></i>
+            <div class="text-center p-3 bg-primary bg-opacity-25 rounded flex-fill">
+                <i class="bi bi-database display-6 d-block mb-2 text-primary"></i>
+                <strong>RAG Storage</strong>
+                <span class="badge bg-primary d-block mt-1">{{ settings.provider_type | upper }}</span>
+            </div>
+            <i class="bi bi-arrow-right text-muted"></i>
+            <div class="text-center p-3 rounded flex-fill {{ 'bg-info bg-opacity-25' if settings.use_context_api else 'bg-secondary bg-opacity-10' }}">
+                <i class="bi bi-funnel display-6 d-block mb-2 {{ 'text-info' if settings.use_context_api else 'text-muted' }}"></i>
+                <strong>Context API</strong>
+                <span class="badge {{ 'bg-info' if settings.use_context_api else 'bg-secondary' }} d-block mt-1">
+                    {{ 'Enabled' if settings.use_context_api else 'Disabled' }}
+                </span>
+            </div>
+            <i class="bi bi-arrow-right text-muted"></i>
+            <div class="text-center p-3 bg-warning bg-opacity-25 rounded flex-fill">
+                <i class="bi bi-robot display-6 d-block mb-2 text-warning"></i>
+                <strong>LLM</strong>
+            </div>
+            <i class="bi bi-arrow-right text-muted"></i>
+            <div class="text-center p-3 bg-success bg-opacity-25 rounded flex-fill">
+                <i class="bi bi-chat-dots display-6 d-block mb-2 text-success"></i>
+                <strong>Response</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- External API Configuration -->
+<div class="card bg-dark mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-cloud me-2"></i>External API Connection</h5>
+        <button class="btn btn-sm btn-outline-info" onclick="testConnection()">
+            <i class="bi bi-wifi me-1"></i>Test Connection
+        </button>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8 mb-3">
+                <label class="form-label">Base URL <span class="text-danger">*</span></label>
+                <input type="url" class="form-control bg-dark text-light" id="baseUrl"
+                       placeholder="https://your-api.example.com"
+                       value="{{ settings.external_api.base_url if settings.external_api else '' }}">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Timeout (seconds)</label>
+                <input type="number" class="form-control bg-dark text-light" id="timeout"
+                       value="{{ settings.external_api.timeout if settings.external_api else 30 }}"
+                       min="1" max="300">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">API Key</label>
+                <div class="input-group">
+                    <input type="password" class="form-control bg-dark text-light" id="apiKey"
+                           placeholder="Enter API key (leave empty to keep current)">
+                    <button class="btn btn-outline-secondary" type="button" onclick="toggleApiKey()">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Auth Header</label>
+                <input type="text" class="form-control bg-dark text-light" id="authHeader"
+                       value="{{ settings.external_api.auth_header if settings.external_api else 'Authorization' }}">
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Auth Prefix</label>
+                <input type="text" class="form-control bg-dark text-light" id="authPrefix"
+                       value="{{ settings.external_api.auth_prefix if settings.external_api else 'Bearer' }}">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Auth API Configuration -->
+<div class="card bg-dark mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-shield-check me-2"></i>Step 1: Authorization API</h5>
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="useAuthApi"
+                   {% if settings.use_auth_api %}checked{% endif %}>
+            <label class="form-check-label" for="useAuthApi">Enable</label>
+        </div>
+    </div>
+    <div class="card-body" id="authApiSettings">
+        <p class="text-muted">
+            Called <strong>before</strong> RAG retrieval to validate user has permission to query.
+        </p>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Auth Endpoint</label>
+                <input type="text" class="form-control bg-dark text-light" id="authEndpoint"
+                       value="{{ settings.external_api.auth_endpoint if settings.external_api else '/api/rag/authorize' }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Expected Request Format</label>
+                <pre class="bg-secondary bg-opacity-25 p-2 rounded small mb-0"><code>{
+  "user_id": "user123",
+  "action": "query",
+  "resource_type": "collection",
+  "resource_id": "optional_id"
+}</code></pre>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-md-6">
+                <label class="form-label">Expected Response Format</label>
+                <pre class="bg-secondary bg-opacity-25 p-2 rounded small mb-0"><code>{
+  "allowed": true,
+  "reason": "User has access",
+  "privileges": ["read", "write"]
+}</code></pre>
+            </div>
+            <div class="col-md-6">
+                <button class="btn btn-outline-success w-100 mt-4" onclick="testAuthApi()">
+                    <i class="bi bi-play me-1"></i>Test Auth API
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Context Processing API Configuration -->
+<div class="card bg-dark mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-funnel me-2"></i>Step 3: Context Processing API</h5>
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="useContextApi"
+                   {% if settings.use_context_api %}checked{% endif %}>
+            <label class="form-check-label" for="useContextApi">Enable</label>
+        </div>
+    </div>
+    <div class="card-body" id="contextApiSettings">
+        <p class="text-muted">
+            Called <strong>after</strong> RAG retrieval to process/enrich contexts before sending to LLM.
+            Use this to filter, rerank, summarize, or add metadata to retrieved documents.
+        </p>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Context Processing Endpoint</label>
+                <input type="text" class="form-control bg-dark text-light" id="contextProcessingEndpoint"
+                       value="{{ settings.external_api.context_processing_endpoint if settings.external_api else '/api/rag/process-context' }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Expected Request Format</label>
+                <pre class="bg-secondary bg-opacity-25 p-2 rounded small mb-0"><code>{
+  "query": "user question",
+  "user_id": "user123",
+  "contexts": [...],
+  "options": {}
+}</code></pre>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-md-6">
+                <label class="form-label">Expected Response Format</label>
+                <pre class="bg-secondary bg-opacity-25 p-2 rounded small mb-0"><code>{
+  "contexts": [
+    {"id": "...", "content": "processed...", 
+     "source": "...", "relevance_score": 0.95,
+     "metadata": {"processed": true}}
+  ]
+}</code></pre>
+            </div>
+            <div class="col-md-6">
+                <button class="btn btn-outline-info w-100 mt-4" onclick="testContextApi()">
+                    <i class="bi bi-play me-1"></i>Test Context API
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fallback Settings -->
+<div class="card bg-dark mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-arrow-repeat me-2"></i>Fallback Settings</h5>
+    </div>
+    <div class="card-body">
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="fallbackOnError"
+                   {% if settings.fallback_on_api_error %}checked{% endif %}>
+            <label class="form-check-label" for="fallbackOnError">
+                Fallback on API Error
+            </label>
+        </div>
+        <small class="text-muted">
+            If enabled, when Auth API or Context API fails, continue with default behavior instead of blocking.
+        </small>
+    </div>
+</div>
+
+<!-- Save Button -->
+<div class="card bg-dark mb-4">
+    <div class="card-body">
+        <button type="button" class="btn btn-primary btn-lg w-100" onclick="savePipelineConfig()">
+            <i class="bi bi-save me-2"></i>Save Pipeline Configuration
+        </button>
+    </div>
+</div>
+
+<!-- Test Pipeline Section -->
+<div class="card bg-dark mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-terminal me-2"></i>Test Full Pipeline</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">User ID</label>
+                <input type="text" class="form-control bg-dark text-light" id="testUserId" 
+                       value="test_user" placeholder="test_user">
+            </div>
+            <div class="col-md-8 mb-3">
+                <label class="form-label">Test Query</label>
+                <input type="text" class="form-control bg-dark text-light" id="testQuery"
+                       placeholder="Enter a test question...">
+            </div>
+        </div>
+        <button class="btn btn-success w-100" onclick="testFullPipeline()">
+            <i class="bi bi-play-fill me-1"></i>Run Full Pipeline Test
+        </button>
+        <div id="pipelineTestResult" class="mt-3" style="display: none;">
+            <h6>Pipeline Test Results:</h6>
+            <pre class="bg-secondary bg-opacity-25 p-3 rounded" id="pipelineTestOutput"></pre>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showStatus(message, type) {
+    const alert = document.getElementById('statusAlert');
+    alert.className = `alert alert-${type}`;
+    alert.textContent = message;
+    alert.classList.remove('d-none');
+    
+    if (type === 'success') {
+        setTimeout(() => alert.classList.add('d-none'), 3000);
+    }
+}
+
+function toggleApiKey() {
+    const input = document.getElementById('apiKey');
+    input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+function testConnection() {
+    const baseUrl = document.getElementById('baseUrl').value;
+    if (!baseUrl) {
+        showStatus('Please enter a Base URL first', 'warning');
+        return;
+    }
+    
+    showStatus('Testing connection...', 'info');
+    
+    fetch('/rag/api/test-connection', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            base_url: baseUrl,
+            api_key: document.getElementById('apiKey').value || undefined,
+            auth_header: document.getElementById('authHeader').value,
+            auth_prefix: document.getElementById('authPrefix').value
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showStatus('Connection successful!', 'success');
+        } else {
+            showStatus('Connection failed: ' + (data.message || 'Unknown error'), 'danger');
+        }
+    })
+    .catch(error => showStatus('Error: ' + error, 'danger'));
+}
+
+function testAuthApi() {
+    const baseUrl = document.getElementById('baseUrl').value;
+    const endpoint = document.getElementById('authEndpoint').value;
+    
+    if (!baseUrl) {
+        showStatus('Please configure Base URL first', 'warning');
+        return;
+    }
+    
+    showStatus('Testing Auth API...', 'info');
+    
+    fetch('/rag/api/pipeline/test-auth', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            base_url: baseUrl,
+            endpoint: endpoint,
+            api_key: document.getElementById('apiKey').value || undefined,
+            auth_header: document.getElementById('authHeader').value,
+            auth_prefix: document.getElementById('authPrefix').value,
+            user_id: 'test_user',
+            action: 'query'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showStatus('Auth API test successful! Allowed: ' + data.allowed, 'success');
+        } else {
+            showStatus('Auth API test failed: ' + (data.error || 'Unknown error'), 'danger');
+        }
+    })
+    .catch(error => showStatus('Error: ' + error, 'danger'));
+}
+
+function testContextApi() {
+    const baseUrl = document.getElementById('baseUrl').value;
+    const endpoint = document.getElementById('contextProcessingEndpoint').value;
+    
+    if (!baseUrl) {
+        showStatus('Please configure Base URL first', 'warning');
+        return;
+    }
+    
+    showStatus('Testing Context API...', 'info');
+    
+    fetch('/rag/api/pipeline/test-context', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            base_url: baseUrl,
+            endpoint: endpoint,
+            api_key: document.getElementById('apiKey').value || undefined,
+            auth_header: document.getElementById('authHeader').value,
+            auth_prefix: document.getElementById('authPrefix').value,
+            query: 'test query',
+            contexts: [
+                {id: 'test1', content: 'Test content', source: 'test', relevance_score: 0.9}
+            ]
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showStatus('Context API test successful! Returned ' + data.context_count + ' contexts', 'success');
+        } else {
+            showStatus('Context API test failed: ' + (data.error || 'Unknown error'), 'danger');
+        }
+    })
+    .catch(error => showStatus('Error: ' + error, 'danger'));
+}
+
+function testFullPipeline() {
+    const query = document.getElementById('testQuery').value;
+    const userId = document.getElementById('testUserId').value;
+    
+    if (!query) {
+        showStatus('Please enter a test query', 'warning');
+        return;
+    }
+    
+    showStatus('Running full pipeline test...', 'info');
+    
+    fetch('/rag/api/pipeline/test-full', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({query: query, user_id: userId})
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('pipelineTestResult').style.display = 'block';
+        document.getElementById('pipelineTestOutput').textContent = JSON.stringify(data, null, 2);
+        
+        if (data.success) {
+            showStatus('Pipeline test completed!', 'success');
+        } else {
+            showStatus('Pipeline test had issues: ' + (data.error || 'See results'), 'warning');
+        }
+    })
+    .catch(error => {
+        showStatus('Error: ' + error, 'danger');
+    });
+}
+
+function savePipelineConfig() {
+    const config = {
+        use_auth_api: document.getElementById('useAuthApi').checked,
+        use_context_api: document.getElementById('useContextApi').checked,
+        fallback_on_api_error: document.getElementById('fallbackOnError').checked,
+        base_url: document.getElementById('baseUrl').value,
+        timeout: parseFloat(document.getElementById('timeout').value),
+        auth_header: document.getElementById('authHeader').value,
+        auth_prefix: document.getElementById('authPrefix').value,
+        auth_endpoint: document.getElementById('authEndpoint').value,
+        context_processing_endpoint: document.getElementById('contextProcessingEndpoint').value
+    };
+    
+    const apiKey = document.getElementById('apiKey').value;
+    if (apiKey) config.api_key = apiKey;
+    
+    showStatus('Saving pipeline configuration...', 'info');
+    
+    fetch('/rag/api/pipeline/configure', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(config)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showStatus('Pipeline configuration saved!', 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showStatus('Error: ' + (data.error || 'Unknown error'), 'danger');
+        }
+    })
+    .catch(error => showStatus('Error: ' + error, 'danger'));
+}
+
+// Toggle visibility based on enable checkboxes
+function updateVisibility() {
+    document.getElementById('authApiSettings').style.opacity = 
+        document.getElementById('useAuthApi').checked ? '1' : '0.5';
+    document.getElementById('contextApiSettings').style.opacity = 
+        document.getElementById('useContextApi').checked ? '1' : '0.5';
+}
+
+document.getElementById('useAuthApi').addEventListener('change', updateVisibility);
+document.getElementById('useContextApi').addEventListener('change', updateVisibility);
+updateVisibility();
+</script>
+{% endblock %}

@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Environments - Beep.Python Admin{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1>Virtual Environments</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Environments</li>
+                </ol>
+            </nav>
+        </div>
+        <a href="{{ url_for('environments.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-2"></i>New Environment
+        </a>
+    </div>
+</div>
+
+<div class="card animate-fade-in">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-box-seam-fill me-2"></i>Managed Environments</h5>
+    </div>
+    <div class="card-body p-0">
+        {% if environments %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Python Version</th>
+                        <th>Packages</th>
+                        <th>Size</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for env in environments %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('environments.detail', env_id=env.id) }}" 
+                               class="text-decoration-none text-white fw-medium">
+                                <i class="bi bi-folder-fill text-warning me-2"></i>
+                                {{ env.name }}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="badge bg-success">{{ env.python_version }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">{{ env.packages_count }} packages</span>
+                        </td>
+                        <td>{{ env.size_mb }} MB</td>
+                        <td>
+                            {% if env.created_at %}
+                            <small class="text-muted">{{ env.created_at[:10] }}</small>
+                            {% else %}
+                            <small class="text-muted">-</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('environments.detail', env_id=env.id) }}" 
+                                   class="btn btn-outline-light" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{{ url_for('environments.export_requirements', env_id=env.id) }}" 
+                                   class="btn btn-outline-light" title="Export Requirements">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                                <button class="btn btn-outline-danger" title="Delete"
+                                        data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                        data-env-id="{{ env.id }}" data-env-name="{{ env.name }}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-box-seam display-1 text-muted mb-3"></i>
+            <h4 class="text-muted">No Virtual Environments</h4>
+            <p class="text-muted mb-4">Create your first environment to get started</p>
+            <a href="{{ url_for('environments.create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-2"></i>Create Environment
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle text-danger me-2"></i>Delete Environment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="deleteEnvName"></strong>?</p>
+                <p class="text-muted small">This action cannot be undone. All packages and files in this environment will be permanently removed.</p>
+                <div id="deleteError" class="alert alert-danger d-none mt-3"></div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <input type="hidden" id="deleteEnvId" value="">
+                <input type="hidden" id="deleteEnvNameInput" value="">
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <span class="spinner-border spinner-border-sm d-none me-2" id="deleteSpinner"></span>
+                    <i class="bi bi-trash me-2" id="deleteIcon"></i>Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteModal = document.getElementById('deleteModal');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    const deleteSpinner = document.getElementById('deleteSpinner');
+    const deleteIcon = document.getElementById('deleteIcon');
+    const deleteError = document.getElementById('deleteError');
+    
+    deleteModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const envId = button.getAttribute('data-env-id');
+        const envName = button.getAttribute('data-env-name');
+        
+        document.getElementById('deleteEnvName').textContent = envName;
+        document.getElementById('deleteEnvId').value = envId;
+        document.getElementById('deleteEnvNameInput').value = envName;
+        
+        // Reset state
+        deleteError.classList.add('d-none');
+        confirmDeleteBtn.disabled = false;
+        deleteSpinner.classList.add('d-none');
+        deleteIcon.classList.remove('d-none');
+    });
+    
+    confirmDeleteBtn.addEventListener('click', async function() {
+        const envId = document.getElementById('deleteEnvId').value;
+        const envName = document.getElementById('deleteEnvNameInput').value;
+        
+        // Show loading state
+        confirmDeleteBtn.disabled = true;
+        deleteSpinner.classList.remove('d-none');
+        deleteIcon.classList.add('d-none');
+        deleteError.classList.add('d-none');
+        
+        try {
+            const response = await fetch('/tasks/delete-environment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    env_id: envId,
+                    env_name: envName
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok && data.task_id) {
+                // Redirect to task progress page
+                window.location.href = data.redirect_url || '/tasks/' + data.task_id;
+            } else {
+                // Show error
+                deleteError.textContent = data.error || 'Failed to start deletion task';
+                deleteError.classList.remove('d-none');
+                confirmDeleteBtn.disabled = false;
+                deleteSpinner.classList.add('d-none');
+                deleteIcon.classList.remove('d-none');
+            }
+        } catch (error) {
+            deleteError.textContent = 'Network error: ' + error.message;
+            deleteError.classList.remove('d-none');
+            confirmDeleteBtn.disabled = false;
+            deleteSpinner.classList.add('d-none');
+            deleteIcon.classList.remove('d-none');
+        }
+    });
+});
+</script>
+{% endblock %}

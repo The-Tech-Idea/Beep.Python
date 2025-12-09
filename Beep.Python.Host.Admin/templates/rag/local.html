@@ -1,0 +1,1030 @@
+{% extends "base.html" %}
+
+{% block title %}Local RAG Management - Python Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-hdd-stack me-2"></i>Local RAG Management</h2>
+    <div>
+        <a href="{{ url_for('rag.rag_pipeline') }}" class="btn btn-outline-info me-2">
+            <i class="bi bi-diagram-3 me-1"></i>Pipeline APIs
+        </a>
+        <a href="{{ url_for('rag.rag_dashboard') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back
+        </a>
+    </div>
+</div>
+
+<!-- Status Alert -->
+<div id="statusAlert" class="alert d-none mb-3"></div>
+
+<!-- RAG Environment Setup -->
+<div class="card bg-dark mb-4 border-{% if env_status.status == 'ready' %}success{% elif env_status.status == 'error' %}danger{% else %}warning{% endif %}">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="bi bi-box-seam me-2"></i>RAG Virtual Environment
+            {% if env_status.status == 'ready' %}
+            <span class="badge bg-success ms-2">Ready</span>
+            {% elif env_status.status == 'not_created' %}
+            <span class="badge bg-warning text-dark ms-2">Not Created</span>
+            {% elif env_status.status == 'creating' or env_status.status == 'installing' %}
+            <span class="badge bg-info ms-2">In Progress</span>
+            {% else %}
+            <span class="badge bg-danger ms-2">Error</span>
+            {% endif %}
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if env_status.status == 'not_created' %}
+        <div class="alert alert-warning mb-3">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong>RAG environment not created.</strong> 
+            Create an isolated Python environment for RAG dependencies (FAISS, sentence-transformers, etc.)
+        </div>
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <p class="mb-2">The RAG environment will be created at:</p>
+                <code>{{ env_status.env_path }}</code>
+            </div>
+            <div class="col-md-6 text-end">
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="useGpuCreate">
+                    <label class="form-check-label" for="useGpuCreate">Use GPU packages</label>
+                </div>
+                <button class="btn btn-success btn-lg" onclick="createRagEnvironment()">
+                    <i class="bi bi-plus-circle me-2"></i>Create RAG Environment
+                </button>
+            </div>
+        </div>
+        <div id="createProgress" class="progress mt-3 d-none" style="height: 25px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+        </div>
+        {% elif env_status.status == 'ready' %}
+        <div class="row">
+            <div class="col-md-8">
+                <h6>Installed Packages:</h6>
+                <div class="row">
+                    {% for pkg_name, pkg in env_status.packages.items() %}
+                    <div class="col-md-4 mb-2">
+                        <div class="d-flex align-items-center justify-content-between p-2 border rounded {% if pkg.installed %}border-success{% else %}border-secondary{% endif %}">
+                            <div>
+                                <i class="bi {% if pkg.installed %}bi-check-circle-fill text-success{% else %}bi-circle text-muted{% endif %} me-2"></i>
+                                <strong>{{ pkg.name }}</strong>
+                                {% if pkg.version %}
+                                <small class="text-muted">v{{ pkg.version }}</small>
+                                {% endif %}
+                            </div>
+                            {% if not pkg.installed %}
+                            <button class="btn btn-sm btn-outline-primary" onclick="installPackage('{{ pkg_name }}')">
+                                Install
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-secondary">
+                    <div class="card-body">
+                        <h6>Quick Actions</h6>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" onclick="installAllPackages()">
+                                <i class="bi bi-download me-1"></i>Install All Required
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="deleteRagEnvironment()">
+                                <i class="bi bi-trash me-1"></i>Delete Environment
+                            </button>
+                        </div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" id="useGpuInstall">
+                            <label class="form-check-label" for="useGpuInstall">Use GPU packages</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="installProgress" class="progress mt-3 d-none" style="height: 25px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+        </div>
+        {% else %}
+        <div class="alert alert-danger">
+            <i class="bi bi-x-circle me-2"></i>
+            <strong>Environment Error:</strong> {{ env_status.error or 'Unknown error' }}
+        </div>
+        <button class="btn btn-warning" onclick="createRagEnvironment()">
+            <i class="bi bi-arrow-clockwise me-2"></i>Recreate Environment
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Show rest of page only if environment is ready -->
+{% if env_status.status == 'ready' %}
+
+<!-- Provider Status -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-dark h-100">
+            <div class="card-body">
+                <h6 class="text-muted mb-1">Storage Provider</h6>
+                <h3 class="mb-0">
+                    {% if provider == 'faiss' %}
+                    <i class="bi bi-cpu text-success me-2"></i>FAISS
+                    {% elif provider == 'chromadb' %}
+                    <i class="bi bi-database text-primary me-2"></i>ChromaDB
+                    {% else %}
+                    <i class="bi bi-cloud text-info me-2"></i>{{ provider | upper }}
+                    {% endif %}
+                </h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-dark h-100">
+            <div class="card-body">
+                <h6 class="text-muted mb-1">Collections</h6>
+                <h3 class="mb-0">{{ collections | length }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-dark h-100">
+            <div class="card-body">
+                <h6 class="text-muted mb-1">Total Documents</h6>
+                <h3 class="mb-0">{{ total_docs }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Provider Settings -->
+<div class="card bg-dark mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Provider Settings</h5>
+        <button class="btn btn-sm btn-outline-primary" onclick="saveProviderSettings()">
+            <i class="bi bi-save me-1"></i>Save
+        </button>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Provider Type</label>
+                <select class="form-select bg-dark text-light" id="providerType">
+                    <option value="faiss" {% if provider == 'faiss' %}selected{% endif %}>
+                        FAISS - Fast Local Vector Search
+                    </option>
+                    <option value="chromadb" {% if provider == 'chromadb' %}selected{% endif %}>
+                        ChromaDB - Feature-Rich Database
+                    </option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Data Path</label>
+                <input type="text" class="form-control bg-dark text-light" id="dataPath"
+                       placeholder="Leave empty for default"
+                       value="{{ data_path or '' }}">
+                <small class="text-muted">Where to store vector database files</small>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Embedding Model</label>
+                <select class="form-select bg-dark text-light" id="embeddingModel">
+                    <option value="all-MiniLM-L6-v2" {% if embedding_model == 'all-MiniLM-L6-v2' %}selected{% endif %}>
+                        all-MiniLM-L6-v2 (Fast, 384 dims)
+                    </option>
+                    <option value="all-mpnet-base-v2" {% if embedding_model == 'all-mpnet-base-v2' %}selected{% endif %}>
+                        all-mpnet-base-v2 (Better, 768 dims)
+                    </option>
+                    <option value="paraphrase-multilingual-MiniLM-L12-v2" {% if embedding_model == 'paraphrase-multilingual-MiniLM-L12-v2' %}selected{% endif %}>
+                        Multilingual MiniLM
+                    </option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Backup & Data Management -->
+<div class="card bg-dark mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-archive me-2"></i>Backup & Data Management</h5>
+        <button class="btn btn-sm btn-success" onclick="createBackup()">
+            <i class="bi bi-cloud-upload me-1"></i>Create Backup
+        </button>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <!-- Quick Actions -->
+            <div class="col-md-4">
+                <div class="card bg-secondary bg-opacity-25 h-100">
+                    <div class="card-body">
+                        <h6><i class="bi bi-lightning me-2"></i>Quick Actions</h6>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-primary btn-sm" onclick="createBackup()">
+                                <i class="bi bi-cloud-upload me-1"></i>Backup Now
+                            </button>
+                            <button class="btn btn-outline-warning btn-sm" onclick="clearData()">
+                                <i class="bi bi-trash me-1"></i>Clear All Data
+                            </button>
+                            <button class="btn btn-outline-info btn-sm" onclick="exportData()">
+                                <i class="bi bi-download me-1"></i>Export to ZIP
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Backups List -->
+            <div class="col-md-8">
+                <h6><i class="bi bi-clock-history me-2"></i>Available Backups</h6>
+                <div id="backupsList" class="border rounded p-2" style="max-height: 200px; overflow-y: auto;">
+                    <div class="text-center text-muted py-3">
+                        <div class="spinner-border spinner-border-sm me-2"></div>
+                        Loading backups...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Collections Management -->
+<div class="card bg-dark mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-collection me-2"></i>Collections</h5>
+        <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#createCollectionModal">
+            <i class="bi bi-plus-circle me-1"></i>New Collection
+        </button>
+    </div>
+    <div class="card-body">
+        {% if collections %}
+        <div class="table-responsive">
+            <table class="table table-dark table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Documents</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for collection in collections %}
+                    <tr>
+                        <td>
+                            <i class="bi bi-folder me-2"></i>
+                            <strong>{{ collection.name }}</strong>
+                            {% if collection.description %}
+                            <br><small class="text-muted">{{ collection.description }}</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ collection.document_count or 0 }}</td>
+                        <td>{{ collection.created_at or 'N/A' }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" 
+                                    onclick="viewCollection('{{ collection.id }}')">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-success" 
+                                    onclick="showUploadModal('{{ collection.id }}')">
+                                <i class="bi bi-upload"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" 
+                                    onclick="deleteCollection('{{ collection.id }}', '{{ collection.name }}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-inbox display-1"></i>
+            <p class="mt-3">No collections yet. Create one to get started!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Document Upload Section -->
+<div class="card bg-dark mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-cloud-upload me-2"></i>Quick Upload</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Target Collection</label>
+                <select class="form-select bg-dark text-light" id="uploadCollection">
+                    {% for collection in collections %}
+                    <option value="{{ collection.id }}">{{ collection.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-8 mb-3">
+                <label class="form-label">Upload Files</label>
+                <input type="file" class="form-control bg-dark text-light" id="uploadFiles" 
+                       multiple accept=".txt,.md,.pdf,.json,.csv">
+                <small class="text-muted">Supported: .txt, .md, .pdf, .json, .csv</small>
+            </div>
+        </div>
+        <button class="btn btn-primary" onclick="uploadDocuments()" id="uploadBtn">
+            <i class="bi bi-upload me-1"></i>Upload Documents
+        </button>
+        <div id="uploadProgress" class="mt-3" style="display: none;">
+            <div class="progress">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                     role="progressbar" style="width: 0%"></div>
+            </div>
+            <small class="text-muted" id="uploadStatus">Uploading...</small>
+        </div>
+    </div>
+</div>
+
+<!-- Add Text Directly -->
+<div class="card bg-dark mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-file-text me-2"></i>Add Text Directly</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Collection</label>
+                <select class="form-select bg-dark text-light" id="textCollection">
+                    {% for collection in collections %}
+                    <option value="{{ collection.id }}">{{ collection.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Source Name</label>
+                <input type="text" class="form-control bg-dark text-light" id="textSource"
+                       placeholder="e.g., 'manual_entry'">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Chunk Size</label>
+                <input type="number" class="form-control bg-dark text-light" id="chunkSize"
+                       value="500" min="100" max="2000">
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Content</label>
+            <textarea class="form-control bg-dark text-light" id="textContent" rows="6"
+                      placeholder="Paste or type content to add to the knowledge base..."></textarea>
+        </div>
+        <button class="btn btn-success" onclick="addTextContent()">
+            <i class="bi bi-plus-circle me-1"></i>Add to Collection
+        </button>
+    </div>
+</div>
+
+<!-- Test Search -->
+<div class="card bg-dark mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-search me-2"></i>Test Search</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Collection (optional)</label>
+                <select class="form-select bg-dark text-light" id="searchCollection">
+                    <option value="">All Collections</option>
+                    {% for collection in collections %}
+                    <option value="{{ collection.id }}">{{ collection.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Search Query</label>
+                <input type="text" class="form-control bg-dark text-light" id="searchQuery"
+                       placeholder="Enter a question or search term...">
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Max Results</label>
+                <input type="number" class="form-control bg-dark text-light" id="maxResults"
+                       value="5" min="1" max="20">
+            </div>
+        </div>
+        <button class="btn btn-primary" onclick="testSearch()">
+            <i class="bi bi-search me-1"></i>Search
+        </button>
+        <div id="searchResults" class="mt-3" style="display: none;">
+            <h6>Search Results:</h6>
+            <div id="searchResultsList"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Collection Modal -->
+<div class="modal fade" id="createCollectionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-folder-plus me-2"></i>Create Collection</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Collection Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control bg-dark text-light" id="newCollectionName"
+                           placeholder="e.g., 'company_docs'">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-control bg-dark text-light" id="newCollectionDesc" rows="2"
+                              placeholder="Optional description..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="createCollection()">
+                    <i class="bi bi-plus-circle me-1"></i>Create
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Collection Details Modal -->
+<div class="modal fade" id="collectionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-folder-fill me-2"></i>Collection: <span id="collectionTitle"></span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="collectionDetails">
+                    <div class="text-center py-3">
+                        <div class="spinner-border text-primary" role="status"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+<!-- End of environment check -->
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showStatus(message, type) {
+    const alert = document.getElementById('statusAlert');
+    alert.className = `alert alert-${type}`;
+    alert.textContent = message;
+    alert.classList.remove('d-none');
+    
+    if (type === 'success') {
+        setTimeout(() => alert.classList.add('d-none'), 3000);
+    }
+}
+
+function saveProviderSettings() {
+    const config = {
+        provider_type: document.getElementById('providerType').value,
+        data_path: document.getElementById('dataPath').value || null,
+        embedding_model: document.getElementById('embeddingModel').value
+    };
+    
+    showStatus('Saving settings...', 'info');
+    
+    fetch('/rag/api/local/configure', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(config)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showStatus('Settings saved!', 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showStatus('Error: ' + data.error, 'danger');
+        }
+    })
+    .catch(error => showStatus('Error: ' + error, 'danger'));
+}
+
+function createCollection() {
+    const name = document.getElementById('newCollectionName').value;
+    const description = document.getElementById('newCollectionDesc').value;
+    
+    if (!name) {
+        showStatus('Collection name is required', 'warning');
+        return;
+    }
+    
+    showStatus('Creating collection...', 'info');
+    
+    fetch('/rag/api/collections', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name: name, description: description})
+    })
+    .then(response => response.json().then(data => ({status: response.status, data: data})))
+    .then(({status, data}) => {
+        if (data.success) {
+            showStatus('Collection created!', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('createCollectionModal')).hide();
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            let errorMsg = data.error || 'Unknown error';
+            if (data.hint) {
+                errorMsg += ' - ' + data.hint;
+            }
+            if (data.env_status) {
+                errorMsg += ` (Environment: ${data.env_status})`;
+            }
+            showStatus('Error: ' + errorMsg, 'danger');
+        }
+    })
+    .catch(error => showStatus('Error: ' + error, 'danger'));
+}
+
+function deleteCollection(id, name) {
+    if (!confirm(`Delete collection "${name}"? This cannot be undone.`)) return;
+    
+    fetch(`/rag/api/collections/${id}`, {method: 'DELETE'})
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showStatus('Collection deleted!', 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showStatus('Error: ' + data.error, 'danger');
+        }
+    })
+    .catch(error => showStatus('Error: ' + error, 'danger'));
+}
+
+function viewCollection(id) {
+    document.getElementById('collectionTitle').textContent = id;
+    const modal = new bootstrap.Modal(document.getElementById('collectionModal'));
+    modal.show();
+    
+    fetch(`/rag/api/collections/${id}`)
+    .then(response => response.json())
+    .then(data => {
+        let html = `
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <strong>Documents:</strong> ${data.document_count || 0}
+                </div>
+                <div class="col-md-6">
+                    <strong>Created:</strong> ${data.created_at || 'N/A'}
+                </div>
+            </div>
+        `;
+        
+        if (data.documents && data.documents.length > 0) {
+            html += '<h6>Recent Documents:</h6><ul class="list-group list-group-flush">';
+            data.documents.slice(0, 10).forEach(doc => {
+                html += `
+                    <li class="list-group-item bg-dark text-light">
+                        <strong>${doc.source || doc.id}</strong>
+                        <br><small class="text-muted">${(doc.content || '').substring(0, 100)}...</small>
+                    </li>
+                `;
+            });
+            html += '</ul>';
+        }
+        
+        document.getElementById('collectionDetails').innerHTML = html;
+    })
+    .catch(error => {
+        document.getElementById('collectionDetails').innerHTML = 
+            `<div class="text-danger">Error loading collection: ${error}</div>`;
+    });
+}
+
+function uploadDocuments() {
+    const collection = document.getElementById('uploadCollection').value;
+    const files = document.getElementById('uploadFiles').files;
+    
+    if (!collection) {
+        showStatus('Please select a collection', 'warning');
+        return;
+    }
+    if (!files.length) {
+        showStatus('Please select files to upload', 'warning');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('collection_id', collection);
+    for (let file of files) {
+        formData.append('files', file);
+    }
+    
+    document.getElementById('uploadProgress').style.display = 'block';
+    document.getElementById('uploadBtn').disabled = true;
+    
+    fetch('/rag/api/documents/upload', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('uploadProgress').style.display = 'none';
+        document.getElementById('uploadBtn').disabled = false;
+        
+        if (data.success) {
+            showStatus(`Uploaded ${data.documents_added} documents!`, 'success');
+            document.getElementById('uploadFiles').value = '';
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showStatus('Error: ' + data.error, 'danger');
+        }
+    })
+    .catch(error => {
+        document.getElementById('uploadProgress').style.display = 'none';
+        document.getElementById('uploadBtn').disabled = false;
+        showStatus('Error: ' + error, 'danger');
+    });
+}
+
+function addTextContent() {
+    const collection = document.getElementById('textCollection').value;
+    const content = document.getElementById('textContent').value;
+    const source = document.getElementById('textSource').value || 'manual_entry';
+    const chunkSize = parseInt(document.getElementById('chunkSize').value);
+    
+    if (!collection) {
+        showStatus('Please select a collection', 'warning');
+        return;
+    }
+    if (!content) {
+        showStatus('Please enter some content', 'warning');
+        return;
+    }
+    
+    fetch('/rag/api/documents', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            collection_id: collection,
+            content: content,
+            source: source,
+            chunk_size: chunkSize
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showStatus(`Added ${data.chunks_created} chunks!`, 'success');
+            document.getElementById('textContent').value = '';
+        } else {
+            showStatus('Error: ' + data.error, 'danger');
+        }
+    })
+    .catch(error => showStatus('Error: ' + error, 'danger'));
+}
+
+function testSearch() {
+    const collection = document.getElementById('searchCollection').value;
+    const query = document.getElementById('searchQuery').value;
+    const maxResults = parseInt(document.getElementById('maxResults').value);
+    
+    if (!query) {
+        showStatus('Please enter a search query', 'warning');
+        return;
+    }
+    
+    fetch('/rag/api/query', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            query: query,
+            collection_ids: collection ? [collection] : [],
+            max_results: maxResults
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('searchResults').style.display = 'block';
+        
+        if (data.contexts && data.contexts.length > 0) {
+            let html = '';
+            data.contexts.forEach((ctx, i) => {
+                html += `
+                    <div class="card bg-secondary bg-opacity-25 mb-2">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <strong>#${i+1} - ${ctx.source || 'Unknown'}</strong>
+                                <span class="badge bg-success">${(ctx.relevance_score * 100).toFixed(1)}%</span>
+                            </div>
+                            <p class="mb-0 mt-2 small">${ctx.content.substring(0, 300)}${ctx.content.length > 300 ? '...' : ''}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('searchResultsList').innerHTML = html;
+        } else {
+            document.getElementById('searchResultsList').innerHTML = 
+                '<div class="text-muted">No results found</div>';
+        }
+    })
+    .catch(error => {
+        document.getElementById('searchResults').style.display = 'block';
+        document.getElementById('searchResultsList').innerHTML = 
+            `<div class="text-danger">Error: ${error}</div>`;
+    });
+}
+
+// RAG Environment Management Functions
+function createRagEnvironment() {
+    const useGpu = document.getElementById('useGpuCreate')?.checked || false;
+    const progressDiv = document.getElementById('createProgress');
+    const progressBar = progressDiv?.querySelector('.progress-bar');
+    
+    if (progressDiv) {
+        progressDiv.classList.remove('d-none');
+        progressBar.style.width = '10%';
+        progressBar.textContent = 'Creating environment...';
+    }
+    
+    showStatus('Creating RAG environment... This may take a minute.', 'info');
+    
+    fetch('/rag/api/env/create', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ use_gpu: useGpu })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (progressBar) {
+                progressBar.style.width = '100%';
+                progressBar.textContent = 'Environment created!';
+            }
+            showStatus('RAG environment created successfully! Refreshing...', 'success');
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            showStatus('Error: ' + data.error, 'danger');
+            if (progressDiv) progressDiv.classList.add('d-none');
+        }
+    })
+    .catch(error => {
+        showStatus('Error: ' + error, 'danger');
+        if (progressDiv) progressDiv.classList.add('d-none');
+    });
+}
+
+function installAllPackages() {
+    const useGpu = document.getElementById('useGpuInstall')?.checked || false;
+    const progressDiv = document.getElementById('installProgress');
+    const progressBar = progressDiv?.querySelector('.progress-bar');
+    
+    if (progressDiv) {
+        progressDiv.classList.remove('d-none');
+        progressBar.style.width = '10%';
+        progressBar.textContent = 'Installing packages...';
+    }
+    
+    showStatus('Installing RAG packages... This may take several minutes.', 'info');
+    
+    fetch('/rag/api/env/install', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ use_gpu: useGpu })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (progressBar) {
+                progressBar.style.width = '100%';
+                progressBar.textContent = 'Installation complete!';
+            }
+            showStatus('All packages installed successfully! Refreshing...', 'success');
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            showStatus('Error: ' + (data.error || data.message), 'danger');
+            if (progressDiv) progressDiv.classList.add('d-none');
+            // Show individual package results
+            if (data.results) {
+                console.log('Package installation results:', data.results);
+            }
+        }
+    })
+    .catch(error => {
+        showStatus('Error: ' + error, 'danger');
+        if (progressDiv) progressDiv.classList.add('d-none');
+    });
+}
+
+function installPackage(packageName) {
+    const useGpu = document.getElementById('useGpuInstall')?.checked || false;
+    
+    showStatus(`Installing ${packageName}...`, 'info');
+    
+    fetch(`/rag/api/env/install/${packageName}`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ use_gpu: useGpu })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showStatus(`${packageName} installed successfully! Refreshing...`, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showStatus('Error: ' + (data.error || 'Installation failed'), 'danger');
+        }
+    })
+    .catch(error => showStatus('Error: ' + error, 'danger'));
+}
+
+function deleteRagEnvironment() {
+    if (!confirm('Are you sure you want to delete the RAG environment? This will remove all installed packages.')) {
+        return;
+    }
+    
+    showStatus('Deleting RAG environment...', 'warning');
+    
+    fetch('/rag/api/env/delete', {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showStatus('RAG environment deleted. Refreshing...', 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showStatus('Error: ' + data.error, 'danger');
+        }
+    })
+    .catch(error => showStatus('Error: ' + error, 'danger'));
+}
+
+// =====================
+// Backup & Data Management
+// =====================
+
+function loadBackups() {
+    fetch('/rag/api/backup/list')
+    .then(response => response.json())
+    .then(data => {
+        const container = document.getElementById('backupsList');
+        if (!container) return;
+        
+        if (data.backups && data.backups.length > 0) {
+            let html = '';
+            data.backups.forEach(backup => {
+                const sizeKB = Math.round((backup.size || 0) / 1024);
+                const date = backup.created_at ? new Date(backup.created_at).toLocaleString() : 'Unknown';
+                html += `
+                    <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
+                        <div>
+                            <strong>${backup.name}</strong>
+                            <br><small class="text-muted">${date} · ${sizeKB} KB</small>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-outline-success" onclick="restoreBackup('${backup.name}')" title="Restore">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteBackup('${backup.name}')" title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        } else {
+            container.innerHTML = '<div class="text-muted text-center py-3"><i class="bi bi-inbox me-2"></i>No backups found</div>';
+        }
+    })
+    .catch(error => {
+        const container = document.getElementById('backupsList');
+        if (container) {
+            container.innerHTML = '<div class="text-danger text-center py-3">Error loading backups</div>';
+        }
+    });
+}
+
+function createBackup() {
+    const name = prompt('Backup name (leave empty for auto-generated):');
+    
+    showStatus('Creating backup...', 'info');
+    
+    fetch('/rag/api/backup/create', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ name: name || null })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showStatus(`Backup created: ${data.backup_name}`, 'success');
+            loadBackups();
+        } else {
+            showStatus('Error: ' + data.error, 'danger');
+        }
+    })
+    .catch(error => showStatus('Error: ' + error, 'danger'));
+}
+
+function restoreBackup(backupName) {
+    if (!confirm(`Restore from backup "${backupName}"? This will REPLACE all current data.`)) {
+        return;
+    }
+    
+    showStatus('Restoring backup...', 'info');
+    
+    fetch(`/rag/api/backup/restore/${backupName}`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ overwrite: true })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showStatus('Backup restored! Refreshing...', 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showStatus('Error: ' + data.error, 'danger');
+        }
+    })
+    .catch(error => showStatus('Error: ' + error, 'danger'));
+}
+
+function deleteBackup(backupName) {
+    if (!confirm(`Delete backup "${backupName}"? This cannot be undone.`)) {
+        return;
+    }
+    
+    fetch(`/rag/api/backup/${backupName}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showStatus('Backup deleted', 'success');
+            loadBackups();
+        } else {
+            showStatus('Error: ' + data.error, 'danger');
+        }
+    })
+    .catch(error => showStatus('Error: ' + error, 'danger'));
+}
+
+function clearData() {
+    if (!confirm('Clear ALL RAG data? A backup will be created first.')) {
+        return;
+    }
+    
+    showStatus('Backing up and clearing data...', 'warning');
+    
+    fetch('/rag/api/data/clear', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ backup_first: true })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            let msg = 'All RAG data cleared.';
+            if (data.backup) {
+                msg += ` Backup saved as: ${data.backup.name}`;
+            }
+            showStatus(msg, 'success');
+            loadBackups();
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            showStatus('Error: ' + data.error, 'danger');
+        }
+    })
+    .catch(error => showStatus('Error: ' + error, 'danger'));
+}
+
+function exportData() {
+    showStatus('Exporting data to ZIP...', 'info');
+    
+    fetch('/rag/api/data/export', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const sizeKB = Math.round((data.size_bytes || 0) / 1024);
+            showStatus(`Export complete: ${data.export_path} (${sizeKB} KB)`, 'success');
+        } else {
+            showStatus('Error: ' + data.error, 'danger');
+        }
+    })
+    .catch(error => showStatus('Error: ' + error, 'danger'));
+}
+
+// Load backups on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadBackups();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Beep.Python Admin{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Dashboard</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active">Overview</li>
+        </ol>
+    </nav>
+</div>
+
+<!-- Stats Row -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-lg-3 animate-fade-in" style="animation-delay: 0.1s">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">{{ stats.runtimes_count }}</div>
+                    <div class="stat-label">Python Runtimes</div>
+                </div>
+                <div class="stat-icon purple">
+                    <i class="bi bi-gear"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 animate-fade-in" style="animation-delay: 0.2s">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">{{ stats.environments_count }}</div>
+                    <div class="stat-label">Virtual Environments</div>
+                </div>
+                <div class="stat-icon blue">
+                    <i class="bi bi-box-seam"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 animate-fade-in" style="animation-delay: 0.3s">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">{{ stats.servers_running }}</div>
+                    <div class="stat-label">Running Servers</div>
+                </div>
+                <div class="stat-icon green">
+                    <i class="bi bi-hdd-rack"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 animate-fade-in" style="animation-delay: 0.4s">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">{{ stats.total_packages }}</div>
+                    <div class="stat-label">Installed Packages</div>
+                </div>
+                <div class="stat-icon orange">
+                    <i class="bi bi-archive"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-4 mb-4">
+    <div class="col-12 animate-fade-in" style="animation-delay: 0.5s">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-lightning-fill me-2 text-warning"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ url_for('environments.create') }}" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i> New Environment
+                    </a>
+                    <a href="{{ url_for('servers.start') }}" class="btn btn-outline-light">
+                        <i class="bi bi-play-fill me-1"></i> Start Server
+                    </a>
+                    <form action="{{ url_for('runtimes.install_embedded') }}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-outline-light">
+                            <i class="bi bi-download me-1"></i> Install Embedded Python
+                        </button>
+                    </form>
+                    <a href="{{ url_for('packages.index') }}" class="btn btn-outline-light">
+                        <i class="bi bi-search me-1"></i> Search Packages
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Recent Environments -->
+    <div class="col-lg-6 animate-fade-in" style="animation-delay: 0.6s">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-box-seam me-2"></i>Virtual Environments</h5>
+                <a href="{{ url_for('environments.index') }}" class="btn btn-sm btn-outline-light">View All</a>
+            </div>
+            <div class="card-body p-0">
+                {% if environments %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Python</th>
+                                <th>Packages</th>
+                                <th>Size</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for env in environments %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('environments.detail', env_id=env.id) }}" class="text-decoration-none text-white">
+                                        <i class="bi bi-folder-fill text-warning me-2"></i>
+                                        {{ env.name }}
+                                    </a>
+                                </td>
+                                <td><span class="badge bg-secondary">{{ env.python_version }}</span></td>
+                                <td>{{ env.packages_count }}</td>
+                                <td>{{ env.size_mb }} MB</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox display-4 mb-3"></i>
+                    <p>No virtual environments yet</p>
+                    <a href="{{ url_for('environments.create') }}" class="btn btn-primary btn-sm">Create First Environment</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Running Servers -->
+    <div class="col-lg-6 animate-fade-in" style="animation-delay: 0.7s">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-hdd-rack me-2"></i>Servers</h5>
+                <a href="{{ url_for('servers.index') }}" class="btn btn-sm btn-outline-light">View All</a>
+            </div>
+            <div class="card-body p-0">
+                {% if servers %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Port</th>
+                                <th>Status</th>
+                                <th>Memory</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for server in servers %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('servers.detail', server_id=server.id) }}" class="text-decoration-none text-white">
+                                        <i class="bi bi-server me-2 {% if server.status == 'running' %}text-success{% else %}text-danger{% endif %}"></i>
+                                        {{ server.name }}
+                                    </a>
+                                </td>
+                                <td>{{ server.port }}</td>
+                                <td>
+                                    <span class="badge-status {% if server.status == 'running' %}badge-running{% else %}badge-stopped{% endif %}">
+                                        {{ server.status }}
+                                    </span>
+                                </td>
+                                <td>{{ server.memory_mb }} MB</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-hdd-rack display-4 mb-3"></i>
+                    <p>No servers running</p>
+                    <a href="{{ url_for('servers.start') }}" class="btn btn-primary btn-sm">Start a Server</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Python Runtimes -->
+<div class="row g-4 mt-2">
+    <div class="col-12 animate-fade-in" style="animation-delay: 0.8s">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Python Runtimes</h5>
+                <a href="{{ url_for('runtimes.index') }}" class="btn btn-sm btn-outline-light">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Version</th>
+                                <th>Path</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for runtime in runtimes %}
+                            <tr>
+                                <td>
+                                    <i class="bi bi-{% if runtime.is_embedded %}box-seam{% elif runtime.is_virtual %}folder{% else %}pc-display{% endif %} me-2"></i>
+                                    {% if runtime.is_embedded %}Embedded{% elif runtime.is_virtual %}Virtual Env{% else %}System{% endif %}
+                                </td>
+                                <td><span class="badge bg-primary">{{ runtime.version }}</span></td>
+                                <td class="text-truncate" style="max-width: 300px;">
+                                    <code class="small">{{ runtime.path }}</code>
+                                </td>
+                                <td>
+                                    {% if runtime.is_active %}
+                                    <span class="badge-status badge-active">Active</span>
+                                    {% else %}
+                                    <span class="badge-status badge-running">Available</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

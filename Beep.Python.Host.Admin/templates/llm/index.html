@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block title %}LLM Management - Beep.Python{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1><i class="bi bi-robot me-3"></i>LLM Management</h1>
+            <p class="text-muted mb-0">Discover, download, and run Large Language Models locally</p>
+        </div>
+        <div>
+            <a href="{{ url_for('llm.wizard') }}" class="btn btn-success me-2">
+                <i class="bi bi-magic me-2"></i>Setup Wizard
+            </a>
+            <a href="{{ url_for('llm.discover') }}" class="btn btn-primary">
+                <i class="bi bi-search me-2"></i>Discover Models
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3 animate-fade-in">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted mb-2">Local Models</h6>
+                        <h2 class="mb-0">{{ local_models|length }}</h2>
+                    </div>
+                    <div class="stat-icon bg-primary bg-opacity-20 text-primary">
+                        <i class="bi bi-box"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 animate-fade-in" style="animation-delay: 0.1s;">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted mb-2">Loaded Models</h6>
+                        <h2 class="mb-0">{{ loaded_models|length }}</h2>
+                    </div>
+                    <div class="stat-icon bg-success bg-opacity-20 text-success">
+                        <i class="bi bi-play-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 animate-fade-in" style="animation-delay: 0.2s;">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted mb-2">Storage Used</h6>
+                        <h2 class="mb-0">{{ storage_stats.total_size_gb }} GB</h2>
+                    </div>
+                    <div class="stat-icon bg-info bg-opacity-20 text-info">
+                        <i class="bi bi-hdd"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 animate-fade-in" style="animation-delay: 0.3s;">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted mb-2">Free Space</h6>
+                        <h2 class="mb-0">{{ storage_stats.disk_free_gb }} GB</h2>
+                    </div>
+                    <div class="stat-icon bg-warning bg-opacity-20 text-warning">
+                        <i class="bi bi-database"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Browse Categories -->
+    <div class="col-lg-8">
+        <div class="card animate-fade-in">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-grid-3x3-gap me-2"></i>Browse by Category</h5>
+                <a href="{{ url_for('llm.discover') }}" class="btn btn-sm btn-outline-light">View All</a>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    {% for category in categories %}
+                    <div class="col-md-6 col-lg-4">
+                        <a href="{{ url_for('llm.discover', category=category.id) }}" class="text-decoration-none">
+                            <div class="card bg-dark h-100 category-card">
+                                <div class="card-body text-center py-4">
+                                    <i class="bi {{ category.icon }} fs-1 text-primary mb-3 d-block"></i>
+                                    <h6 class="mb-1">{{ category.name }}</h6>
+                                    <small class="text-muted">{{ category.description }}</small>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="col-lg-4">
+        <div class="card animate-fade-in mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning-charge me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('llm.discover') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-search me-2"></i>Discover Models
+                    </a>
+                    <a href="{{ url_for('llm.local_models') }}" class="btn btn-outline-success">
+                        <i class="bi bi-box me-2"></i>My Models
+                    </a>
+                    <a href="{{ url_for('llm.chat') }}"
+                        class="btn btn-outline-info {% if not inference_available %}disabled{% endif %}">
+                        <i class="bi bi-chat-dots me-2"></i>Chat with AI
+                    </a>
+                    <a href="{{ url_for('llm.llm_environment') }}" class="btn btn-outline-warning">
+                        <i class="bi bi-gear-wide-connected me-2"></i>Environment Setup
+                    </a>
+                    <a href="{{ url_for('llm.settings') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-gear me-2"></i>Settings
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Downloads -->
+        {% if active_downloads %}
+        <div class="card animate-fade-in">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-download me-2"></i>Active Downloads</h5>
+            </div>
+            <div class="card-body">
+                {% for download in active_downloads %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small class="text-truncate" style="max-width: 200px;">{{ download.filename }}</small>
+                        <small>{{ download.percent|round(1) }}%</small>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated"
+                            style="width: {{ download.percent }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Local Models List -->
+{% if local_models %}
+<div class="card mt-4 animate-fade-in">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-collection me-2"></i>Your Models</h5>
+        <a href="{{ url_for('llm.local_models') }}" class="btn btn-sm btn-outline-light">Manage</a>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Model</th>
+                        <th>Size</th>
+                        <th>Format</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for model in local_models[:5] %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-box me-2 text-primary"></i>
+                                <div>
+                                    <strong>{{ model.name }}</strong>
+                                    {% if model.quantization %}
+                                    <span class="badge bg-secondary ms-2">{{ model.quantization }}</span>
+                                    {% endif %}
+                                    {% if model.parameters %}
+                                    <span class="badge bg-info ms-1">{{ model.parameters }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ (model.size / 1073741824)|round(2) }} GB</td>
+                        <td><span class="badge bg-primary">{{ model.format|upper }}</span></td>
+                        <td>
+                            {% if model.id in loaded_models %}
+                            <span class="badge bg-success">Loaded</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Ready</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if inference_available %}
+                            {% if model.id in loaded_models %}
+                            <a href="{{ url_for('llm.chat') }}" class="btn btn-sm btn-success">
+                                <i class="bi bi-chat-dots"></i>
+                            </a>
+                            {% else %}
+                            <button class="btn btn-sm btn-outline-success" onclick="loadModel('{{ model.id }}')">
+                                <i class="bi bi-play"></i>
+                            </button>
+                            {% endif %}
+                            {% endif %}
+                            <button class="btn btn-sm btn-outline-danger"
+                                onclick="deleteModel('{{ model.id }}', '{{ model.name }}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if local_models|length > 5 %}
+        <div class="text-center mt-3">
+            <a href="{{ url_for('llm.local_models') }}" class="btn btn-outline-light">
+                View All {{ local_models|length }} Models
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+<!-- No Models CTA -->
+<div class="card mt-4 animate-fade-in">
+    <div class="card-body text-center py-5">
+        <i class="bi bi-box display-1 text-muted mb-3"></i>
+        <h4>No Models Downloaded Yet</h4>
+        <p class="text-muted mb-4">Start by discovering and downloading models from HuggingFace</p>
+        <a href="{{ url_for('llm.discover') }}" class="btn btn-primary btn-lg">
+            <i class="bi bi-search me-2"></i>Discover Models
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<style>
+    .category-card {
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .category-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--bs-primary);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+    }
+</style>
+
+<script>
+    async function loadModel(modelId) {
+        try {
+            const response = await fetch(`/llm/models/${modelId}/load`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await response.json();
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Failed to load model'));
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+
+    async function deleteModel(modelId, modelName) {
+        if (!confirm(`Delete ${modelName}? This cannot be undone.`)) return;
+
+        try {
+            const response = await fetch(`/llm/models/${modelId}/delete`, {
+                method: 'POST'
+            });
+            const data = await response.json();
+            if (data.redirect_url) {
+                window.location.href = data.redirect_url;
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+</script>
+{% endblock %}

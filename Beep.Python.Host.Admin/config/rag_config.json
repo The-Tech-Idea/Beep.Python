@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "provider_type": "faiss",
+  "max_context_length": 4000,
+  "context_template": "## Relevant Context\n\nThe following information may be helpful for answering the user's question:\n\n{context}\n\n---\n",
+  "fallback_on_api_error": true,
+  "cache_contexts": true,
+  "cache_ttl_seconds": 300,
+  "data_path": null,
+  "embedding_model": "all-MiniLM-L6-v2",
+  "use_auth_api": false,
+  "use_context_api": false
+}

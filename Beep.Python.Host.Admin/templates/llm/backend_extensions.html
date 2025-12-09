@@ -1,0 +1,1250 @@
+{% extends "base.html" %}
+
+{% block title %}Backend Extensions - LLM Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1><i class="bi bi-puzzle me-3"></i>Backend Extensions</h1>
+            <p class="text-muted mb-0">View available llama.cpp backends and their installation status</p>
+        </div>
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-info" onclick="checkForUpdates()" title="Check for toolkit and extension updates">
+                <i class="bi bi-cloud-download me-2"></i>Check for Updates
+            </button>
+            <button type="button" class="btn btn-outline-secondary" onclick="refreshExtensions()" title="Refresh backend detection">
+                <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Info Alert -->
+<div class="alert alert-info alert-dismissible fade show" role="alert">
+    <i class="bi bi-info-circle me-2"></i>
+    <strong>LM Studio-Style Backends:</strong> We download prebuilt llama.cpp binaries with GPU libraries already bundled.
+    No separate SDK installation required! Just click <strong>Install</strong> and the backend is ready to use.
+    Each backend is self-contained (~15-400 MB depending on GPU support).
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" title="Dismiss"></button>
+</div>
+
+<!-- Toolkit Installation Section (shown when redirected from wizard) -->
+{% if install_backend %}
+<div class="alert alert-warning alert-dismissible fade show" role="alert" id="toolkit-install-alert">
+    <i class="bi bi-exclamation-triangle me-2"></i>
+    <strong>Toolkit Installation Required</strong>
+    <p class="mb-2">You need to install the system toolkit for <strong>{{ install_backend|upper }}</strong> backend before creating model environments.</p>
+    <button type="button" class="btn btn-primary btn-sm" onclick="installToolkitFromWizard('{{ install_backend }}')" title="Install {{ install_backend|upper }} Toolkit">
+        <i class="bi bi-download me-2"></i>Install Toolkit Automatically
+    </button>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" title="Dismiss"></button>
+</div>
+{% endif %}
+
+<!-- Navigation Tabs -->
+<ul class="nav nav-tabs mb-4" id="extensionTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="backends-tab" data-bs-toggle="tab" data-bs-target="#backends" type="button" role="tab">
+            <i class="bi bi-gpu-card me-2"></i>GPU Backends
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="selections-tab" data-bs-toggle="tab" data-bs-target="#selections" type="button" role="tab">
+            <i class="bi bi-check-circle me-2"></i>Compatible Only
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
+            <i class="bi bi-list-ul me-2"></i>All
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="engines-tab" data-bs-toggle="tab" data-bs-target="#engines" type="button" role="tab">
+            <i class="bi bi-gear me-2"></i>My Engines
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="frameworks-tab" data-bs-toggle="tab" data-bs-target="#frameworks" type="button" role="tab">
+            <i class="bi bi-box me-2"></i>My Frameworks
+        </button>
+    </li>
+</ul>
+
+<!-- Tab Content -->
+<div class="tab-content" id="extensionTabContent">
+    <!-- GPU Backends Tab (NEW - LM Studio style) -->
+    <div class="tab-pane fade show active" id="backends" role="tabpanel">
+        <div class="row">
+            <div class="col-12">
+                <div class="card bg-dark">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-gpu-card me-2"></i>llama.cpp GPU Backends</h5>
+                        <span class="badge bg-info">LM Studio Style</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-3">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Prebuilt llama.cpp binaries with GPU libraries bundled. Click Install to download (~15-400 MB).
+                        </p>
+                        <div id="gpuBackends" class="row g-3">
+                            <div class="col-12 text-center text-muted py-5">
+                                <div class="spinner-border text-primary mb-3" role="status"></div>
+                                <p>Loading backends...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compatible Only Tab -->
+    <div class="tab-pane fade" id="selections" role="tabpanel">
+        <div class="row">
+            <div class="col-12">
+                <div class="card bg-dark">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>Compatible Only - Installed</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="compatibleExtensions" class="row g-3">
+                            <div class="col-12 text-center text-muted py-5">
+                                <i class="bi bi-arrow-clockwise fs-1 d-block mb-3"></i>
+                                Loading compatible extensions...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- All Tab -->
+    <div class="tab-pane fade" id="all" role="tabpanel">
+        <div class="row">
+            <div class="col-12">
+                <div class="card bg-dark">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>All Available Extensions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="allExtensions" class="row g-3">
+                            <div class="col-12 text-center text-muted py-5">
+                                <i class="bi bi-arrow-clockwise fs-1 d-block mb-3"></i>
+                                Loading all extensions...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Engines Tab -->
+    <div class="tab-pane fade" id="engines" role="tabpanel">
+        <div class="row">
+            <div class="col-12">
+                <div class="card bg-dark">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-gear me-2"></i>My Engines</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="myEngines" class="row g-3">
+                            <div class="col-12 text-center text-muted py-5">
+                                <i class="bi bi-arrow-clockwise fs-1 d-block mb-3"></i>
+                                Loading installed engines...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Frameworks Tab -->
+    <div class="tab-pane fade" id="frameworks" role="tabpanel">
+        <div class="row">
+            <div class="col-12">
+                <div class="card bg-dark">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-box me-2"></i>My Frameworks</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="myFrameworks" class="row g-3">
+                            <div class="col-12 text-center text-muted py-5">
+                                <i class="bi bi-arrow-clockwise fs-1 d-block mb-3"></i>
+                                Loading installed frameworks...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Alert -->
+<div id="statusAlert" class="alert d-none position-fixed top-0 start-50 translate-middle-x mt-3" style="z-index: 9999;" role="alert"></div>
+
+<!-- Installation Progress Modal -->
+<div class="modal fade" id="installProgressModal" tabindex="-1" aria-labelledby="installProgressModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="installProgressModalLabel">
+                    <i class="bi bi-download me-2" id="installIcon"></i>
+                    <span id="installTitle">Installing...</span>
+                </h5>
+            </div>
+            <div class="modal-body">
+                <!-- Progress bar -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <small class="text-muted" id="installMessage">Preparing...</small>
+                        <small class="fw-bold" id="installPercent">0%</small>
+                    </div>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" 
+                             id="installProgressBar"
+                             style="width: 0%"
+                             aria-valuenow="0" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100"></div>
+                    </div>
+                </div>
+                
+                <!-- Steps -->
+                <div class="card bg-dark border-secondary">
+                    <ul class="list-group list-group-flush" id="installSteps">
+                        <!-- Steps will be populated dynamically -->
+                    </ul>
+                </div>
+                
+                <!-- Result message -->
+                <div id="installResult" class="mt-3" style="display: none;">
+                    <div class="alert mb-0" id="installResultAlert">
+                        <span id="installResultMessage"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary" id="installModalFooter" style="display: none;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="installCloseBtn">Close</button>
+                <a href="#" class="btn btn-primary" id="installActionBtn" style="display: none;">
+                    <i class="bi bi-arrow-right me-2"></i>Continue
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let allExtensionsData = [];
+let allBackendsData = {};
+let recommendedBackend = 'cpu';
+let currentTaskId = null;
+let eventSource = null;
+
+// Load extensions on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadBackends();  // Load GPU backends first
+    loadExtensions();
+    
+    // Reload when tab changes
+    document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function(e) {
+            const targetId = e.target.getAttribute('data-bs-target');
+            if (targetId === '#backends') {
+                renderBackends();
+            } else if (targetId === '#selections') {
+                renderCompatibleExtensions();
+            } else if (targetId === '#all') {
+                renderAllExtensions();
+            } else if (targetId === '#engines') {
+                renderMyEngines();
+            } else if (targetId === '#frameworks') {
+                renderMyFrameworks();
+            }
+        });
+    });
+});
+
+async function loadExtensions() {
+    try {
+        const response = await fetch('/llm/backend-extensions/api/extensions');
+        const data = await response.json();
+        
+        if (data.success) {
+            allExtensionsData = data.extensions;
+            renderCompatibleExtensions();
+            renderAllExtensions();
+            renderMyEngines();
+            renderMyFrameworks();
+        }
+    } catch (error) {
+        console.error('Error loading extensions:', error);
+        showAlert('Failed to load extensions', 'danger');
+    }
+}
+
+async function loadBackends() {
+    const container = document.getElementById('gpuBackends');
+    try {
+        const response = await fetch('/llm/backend-extensions/api/backends');
+        const data = await response.json();
+        
+        if (data.success) {
+            allBackendsData = data.backends;
+            recommendedBackend = data.recommended || 'cpu';
+            renderBackends();
+        } else {
+            container.innerHTML = `
+                <div class="col-12 text-center text-danger py-5">
+                    <i class="bi bi-exclamation-triangle fs-1 d-block mb-3"></i>
+                    <p>Failed to load backends: ${data.error || 'Unknown error'}</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading backends:', error);
+        container.innerHTML = `
+            <div class="col-12 text-center text-danger py-5">
+                <i class="bi bi-exclamation-triangle fs-1 d-block mb-3"></i>
+                <p>Failed to load backends: ${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+function renderBackends() {
+    const container = document.getElementById('gpuBackends');
+    const backends = Object.values(allBackendsData);
+    
+    if (backends.length === 0) {
+        container.innerHTML = `
+            <div class="col-12 text-center text-muted py-5">
+                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                <p>No backends available for this platform</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Sort: installed first, then recommended, then alphabetically
+    backends.sort((a, b) => {
+        if (a.installed && !b.installed) return -1;
+        if (!a.installed && b.installed) return 1;
+        if (a.id === recommendedBackend && b.id !== recommendedBackend) return -1;
+        if (a.id !== recommendedBackend && b.id === recommendedBackend) return 1;
+        return a.name.localeCompare(b.name);
+    });
+    
+    container.innerHTML = backends.map(backend => renderBackendCard(backend)).join('');
+}
+
+function renderBackendCard(backend) {
+    const isRecommended = backend.id === recommendedBackend;
+    const iconMap = {
+        'cpu': 'cpu',
+        'cuda': 'gpu-card',
+        'vulkan': 'controller',
+        'hip': 'gpu-card',
+        'sycl': 'cpu-fill',
+        'metal': 'apple',
+    };
+    const icon = iconMap[backend.id] || 'box';
+    
+    const statusBadge = backend.installed 
+        ? `<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Installed</span>`
+        : `<span class="badge bg-secondary">Not Installed</span>`;
+    
+    const recommendedBadge = isRecommended 
+        ? `<span class="badge bg-warning text-dark ms-1"><i class="bi bi-star-fill me-1"></i>Recommended</span>`
+        : '';
+    
+    let actionButton = '';
+    if (backend.installed) {
+        actionButton = `
+            <button class="btn btn-sm btn-outline-danger" onclick="uninstallBackendBtn('${backend.id}')" title="Uninstall ${backend.name}">
+                <i class="bi bi-trash me-1"></i>Uninstall
+            </button>
+        `;
+    } else {
+        actionButton = `
+            <button class="btn btn-sm btn-success" onclick="installBackend('${backend.id}')" title="Install ${backend.name}">
+                <i class="bi bi-download me-1"></i>Install
+            </button>
+        `;
+    }
+    
+    return `
+        <div class="col-md-6 col-lg-4">
+            <div class="card bg-dark border ${backend.installed ? 'border-success' : 'border-secondary'} h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="mb-1">
+                                <i class="bi bi-${icon} ${backend.installed ? 'text-success' : 'text-secondary'} me-2"></i>
+                                ${backend.name}
+                            </h6>
+                        </div>
+                        <div>
+                            ${statusBadge}
+                            ${recommendedBadge}
+                        </div>
+                    </div>
+                    
+                    <p class="text-muted small mb-2">${backend.description}</p>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="bi bi-hdd me-1"></i>${backend.size}
+                            ${backend.installed_version ? ` • v${backend.installed_version}` : ''}
+                        </small>
+                        ${actionButton}
+                    </div>
+                    
+                    ${backend.install_path ? `
+                        <div class="mt-2">
+                            <small class="text-muted text-truncate d-block" title="${backend.install_path}">
+                                <i class="bi bi-folder me-1"></i>${backend.install_path}
+                            </small>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+async function uninstallBackendBtn(backendId) {
+    if (!confirm(`Uninstall ${backendId}? This will remove the downloaded files.`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/llm/backend-extensions/api/backends/${backendId}/uninstall`, {
+            method: 'POST'
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            showAlert(`${backendId} uninstalled successfully`, 'success');
+            loadBackends();  // Refresh the list
+        } else {
+            showAlert(data.error || 'Uninstall failed', 'danger');
+        }
+    } catch (error) {
+        showAlert('Uninstall failed: ' + error.message, 'danger');
+    }
+}
+
+function renderCompatibleExtensions() {
+    const container = document.getElementById('compatibleExtensions');
+    const compatible = allExtensionsData.filter(ext => ext.compatible && ext.installed);
+    
+    if (compatible.length === 0) {
+        container.innerHTML = `
+            <div class="col-12 text-center text-muted py-5">
+                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                <p>No compatible extensions installed</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = compatible.map(ext => renderExtensionCard(ext)).join('');
+}
+
+function renderAllExtensions() {
+    const container = document.getElementById('allExtensions');
+    
+    if (allExtensionsData.length === 0) {
+        container.innerHTML = `
+            <div class="col-12 text-center text-muted py-5">
+                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                <p>No extensions available</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = allExtensionsData.map(ext => renderExtensionCard(ext, true)).join('');
+}
+
+function renderMyEngines() {
+    const container = document.getElementById('myEngines');
+    const engines = allExtensionsData.filter(ext => ext.type === 'Engine' && ext.installed);
+    
+    if (engines.length === 0) {
+        container.innerHTML = `
+            <div class="col-12 text-center text-muted py-5">
+                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                <p>No engines installed</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = engines.map(ext => renderExtensionCard(ext)).join('');
+}
+
+function renderMyFrameworks() {
+    const container = document.getElementById('myFrameworks');
+    const frameworks = allExtensionsData.filter(ext => ext.type === 'Framework' && ext.installed);
+    
+    if (frameworks.length === 0) {
+        container.innerHTML = `
+            <div class="col-12 text-center text-muted py-5">
+                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                <p>No frameworks installed</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = frameworks.map(ext => renderExtensionCard(ext)).join('');
+}
+
+function renderExtensionCard(ext, showActions = false) {
+    const statusBadge = ext.installed 
+        ? `<span class="badge bg-success">✔ Latest Version Installed</span>`
+        : `<span class="badge bg-secondary">Not Installed</span>`;
+    
+    const compatibleBadge = ext.compatible 
+        ? `<span class="badge bg-info">Compatible</span>`
+        : `<span class="badge bg-warning">Not Compatible</span>`;
+    
+    const typeIcon = ext.type === 'Engine' ? 'bi-gear' : 'bi-box';
+    const typeColor = ext.type === 'Engine' ? 'text-primary' : 'text-info';
+    
+    // Check if this is a GPU toolkit backend
+    const toolkitBackends = ['cuda', 'cuda12', 'vulkan', 'rocm', 'openblas'];
+    const isToolkitBackend = toolkitBackends.includes(ext.backend?.toLowerCase());
+    
+    // Determine action buttons
+    let actionButtonsHtml = '';
+    if (showActions) {
+        if (!ext.installed) {
+            if (ext.compatible) {
+                // Compatible - can install directly
+                actionButtonsHtml = `
+                    <button class="btn btn-sm btn-success" onclick="installExtension('${ext.id}')" title="Install ${ext.name}">
+                        <i class="bi bi-download me-1"></i>Install
+                    </button>
+                `;
+            } else if (isToolkitBackend && ext.backend?.toLowerCase() !== 'cpu') {
+                // Not compatible but is a toolkit backend - offer to install SDK
+                actionButtonsHtml = `
+                    <button class="btn btn-sm btn-warning" onclick="installExtension('${ext.id}')" title="Install ${ext.backend?.toUpperCase()} SDK/Toolkit">
+                        <i class="bi bi-download me-1"></i>Install Toolkit
+                    </button>
+                `;
+            }
+        } else {
+            // Already installed
+            actionButtonsHtml = `
+                <button class="btn btn-sm btn-danger" onclick="uninstallExtension('${ext.id}')" title="Uninstall ${ext.name}">
+                    <i class="bi bi-trash me-1"></i>Uninstall
+                </button>
+            `;
+        }
+    }
+    
+    const actionButtons = actionButtonsHtml ? `<div class="mt-3">${actionButtonsHtml}</div>` : '';
+    
+    return `
+        <div class="col-md-6 col-lg-4">
+            <div class="card bg-dark border ${ext.installed ? 'border-success' : 'border-secondary'} mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="mb-1">
+                                <i class="bi ${typeIcon} ${typeColor} me-2"></i>
+                                ${ext.name}
+                            </h6>
+                            <small class="text-muted">${ext.type}</small>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-link text-muted" type="button" data-bs-toggle="dropdown" aria-label="More options" title="More options">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#" onclick="showReleaseNotes('${ext.id}')">
+                                    <i class="bi bi-file-text me-2"></i>Release Notes
+                                </a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <p class="text-muted small mb-2">${ext.description}</p>
+                    
+                    <div class="mb-2">
+                        <small class="text-muted">Version: </small>
+                        <span class="badge bg-dark">${ext.version}</span>
+                        ${ext.installed_version ? `
+                            <small class="text-muted ms-2">Installed: ${ext.installed_version}</small>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="mb-2">
+                        ${statusBadge}
+                        ${compatibleBadge}
+                    </div>
+                    
+                    ${ext.installed_environments && ext.installed_environments.length > 0 ? `
+                        <div class="mt-2">
+                            <small class="text-muted">Installed in:</small>
+                            <div>
+                                ${ext.installed_environments.map(env => `
+                                    <span class="badge bg-dark me-1">${env}</span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    ${actionButtons}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+async function installExtension(extensionId) {
+    // Find the extension to determine if it's a toolkit or llama-cpp backend
+    const extension = allExtensionsData.find(e => e.id === extensionId);
+    if (!extension) {
+        showAlert('Extension not found', 'danger');
+        return;
+    }
+    
+    const backend = extension.backend;
+    const backendLower = backend ? backend.toLowerCase() : extensionId.toLowerCase();
+    
+    // All backends now use the new LlamaBackendInstaller - prebuilt binaries!
+    await installBackend(backendLower);
+}
+
+// Active EventSource for installation progress
+let installEventSource = null;
+
+async function installBackend(backendId) {
+    // Normalize backend ID
+    const backendMap = {
+        'cuda': 'cuda',
+        'nvidia': 'cuda',
+        'cuda12': 'cuda',
+        'cuda-12': 'cuda',
+        'cuda13': 'cuda',
+        'cuda-13': 'cuda',
+        'vulkan': 'vulkan',
+        'rocm': 'hip',
+        'amd': 'hip',
+        'hip': 'hip',
+        'metal': 'metal',
+        'sycl': 'sycl',
+        'intel': 'sycl',
+        'cpu': 'cpu',
+        'openblas': 'cpu',
+    };
+    
+    const normalizedBackend = backendMap[backendId.toLowerCase()] || backendId;
+    
+    const backendNames = {
+        'cuda': 'NVIDIA CUDA',
+        'vulkan': 'Vulkan',
+        'hip': 'AMD ROCm/HIP',
+        'sycl': 'Intel SYCL',
+        'metal': 'Apple Metal',
+        'cpu': 'CPU (OpenBLAS)',
+    };
+    const backendName = backendNames[normalizedBackend] || normalizedBackend;
+    
+    // Save for retry
+    lastInstallBackend = normalizedBackend;
+    
+    // Show progress modal immediately - installation is silent!
+    showInstallProgressModal(backendName, normalizedBackend);
+    
+    try {
+        // Use new backend install API
+        const response = await fetch(`/llm/backend-extensions/api/backends/${normalizedBackend}/install`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({})
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.task_id) {
+            // Start streaming progress via SSE
+            streamInstallProgress(data.task_id, backendName);
+        } else {
+            updateInstallProgress('error', 0, data.error || 'Failed to start installation');
+        }
+    } catch (error) {
+        console.error('Backend installation error:', error);
+        updateInstallProgress('error', 0, error.message);
+    }
+}
+
+async function installToolkitFromWizard(backend) {
+    // Now just calls the new installBackend function
+    await installBackend(backend);
+}
+
+function showInstallProgressModal(toolkitName, backend) {
+    const modal = document.getElementById('installProgressModal');
+    if (!modal) {
+        console.error('Install progress modal not found');
+        return;
+    }
+    
+    // Reset modal state - use correct element IDs
+    const titleEl = document.getElementById('installTitle');
+    const progressBar = document.getElementById('installProgressBar');
+    const percentEl = document.getElementById('installPercent');
+    const messageEl = document.getElementById('installMessage');
+    const stepsEl = document.getElementById('installSteps');
+    const footer = document.getElementById('installModalFooter');
+    const resultDiv = document.getElementById('installResult');
+    
+    if (titleEl) titleEl.textContent = `Installing ${toolkitName}`;
+    if (progressBar) {
+        progressBar.style.width = '0%';
+        progressBar.className = 'progress-bar progress-bar-striped progress-bar-animated bg-primary';
+        progressBar.setAttribute('aria-valuenow', '0');
+    }
+    if (percentEl) percentEl.textContent = '0%';
+    if (messageEl) messageEl.textContent = 'Preparing installation...';
+    if (footer) footer.style.display = 'none';
+    if (resultDiv) resultDiv.style.display = 'none';
+    
+    // Populate steps
+    if (stepsEl) {
+        stepsEl.innerHTML = `
+            <li class="list-group-item bg-dark border-secondary d-flex align-items-center install-step" data-step="preparing">
+                <span class="step-icon me-3"><div class="spinner-border spinner-border-sm text-primary" role="status"></div></span>
+                <span>Preparing</span>
+            </li>
+            <li class="list-group-item bg-dark border-secondary d-flex align-items-center install-step text-muted" data-step="downloading">
+                <span class="step-icon me-3"><i class="bi bi-circle"></i></span>
+                <span>Downloading</span>
+            </li>
+            <li class="list-group-item bg-dark border-secondary d-flex align-items-center install-step text-muted" data-step="installing">
+                <span class="step-icon me-3"><i class="bi bi-circle"></i></span>
+                <span>Installing</span>
+            </li>
+            <li class="list-group-item bg-dark border-secondary d-flex align-items-center install-step text-muted" data-step="complete">
+                <span class="step-icon me-3"><i class="bi bi-circle"></i></span>
+                <span>Complete</span>
+            </li>
+        `;
+    }
+    updateInstallStep('downloading', 'pending');
+    updateInstallStep('installing', 'pending');
+    updateInstallStep('complete', 'pending');
+    
+    // Show modal
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+}
+
+function updateInstallStep(step, status) {
+    const stepEl = document.querySelector(`.install-step[data-step="${step}"]`);
+    if (!stepEl) return;
+    
+    const icon = stepEl.querySelector('.step-icon');
+    if (!icon) return;
+    
+    // Reset classes - keep the base list-group-item classes
+    stepEl.className = 'list-group-item bg-dark border-secondary d-flex align-items-center install-step';
+    
+    if (status === 'active') {
+        stepEl.classList.add('text-primary');
+        icon.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div>';
+    } else if (status === 'complete') {
+        stepEl.classList.add('text-success');
+        icon.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
+    } else if (status === 'error') {
+        stepEl.classList.add('text-danger');
+        icon.innerHTML = '<i class="bi bi-x-circle-fill"></i>';
+    } else {
+        stepEl.classList.add('text-muted');
+        icon.innerHTML = '<i class="bi bi-circle"></i>';
+    }
+}
+
+function streamInstallProgress(taskId, toolkitName) {
+    // Close any existing connection
+    if (installEventSource) {
+        installEventSource.close();
+    }
+    
+    // Connect to SSE stream
+    installEventSource = new EventSource(`/tasks/${taskId}/stream`);
+    
+    installEventSource.onmessage = function(event) {
+        try {
+            const data = JSON.parse(event.data);
+            handleInstallProgressEvent(data, toolkitName);
+        } catch (e) {
+            console.error('Error parsing SSE data:', e);
+        }
+    };
+    
+    installEventSource.onerror = function(error) {
+        console.error('SSE connection error:', error);
+        installEventSource.close();
+        installEventSource = null;
+        
+        // Check if modal is still open and we haven't completed
+        const progressBar = document.getElementById('installProgressBar');
+        if (progressBar && !progressBar.classList.contains('bg-success')) {
+            updateInstallProgress('error', 0, 'Connection lost. Check tasks page for status.');
+        }
+    };
+}
+
+function handleInstallProgressEvent(data, toolkitName) {
+    const progress = data.progress || 0;
+    const status = data.status || 'running';
+    const message = data.message || data.step || '';
+    
+    // Update progress bar
+    const progressBar = document.getElementById('installProgressBar');
+    const percentEl = document.getElementById('installPercent');
+    if (progressBar) {
+        progressBar.style.width = `${progress}%`;
+        progressBar.setAttribute('aria-valuenow', Math.round(progress));
+    }
+    if (percentEl) {
+        percentEl.textContent = `${Math.round(progress)}%`;
+    }
+    
+    // Update status message
+    const statusMsg = document.getElementById('installMessage');
+    if (statusMsg && message) {
+        statusMsg.textContent = message;
+    }
+    
+    // Update step indicators based on message content
+    const msgLower = message.toLowerCase();
+    if (msgLower.includes('download') || msgLower.includes('fetching')) {
+        updateInstallStep('preparing', 'complete');
+        updateInstallStep('downloading', 'active');
+    } else if (msgLower.includes('install') || msgLower.includes('extract') || msgLower.includes('launch')) {
+        updateInstallStep('preparing', 'complete');
+        updateInstallStep('downloading', 'complete');
+        updateInstallStep('installing', 'active');
+    }
+    
+    // Handle completion states
+    if (status === 'completed' || status === 'success') {
+        updateInstallProgress('success', 100, `${toolkitName} installed successfully!`);
+        if (installEventSource) {
+            installEventSource.close();
+            installEventSource = null;
+        }
+    } else if (status === 'failed' || status === 'error') {
+        updateInstallProgress('error', progress, data.error || message || 'Installation failed');
+        if (installEventSource) {
+            installEventSource.close();
+            installEventSource = null;
+        }
+    }
+}
+
+function updateInstallProgress(status, progress, message) {
+    const progressBar = document.getElementById('installProgressBar');
+    const percentEl = document.getElementById('installPercent');
+    const statusMsg = document.getElementById('installMessage');
+    const footer = document.getElementById('installModalFooter');
+    const resultDiv = document.getElementById('installResult');
+    const resultAlert = document.getElementById('installResultAlert');
+    const resultMessage = document.getElementById('installResultMessage');
+    
+    if (status === 'success') {
+        // Success state
+        if (progressBar) {
+            progressBar.style.width = '100%';
+            progressBar.className = 'progress-bar bg-success';
+        }
+        if (percentEl) percentEl.textContent = '100%';
+        updateInstallStep('preparing', 'complete');
+        updateInstallStep('downloading', 'complete');
+        updateInstallStep('installing', 'complete');
+        updateInstallStep('complete', 'complete');
+        if (statusMsg) {
+            statusMsg.innerHTML = `<i class="bi bi-check-circle-fill text-success me-2"></i>${message}`;
+        }
+        if (footer) {
+            footer.style.display = 'flex';
+            footer.innerHTML = `
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="location.reload()">
+                    <i class="bi bi-arrow-clockwise me-2"></i>Refresh Page
+                </button>
+            `;
+        }
+        showAlert(message, 'success');
+    } else if (status === 'error') {
+        // Error state
+        if (progressBar) {
+            progressBar.className = 'progress-bar bg-danger';
+        }
+        updateInstallStep('complete', 'error');
+        if (statusMsg) {
+            statusMsg.innerHTML = `<i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>${message}`;
+        }
+        if (footer) {
+            footer.style.display = 'flex';
+            footer.innerHTML = `
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-warning" onclick="retryInstallation()">
+                    <i class="bi bi-arrow-repeat me-2"></i>Retry
+                </button>
+            `;
+        }
+        showAlert(message, 'danger');
+    }
+}
+
+function showInstallInstructions(type) {
+    const modal = document.getElementById('installProgressModal');
+    if (!modal) return;
+    
+    const instructions = {
+        'rocm': {
+            title: 'ROCm Installation',
+            content: `
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    ROCm requires manual installation on Linux systems.
+                </div>
+                <h6>Installation Steps:</h6>
+                <ol class="mb-3">
+                    <li>Visit the official AMD ROCm documentation</li>
+                    <li>Follow the installation guide for your Linux distribution</li>
+                    <li>Install ROCm packages via apt/yum</li>
+                    <li>Set <code>ROCM_PATH</code> environment variable (defaults to /opt/rocm)</li>
+                    <li>Verify installation: <code>rocm-smi --version</code></li>
+                    <li>Restart this application</li>
+                </ol>
+            `,
+            link: 'https://rocm.docs.amd.com/projects/install-on-linux/en/latest/'
+        },
+        'openblas': {
+            title: 'OpenBLAS Installation',
+            content: `
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    OpenBLAS installation varies by platform.
+                </div>
+                <h6>Linux (Debian/Ubuntu):</h6>
+                <pre class="bg-dark p-2 rounded"><code>sudo apt install libopenblas-dev</code></pre>
+                <h6>Linux (RHEL/CentOS):</h6>
+                <pre class="bg-dark p-2 rounded"><code>sudo yum install openblas-devel</code></pre>
+                <h6>macOS:</h6>
+                <pre class="bg-dark p-2 rounded"><code>brew install openblas</code></pre>
+                <h6>Windows:</h6>
+                <p class="small text-muted">Pre-built binaries available via conda or manual download.</p>
+            `,
+            link: 'https://github.com/xianyi/OpenBLAS/releases'
+        }
+    };
+    
+    const info = instructions[type] || instructions['openblas'];
+    
+    // Use correct element IDs
+    const titleEl = document.getElementById('installTitle');
+    if (titleEl) titleEl.textContent = info.title;
+    
+    document.querySelector('#installProgressModal .modal-body').innerHTML = `
+        ${info.content}
+        <div class="text-center mt-3">
+            <a href="${info.link}" target="_blank" class="btn btn-primary">
+                <i class="bi bi-box-arrow-up-right me-2"></i>Open Installation Guide
+            </a>
+        </div>
+    `;
+    
+    const footer = document.getElementById('installModalFooter');
+    if (footer) {
+        footer.style.display = 'flex';
+        footer.innerHTML = `
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-outline-primary" onclick="location.reload()">
+                <i class="bi bi-arrow-clockwise me-2"></i>Refresh After Install
+            </button>
+        `;
+    }
+    
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+}
+
+let lastInstallBackend = null;
+function retryInstallation() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('installProgressModal'));
+    if (modal) modal.hide();
+    
+    if (lastInstallBackend) {
+        setTimeout(() => installToolkitFromWizard(lastInstallBackend), 300);
+    }
+}
+
+async function uninstallExtension(extensionId) {
+    const extension = allExtensionsData.find(e => e.id === extensionId);
+    if (!extension || !extension.installed_environments || extension.installed_environments.length === 0) {
+        showAlert('No installation found to uninstall', 'warning');
+        return;
+    }
+    
+    const venvName = extension.installed_environments[0]; // Use first environment
+    if (!confirm(`Uninstall ${extension.name} from ${venvName}?`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/llm/backend-extensions/api/extensions/${extensionId}/uninstall`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ venv_name: venvName })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showAlert('Uninstallation started. Check tasks for progress.', 'success');
+            if (data.redirect_url) {
+                setTimeout(() => {
+                    window.location.href = data.redirect_url;
+                }, 1500);
+            }
+        } else {
+            showAlert(data.error || 'Uninstallation failed', 'danger');
+        }
+    } catch (error) {
+        console.error('Error uninstalling extension:', error);
+        showAlert('Failed to start uninstallation', 'danger');
+    }
+}
+
+async function refreshExtensions() {
+    try {
+        const response = await fetch('/llm/backend-extensions/api/extensions/refresh', {
+            method: 'POST'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            allExtensionsData = data.extensions;
+            renderCompatibleExtensions();
+            renderAllExtensions();
+            renderMyEngines();
+            renderMyFrameworks();
+            showAlert('Extensions refreshed', 'success');
+        }
+    } catch (error) {
+        console.error('Error refreshing extensions:', error);
+        showAlert('Failed to refresh extensions', 'danger');
+    }
+}
+
+function showReleaseNotes(extensionId) {
+    // TODO: Implement release notes modal
+    alert('Release notes coming soon');
+}
+
+function showAlert(message, type) {
+    const alert = document.getElementById('statusAlert');
+    alert.className = `alert alert-${type} alert-dismissible fade show`;
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" title="Dismiss"></button>
+    `;
+    alert.classList.remove('d-none');
+    
+    setTimeout(() => {
+        alert.classList.add('d-none');
+    }, 5000);
+}
+
+async function checkForUpdates() {
+    // Show progress modal for update check
+    const modal = document.getElementById('installProgressModal');
+    if (modal) {
+        const titleEl = document.getElementById('installTitle');
+        if (titleEl) titleEl.textContent = 'Checking for Updates';
+        
+        document.querySelector('#installProgressModal .modal-body').innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Checking...</span>
+                </div>
+                <p class="mb-0">Checking for available updates...</p>
+            </div>
+            <div id="updateResults" class="mt-3" style="display: none;"></div>
+        `;
+        
+        const footer = document.getElementById('installModalFooter');
+        if (footer) footer.style.display = 'none';
+        
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+    }
+    
+    try {
+        // Check for toolkit updates and version info
+        const response = await fetch('/llm/backend-extensions/api/extensions/check-updates');
+        const data = await response.json();
+        
+        displayUpdateResults(data);
+    } catch (error) {
+        console.error('Error checking for updates:', error);
+        displayUpdateResults({ error: error.message });
+    }
+}
+
+function displayUpdateResults(data) {
+    const resultsDiv = document.getElementById('updateResults');
+    const modalBody = document.querySelector('#installProgressModal .modal-body');
+    const footer = document.getElementById('installModalFooter');
+    
+    if (!modalBody) return;
+    
+    let html = '';
+    
+    if (data.error) {
+        html = `
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                Error checking for updates: ${data.error}
+            </div>
+        `;
+    } else {
+        const updates = data.updates || [];
+        const installed = data.installed || [];
+        
+        // Show available toolkits to install
+        if (updates.length === 0) {
+            html = `
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <strong>All toolkits installed!</strong> Your system is fully configured.
+                </div>
+            `;
+        } else {
+            html = `
+                <div class="alert alert-info">
+                    <i class="bi bi-download me-2"></i>
+                    <strong>${updates.length} toolkit(s) available for installation</strong>
+                </div>
+                <div class="list-group list-group-flush mb-3">
+            `;
+            
+            for (const update of updates) {
+                const canAutoInstall = update.auto_install !== false;
+                const actionButton = canAutoInstall 
+                    ? `<button class="btn btn-sm btn-primary" onclick="installUpdate('${update.id}', '${update.type}')" title="Install ${update.name}">
+                           <i class="bi bi-download me-1"></i>Install
+                       </button>`
+                    : `<a href="${update.manual_install_url || '#'}" target="_blank" class="btn btn-sm btn-outline-info" title="View installation guide">
+                           <i class="bi bi-box-arrow-up-right me-1"></i>Guide
+                       </a>`;
+                
+                html += `
+                    <div class="list-group-item bg-dark border-secondary">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <strong>${update.name}</strong>
+                                ${!canAutoInstall ? '<span class="badge bg-warning text-dark ms-2">Manual</span>' : ''}
+                                <br><small class="text-muted">${update.description || ''}</small>
+                                <br><small class="text-info">Version: ${update.latest_version}</small>
+                            </div>
+                            <div class="ms-2">
+                                ${actionButton}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+        }
+        
+        // Show currently installed toolkits
+        if (installed.length > 0) {
+            html += `
+                <div class="mt-3">
+                    <h6 class="text-muted mb-2"><i class="bi bi-check-circle me-2"></i>Installed Toolkits (${installed.length})</h6>
+                    <div class="row g-2">
+            `;
+            
+            for (const item of installed) {
+                const statusClass = item.status === 'up-to-date' ? 'success' : 'warning';
+                html += `
+                    <div class="col-6 col-md-4">
+                        <div class="d-flex align-items-center p-2 bg-dark rounded border border-${statusClass}">
+                            <i class="bi bi-${item.icon || 'gear'} me-2 text-${statusClass}" style="font-size: 1.2rem;"></i>
+                            <div class="overflow-hidden">
+                                <small class="fw-bold d-block text-truncate">${item.name}</small>
+                                <small class="text-muted d-block text-truncate">${item.version || 'Unknown'}</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += '</div></div>';
+        }
+        
+        // Show platform info
+        if (data.platform) {
+            html += `
+                <div class="mt-3 text-center">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Platform: ${data.platform} | Checked: ${new Date(data.checked_at).toLocaleTimeString()}
+                    </small>
+                </div>
+            `;
+        }
+    }
+    
+    modalBody.innerHTML = html;
+    footer.style.display = 'flex';
+    footer.innerHTML = `
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-outline-primary" onclick="checkForUpdates()">
+            <i class="bi bi-arrow-clockwise me-2"></i>Re-check
+        </button>
+    `;
+}
+
+async function installUpdate(updateId, updateType) {
+    // Close the update modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('installProgressModal'));
+    if (modal) modal.hide();
+    
+    // All updates now use the unified backend installer
+    // updateId is the backend ID (cuda-12, vulkan, hip, etc.)
+    await installBackend(updateId);
+}
+</script>
+
+<style>
+.extension-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.extension-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+</style>
+{% endblock %}
+

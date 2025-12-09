@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Discover Models - LLM Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1><i class="bi bi-search me-3"></i>Discover Models</h1>
+            <p class="text-muted mb-0">Search and download models from HuggingFace</p>
+        </div>
+        <a href="{{ url_for('llm.index') }}" class="btn btn-outline-light">
+            <i class="bi bi-arrow-left me-2"></i>Back
+        </a>
+    </div>
+</div>
+
+<!-- Search Bar -->
+<div class="card mb-4 animate-fade-in">
+    <div class="card-body">
+        <form method="get" action="{{ url_for('llm.discover') }}" class="row g-3">
+            <div class="col-md-8">
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text bg-dark border-secondary">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" name="q" class="form-control bg-dark border-secondary text-light" 
+                           placeholder="Search for models (e.g., llama, mistral, phi, code...)" 
+                           value="{{ query }}" id="searchInput">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search me-2"></i>Search
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select name="sort" class="form-select form-select-lg bg-dark border-secondary text-light">
+                    <option value="downloads">Sort by Downloads</option>
+                    <option value="likes">Sort by Likes</option>
+                    <option value="modified">Sort by Recently Updated</option>
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Category Pills -->
+<div class="mb-4">
+    <div class="d-flex flex-wrap gap-2">
+        {% for category in categories %}
+        <a href="{{ url_for('llm.discover', category=category.id) }}" 
+           class="btn {% if selected_category == category.id %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+            <i class="bi {{ category.icon }} me-1"></i>{{ category.name }}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Search Results -->
+{% if models %}
+<div class="card animate-fade-in">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Search Results ({{ models|length }})</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+            {% for model in models %}
+            <a href="{{ url_for('llm.model_details', model_id=model.id) }}" 
+               class="list-group-item list-group-item-action bg-transparent py-3">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-start">
+                            <div class="model-icon me-3">
+                                <i class="bi bi-box fs-3 text-primary"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">{{ model.modelId or model.id }}</h6>
+                                <small class="text-muted">by {{ model.author }}</small>
+                                {% if model.description %}
+                                <p class="mb-0 small text-muted mt-1">{{ model.description[:100] }}{% if model.description|length > 100 %}...{% endif %}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex flex-wrap gap-1">
+                            {% if model.parameters %}
+                            <span class="badge bg-info">{{ model.parameters }}</span>
+                            {% endif %}
+                            {% if model.gated %}
+                            <span class="badge bg-warning"><i class="bi bi-lock-fill me-1"></i>Gated</span>
+                            {% endif %}
+                            {% for tag in model.tags[:3] %}
+                            <span class="badge bg-secondary">{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-end">
+                        <div class="d-flex justify-content-end align-items-center gap-3">
+                            <span class="text-muted small">
+                                <i class="bi bi-download me-1"></i>{{ model.downloads|default(0)|int|filesizeformat if model.downloads < 1000 else '%dK'|format(model.downloads // 1000) }}
+                            </span>
+                            <span class="text-muted small">
+                                <i class="bi bi-heart me-1"></i>{{ model.likes|default(0) }}
+                            </span>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% elif query or selected_category %}
+<!-- No Results -->
+<div class="card animate-fade-in">
+    <div class="card-body text-center py-5">
+        <i class="bi bi-search display-1 text-muted mb-3"></i>
+        <h4>No Models Found</h4>
+        <p class="text-muted">Try a different search term or category</p>
+    </div>
+</div>
+{% else %}
+<!-- Welcome State -->
+<div class="card animate-fade-in">
+    <div class="card-body text-center py-5">
+        <i class="bi bi-stars display-1 text-primary mb-3"></i>
+        <h4>Search for GGUF Models</h4>
+        <p class="text-muted mb-4">Enter a search term above or select a category to find models</p>
+        
+        <h5 class="mb-3">Popular Searches</h5>
+        <div class="d-flex flex-wrap justify-content-center gap-2">
+            <a href="{{ url_for('llm.discover', q='llama gguf') }}" class="btn btn-outline-primary">Llama</a>
+            <a href="{{ url_for('llm.discover', q='mistral gguf') }}" class="btn btn-outline-primary">Mistral</a>
+            <a href="{{ url_for('llm.discover', q='phi gguf') }}" class="btn btn-outline-primary">Phi</a>
+            <a href="{{ url_for('llm.discover', q='qwen gguf') }}" class="btn btn-outline-primary">Qwen</a>
+            <a href="{{ url_for('llm.discover', q='deepseek gguf') }}" class="btn btn-outline-primary">DeepSeek</a>
+            <a href="{{ url_for('llm.discover', q='code gguf') }}" class="btn btn-outline-primary">Code</a>
+            <a href="{{ url_for('llm.discover', q='chat gguf') }}" class="btn btn-outline-primary">Chat</a>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Categories -->
+<div class="row g-4 mt-3">
+    {% for category in categories %}
+    <div class="col-md-4 col-lg-3 animate-fade-in" style="animation-delay: {{ loop.index * 0.05 }}s;">
+        <a href="{{ url_for('llm.discover', category=category.id) }}" class="text-decoration-none">
+            <div class="card bg-dark h-100 category-card">
+                <div class="card-body text-center py-4">
+                    <i class="bi {{ category.icon }} fs-1 text-primary mb-3 d-block"></i>
+                    <h6 class="mb-1">{{ category.name }}</h6>
+                    <small class="text-muted">{{ category.description }}</small>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<style>
+.category-card {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.category-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--bs-primary);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+}
+.model-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 8px;
+}
+.list-group-item:hover .bi-chevron-right {
+    transform: translateX(5px);
+    transition: transform 0.2s;
+}
+</style>
+
+<script>
+// Auto-focus search input
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput && !searchInput.value) {
+        searchInput.focus();
+    }
+});
+</script>
+{% endblock %}

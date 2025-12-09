@@ -1,0 +1,139 @@
+syntax = "proto3";
+
+package beep.python.runtime;
+
+service PythonService {
+  rpc Health(HealthRequest) returns (HealthResponse);
+  rpc ImportModule(ImportModuleRequest) returns (ImportModuleResponse);
+  rpc CreateObject(CreateObjectRequest) returns (CreateObjectResponse);
+  rpc CallMethod(CallMethodRequest) returns (CallMethodResponse);
+  rpc GetAttribute(GetAttributeRequest) returns (GetAttributeResponse);
+  rpc SetAttribute(SetAttributeRequest) returns (SetAttributeResponse);
+  rpc Evaluate(EvaluateRequest) returns (EvaluateResponse);
+  rpc DisposeHandle(DisposeHandleRequest) returns (DisposeHandleResponse);
+  rpc ToFloatArray(ToFloatArrayRequest) returns (ToFloatArrayResponse);
+  rpc ToFloatArray2D(ToFloatArray2DRequest) returns (ToFloatArray2DResponse);
+  rpc IsModuleAvailable(IsModuleAvailableRequest) returns (IsModuleAvailableResponse);
+  rpc WrapValue(WrapValueRequest) returns (WrapValueResponse);
+}
+
+message HealthRequest {}
+
+message HealthResponse {
+  string status = 1;
+}
+
+message ImportModuleRequest {
+  string module_name = 1;
+}
+
+message ImportModuleResponse {
+  string handle_id = 1;
+}
+
+message CreateObjectRequest {
+  string module_handle_id = 1;
+  string class_name = 2;
+  string args_json = 3;
+  string kwargs_json = 4;
+}
+
+message CreateObjectResponse {
+  string handle_id = 1;
+  string type_name = 2;
+}
+
+message CallMethodRequest {
+  string handle_id = 1;
+  string method_name = 2;
+  string args_json = 3;
+  string kwargs_json = 4;
+}
+
+message CallMethodResponse {
+  oneof result {
+    string value_json = 1;
+    HandleResult handle = 2;
+  }
+}
+
+message HandleResult {
+  string handle_id = 1;
+  string type_name = 2;
+}
+
+message GetAttributeRequest {
+  string handle_id = 1;
+  string attribute_name = 2;
+}
+
+message GetAttributeResponse {
+  oneof result {
+    string value_json = 1;
+    HandleResult handle = 2;
+  }
+}
+
+message SetAttributeRequest {
+  string handle_id = 1;
+  string attribute_name = 2;
+  string value_json = 3;
+}
+
+message SetAttributeResponse {
+  bool success = 1;
+}
+
+message EvaluateRequest {
+  string expression = 1;
+  string locals_json = 2;
+}
+
+message EvaluateResponse {
+  string value_json = 1;
+}
+
+message DisposeHandleRequest {
+  string handle_id = 1;
+}
+
+message DisposeHandleResponse {
+  bool success = 1;
+}
+
+message ToFloatArrayRequest {
+  string handle_id = 1;
+}
+
+message ToFloatArrayResponse {
+  repeated float data = 1;
+}
+
+message ToFloatArray2DRequest {
+  string handle_id = 1;
+}
+
+message ToFloatArray2DResponse {
+  repeated FloatArray data = 1;
+}
+
+message FloatArray {
+  repeated float values = 1;
+}
+
+message IsModuleAvailableRequest {
+  string module_name = 1;
+}
+
+message IsModuleAvailableResponse {
+  bool available = 1;
+}
+
+message WrapValueRequest {
+  string value_json = 1;
+}
+
+message WrapValueResponse {
+  string handle_id = 1;
+  string type_name = 2;
+}

@@ -1,0 +1,687 @@
+{% extends "base.html" %}
+
+{% block title %}My Models - LLM Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1><i class="bi bi-collection me-3"></i>My Models</h1>
+            <p class="text-muted mb-0">Manage your downloaded LLM models</p>
+        </div>
+        <div>
+            <a href="{{ url_for('llm.discover') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-2"></i>Download More
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Storage Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4 animate-fade-in">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted mb-2">Total Models</h6>
+                        <h2 class="mb-0">{{ models|length }}</h2>
+                    </div>
+                    <div class="stat-icon bg-primary bg-opacity-20 text-primary">
+                        <i class="bi bi-box"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 animate-fade-in" style="animation-delay: 0.1s;">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted mb-2">Storage Used</h6>
+                        <h2 class="mb-0">{{ storage_stats.total_size_gb }} GB</h2>
+                    </div>
+                    <div class="stat-icon bg-info bg-opacity-20 text-info">
+                        <i class="bi bi-hdd"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 animate-fade-in" style="animation-delay: 0.2s;">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted mb-2">Loaded Models</h6>
+                        <h2 class="mb-0">{{ loaded_models|length }}</h2>
+                    </div>
+                    <div class="stat-icon bg-success bg-opacity-20 text-success">
+                        <i class="bi bi-play-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Models List -->
+{% if models %}
+<div class="card animate-fade-in">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Downloaded Models</h5>
+        <div class="d-flex gap-2">
+            <input type="text" class="form-control form-control-sm bg-dark border-secondary"
+                placeholder="Filter models..." id="modelFilter" style="width: 200px;">
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover mb-0" id="modelsTable">
+                <thead>
+                    <tr>
+                        <th>Model</th>
+                        <th>Size</th>
+                        <th>Quantization</th>
+                        <th>Environment</th>
+                        <th>Source</th>
+                        <th>Downloaded</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for model in models %}
+                    <tr data-model-name="{{ model.name|lower }}">
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="model-icon-sm me-3">
+                                    {% if model.id in loaded_models %}
+                                    <i class="bi bi-box-fill text-success"></i>
+                                    {% else %}
+                                    <i class="bi bi-box text-primary"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <strong>{{ model.name }}</strong>
+                                    {% if model.parameters %}
+                                    <span class="badge bg-info ms-2">{{ model.parameters }}</span>
+                                    {% endif %}
+                                    <br>
+                                    <small class="text-muted text-truncate d-block" style="max-width: 300px;"
+                                        title="{{ model.path }}">
+                                        {{ model.filename }}
+                                    </small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ (model.size / 1073741824)|round(2) }} GB</td>
+                        <td>
+                            {% if model.quantization %}
+                            <span class="badge bg-primary">{{ model.quantization }}</span>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if model.venv_name %}
+                            <div>
+                                <span class="badge bg-success mb-1">{{ model.venv_name }}</span>
+                                <br>
+                                {% if model.gpu_backend %}
+                                {% if model.gpu_backend == 'cuda' %}
+                                <span class="badge bg-primary"><i class="bi bi-gpu-card me-1"></i>CUDA</span>
+                                {% elif model.gpu_backend == 'metal' %}
+                                <span class="badge bg-info"><i class="bi bi-apple me-1"></i>Metal</span>
+                                {% elif model.gpu_backend == 'vulkan' %}
+                                <span class="badge bg-warning"><i class="bi bi-gpu-card me-1"></i>Vulkan</span>
+                                {% else %}
+                                <span class="badge bg-secondary"><i class="bi bi-cpu me-1"></i>{{
+                                    model.gpu_backend|upper }}</span>
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <button class="btn btn-sm btn-outline-warning"
+                                onclick="openEnvironmentSetup('{{ model.id }}', '{{ model.name }}')"
+                                title="Setup virtual environment for this model">
+                                <i class="bi bi-gear me-1"></i>Setup Required
+                            </button>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if model.source == 'huggingface' %}
+                            <span class="badge bg-secondary"><i
+                                    class="bi bi-box-arrow-up-right me-1"></i>HuggingFace</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ model.source }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small class="text-muted">
+                                {% if model.downloaded_at %}
+                                {{ model.downloaded_at[:10] }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </small>
+                        </td>
+                        <td>
+                            {% if model.id in loaded_models %}
+                            <span class="badge bg-success"><i class="bi bi-play-fill me-1"></i>Loaded</span>
+                            {% elif model.status == 'available' %}
+                            <span class="badge bg-secondary">Ready</span>
+                            {% elif model.status == 'missing' %}
+                            <span class="badge bg-danger">Missing</span>
+                            {% else %}
+                            <span class="badge bg-warning">{{ model.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                {% if model.venv_name %}
+                                    {% if model.id in loaded_models %}
+                                    <button class="btn btn-outline-warning" onclick="unloadModel('{{ model.id }}')" title="Unload">
+                                        <i class="bi bi-eject"></i>
+                                    </button>
+                                    {% else %}
+                                    <button class="btn btn-outline-success" onclick="loadModel('{{ model.id }}')" title="Load">
+                                        <i class="bi bi-play"></i>
+                                    </button>
+                                    {% endif %}
+                                {% endif %}
+                                <button class="btn btn-outline-info" onclick="showModelInfo('{{ model.id }}')" title="Info">
+                                    <i class="bi bi-info-circle"></i>
+                                </button>
+                                <button class="btn btn-outline-danger"
+                                    onclick="deleteModel('{{ model.id }}', '{{ model.name }}')" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Loaded Models Details -->
+{% if loaded_models %}
+<div class="card mt-4 animate-fade-in">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-cpu me-2"></i>Currently Loaded</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            {% for model_id, stats in loaded_models.items() %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card bg-dark">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="mb-0">{{ stats.model_name }}</h6>
+                            <span class="badge bg-success">Active</span>
+                        </div>
+                        <small class="text-muted d-block mb-2">
+                            <i class="bi bi-clock me-1"></i>
+                            Uptime: {{ (stats.uptime_seconds / 60)|round(1) }} min
+                        </small>
+                        <small class="text-muted d-block mb-2">
+                            <i class="bi bi-chat-dots me-1"></i>
+                            Requests: {{ stats.request_count }}
+                        </small>
+                        <small class="text-muted d-block mb-3">
+                            <i class="bi bi-type me-1"></i>
+                            Tokens Generated: {{ stats.total_tokens_generated }}
+                        </small>
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('llm.chat') }}" class="btn btn-sm btn-success flex-grow-1">
+                                <i class="bi bi-chat-dots me-1"></i>Chat
+                            </a>
+                            <button class="btn btn-sm btn-outline-warning" onclick="unloadModel('{{ model_id }}')">
+                                <i class="bi bi-eject"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+<!-- No Models -->
+<div class="card animate-fade-in">
+    <div class="card-body text-center py-5">
+        <i class="bi bi-box display-1 text-muted mb-3"></i>
+        <h4>No Models Downloaded</h4>
+        <p class="text-muted mb-4">Start by discovering and downloading models from HuggingFace</p>
+        <a href="{{ url_for('llm.discover') }}" class="btn btn-primary btn-lg">
+            <i class="bi bi-search me-2"></i>Discover Models
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<!-- Include Environment Setup Modal -->
+{% include 'llm/environment_setup_modal.html' %}
+
+<!-- Model Info Modal -->
+<div class="modal fade" id="modelInfoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title"><i class="bi bi-info-circle me-2"></i>Model Information</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modelInfoContent">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Load Model Modal -->
+<div class="modal fade" id="loadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title"><i class="bi bi-gear me-2"></i>Load Model</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Context Length</label>
+                    <select class="form-select bg-dark border-secondary text-light" id="loadCtxLength">
+                        <option value="2048">2048 tokens</option>
+                        <option value="4096" selected>4096 tokens (default)</option>
+                        <option value="8192">8192 tokens</option>
+                        <option value="16384">16384 tokens</option>
+                        <option value="32768">32768 tokens</option>
+                    </select>
+                    <small class="text-muted">Higher context uses more RAM</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">GPU Layers</label>
+                    <input type="number" class="form-control bg-dark border-secondary text-light" id="loadGpuLayers"
+                        value="0" min="0">
+                    <small class="text-muted">0 = CPU only, -1 = all layers on GPU</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Temperature</label>
+                    <input type="range" class="form-range" id="loadTemperature" min="0" max="2" step="0.1" value="0.7">
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted">Precise (0)</small>
+                        <small id="tempValue">0.7</small>
+                        <small class="text-muted">Creative (2)</small>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="confirmLoadBtn">
+                    <i class="bi bi-play me-2"></i>Load Model
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Progress Modal -->
+<div class="modal fade" id="loadingProgressModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark border-secondary">
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-primary mb-4" style="width: 4rem; height: 4rem;" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <h4 id="loadingModelName">Loading Model...</h4>
+                <p class="text-muted mb-3" id="loadingStatus">Initializing inference engine</p>
+                <div class="progress mb-3" style="height: 8px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" id="loadingProgress" 
+                         role="progressbar" style="width: 0%"></div>
+                </div>
+                <small class="text-muted" id="loadingDetail">This may take a minute for large models...</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Unloading Progress Modal -->
+<div class="modal fade" id="unloadingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content bg-dark border-secondary">
+            <div class="modal-body text-center py-4">
+                <div class="spinner-border text-warning mb-3" role="status">
+                    <span class="visually-hidden">Unloading...</span>
+                </div>
+                <h5>Unloading Model</h5>
+                <p class="text-muted small mb-0">Releasing memory...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .model-icon-sm {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 8px;
+        font-size: 1.2rem;
+    }
+</style>
+
+<script>
+    // Filter functionality
+    document.getElementById('modelFilter')?.addEventListener('input', function (e) {
+        const filter = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('#modelsTable tbody tr');
+
+        rows.forEach(row => {
+            const name = row.getAttribute('data-model-name');
+            row.style.display = name.includes(filter) ? '' : 'none';
+        });
+    });
+
+    let currentModelId = null;
+
+    async function showModelInfo(modelId) {
+        const modal = new bootstrap.Modal(document.getElementById('modelInfoModal'));
+        const content = document.getElementById('modelInfoContent');
+        content.innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        `;
+        modal.show();
+
+        try {
+            const response = await fetch(`/llm/api/models/${modelId}/info`);
+            const info = await response.json();
+            
+            if (info.error) {
+                content.innerHTML = `<div class="alert alert-danger">${info.error}</div>`;
+                return;
+            }
+            
+            // Build quality stars
+            let qualityStars = '';
+            if (info.quantization_info && info.quantization_info.stars) {
+                for (let i = 0; i < 5; i++) {
+                    qualityStars += i < info.quantization_info.stars 
+                        ? '<i class="bi bi-star-fill text-warning"></i>' 
+                        : '<i class="bi bi-star text-muted"></i>';
+                }
+            }
+            
+            // Build use cases badges
+            let useCasesBadges = '';
+            if (info.use_cases && info.use_cases.length > 0) {
+                useCasesBadges = info.use_cases.map(uc => 
+                    `<span class="badge bg-primary me-1 mb-1">${uc}</span>`
+                ).join('');
+            }
+            
+            content.innerHTML = `
+                <div class="row">
+                    <!-- Left Column - Basic Info -->
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-3"><i class="bi bi-box me-2"></i>Model Details</h6>
+                        <table class="table table-dark table-sm">
+                            <tr>
+                                <td class="text-muted">Name</td>
+                                <td><strong>${info.name}</strong></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Family</td>
+                                <td><span class="badge bg-info">${info.family}</span></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Size</td>
+                                <td>${info.size_gb} GB</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Parameters</td>
+                                <td>${info.parameters || 'Unknown'}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Format</td>
+                                <td><span class="badge bg-secondary">${info.format.toUpperCase()}</span></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Source</td>
+                                <td>${info.source}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Downloaded</td>
+                                <td>${info.downloaded_at ? info.downloaded_at.substring(0, 10) : 'Unknown'}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <!-- Right Column - Technical Info -->
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-3"><i class="bi bi-cpu me-2"></i>Technical Specs</h6>
+                        <table class="table table-dark table-sm">
+                            <tr>
+                                <td class="text-muted">Quantization</td>
+                                <td>
+                                    ${info.quantization ? `<span class="badge bg-primary">${info.quantization}</span>` : '-'}
+                                </td>
+                            </tr>
+                            ${info.quantization_info ? `
+                            <tr>
+                                <td class="text-muted">Quality</td>
+                                <td>
+                                    ${qualityStars}
+                                    <small class="ms-2 text-muted">${info.quantization_info.quality}</small>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Quant. Info</td>
+                                <td><small>${info.quantization_info.description}</small></td>
+                            </tr>
+                            ` : ''}
+                            <tr>
+                                <td class="text-muted">RAM Required</td>
+                                <td><i class="bi bi-memory me-1"></i>${info.recommended_ram}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">VRAM (GPU)</td>
+                                <td><i class="bi bi-gpu-card me-1"></i>${info.recommended_vram}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Environment</td>
+                                <td>
+                                    ${info.has_environment 
+                                        ? `<span class="badge bg-success">${info.venv_name}</span>
+                                           ${info.gpu_backend ? `<span class="badge bg-info ms-1">${info.gpu_backend.toUpperCase()}</span>` : ''}`
+                                        : '<span class="badge bg-warning">Not Set Up</span>'}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Description -->
+                <div class="mt-3">
+                    <h6 class="text-primary mb-2"><i class="bi bi-file-text me-2"></i>Description</h6>
+                    <p class="text-light">${info.description}</p>
+                </div>
+                
+                <!-- Use Cases -->
+                <div class="mt-3">
+                    <h6 class="text-primary mb-2"><i class="bi bi-lightning me-2"></i>Use Cases</h6>
+                    <div>${useCasesBadges || '<span class="text-muted">General purpose</span>'}</div>
+                </div>
+                
+                <!-- License -->
+                <div class="mt-3">
+                    <h6 class="text-primary mb-2"><i class="bi bi-shield-check me-2"></i>License</h6>
+                    <p class="text-muted mb-0">${info.license}</p>
+                </div>
+                
+                <!-- File Path -->
+                <div class="mt-3">
+                    <h6 class="text-primary mb-2"><i class="bi bi-folder me-2"></i>File Location</h6>
+                    <code class="bg-secondary px-2 py-1 rounded small">${info.path}</code>
+                </div>
+            `;
+        } catch (error) {
+            content.innerHTML = `<div class="alert alert-danger">Failed to load model info: ${error.message}</div>`;
+        }
+    }
+
+    let loadingProgressModal = null;
+    let loadingProgressInterval = null;
+
+    function showLoadingProgress(modelName) {
+        document.getElementById('loadingModelName').textContent = `Loading ${modelName}...`;
+        document.getElementById('loadingStatus').textContent = 'Initializing inference engine';
+        document.getElementById('loadingProgress').style.width = '10%';
+        document.getElementById('loadingProgress').classList.remove('bg-danger');
+        document.getElementById('loadingProgress').classList.add('progress-bar-animated');
+        document.getElementById('loadingDetail').textContent = 'This may take a minute for large models...';
+        
+        loadingProgressModal = new bootstrap.Modal(document.getElementById('loadingProgressModal'));
+        loadingProgressModal.show();
+        
+        // Simulate progress
+        const stages = [
+            { progress: 25, status: 'Loading model file...', detail: 'Reading GGUF format' },
+            { progress: 45, status: 'Initializing tensors...', detail: 'Allocating memory' },
+            { progress: 65, status: 'Building context...', detail: 'Setting up inference' },
+            { progress: 85, status: 'Warming up...', detail: 'Almost ready!' }
+        ];
+        
+        let stageIndex = 0;
+        loadingProgressInterval = setInterval(() => {
+            if (stageIndex < stages.length) {
+                const stage = stages[stageIndex];
+                document.getElementById('loadingProgress').style.width = stage.progress + '%';
+                document.getElementById('loadingStatus').textContent = stage.status;
+                document.getElementById('loadingDetail').textContent = stage.detail;
+                stageIndex++;
+            }
+        }, 2500);
+    }
+
+    function hideLoadingProgress(success, error = null) {
+        if (loadingProgressInterval) clearInterval(loadingProgressInterval);
+        
+        if (success) {
+            document.getElementById('loadingProgress').style.width = '100%';
+            document.getElementById('loadingStatus').textContent = 'Model loaded successfully!';
+            document.getElementById('loadingDetail').textContent = 'Refreshing page...';
+            setTimeout(() => {
+                if (loadingProgressModal) loadingProgressModal.hide();
+                location.reload();
+            }, 800);
+        } else {
+            document.getElementById('loadingProgress').classList.remove('progress-bar-animated');
+            document.getElementById('loadingProgress').classList.add('bg-danger');
+            document.getElementById('loadingStatus').textContent = 'Failed to load model';
+            document.getElementById('loadingDetail').innerHTML = `<span class="text-danger">${error || 'Unknown error'}</span>`;
+            setTimeout(() => {
+                if (loadingProgressModal) loadingProgressModal.hide();
+            }, 3000);
+        }
+    }
+
+    function loadModel(modelId) {
+        currentModelId = modelId;
+        const modal = new bootstrap.Modal(document.getElementById('loadModal'));
+        modal.show();
+    }
+
+    document.getElementById('loadTemperature')?.addEventListener('input', function (e) {
+        document.getElementById('tempValue').textContent = e.target.value;
+    });
+
+    document.getElementById('confirmLoadBtn')?.addEventListener('click', async function () {
+        const btn = this;
+        const loadModal = bootstrap.Modal.getInstance(document.getElementById('loadModal'));
+        
+        // Get model name from table
+        const modelRow = document.querySelector(`tr[data-model-id="${currentModelId}"]`) ||
+                         document.querySelector(`button[onclick*="${currentModelId}"]`)?.closest('tr');
+        const modelName = modelRow?.getAttribute('data-model-name') || 'Model';
+        
+        // Close load settings modal and show progress modal
+        loadModal.hide();
+        showLoadingProgress(modelName);
+
+        try {
+            const response = await fetch(`/llm/models/${currentModelId}/load`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    n_ctx: parseInt(document.getElementById('loadCtxLength').value),
+                    n_gpu_layers: parseInt(document.getElementById('loadGpuLayers').value),
+                    temperature: parseFloat(document.getElementById('loadTemperature').value)
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                hideLoadingProgress(true);
+            } else {
+                hideLoadingProgress(false, data.error || 'Failed to load model');
+            }
+        } catch (error) {
+            hideLoadingProgress(false, error.message);
+        }
+    });
+
+    async function unloadModel(modelId) {
+        if (!confirm('Unload this model from memory?')) return;
+
+        // Show unloading modal
+        const unloadingModal = new bootstrap.Modal(document.getElementById('unloadingModal'));
+        unloadingModal.show();
+
+        try {
+            const response = await fetch(`/llm/models/${modelId}/unload`, { method: 'POST' });
+            setTimeout(() => {
+                unloadingModal.hide();
+                if (response.ok) {
+                    location.reload();
+                }
+            }, 500);
+        } catch (error) {
+            unloadingModal.hide();
+            alert('Error: ' + error.message);
+        }
+    }
+
+    async function deleteModel(modelId, modelName) {
+        if (!confirm(`Delete ${modelName}?\n\nThis will permanently remove the model file.`)) return;
+
+        try {
+            const response = await fetch(`/llm/models/${modelId}/delete`, { method: 'POST' });
+            const data = await response.json();
+
+            if (data.redirect_url) {
+                window.location.href = data.redirect_url;
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+</script>
+{% endblock %}
