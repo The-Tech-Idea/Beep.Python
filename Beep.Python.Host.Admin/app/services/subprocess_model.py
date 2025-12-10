@@ -65,7 +65,8 @@ class SubprocessModel:
                 raise FileNotFoundError(f"Python executable not found: {python_exe}")
             
             # Get inference script path
-            script_dir = Path(__file__).parent.parent / 'scripts'
+            from app.config_manager import get_app_directory
+            script_dir = get_app_directory() / 'app' / 'scripts'
             script_path = script_dir / 'inference_subprocess.py'
             
             if not script_path.exists():

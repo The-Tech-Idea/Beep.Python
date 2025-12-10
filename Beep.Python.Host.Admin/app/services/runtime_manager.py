@@ -35,7 +35,12 @@ class RuntimeManager:
     EMBEDDED_PYTHON_URL = "https://www.python.org/ftp/python/{version}/python-{version}-embed-amd64.zip"
     
     def __init__(self, base_path: Optional[str] = None):
-        self.base_path = Path(base_path or os.path.expanduser("~/.beep-llm"))
+        # Use app's own folder - no fallback to user home
+        if base_path:
+            self.base_path = Path(base_path)
+        else:
+            from app.config_manager import get_app_directory
+            self.base_path = get_app_directory()
         self.python_path = self.base_path / "python"
         self.providers_path = self.base_path / "providers"
         self._ensure_directories()
@@ -66,27 +71,39 @@ class RuntimeManager:
         return runtimes
     
     def _check_embedded_python(self) -> Optional[PythonRuntime]:
-        """Check for embedded Python installation"""
-        embedded_path = self.python_path / self.EMBEDDED_PYTHON_VERSION
+        """Check for embedded Python installation bundled with the app"""
+        # Check multiple possible locations for embedded Python
+        embedded_paths = [
+            # Location 1: python-embedded folder (bundled with PyInstaller)
+            self.base_path / "python-embedded",
+            # Location 2: _internal/python-embedded (PyInstaller onefile)
+            self.base_path / "_internal" / "python-embedded",
+            # Location 3: Legacy path - python/{version}
+            self.python_path / self.EMBEDDED_PYTHON_VERSION,
+        ]
         
-        if platform.system() == "Windows":
-            executable = embedded_path / "python.exe"
-        else:
-            executable = embedded_path / "bin" / "python"
-        
-        if executable.exists():
-            version = self._get_python_version(str(executable))
-            return PythonRuntime(
-                id=f"embedded-{self.EMBEDDED_PYTHON_VERSION}",
-                version=version or self.EMBEDDED_PYTHON_VERSION,
-                path=str(embedded_path),
-                executable=str(executable),
-                is_virtual=False,
-                is_embedded=True,
-                is_active=False,
-                architecture="amd64",
-                pip_version=self._get_pip_version(str(executable))
-            )
+        for embedded_path in embedded_paths:
+            if not embedded_path.exists():
+                continue
+                
+            if platform.system() == "Windows":
+                executable = embedded_path / "python.exe"
+            else:
+                executable = embedded_path / "bin" / "python"
+            
+            if executable.exists():
+                version = self._get_python_version(str(executable))
+                return PythonRuntime(
+                    id=f"embedded-{version or 'bundled'}",
+                    version=version or self.EMBEDDED_PYTHON_VERSION,
+                    path=str(embedded_path),
+                    executable=str(executable),
+                    is_virtual=False,
+                    is_embedded=True,
+                    is_active=False,
+                    architecture="amd64",
+                    pip_version=self._get_pip_version(str(executable))
+                )
         return None
     
     def _discover_system_pythons(self) -> List[PythonRuntime]:

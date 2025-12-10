@@ -128,9 +128,9 @@ class LlamaServerManager:
         self._used_ports: set = set()
         self._port_range = range(8080, 8180)
         
-        # State file for persistence
-        self._base_path = Path(os.environ.get('BEEP_PYTHON_HOME', 
-                                               os.path.expanduser('~/.beep-llm')))
+        # State file for persistence - use app's own folder
+        from app.config_manager import get_app_directory
+        self._base_path = get_app_directory()
         self._state_file = self._base_path / 'server_state.json'
         
         self._initialized = True

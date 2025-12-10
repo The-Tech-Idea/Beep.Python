@@ -16,7 +16,8 @@ class EmbeddedPythonManager:
     """Manager for embedded Python runtime"""
     
     def __init__(self):
-        self.base_path = Path(__file__).parent.parent.parent
+        from app.config_manager import get_app_directory
+        self.base_path = get_app_directory()
         self.embedded_path = self.base_path / 'python-embedded'
         self.protection_file = self.embedded_path / '.beep_protected'
         self.is_windows = platform.system() == 'Windows'

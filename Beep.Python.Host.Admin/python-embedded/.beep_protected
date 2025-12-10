@@ -1,0 +1,4 @@
+CRITICAL_SYSTEM_COMPONENT 
+This directory contains the embedded Python runtime required for Beep.Python to function. 
+DO NOT DELETE this directory unless you are uninstalling the application. 
+Deletion will prevent the application from starting. 

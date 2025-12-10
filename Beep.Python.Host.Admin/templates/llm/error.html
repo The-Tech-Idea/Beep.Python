@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Error - LLM Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        An Error Occurred
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <strong>Error:</strong> {{ error }}
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h5>What happened?</h5>
+                        <p>An unexpected error occurred while processing your request. This might be due to:</p>
+                        <ul>
+                            <li>Missing configuration files</li>
+                            <li>Invalid file paths</li>
+                            <li>Permission issues</li>
+                            <li>Missing dependencies</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h5>Actions you can take:</h5>
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('llm.index') }}" class="btn btn-primary">
+                                <i class="bi bi-house me-1"></i> Go to LLM Dashboard
+                            </a>
+                            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+                                <i class="bi bi-speedometer2 me-1"></i> Main Dashboard
+                            </a>
+                            <button onclick="location.reload()" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-clockwise me-1"></i> Retry
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {% if traceback %}
+                    <div class="mt-4">
+                        <h5>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#tracebackDetails">
+                                <i class="bi bi-code me-1"></i> Technical Details
+                            </button>
+                        </h5>
+                        <div class="collapse mt-2" id="tracebackDetails">
+                            <pre class="bg-dark text-light p-3 rounded" style="max-height: 400px; overflow-y: auto; font-size: 12px;">{{ traceback }}</pre>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

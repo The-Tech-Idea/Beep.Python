@@ -79,8 +79,9 @@ The following information may be helpful:
     @classmethod
     def get_default_data_path(cls) -> str:
         """Get default data path for RAG storage"""
-        home = os.environ.get('BEEP_PYTHON_HOME', os.path.expanduser('~/.beep-llm'))
-        return str(Path(home) / 'rag_data')
+        # Use app's own folder - no fallback to user home
+        from app.config_manager import get_app_directory
+        return str(get_app_directory() / 'rag_data')
 
 
 @dataclass

@@ -28,14 +28,17 @@ class SubprocessChromaDBProvider(RAGProvider):
     
     def __init__(self):
         self._config: Optional[RAGConfig] = None
-        self._data_path: Path = Path.home() / '.beep-rag' / 'data' / 'chromadb'
-        self._rag_venv = Path.home() / '.beep-rag' / 'venv'
+        # Use app's own folder
+        from app.config_manager import get_app_directory
+        app_dir = get_app_directory()
+        self._data_path: Path = app_dir / 'rag_data' / 'data' / 'chromadb'
+        self._rag_venv = app_dir / 'rag_data' / 'venv'
         self._embedding_model: str = "all-MiniLM-L6-v2"
         self._initialized = False
         self._is_windows = platform.system() == 'Windows'
         
-        # Worker script path
-        self._worker_path = Path(__file__).parent / 'workers' / 'chromadb_worker.py'
+        # Worker script path - use app directory for frozen builds
+        self._worker_path = app_dir / 'app' / 'services' / 'rag_providers' / 'workers' / 'chromadb_worker.py'
         
         # In-memory cache for collections
         self._collections: Dict[str, Collection] = {}
@@ -120,7 +123,8 @@ To use ChromaDB RAG provider, run the RAG wizard to install packages:
         if config.data_path:
             self._data_path = Path(config.data_path) / 'chromadb'
         else:
-            self._data_path = Path.home() / '.beep-rag' / 'data' / 'chromadb'
+            from app.config_manager import get_app_directory
+            self._data_path = get_app_directory() / 'rag_data' / 'data' / 'chromadb'
         
         self._data_path.mkdir(parents=True, exist_ok=True)
         

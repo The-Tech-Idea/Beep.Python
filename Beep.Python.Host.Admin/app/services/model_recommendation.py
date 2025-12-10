@@ -104,8 +104,9 @@ class ModelRecommendationService:
         import json
         from pathlib import Path
         
-        cache_file = Path(os.environ.get('BEEP_PYTHON_HOME', 
-                                         os.path.expanduser('~/.beep-llm'))) / 'config' / 'hardware_cache.json'
+        # Use app's own folder - no fallback to user home
+        from app.config_manager import get_app_directory
+        cache_file = get_app_directory() / 'config' / 'hardware_cache.json'
         if cache_file.exists():
             try:
                 with open(cache_file, 'r') as f:
@@ -123,8 +124,9 @@ class ModelRecommendationService:
         from pathlib import Path
         from dataclasses import asdict
         
-        cache_file = Path(os.environ.get('BEEP_PYTHON_HOME', 
-                                         os.path.expanduser('~/.beep-llm'))) / 'config' / 'hardware_cache.json'
+        # Use app's own folder - no fallback to user home
+        from app.config_manager import get_app_directory
+        cache_file = get_app_directory() / 'config' / 'hardware_cache.json'
         cache_file.parent.mkdir(parents=True, exist_ok=True)
         try:
             with open(cache_file, 'w') as f:
@@ -352,11 +354,15 @@ class ModelRecommendationService:
     
     def _get_disk_free_space(self) -> float:
         """Get free disk space in GB for LLM storage directory"""
-        # Check BEEP_PYTHON_HOME or default location
-        llm_dir = os.environ.get('BEEP_PYTHON_HOME', os.path.expanduser('~/.beep-llm'))
+        # Use app's own folder
+        from app.config_manager import get_app_directory
+        llm_dir = get_app_directory()
         
         try:
-            stat = shutil.disk_usage(llm_dir if os.path.exists(llm_dir) else os.path.expanduser('~'))
+            # Ensure directory exists
+            if not llm_dir.exists():
+                llm_dir.mkdir(parents=True, exist_ok=True)
+            stat = shutil.disk_usage(str(llm_dir))
             return stat.free / (1024 ** 3)
         except Exception:
             return 0.0

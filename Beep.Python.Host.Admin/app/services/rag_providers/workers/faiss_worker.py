@@ -12,7 +12,12 @@ import sys
 import json
 import os
 import pickle
+import multiprocessing
 from pathlib import Path
+
+# CRITICAL: Required for PyInstaller frozen environments
+if __name__ == '__main__':
+    multiprocessing.freeze_support()
 
 
 def check_availability():
@@ -156,8 +161,12 @@ def main():
         if action == 'check':
             result = check_availability()
         elif action == 'initialize':
+            # data_path MUST be provided by caller - no fallback to user home
+            data_path = input_data.get('data_path')
+            if not data_path:
+                raise ValueError("data_path must be provided for initialize action")
             result = initialize(
-                input_data.get('data_path', str(Path.home() / '.beep-rag' / 'data' / 'faiss')),
+                data_path,
                 input_data.get('embedding_model', 'all-MiniLM-L6-v2')
             )
         elif action == 'create_embeddings':

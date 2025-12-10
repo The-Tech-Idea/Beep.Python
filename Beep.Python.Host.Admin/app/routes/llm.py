@@ -10,9 +10,11 @@ Provides routes for:
 - Settings
 """
 import os
+import sys
 import time
 import json
 import threading
+import traceback
 from pathlib import Path
 from typing import Dict, Any, Optional
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, Response, flash
@@ -34,6 +36,33 @@ llm_bp = Blueprint('llm', __name__)
 llm_bp.add_url_rule('/api/venv/<venv_name>/rebuild', 'api_rebuild_venv', api_rebuild_venv, methods=['POST'])
 
 
+# Error handler for this blueprint - log errors to console/file
+@llm_bp.errorhandler(Exception)
+def handle_exception(e):
+    """Handle any exceptions in LLM routes"""
+    error_msg = str(e)
+    error_trace = traceback.format_exc()
+    print(f"[LLM Route Error] {error_msg}")
+    print(f"[LLM Route Traceback]\n{error_trace}")
+    
+    # Try to get app directory for logging
+    try:
+        from app.config_manager import get_app_directory
+        log_file = get_app_directory() / 'logs' / 'llm_errors.log'
+        log_file.parent.mkdir(parents=True, exist_ok=True)
+        with open(log_file, 'a', encoding='utf-8') as f:
+            f.write(f"\n{'='*50}\n")
+            f.write(f"Time: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"Error: {error_msg}\n")
+            f.write(f"Traceback:\n{error_trace}\n")
+    except:
+        pass
+    
+    return render_template('llm/error.html', 
+                          error=error_msg, 
+                          traceback=error_trace), 500
+
+
 # =====================
 # Dashboard / Overview
 # =====================
@@ -41,26 +70,63 @@ llm_bp.add_url_rule('/api/venv/<venv_name>/rebuild', 'api_rebuild_venv', api_reb
 @llm_bp.route('/')
 def index():
     """LLM Management Dashboard"""
-    llm_mgr = LLMManager()
-    inference = InferenceService()
-    hf_service = HuggingFaceService()
-    
-    # Get statistics
-    storage_stats = llm_mgr.get_storage_stats()
-    local_models = llm_mgr.get_local_models()
-    loaded_models = inference.get_loaded_models()
-    active_downloads = llm_mgr.get_active_downloads()
-    
-    # Get categories for browsing
-    categories = hf_service.get_popular_categories()
-    
-    return render_template('llm/index.html',
-                           storage_stats=storage_stats,
-                           local_models=local_models,
-                           loaded_models=loaded_models,
-                           active_downloads=active_downloads,
-                           categories=categories,
-                           inference_available=inference.is_available())
+    try:
+        llm_mgr = LLMManager()
+        inference = InferenceService()
+        hf_service = HuggingFaceService()
+        
+        # Get statistics with error handling
+        try:
+            storage_stats = llm_mgr.get_storage_stats()
+        except Exception as e:
+            print(f"[LLM Index] Error getting storage stats: {e}")
+            storage_stats = {'model_count': 0, 'total_size_gb': 0, 'disk_free_gb': 0, 'disk_total_gb': 0}
+        
+        try:
+            local_models = llm_mgr.get_local_models()
+        except Exception as e:
+            print(f"[LLM Index] Error getting local models: {e}")
+            local_models = []
+        
+        try:
+            loaded_models = inference.get_loaded_models()
+        except Exception as e:
+            print(f"[LLM Index] Error getting loaded models: {e}")
+            loaded_models = []
+        
+        try:
+            active_downloads = llm_mgr.get_active_downloads()
+        except Exception as e:
+            print(f"[LLM Index] Error getting active downloads: {e}")
+            active_downloads = []
+        
+        try:
+            categories = hf_service.get_popular_categories()
+        except Exception as e:
+            print(f"[LLM Index] Error getting categories: {e}")
+            categories = []
+        
+        try:
+            inference_available = inference.is_available()
+        except Exception as e:
+            print(f"[LLM Index] Error checking inference: {e}")
+            inference_available = False
+        
+        return render_template('llm/index.html',
+                               storage_stats=storage_stats,
+                               local_models=local_models,
+                               loaded_models=loaded_models,
+                               active_downloads=active_downloads,
+                               categories=categories,
+                               inference_available=inference_available)
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"[LLM Index Error] {e}")
+        print(f"[LLM Index Traceback]\n{error_trace}")
+        return render_template('llm/error.html', 
+                              error=str(e), 
+                              traceback=error_trace), 500
 
 
 # =====================
@@ -70,290 +136,322 @@ def index():
 @llm_bp.route('/discover')
 def discover():
     """Browse and discover models"""
-    hf_service = HuggingFaceService()
-    categories = hf_service.get_popular_categories()
-    
-    # Get query params
-    query = request.args.get('q', '')
-    category = request.args.get('category', '')
-    
-    models = []
-    if query or category:
-        search_query = query if query else categories[0]['query'] if category else ''
-        for cat in categories:
-            if cat['id'] == category:
-                search_query = cat['query']
-                break
+    try:
+        hf_service = HuggingFaceService()
         
-        if search_query:
-            models = hf_service.search_models(search_query, filter_gguf=True, limit=30)
-    
-    return render_template('llm/discover.html',
-                           categories=categories,
-                           models=models,
-                           query=query,
-                           selected_category=category)
+        try:
+            categories = hf_service.get_popular_categories()
+        except Exception as e:
+            print(f"[Discover] Error getting categories: {e}")
+            categories = []
+        
+        # Get query params
+        query = request.args.get('q', '')
+        category = request.args.get('category', '')
+        
+        models = []
+        if query or category:
+            search_query = query if query else (categories[0]['query'] if categories and category else '')
+            for cat in categories:
+                if cat['id'] == category:
+                    search_query = cat['query']
+                    break
+            
+            if search_query:
+                try:
+                    models = hf_service.search_models(search_query, filter_gguf=True, limit=30)
+                except Exception as e:
+                    print(f"[Discover] Error searching models: {e}")
+                    models = []
+        
+        return render_template('llm/discover.html',
+                               categories=categories,
+                               models=models,
+                               query=query,
+                               selected_category=category)
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"[Discover Page Error] {e}")
+        print(f"[Discover Page Traceback]\n{error_trace}")
+        return render_template('llm/error.html', 
+                              error=str(e), 
+                              traceback=error_trace), 500
 
 
 @llm_bp.route('/search')
 def search():
     """Search models API endpoint - searches across all enabled repositories"""
-    from app.services.repository_manager import get_repository_manager
-    
-    query = request.args.get('q', '')
-    filter_gguf = request.args.get('gguf', 'true').lower() == 'true'
-    limit = min(int(request.args.get('limit', 20)), 50)
-    sort = request.args.get('sort', 'downloads')
-    
-    if not query:
-        return jsonify({'error': 'Query required', 'models': []})
-    
-    repo_mgr = get_repository_manager()
-    enabled_repos = repo_mgr.get_repositories(enabled_only=True)
-    
-    all_models = []
-    
-    # Search HuggingFace repositories
-    hf_repos = [r for r in enabled_repos if r.type == 'huggingface']
-    if hf_repos:
-        hf_service = HuggingFaceService()
-        # Use API key from first HuggingFace repo
-        hf_repo = hf_repos[0]
-        if hf_repo.api_key:
-            hf_service.llm_manager.set_huggingface_token(hf_repo.api_key)
-        models = hf_service.search_models(query, filter_gguf=filter_gguf, 
-                                         limit=limit, sort=sort)
-        all_models.extend(models)
-    
-    # TODO: Add Ollama repository search
-    # ollama_repos = [r for r in enabled_repos if r.type == 'ollama']
-    # if ollama_repos:
-    #     # Implement Ollama search
-    
-    # TODO: Add local directory search
-    # local_repos = [r for r in enabled_repos if r.type == 'local']
-    # if local_repos:
-    #     # Scan local directories for models
-    
-    return jsonify({
-        'models': all_models, 
-        'count': len(all_models),
-        'repositories_searched': [r.name for r in enabled_repos if r.type == 'huggingface']
-    })
+    try:
+        from app.services.repository_manager import get_repository_manager
+        
+        query = request.args.get('q', '')
+        filter_gguf = request.args.get('gguf', 'true').lower() == 'true'
+        limit = min(int(request.args.get('limit', 20)), 50)
+        sort = request.args.get('sort', 'downloads')
+        
+        if not query:
+            return jsonify({'error': 'Query required', 'models': []})
+        
+        repo_mgr = get_repository_manager()
+        enabled_repos = repo_mgr.get_repositories(enabled_only=True)
+        
+        all_models = []
+        
+        # Search HuggingFace repositories
+        hf_repos = [r for r in enabled_repos if r.type == 'huggingface']
+        if hf_repos:
+            hf_service = HuggingFaceService()
+            # Use API key from first HuggingFace repo
+            hf_repo = hf_repos[0]
+            if hf_repo.api_key:
+                hf_service.llm_manager.set_huggingface_token(hf_repo.api_key)
+            models = hf_service.search_models(query, filter_gguf=filter_gguf, 
+                                             limit=limit, sort=sort)
+            all_models.extend(models)
+        
+        # TODO: Add Ollama repository search
+        # ollama_repos = [r for r in enabled_repos if r.type == 'ollama']
+        # if ollama_repos:
+        #     # Implement Ollama search
+        
+        # TODO: Add local directory search
+        # local_repos = [r for r in enabled_repos if r.type == 'local']
+        # if local_repos:
+        #     # Scan local directories for models
+        
+        return jsonify({
+            'models': all_models, 
+            'count': len(all_models),
+            'repositories_searched': [r.name for r in enabled_repos if r.type == 'huggingface']
+        })
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"[Search API Error] {e}")
+        print(f"[Search API Traceback]\n{error_trace}")
+        return jsonify({'error': str(e), 'traceback': error_trace}), 500
 
 
 @llm_bp.route('/model/<path:model_id>')
 def model_details(model_id: str):
     """View model details and files"""
-    hf_service = HuggingFaceService()
-    llm_mgr = LLMManager()
-    
-    # Get model details
-    details = hf_service.get_model_details(model_id)
-    if not details:
-        flash('Model not found', 'error')
-        return redirect(url_for('llm.discover'))
-    
-    # Get downloadable files
-    files = hf_service.get_model_files(model_id, filter_gguf=True)
-    
-    # Check which files are already downloaded
-    local_models = llm_mgr.get_local_models()
-    downloaded_files = set()
-    for lm in local_models:
-        if lm.metadata.get('model_id') == model_id:
-            downloaded_files.add(lm.filename)
-    
-    for file in files:
-        file['is_downloaded'] = file['filename'] in downloaded_files
-    
-    # Check if token is set (for gated models) - check both repository and legacy
-    from app.services.repository_manager import get_repository_manager
-    repo_mgr = get_repository_manager()
-    
-    has_token = False
-    token_source = None
-    
-    # Check repository API key first
-    hf_repo = repo_mgr.get_repository('hf_default')
-    if hf_repo and hf_repo.api_key:
-        has_token = True
-        token_source = 'repository'
-    # Fallback to legacy token
-    elif llm_mgr.get_huggingface_token():
-        has_token = True
-        token_source = 'legacy'
-    
-    # Check if model is gated and needs token
-    is_gated = details.get('gated', False)
-    is_private = details.get('private', False)
-    needs_token = is_gated or is_private
-    
-    return render_template('llm/model_details.html',
-                           model=details,
-                           files=files,
-                           has_token=has_token,
-                           token_source=token_source,
-                           needs_token=needs_token,
-                           is_gated=is_gated,
-                           is_private=is_private)
-
-
-# =====================
-# Model Downloads
-# =====================
-
+    try:
+        hf_service = HuggingFaceService()
+        llm_mgr = LLMManager()
+        
+        # Get model details
+        details = hf_service.get_model_details(model_id)
+        if not details:
+            flash('Model not found', 'error')
+            return redirect(url_for('llm.discover'))
+        
+        # Get downloadable files
+        files = hf_service.get_model_files(model_id, filter_gguf=True)
+        
+        # Check which files are already downloaded
+        local_models = llm_mgr.get_local_models()
+        downloaded_files = set()
+        for lm in local_models:
+            if lm.metadata.get('model_id') == model_id:
+                downloaded_files.add(lm.filename)
+        
+        for file in files:
+            file['is_downloaded'] = file['filename'] in downloaded_files
+        
+        # Check if token is set (for gated models) - check both repository and legacy
+        from app.services.repository_manager import get_repository_manager
+        repo_mgr = get_repository_manager()
+        
+        has_token = False
+        token_source = None
+        
+        # Check repository API key first
+        hf_repo = repo_mgr.get_repository('hf_default')
+        if hf_repo and hf_repo.api_key:
+            has_token = True
+            token_source = 'repository'
+        # Fallback to legacy token
+        elif llm_mgr.get_huggingface_token():
+            has_token = True
+            token_source = 'legacy'
+        
+        # Check if model is gated and needs token
+        is_gated = details.get('gated', False)
+        is_private = details.get('private', False)
+        needs_token = is_gated or is_private
+        
+        return render_template('llm/model_details.html',
+                               model=details,
+                               files=files,
+                               has_token=has_token,
+                               token_source=token_source,
+                               needs_token=needs_token,
+                               is_gated=is_gated,
+                               is_private=is_private)
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"[Model Details Error] {e}")
+        print(f"[Model Details Traceback]\n{error_trace}")
 @llm_bp.route('/download', methods=['POST'])
 def download_model():
     """Start model download with progress tracking"""
-    from app.services.repository_manager import get_repository_manager
-    
-    data = request.get_json() or request.form
-    model_id = data.get('model_id')
-    filename = data.get('filename')
-    
-    if not model_id or not filename:
-        return jsonify({'error': 'model_id and filename are required'}), 400
-    
-    # Pre-validate token requirements before starting download
-    hf_service = HuggingFaceService()
-    model_details = hf_service.get_model_details(model_id)
-    
-    if model_details:
-        is_gated = model_details.get('gated', False)
-        is_private = model_details.get('private', False)
-        requires_token = is_gated or is_private
+    try:
+        from app.services.repository_manager import get_repository_manager
         
-        if requires_token:
-            # Check if token is available
-            repo_mgr = get_repository_manager()
-            hf_repo = repo_mgr.get_repository('hf_default')
-            has_token = bool(
-                (hf_repo and hf_repo.api_key) or 
-                LLMManager().get_huggingface_token()
-            )
-            
-            if not has_token:
-                return jsonify({
-                    'error': 'Token required',
-                    'message': (
-                        f"This model requires a HuggingFace API token. "
-                        f"{'It is a gated model (requires license acceptance).' if is_gated else ''} "
-                        f"{'It is a private model.' if is_private else ''} "
-                        f"Please configure your API token in Settings."
-                    ),
-                    'requires_token': True,
-                    'is_gated': is_gated,
-                    'is_private': is_private
-                }), 400
-    
-    # Create task for progress tracking
-    task_mgr = TaskManager()
-    steps = [
-        "Preparing download",
-        "Connecting to HuggingFace",
-        "Downloading model",
-        "Verifying file",
-        "Finalizing"
-    ]
-    
-    task = task_mgr.create_task(
-        name=f"Download: {filename}",
-        task_type="download_model",
-        steps=steps
-    )
-    
-    # Run download in background
-    def run_download():
+        data = request.get_json() or request.form
+        model_id = data.get('model_id')
+        filename = data.get('filename')
+        
+        if not model_id or not filename:
+            return jsonify({'error': 'model_id and filename are required'}), 400
+        
+        # Pre-validate token requirements before starting download
         hf_service = HuggingFaceService()
+        model_details = hf_service.get_model_details(model_id)
         
-        try:
-            task_mgr.start_task(task.id)
+        if model_details:
+            is_gated = model_details.get('gated', False)
+            is_private = model_details.get('private', False)
+            requires_token = is_gated or is_private
             
-            # Step 1: Preparing
-            task_mgr.update_step(task.id, 0, "running", "Initializing download...")
-            task_mgr.update_progress(task.id, 5, "Preparing...")
-            time.sleep(0.3)
-            task_mgr.update_step(task.id, 0, "completed", "Ready")
-            
-            # Step 2: Connecting
-            task_mgr.update_step(task.id, 1, "running", "Connecting to HuggingFace...")
-            task_mgr.update_progress(task.id, 10, "Connecting...")
-            
-            # Get file info
-            files = hf_service.get_model_files(model_id)
-            file_info = next((f for f in files if f['filename'] == filename), None)
-            
-            if not file_info:
-                task_mgr.fail_task(task.id, "File not found in model repository")
-                return
-            
-            task_mgr.update_step(task.id, 1, "completed", "Connected")
-            
-            # Step 3: Downloading
-            task_mgr.update_step(task.id, 2, "running", "Starting download...")
-            task_mgr.update_progress(task.id, 15, "Downloading...")
-            
-            # Download with progress callback
-            def progress_callback(progress):
-                percent = 15 + int(progress.percent * 0.7)  # 15-85%
-                speed_mb = progress.speed / (1024 * 1024)
-                downloaded_mb = progress.downloaded / (1024 * 1024)
-                total_mb = progress.total_size / (1024 * 1024)
+            if requires_token:
+                # Check if token is available
+                repo_mgr = get_repository_manager()
+                hf_repo = repo_mgr.get_repository('hf_default')
+                has_token = bool(
+                    (hf_repo and hf_repo.api_key) or 
+                    LLMManager().get_huggingface_token()
+                )
                 
-                task_mgr.update_progress(
-                    task.id, percent,
-                    f"Downloading: {downloaded_mb:.1f} / {total_mb:.1f} MB ({speed_mb:.1f} MB/s)"
+                if not has_token:
+                    return jsonify({
+                        'error': 'Token required',
+                        'message': (
+                            f"This model requires a HuggingFace API token. "
+                            f"{'It is a gated model (requires license acceptance).' if is_gated else ''} "
+                            f"{'It is a private model.' if is_private else ''} "
+                            f"Please configure your API token in Settings."
+                        ),
+                        'requires_token': True,
+                        'is_gated': is_gated,
+                        'is_private': is_private
+                    }), 400
+        
+        # Create task for progress tracking
+        task_mgr = TaskManager()
+        steps = [
+            "Preparing download",
+            "Connecting to HuggingFace",
+            "Downloading model",
+            "Verifying file",
+            "Finalizing"
+        ]
+        
+        task = task_mgr.create_task(
+            name=f"Download: {filename}",
+            task_type="download_model",
+            steps=steps
+        )
+        
+        # Run download in background
+        def run_download():
+            hf_service = HuggingFaceService()
+            
+            try:
+                task_mgr.start_task(task.id)
+                
+                # Step 1: Preparing
+                task_mgr.update_step(task.id, 0, "running", "Initializing download...")
+                task_mgr.update_progress(task.id, 5, "Preparing...")
+                time.sleep(0.3)
+                task_mgr.update_step(task.id, 0, "completed", "Ready")
+                
+                # Step 2: Connecting
+                task_mgr.update_step(task.id, 1, "running", "Connecting to HuggingFace...")
+                task_mgr.update_progress(task.id, 10, "Connecting...")
+                
+                # Get file info
+                files = hf_service.get_model_files(model_id)
+                file_info = next((f for f in files if f['filename'] == filename), None)
+                
+                if not file_info:
+                    task_mgr.fail_task(task.id, "File not found in model repository")
+                    return
+                
+                task_mgr.update_step(task.id, 1, "completed", "Connected")
+                
+                # Step 3: Downloading
+                task_mgr.update_step(task.id, 2, "running", "Starting download...")
+                task_mgr.update_progress(task.id, 15, "Downloading...")
+                
+                # Download with progress callback
+                def progress_callback(progress):
+                    percent = 15 + int(progress.percent * 0.7)  # 15-85%
+                    speed_mb = progress.speed / (1024 * 1024)
+                    downloaded_mb = progress.downloaded / (1024 * 1024)
+                    total_mb = progress.total_size / (1024 * 1024)
+                    
+                    task_mgr.update_progress(
+                        task.id, percent,
+                        f"Downloading: {downloaded_mb:.1f} / {total_mb:.1f} MB ({speed_mb:.1f} MB/s)"
+                    )
+                    task_mgr.update_step(
+                        task.id, 2, "running",
+                        f"{progress.percent:.1f}% - ETA: {progress.eta}s"
+                    )
+                
+                local_model = hf_service.download_model(
+                    model_id, filename,
+                    progress_callback=progress_callback,
+                    task_manager=task_mgr,
+                    task_id=task.id
                 )
-                task_mgr.update_step(
-                    task.id, 2, "running",
-                    f"{progress.percent:.1f}% - ETA: {progress.eta}s"
-                )
-            
-            local_model = hf_service.download_model(
-                model_id, filename,
-                progress_callback=progress_callback,
-                task_manager=task_mgr,
-                task_id=task.id
-            )
-            
-            if not local_model:
-                task_mgr.fail_task(task.id, "Download failed or was cancelled")
-                return
-            
-            task_mgr.update_step(task.id, 2, "completed", "Download complete")
-            
-            # Step 4: Verifying
-            task_mgr.update_step(task.id, 3, "running", "Verifying file integrity...")
-            task_mgr.update_progress(task.id, 90, "Verifying...")
-            time.sleep(0.3)
-            task_mgr.update_step(task.id, 3, "completed", "File verified")
-            
-            # Step 5: Finalizing
-            task_mgr.update_step(task.id, 4, "running", "Finalizing...")
-            task_mgr.update_progress(task.id, 95, "Finalizing...")
-            time.sleep(0.2)
-            task_mgr.update_step(task.id, 4, "completed", "Done!")
-            
-            # Complete task
-            task_mgr.complete_task(task.id, result={
-                'model_id': local_model.id,
-                'filename': local_model.filename,
-                'path': local_model.path,
-                'size': local_model.size
-            })
-            
-        except Exception as e:
-            task_mgr.fail_task(task.id, str(e))
-    
-    thread = threading.Thread(target=run_download, daemon=True)
-    thread.start()
-    
-    return jsonify({
-        'success': True,
-        'task_id': task.id,
-        'redirect_url': f'/tasks/{task.id}'
-    })
+                
+                if not local_model:
+                    task_mgr.fail_task(task.id, "Download failed or was cancelled")
+                    return
+                
+                task_mgr.update_step(task.id, 2, "completed", "Download complete")
+                
+                # Step 4: Verifying
+                task_mgr.update_step(task.id, 3, "running", "Verifying file integrity...")
+                task_mgr.update_progress(task.id, 90, "Verifying...")
+                time.sleep(0.3)
+                task_mgr.update_step(task.id, 3, "completed", "File verified")
+                
+                # Step 5: Finalizing
+                task_mgr.update_step(task.id, 4, "running", "Finalizing...")
+                task_mgr.update_progress(task.id, 95, "Finalizing...")
+                time.sleep(0.2)
+                task_mgr.update_step(task.id, 4, "completed", "Done!")
+                
+                # Complete task
+                task_mgr.complete_task(task.id, result={
+                    'model_id': local_model.id,
+                    'filename': local_model.filename,
+                    'path': local_model.path,
+                    'size': local_model.size
+                })
+                
+            except Exception as e:
+                task_mgr.fail_task(task.id, str(e))
+        
+        thread = threading.Thread(target=run_download, daemon=True)
+        thread.start()
+        
+        return jsonify({
+            'success': True,
+            'task_id': task.id,
+            'redirect_url': f'/tasks/{task.id}'
+        })
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"[Download Model Error] {e}")
+        print(f"[Download Model Traceback]\n{error_trace}")
+        return jsonify({'error': str(e), 'traceback': error_trace}), 500
 
 
 @llm_bp.route('/downloads')
@@ -373,23 +471,51 @@ def downloads():
 @llm_bp.route('/models')
 def local_models():
     """View local models"""
-    llm_mgr = LLMManager()
-    inference = InferenceService()
-    
-    models = llm_mgr.get_local_models()
-    loaded_models = {m['model_id']: m for m in inference.get_loaded_models()}
-    
-    # Add loaded status to models
-    for model in models:
-        model.is_loaded = model.id in loaded_models
-    
-    storage_stats = llm_mgr.get_storage_stats()
-    
-    return render_template('llm/models.html',
-                           models=models,
-                           loaded_models=loaded_models,
-                           storage_stats=storage_stats,
-                           inference_available=inference.is_available())
+    try:
+        llm_mgr = LLMManager()
+        inference = InferenceService()
+        
+        try:
+            models = llm_mgr.get_local_models()
+        except Exception as e:
+            print(f"[Models Page] Error getting local models: {e}")
+            models = []
+        
+        try:
+            loaded_models = {m['model_id']: m for m in inference.get_loaded_models()}
+        except Exception as e:
+            print(f"[Models Page] Error getting loaded models: {e}")
+            loaded_models = {}
+        
+        # Add loaded status to models
+        for model in models:
+            model.is_loaded = model.id in loaded_models
+        
+        try:
+            storage_stats = llm_mgr.get_storage_stats()
+        except Exception as e:
+            print(f"[Models Page] Error getting storage stats: {e}")
+            storage_stats = {'model_count': 0, 'total_size_gb': 0, 'disk_free_gb': 0}
+        
+        try:
+            inference_available = inference.is_available()
+        except Exception as e:
+            print(f"[Models Page] Error checking inference: {e}")
+            inference_available = False
+        
+        return render_template('llm/models.html',
+                               models=models,
+                               loaded_models=loaded_models,
+                               storage_stats=storage_stats,
+                               inference_available=inference_available)
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"[Models Page Error] {e}")
+        print(f"[Models Page Traceback]\n{error_trace}")
+        return render_template('llm/error.html', 
+                              error=str(e), 
+                              traceback=error_trace), 500
 
 
 @llm_bp.route('/models/<model_id>/info')
@@ -747,41 +873,101 @@ def delete_chat_session(session_id: str):
 @llm_bp.route('/settings')
 def settings():
     """LLM settings page"""
-    from app.services.repository_manager import get_repository_manager
-    
-    llm_mgr = LLMManager()
-    inference = InferenceService()
-    repo_mgr = get_repository_manager()
-    
-    current_settings = llm_mgr.get_settings()
-    storage_stats = llm_mgr.get_storage_stats()
-    
-    # Get hardware info (includes backend status, GPUs, etc.)
-    hardware_info = inference.get_hardware_info()
-    
-    # Get repositories and directories
-    repositories = repo_mgr.get_repositories()
-    directories = repo_mgr.get_directories()
-    
-    # Add space info to directories
-    for dir_obj in directories:
-        dir_obj.available_space_gb = dir_obj.get_available_space_gb()
-        dir_obj.used_space_gb = dir_obj.get_used_space_gb()
-        dir_obj.total_space_gb = dir_obj.available_space_gb + dir_obj.used_space_gb
-    
-    # Mask token for display
-    token = current_settings.get('huggingface_token', '')
-    if token:
-        current_settings['huggingface_token_masked'] = token[:4] + '*' * (len(token) - 8) + token[-4:] if len(token) > 8 else '****'
-    else:
-        current_settings['huggingface_token_masked'] = None
-    
-    return render_template('llm/settings.html',
-                           settings=current_settings,
-                           storage_stats=storage_stats,
-                           hardware_info=hardware_info,
-                           repositories=repositories,
-                           directories=directories)
+    try:
+        from app.services.repository_manager import get_repository_manager
+        
+        llm_mgr = LLMManager()
+        inference = InferenceService()
+        repo_mgr = get_repository_manager()
+        
+        # Get settings with defaults
+        try:
+            current_settings = llm_mgr.get_settings()
+        except Exception as e:
+            print(f"[Settings] Error getting settings: {e}")
+            current_settings = {}
+        
+        # Get storage stats with defaults
+        try:
+            storage_stats = llm_mgr.get_storage_stats()
+        except Exception as e:
+            print(f"[Settings] Error getting storage stats: {e}")
+            storage_stats = {
+                'model_count': 0,
+                'total_size': 0,
+                'total_size_gb': 0,
+                'disk_free': 0,
+                'disk_free_gb': 0,
+                'disk_total': 1,
+                'disk_total_gb': 0,
+                'models_path': 'Unknown',
+                'directories_count': 0
+            }
+        
+        # Get hardware info with defaults
+        try:
+            hardware_info = inference.get_hardware_info()
+        except Exception as e:
+            print(f"[Settings] Error getting hardware info: {e}")
+            hardware_info = {
+                'current_backend': 'cpu',
+                'available_backends': [],
+                'gpus': [],
+                'llama_cpp_available': False,
+                'llama_cpp_installed': False,
+                'llama_cpp_version': None,
+                'server_available': False,
+                'server_backend': None,
+                'installed_backends': [],
+                'inference_mode': 'none'
+            }
+        
+        # Get repositories and directories with defaults
+        try:
+            repositories = repo_mgr.get_repositories()
+        except Exception as e:
+            print(f"[Settings] Error getting repositories: {e}")
+            repositories = []
+        
+        try:
+            directories = repo_mgr.get_directories()
+        except Exception as e:
+            print(f"[Settings] Error getting directories: {e}")
+            directories = []
+        
+        # Add space info to directories (with error handling)
+        for dir_obj in directories:
+            try:
+                dir_obj.available_space_gb = dir_obj.get_available_space_gb()
+                dir_obj.used_space_gb = dir_obj.get_used_space_gb()
+                dir_obj.total_space_gb = dir_obj.available_space_gb + dir_obj.used_space_gb
+            except Exception as e:
+                print(f"[Settings] Error getting space for {dir_obj.path}: {e}")
+                dir_obj.available_space_gb = 0
+                dir_obj.used_space_gb = 0
+                dir_obj.total_space_gb = 0
+        
+        # Mask token for display
+        token = current_settings.get('huggingface_token', '')
+        if token:
+            current_settings['huggingface_token_masked'] = token[:4] + '*' * (len(token) - 8) + token[-4:] if len(token) > 8 else '****'
+        else:
+            current_settings['huggingface_token_masked'] = None
+        
+        return render_template('llm/settings.html',
+                               settings=current_settings,
+                               storage_stats=storage_stats,
+                               hardware_info=hardware_info,
+                               repositories=repositories,
+                               directories=directories)
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"[Settings Page Error] {e}")
+        print(f"[Settings Page Traceback]\n{error_trace}")
+        return render_template('llm/error.html', 
+                              error=str(e), 
+                              traceback=error_trace), 500
 
 
 @llm_bp.route('/settings/token', methods=['POST'])
@@ -1488,11 +1674,12 @@ def wizard():
 def api_wizard_hardware():
     """API: Get cached hardware capabilities for wizard (fast, no detection)"""
     from app.services.environment_manager import EnvironmentManager
+    from app.config_manager import get_app_directory
     from flask import Response
     
     rec_service = get_recommendation_service()
-    env_mgr = EnvironmentManager(base_path=os.environ.get('BEEP_PYTHON_HOME', 
-                                                           os.path.expanduser('~/.beep-llm')))
+    # Use app's own folder
+    env_mgr = EnvironmentManager(base_path=str(get_app_directory()))
     
     # Check if streaming is requested
     stream = request.args.get('stream', 'false').lower() == 'true'
@@ -1727,12 +1914,13 @@ def api_get_all_backends():
     Returns all backends with their availability status (cached for performance)
     """
     from app.services.environment_manager import EnvironmentManager
+    from app.config_manager import get_app_directory
     
     force_refresh = request.args.get('refresh', 'false').lower() == 'true'
     
     try:
-        env_mgr = EnvironmentManager(base_path=os.environ.get('BEEP_PYTHON_HOME', 
-                                                               os.path.expanduser('~/.beep-llm')))
+        # Use app's own folder
+        env_mgr = EnvironmentManager(base_path=str(get_app_directory()))
         
         backends = env_mgr.detect_all_backends(force_refresh=force_refresh)
         
@@ -1760,9 +1948,11 @@ def api_refresh_backends():
     Call this after installing a new SDK (CUDA, ROCm, Vulkan, etc.)
     """
     from app.services.environment_manager import EnvironmentManager
+    from app.config_manager import get_app_directory
     
     try:
-        base_path = Path(os.environ.get('BEEP_PYTHON_HOME', os.path.expanduser('~/.beep-llm')))
+        # Use app's own folder
+        base_path = get_app_directory()
         
         # Clear the cache
         EnvironmentManager.clear_toolkit_cache(base_path)
@@ -2138,11 +2328,12 @@ def api_create_model_environment(model_id: str):
     def run_env_creation():
         from app.services.environment_manager import EnvironmentManager
         from app.services.llm_environment import get_llm_env_manager
+        from app.config_manager import get_app_directory
         
         try:
             task_mgr.start_task(task.id)
-            env_mgr = EnvironmentManager(base_path=os.environ.get('BEEP_PYTHON_HOME', 
-                                                                   os.path.expanduser('~/.beep-llm')))
+            # Use app's own folder
+            env_mgr = EnvironmentManager(base_path=str(get_app_directory()))
             llm_env_mgr = get_llm_env_manager()
             
             # Step 1: Create virtual environment
@@ -2296,8 +2487,9 @@ def api_switch_model_backend(model_id: str):
     llm_env_mgr = get_llm_env_manager()
     inference = InferenceService()
     task_mgr = TaskManager()
-    env_mgr = EnvironmentManager(base_path=os.environ.get('BEEP_PYTHON_HOME', 
-                                                           os.path.expanduser('~/.beep-llm')))
+    # Use app's own folder
+    from app.config_manager import get_app_directory
+    env_mgr = EnvironmentManager(base_path=str(get_app_directory()))
     
     # Get model
     model = llm_mgr.get_model_by_id(model_id)
@@ -2532,8 +2724,9 @@ def api_delete_model_environment(model_id: str):
         if inference.is_model_loaded(model_id):
             inference.unload_model(model_id)
         
-        env_mgr = EnvironmentManager(base_path=os.environ.get('BEEP_PYTHON_HOME',
-                                                               os.path.expanduser('~/.beep-llm')))
+        # Use app's own folder
+        from app.config_manager import get_app_directory
+        env_mgr = EnvironmentManager(base_path=str(get_app_directory()))
         
         # Delete the venv
         success = env_mgr.delete_environment(venv_name)

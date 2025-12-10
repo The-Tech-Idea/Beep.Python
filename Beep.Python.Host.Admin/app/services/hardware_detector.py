@@ -106,12 +106,12 @@ class HardwareDetector:
         self.system = platform.system()  # Windows, Linux, Darwin
         self.machine = platform.machine().lower()  # x86_64, arm64, etc.
         
-        # Determine base path for cache
+        # Determine base path for cache - use app's own folder (portable)
         if base_path:
             self.base_path = Path(base_path)
         else:
-            self.base_path = Path(os.environ.get('BEEP_PYTHON_HOME', 
-                                                  os.path.expanduser('~/.beep-llm')))
+            from app.config_manager import get_app_directory
+            self.base_path = get_app_directory()
         
         self.cache_file = self.base_path / 'config' / 'hardware_info.json'
         

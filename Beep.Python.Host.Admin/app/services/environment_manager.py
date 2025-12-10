@@ -43,7 +43,12 @@ class EnvironmentManager:
     """Manages virtual environments"""
     
     def __init__(self, base_path: Optional[str] = None):
-        self.base_path = Path(base_path or os.path.expanduser("~/.beep-llm"))
+        # Use app's own folder - no fallback to user home
+        if base_path:
+            self.base_path = Path(base_path)
+        else:
+            from app.config_manager import get_app_directory
+            self.base_path = get_app_directory()
         self.providers_path = self.base_path / "providers"
         self.providers_path.mkdir(parents=True, exist_ok=True)
     

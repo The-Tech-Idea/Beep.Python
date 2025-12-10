@@ -107,6 +107,7 @@
             <div class="step active" id="step1-indicator">1</div>
             <div class="step" id="step2-indicator">2</div>
             <div class="step" id="step3-indicator">3</div>
+            <div class="step" id="step4-indicator">4</div>
         </div>
 
         <!-- Step 1: Admin User -->
@@ -183,8 +184,50 @@
             </div>
         </div>
 
-        <!-- Step 3: Initialize -->
+        <!-- Step 3: Authentication -->
         <div id="step3" style="display: none;">
+            <h5 class="mb-3"><i class="bi bi-shield-lock me-2"></i>Authentication</h5>
+
+            <div class="d-flex gap-2 flex-wrap mb-3">
+                <button class="btn btn-outline-primary flex-fill active" id="authLocalBtn" onclick="selectAuthMode('local')" type="button">
+                    <i class="bi bi-lock-fill me-1"></i> Built-in (local users)
+                </button>
+                <button class="btn btn-outline-primary flex-fill" id="authIdpBtn" onclick="selectAuthMode('identity')" type="button">
+                    <i class="bi bi-cloud-lock me-1"></i> IdentityServer (OIDC)
+                </button>
+            </div>
+
+            <div id="identityFields" style="display: none;">
+                <div class="mb-2">
+                    <label class="form-label">Authority / Issuer URL</label>
+                    <input type="url" class="form-control" id="idpAuthority" placeholder="https://idp.example.com">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Client ID</label>
+                    <input type="text" class="form-control" id="idpClientId" placeholder="beep-python-admin">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Client Secret</label>
+                    <input type="password" class="form-control" id="idpClientSecret" placeholder="secret (optional for PKCE public client)">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Scopes</label>
+                    <input type="text" class="form-control" id="idpScopes" value="openid profile email">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Post-logout Redirect</label>
+                    <input type="url" class="form-control" id="idpLogoutRedirect" placeholder="http://localhost:5000/">
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+                <button class="btn btn-outline-secondary" onclick="showStep(2)">Back</button>
+                <button class="btn btn-primary" onclick="goToSummary()">Next</button>
+            </div>
+        </div>
+
+        <!-- Step 4: Initialize -->
+        <div id="step4" style="display: none;">
             <h5 class="mb-3"><i class="bi bi-check-circle me-2"></i>Ready to Initialize</h5>
 
             <p class="text-secondary">
@@ -198,10 +241,13 @@
                 <li class="list-group-item bg-transparent text-light border-secondary">
                     <i class="bi bi-database me-2"></i> <span id="summaryDb">SQLite</span>
                 </li>
+                <li class="list-group-item bg-transparent text-light border-secondary">
+                    <i class="bi bi-shield-lock me-2"></i> <span id="summaryAuth">Built-in (local users)</span>
+                </li>
             </ul>
 
             <div class="d-flex justify-content-between mt-4">
-                <button class="btn btn-outline-secondary" onclick="showStep(2)">Back</button>
+                <button class="btn btn-outline-secondary" onclick="showStep(3)">Back</button>
                 <button class="btn btn-success" id="finishBtn" onclick="finishSetup()">
                     Finish & Launch <i class="bi bi-rocket-takeoff ms-1"></i>
                 </button>
@@ -212,6 +258,7 @@
     <script>
         let validatedUri = '';
         let adminUsername = '';
+        let authMode = 'local';
 
         function toggleDbFields() {
             const provider = document.getElementById('dbProvider').value;
@@ -220,14 +267,17 @@
         }
 
         function showStep(step) {
-            document.getElementById('step1').style.display = 'none';
-            document.getElementById('step2').style.display = 'none';
-            document.getElementById('step3').style.display = 'none';
+            const totalSteps = 4;
+            for (let i = 1; i <= totalSteps; i++) {
+                const stepEl = document.getElementById('step' + i);
+                if (stepEl) stepEl.style.display = 'none';
+            }
 
-            document.getElementById('step' + step).style.display = 'block';
+            const target = document.getElementById('step' + step);
+            if (target) target.style.display = 'block';
 
             // Update indicators
-            for (let i = 1; i <= 3; i++) {
+            for (let i = 1; i <= totalSteps; i++) {
                 const el = document.getElementById('step' + i + '-indicator');
                 el.className = 'step ' + (i === step ? 'active' : (i < step ? 'completed' : ''));
                 if (i < step) el.innerHTML = '<i class="bi bi-check-lg"></i>';
@@ -306,6 +356,27 @@
             }
         }
 
+        function selectAuthMode(mode) {
+            authMode = mode;
+            document.getElementById('authLocalBtn').classList.toggle('active', mode === 'local');
+            document.getElementById('authIdpBtn').classList.toggle('active', mode === 'identity');
+            document.getElementById('identityFields').style.display = mode === 'identity' ? 'block' : 'none';
+        }
+
+        function goToSummary() {
+            if (authMode === 'identity') {
+                const authority = document.getElementById('idpAuthority').value;
+                const clientId = document.getElementById('idpClientId').value;
+                if (!authority || !clientId) {
+                    alert('Authority URL and Client ID are required for IdentityServer.');
+                    return;
+                }
+            }
+            const authSummary = authMode === 'local' ? 'Built-in (local users)' : 'IdentityServer (OIDC)';
+            document.getElementById('summaryAuth').innerText = authSummary;
+            showStep(4);
+        }
+
         async function finishSetup() {
             const btn = document.getElementById('finishBtn');
             btn.disabled = true;
@@ -314,7 +385,15 @@
             const data = {
                 db_uri: validatedUri,
                 username: adminUsername,
-                password: document.getElementById('adminPass').value
+                password: document.getElementById('adminPass').value,
+                auth_mode: authMode,
+                identity: {
+                    authority: document.getElementById('idpAuthority').value,
+                    client_id: document.getElementById('idpClientId').value,
+                    client_secret: document.getElementById('idpClientSecret').value,
+                    scopes: document.getElementById('idpScopes').value,
+                    logout_redirect: document.getElementById('idpLogoutRedirect').value
+                }
             };
 
             try {

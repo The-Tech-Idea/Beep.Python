@@ -18,7 +18,10 @@ class RAGEnvironmentManager:
     """Manager for RAG virtual environment"""
     
     def __init__(self):
-        self.base_path = Path.home() / '.beep-rag'
+        # Use app's own folder - no fallback to user home
+        from app.config_manager import get_app_directory
+        app_dir = get_app_directory()
+        self.base_path = app_dir / 'rag_data'
         self.venv_path = self.base_path / 'venv'
         self.databases_path = self.base_path / 'databases'
         self.config_path = self.base_path / 'config'

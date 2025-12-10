@@ -288,8 +288,9 @@ class LLMManager:
             return
         
         self._initialized = True
-        self.base_path = Path(os.environ.get('BEEP_PYTHON_HOME', 
-                                             os.path.expanduser('~/.beep-llm')))
+        # Use app's own folder - no fallback to user home
+        from app.config_manager import get_app_directory
+        self.base_path = get_app_directory()
         self.config_path = self.base_path / 'config'
         self.cache_path = self.base_path / 'cache' / 'models'
         
@@ -566,12 +567,15 @@ class LLMManager:
                 total_size += model.size
                 model_count += 1
         
-        # Get disk space
+        # Get disk space - ensure path exists first
         try:
-            disk_usage = shutil.disk_usage(self.models_path)
+            if not self.models_path.exists():
+                self.models_path.mkdir(parents=True, exist_ok=True)
+            disk_usage = shutil.disk_usage(str(self.models_path))
             disk_free = disk_usage.free
             disk_total = disk_usage.total
-        except:
+        except Exception as e:
+            print(f"Error getting disk usage for {self.models_path}: {e}")
             disk_free = 0
             disk_total = 0
         

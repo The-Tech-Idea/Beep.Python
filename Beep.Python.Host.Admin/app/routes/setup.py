@@ -6,6 +6,7 @@ from flask import Blueprint, request, jsonify, render_template, current_app, red
 from app.config_manager import config_manager
 from app.database import db, get_db_uri
 from app.models.core import User
+from werkzeug.security import generate_password_hash
 # Import all models to ensure they are registered with SQLAlchemy before create_all()
 from app.models import (
     Collection, Document, DataSource, SyncJob, SyncJobRun,
@@ -55,17 +56,31 @@ def validate_db():
 @setup_bp.route('/api/initialize', methods=['POST'])
 def initialize():
     """Initialize application"""
-    data = request.json
+    data = request.get_json(silent=True) or {}
     db_uri = data.get('db_uri')
     admin_user = data.get('username')
-    admin_pass = data.get('password') # In production, hash this!
+    admin_pass = data.get('password')
+    auth_mode = data.get('auth_mode', 'local')
+    identity_cfg = data.get('identity') or {}
     
     if not db_uri or not admin_user:
         return jsonify({'success': False, 'message': 'Missing required fields'}), 400
+    if not admin_pass:
+        return jsonify({'success': False, 'message': 'Admin password is required'}), 400
         
     try:
         # 1. Update Config
         config_manager.set('SQLALCHEMY_DATABASE_URI', db_uri)
+        config_manager.set('auth_mode', auth_mode)
+        if auth_mode == 'identity':
+            config_manager.set('ENABLE_IDENTITYSERVER_AUTH', True)
+            config_manager.set('IDENTITYSERVER_AUTHORITY', identity_cfg.get('authority'))
+            config_manager.set('IDENTITYSERVER_CLIENT_ID', identity_cfg.get('client_id'))
+            config_manager.set('IDENTITYSERVER_CLIENT_SECRET', identity_cfg.get('client_secret'))
+            config_manager.set('IDENTITYSERVER_SCOPES', identity_cfg.get('scopes'))
+            config_manager.set('IDENTITYSERVER_LOGOUT_REDIRECT', identity_cfg.get('logout_redirect'))
+        else:
+            config_manager.set('ENABLE_IDENTITYSERVER_AUTH', False)
         
         # 2. Initialize DB
         # We need to re-configure the app's db engine dynamically here or rely on next restart
@@ -79,7 +94,7 @@ def initialize():
             if not User.query.filter_by(username=admin_user).first():
                 user = User(
                     username=admin_user,
-                    password_hash=admin_pass, # TODO: Hash it
+                    password_hash=generate_password_hash(admin_pass),
                     is_admin=True,
                     display_name="Administrator"
                 )

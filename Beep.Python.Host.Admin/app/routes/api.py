@@ -1,6 +1,8 @@
+"""REST API Routes - JSON API for programmatic access
 """
-REST API Routes - JSON API for programmatic access
-"""
+import os
+import signal
+import sys
 from flask import Blueprint, request, jsonify
 from app.services.runtime_manager import RuntimeManager
 from app.services.environment_manager import EnvironmentManager
@@ -8,6 +10,32 @@ from app.services.server_manager import ServerManager
 from dataclasses import asdict
 
 api_bp = Blueprint('api', __name__)
+
+
+# =============================================================================
+# Server Control API
+# =============================================================================
+
+@api_bp.route('/shutdown', methods=['POST'])
+def shutdown_server():
+    """Gracefully shutdown the server"""
+    def shutdown():
+        # Give time for response to be sent
+        import time
+        time.sleep(0.5)
+        # Try to shutdown gracefully
+        if sys.platform == 'win32':
+            os._exit(0)
+        else:
+            os.kill(os.getpid(), signal.SIGTERM)
+    
+    import threading
+    threading.Thread(target=shutdown, daemon=True).start()
+    
+    return jsonify({
+        'success': True,
+        'message': 'Server is shutting down...'
+    })
 
 
 # =============================================================================

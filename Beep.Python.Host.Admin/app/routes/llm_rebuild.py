@@ -34,11 +34,12 @@ def api_rebuild_venv(venv_name: str):
     def run_rebuild():
         from app.services.environment_manager import EnvironmentManager
         from app.services.llm_environment import get_llm_env_manager
+        from app.config_manager import get_app_directory
         
         try:
             task_mgr.start_task(task.id)
-            env_mgr = EnvironmentManager(base_path=os.environ.get('BEEP_PYTHON_HOME', 
-                                                                   os.path.expanduser('~/.beep-llm')))
+            # Use app's own folder
+            env_mgr = EnvironmentManager(base_path=str(get_app_directory()))
             llm_env_mgr = get_llm_env_manager()
             
             # Step 1: Prepare

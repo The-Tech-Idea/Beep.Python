@@ -17,10 +17,15 @@ import shutil
 import platform
 import subprocess
 import threading
+import multiprocessing
 from pathlib import Path
 from typing import Optional, List, Dict, Any, Tuple, Callable
 from dataclasses import dataclass, field, asdict
 from enum import Enum
+
+# CRITICAL: Initialize freeze_support for subprocess calls in frozen apps
+if getattr(sys, 'frozen', False):
+    multiprocessing.freeze_support()
 
 
 class AccelerationType(Enum):
@@ -115,8 +120,9 @@ class HardwareService:
             return
         
         self._initialized = True
-        self.base_path = Path(os.environ.get('BEEP_PYTHON_HOME', 
-                                              os.path.expanduser('~/.beep-llm')))
+        # Use app's own folder - no fallback to user home
+        from app.config_manager import get_app_directory
+        self.base_path = get_app_directory()
         self.config_path = self.base_path / 'config'
         self.config_path.mkdir(parents=True, exist_ok=True)
         
@@ -678,7 +684,8 @@ class HardwareService:
         
         # 1. Check current project's .venv (highest priority)
         # Get the app's directory
-        app_dir = Path(__file__).parent.parent.parent  # hardware_service.py -> services -> app -> Host.Admin
+        from app.config_manager import get_app_directory
+        app_dir = get_app_directory()
         project_venv = app_dir / ".venv"
         if project_venv.exists():
             add_venv(project_venv, "Project", is_current=True)
@@ -697,18 +704,13 @@ class HardwareService:
                 if subdir.is_dir():
                     add_venv(subdir, "Managed")
         
-        # 3. Check common venv locations
-        home = Path.home()
-        common_locations = [
-            (home / ".virtualenvs", "virtualenvs"),
-            (home / "venvs", "venvs"),
-        ]
-        
-        for search_path, source in common_locations:
-            if search_path.exists() and search_path.is_dir():
-                for subdir in search_path.iterdir():
-                    if subdir.is_dir():
-                        add_venv(subdir, source)
+        # 3. Check app's environments directory (no longer looking in user home)
+        # All environments should be in app folder
+        app_envs = app_dir / "environments"
+        if app_envs.exists() and app_envs.is_dir():
+            for subdir in app_envs.iterdir():
+                if subdir.is_dir():
+                    add_venv(subdir, "App Environments")
         
         # 4. Check working directory
         cwd = Path.cwd()

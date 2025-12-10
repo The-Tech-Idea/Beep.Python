@@ -28,15 +28,18 @@ class SubprocessFAISSProvider(RAGProvider):
     
     def __init__(self):
         self._config: Optional[RAGConfig] = None
-        self._data_path: Path = Path.home() / '.beep-rag' / 'data' / 'faiss'
-        self._rag_venv = Path.home() / '.beep-rag' / 'venv'
+        # Use app's own folder
+        from app.config_manager import get_app_directory
+        app_dir = get_app_directory()
+        self._data_path: Path = app_dir / 'rag_data' / 'data' / 'faiss'
+        self._rag_venv = app_dir / 'rag_data' / 'venv'
         self._embedding_model: str = "all-MiniLM-L6-v2"
         self._embedding_dim: int = 384
         self._initialized = False
         self._is_windows = platform.system() == 'Windows'
         
-        # Worker script path
-        self._worker_path = Path(__file__).parent / 'workers' / 'faiss_worker.py'
+        # Worker script path - use app directory for frozen builds
+        self._worker_path = app_dir / 'app' / 'services' / 'rag_providers' / 'workers' / 'faiss_worker.py'
         
         # In-memory cache for collections (metadata only)
         self._collections: Dict[str, Collection] = {}
@@ -121,7 +124,8 @@ To use FAISS RAG provider, run the RAG wizard to install packages:
         if config.data_path:
             self._data_path = Path(config.data_path) / 'faiss'
         else:
-            self._data_path = Path.home() / '.beep-rag' / 'data' / 'faiss'
+            from app.config_manager import get_app_directory
+            self._data_path = get_app_directory() / 'rag_data' / 'data' / 'faiss'
         
         self._data_path.mkdir(parents=True, exist_ok=True)
         

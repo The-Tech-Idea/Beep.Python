@@ -15,13 +15,19 @@ Architecture:
 - Supports CUDA, Vulkan, Metal, ROCm, CPU backends
 """
 import os
+import sys
 import json
 import threading
 import queue
+import multiprocessing
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, List, Dict, Any, Generator, Callable
 from dataclasses import dataclass, field, asdict
+
+# CRITICAL: Initialize freeze_support for subprocess calls in frozen apps
+if getattr(sys, 'frozen', False):
+    multiprocessing.freeze_support()
 
 from .llm_manager import LLMManager, LocalModel
 from .hardware_service import HardwareService

@@ -21,9 +21,10 @@ class ModelMigrationHelper:
     def __init__(self):
         self.llm_manager = LLMManager()
         self.llm_env_mgr = get_llm_env_manager()
+        # Use app's own folder - no fallback to user home
+        from app.config_manager import get_app_directory
         self.env_mgr = EnvironmentManager(
-            base_path=os.environ.get('BEEP_PYTHON_HOME', 
-                                     os.path.expanduser('~/.beep-llm'))
+            base_path=str(get_app_directory())
         )
         self.rec_service = get_recommendation_service()
     

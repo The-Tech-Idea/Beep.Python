@@ -251,11 +251,12 @@ def api_refresh_extensions():
     import os
     from pathlib import Path
     from app.services.environment_manager import EnvironmentManager
+    from app.config_manager import get_app_directory
     
     service = get_backend_extension_service()
     
     # Clear the toolkit cache and re-detect all SDKs
-    base_path = Path(os.environ.get('BEEP_PYTHON_HOME', os.path.expanduser('~/.beep-llm')))
+    base_path = get_app_directory()
     EnvironmentManager.clear_toolkit_cache(base_path)
     
     # Re-detect all backends (will populate fresh cache)

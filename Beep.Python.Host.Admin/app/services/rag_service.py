@@ -205,7 +205,8 @@ class RAGService:
             return
         
         self._initialized = True
-        self._config_path = Path(__file__).parent.parent.parent / "config" / "rag_config.json"
+        from app.config_manager import get_app_directory
+        self._config_path = get_app_directory() / "config" / "rag_config.json"
         self._settings = self._load_settings()
         self._context_cache: Dict[str, tuple] = {}  # query_hash -> (contexts, timestamp)
         

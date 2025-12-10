@@ -71,18 +71,26 @@ class ModelDirectory:
         """Get available space in GB"""
         try:
             import shutil
-            stat = shutil.disk_usage(self.path)
+            # Ensure path exists before checking disk usage
+            path = Path(self.path)
+            if not path.exists():
+                path.mkdir(parents=True, exist_ok=True)
+            stat = shutil.disk_usage(str(path))
             return stat.free / (1024 ** 3)
-        except:
+        except Exception as e:
+            print(f"Error getting available space for {self.path}: {e}")
             return 0.0
     
     def get_used_space_gb(self) -> float:
-        """Get used space in GB"""
+        """Get used space in GB (total size of all files in this directory)"""
         try:
-            import shutil
-            stat = shutil.disk_usage(self.path)
-            return (stat.total - stat.free) / (1024 ** 3)
-        except:
+            path = Path(self.path)
+            if not path.exists():
+                return 0.0
+            total_size = sum(f.stat().st_size for f in path.rglob('*') if f.is_file())
+            return total_size / (1024 ** 3)
+        except Exception as e:
+            print(f"Error getting used space for {self.path}: {e}")
             return 0.0
 
 
@@ -101,8 +109,9 @@ class RepositoryManager:
             return
         
         self._initialized = True
-        self.base_path = Path(os.environ.get('BEEP_PYTHON_HOME', 
-                                             os.path.expanduser('~/.beep-llm')))
+        # Use app's own folder - no fallback to user home
+        from app.config_manager import get_app_directory
+        self.base_path = get_app_directory()
         self.config_path = self.base_path / 'config'
         self.config_path.mkdir(parents=True, exist_ok=True)
         
@@ -159,14 +168,52 @@ class RepositoryManager:
             try:
                 with open(self.directories_file, 'r') as f:
                     data = json.load(f)
-                    self._directories = [
-                        ModelDirectory(**dir_data) for dir_data in data.get('directories', [])
-                    ]
+                    loaded_dirs = []
+                    for dir_data in data.get('directories', []):
+                        # Validate and fix paths - convert relative to absolute based on current base_path
+                        dir_path = dir_data.get('path', '')
+                        if dir_path:
+                            path_obj = Path(dir_path)
+                            # Check if it's a relative path stored or absolute path that doesn't match current app location
+                            if not path_obj.is_absolute():
+                                # Convert relative path to absolute using current base_path
+                                dir_data['path'] = str(self.base_path / dir_path)
+                            elif not path_obj.exists():
+                                # Absolute path doesn't exist - likely from different installation
+                                # Try to reconstruct using the relative part
+                                try:
+                                    # Get just the last parts of the path (e.g., 'models' or 'data/models')
+                                    rel_parts = path_obj.parts[-2:] if len(path_obj.parts) > 1 else path_obj.parts[-1:]
+                                    new_path = self.base_path.joinpath(*rel_parts)
+                                    dir_data['path'] = str(new_path)
+                                except:
+                                    dir_data['path'] = str(self.base_path / 'models')
+                        loaded_dirs.append(ModelDirectory(**dir_data))
+                    self._directories = loaded_dirs
+                    
+                    # Validate that default directory exists and points to correct location
+                    self._validate_default_directory()
             except Exception as e:
                 print(f"Error loading directories: {e}")
                 self._directories = []
         else:
             self._directories = []
+    
+    def _validate_default_directory(self):
+        """Ensure default directory exists and points to current app location"""
+        default_dir = next((d for d in self._directories if d.id == 'default'), None)
+        expected_default = self.base_path / 'models'
+        
+        if default_dir:
+            current_path = Path(default_dir.path)
+            # If default doesn't point to current app's models folder, fix it
+            if current_path != expected_default:
+                default_dir.path = str(expected_default)
+                expected_default.mkdir(parents=True, exist_ok=True)
+                self._save_directories()
+        else:
+            # No default directory found, create one
+            self._initialize_default_directories()
     
     def _save_repositories(self):
         """Save repositories to config file"""

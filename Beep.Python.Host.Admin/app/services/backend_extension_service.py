@@ -58,8 +58,9 @@ class BackendExtensionService:
     LATEST_VERSION = "0.2.0"  # Update this to match latest llama-cpp-python version
     
     def __init__(self):
-        self.base_path = Path(os.environ.get('BEEP_PYTHON_HOME', 
-                                             os.path.expanduser('~/.beep-llm')))
+        # Use app's own folder - no fallback to user home
+        from app.config_manager import get_app_directory
+        self.base_path = get_app_directory()
         self.env_mgr = EnvironmentManager(base_path=str(self.base_path))
         self.hardware_service = HardwareService()
         self._platform = self._get_platform_name()

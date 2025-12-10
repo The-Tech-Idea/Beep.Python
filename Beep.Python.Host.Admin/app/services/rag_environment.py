@@ -234,8 +234,9 @@ class RAGEnvironmentManager:
             return
             
         self._initialized = True
-        self._base_path = Path(os.environ.get('BEEP_PYTHON_HOME', 
-                                              Path.home() / '.beep-llm'))
+        # Use app's own folder - no fallback to user home
+        from app.config_manager import get_app_directory
+        self._base_path = get_app_directory()
         self._env_path = self._base_path / 'rag_env'
         self._config_file = self._base_path / 'rag_env_config.json'
         self._status = RAGEnvStatus.NOT_CREATED

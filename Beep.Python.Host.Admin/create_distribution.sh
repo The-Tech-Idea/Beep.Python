@@ -79,7 +79,7 @@ echo ""
 export BEEP_EMBEDDED_PYTHON=1
 
 # Run application
-python-embedded/bin/python3 app.py
+python-embedded/bin/python3 run.py
 
 if [ $? -ne 0 ]; then
     echo ""

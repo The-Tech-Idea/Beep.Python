@@ -146,11 +146,12 @@ class LlamaBackendInstaller:
         self.is_linux = self.platform == 'Linux'
         self.is_macos = self.platform == 'Darwin'
         
-        # Local installation directory (no admin required)
+        # Local installation directory - use app's own folder
         if base_path:
             self.base_path = Path(base_path)
         else:
-            self.base_path = Path.home() / '.beep-llm'
+            from app.config_manager import get_app_directory
+            self.base_path = get_app_directory()
         
         self.backends_dir = self.base_path / 'backends'
         self.download_dir = self.base_path / 'downloads'

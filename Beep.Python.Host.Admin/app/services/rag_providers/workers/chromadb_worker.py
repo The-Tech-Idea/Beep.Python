@@ -11,7 +11,12 @@ Usage:
 import sys
 import json
 import os
+import multiprocessing
 from pathlib import Path
+
+# CRITICAL: Required for PyInstaller frozen environments
+if __name__ == '__main__':
+    multiprocessing.freeze_support()
 
 
 # Global client instance for session persistence
@@ -30,7 +35,10 @@ def get_client(data_path: str = None):
         import chromadb
         from chromadb.config import Settings
         
-        persist_dir = _data_path or str(Path.home() / '.beep-rag' / 'data' / 'chromadb')
+        # data_path MUST be provided by caller - no fallback to user home
+        persist_dir = _data_path
+        if not persist_dir:
+            raise ValueError("data_path must be provided - no default fallback")
         Path(persist_dir).mkdir(parents=True, exist_ok=True)
         
         _client = chromadb.PersistentClient(
@@ -221,7 +229,10 @@ def main():
         # Read input
         input_data = json.loads(sys.stdin.read())
         action = input_data.get('action', 'check')
-        data_path = input_data.get('data_path', str(Path.home() / '.beep-rag' / 'data' / 'chromadb'))
+        # data_path MUST be provided by caller - no fallback to user home
+        data_path = input_data.get('data_path')
+        if not data_path and action != 'check':
+            raise ValueError("data_path must be provided in input")
         embedding_model = input_data.get('embedding_model', 'all-MiniLM-L6-v2')
         
         # Dispatch to action handlers

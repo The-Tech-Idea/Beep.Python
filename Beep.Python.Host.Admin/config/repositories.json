@@ -1,0 +1,30 @@
+{
+  "repositories": [
+    {
+      "id": "hf_default",
+      "name": "HuggingFace Hub",
+      "type": "huggingface",
+      "enabled": true,
+      "url": null,
+      "api_key": null,
+      "description": "Default HuggingFace repository. Token required for gated/private models.",
+      "priority": 0,
+      "requires_auth": true,
+      "auth_required_for": "gated and private models",
+      "has_api_key": false
+    },
+    {
+      "id": "ollama_default",
+      "name": "Ollama",
+      "type": "ollama",
+      "enabled": false,
+      "url": null,
+      "api_key": null,
+      "description": "Ollama model repository",
+      "priority": 1,
+      "requires_auth": false,
+      "auth_required_for": null,
+      "has_api_key": false
+    }
+  ]
+}

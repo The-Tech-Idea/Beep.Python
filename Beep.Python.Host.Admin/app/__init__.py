@@ -2,6 +2,7 @@
 Beep.Python Host Admin - Professional Python Environment Management Web Application
 """
 import os
+import sys
 from flask import Flask
 from flask_cors import CORS
 from flask_socketio import SocketIO
@@ -9,17 +10,86 @@ from flask_socketio import SocketIO
 # Initialize SocketIO for real-time updates
 socketio = SocketIO()
 
+
+def _is_frozen():
+    """Check if running as a PyInstaller frozen executable."""
+    return getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
+
+
+def _resolve_async_mode():
+    """
+    Prefer eventlet/gevent if available; otherwise use threading.
+    Only return eventlet/gevent when imports succeed.
+    For frozen (PyInstaller) builds, default to threading for compatibility.
+    """
+    allowed = {'eventlet', 'gevent', 'threading', 'gevent_uwsgi'}
+    
+    # For frozen builds, prefer threading to avoid async driver issues
+    if _is_frozen():
+        preferred = os.environ.get('ASYNC_MODE', 'threading').strip().lower()
+    else:
+        preferred = os.environ.get('ASYNC_MODE', 'eventlet').strip().lower()
+    
+    modes = [preferred] if preferred in allowed else []
+    # Default cascade - for frozen builds, threading comes first
+    if _is_frozen():
+        modes += [m for m in ('threading', 'eventlet', 'gevent') if m not in modes]
+    else:
+        modes += [m for m in ('eventlet', 'gevent', 'threading') if m not in modes]
+
+    for mode in modes:
+        if mode == 'eventlet':
+            try:
+                import eventlet  # noqa: F401
+                # Additional check for eventlet hub availability
+                import eventlet.hubs  # noqa: F401
+                eventlet.hubs.get_hub()
+                return 'eventlet'
+            except Exception as e:
+                print(f"Warning: eventlet unavailable, trying next async mode: {e}")
+        elif mode == 'gevent':
+            try:
+                import gevent  # noqa: F401
+                import gevent.monkey  # noqa: F401
+                return 'gevent'
+            except Exception as e:
+                print(f"Warning: gevent unavailable, trying next async mode: {e}")
+        elif mode == 'threading':
+            return 'threading'
+    return 'threading'
+
+
+def _get_bundle_path():
+    """Get the bundle path for PyInstaller frozen builds."""
+    if _is_frozen():
+        return sys._MEIPASS
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
 def create_app(config_name=None):
     """Application factory pattern"""
-    app = Flask(__name__, 
-                template_folder='../templates',
-                static_folder='../static')
+    # Resolve template and static paths for both normal and frozen builds
+    bundle_path = _get_bundle_path()
+    template_path = os.path.join(bundle_path, 'templates')
+    static_path = os.path.join(bundle_path, 'static')
     
-    # Configuration
-    from app.config_manager import config_manager
-    app.config['SECRET_KEY'] = config_manager.get('secret_key', os.environ.get('SECRET_KEY', 'beep-python-admin-secret-key'))
-    app.config['BEEP_PYTHON_HOME'] = os.environ.get('BEEP_PYTHON_HOME', 
-                                                     os.path.expanduser('~/.beep-llm'))
+    # Fall back to relative paths if absolute paths don't exist
+    if not os.path.exists(template_path):
+        template_path = '../templates'
+    if not os.path.exists(static_path):
+        static_path = '../static'
+    
+    app = Flask(__name__, 
+                template_folder=template_path,
+                static_folder=static_path)
+    
+    # Configuration - ALL paths use app's own folder (portable/standalone)
+    from app.config_manager import config_manager, get_app_directory
+    app.config['SECRET_KEY'] = config_manager.get('secret_key', 'beep-python-admin-secret-key')
+    
+    # BEEP_PYTHON_HOME is NOW the app's own folder - no user home fallback
+    app_dir = get_app_directory()
+    app.config['BEEP_PYTHON_HOME'] = str(app_dir / 'data')
     
     # Database Config
     if config_manager.db_uri:
@@ -49,7 +119,7 @@ def create_app(config_name=None):
     CORS(app)
     
     # Initialize SocketIO with the app
-    socketio.init_app(app, cors_allowed_origins="*", async_mode='eventlet')
+    socketio.init_app(app, cors_allowed_origins="*", async_mode=_resolve_async_mode())
     
     # Register blueprints
     from app.routes.dashboard import dashboard_bp

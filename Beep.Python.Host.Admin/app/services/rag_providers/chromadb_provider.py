@@ -22,7 +22,9 @@ from .base import (
 
 def get_rag_venv_python() -> Path:
     """Get the Python executable from the RAG venv"""
-    rag_venv = Path.home() / '.beep-rag' / 'venv'
+    # Use app's own folder
+    from app.config_manager import get_app_directory
+    rag_venv = get_app_directory() / 'rag_data' / 'venv'
     if platform.system() == 'Windows':
         return rag_venv / 'Scripts' / 'python.exe'
     else:
@@ -58,7 +60,9 @@ class ChromaDBProvider(RAGProvider):
     
     def __init__(self):
         self._config: Optional[RAGConfig] = None
-        self._data_path: Path = Path.home() / '.beep-llm' / 'rag_data' / 'chromadb'
+        # Use app's own folder - no fallback to user home
+        from app.config_manager import get_app_directory
+        self._data_path: Path = get_app_directory() / 'rag_data' / 'chromadb'
         self._client = None
         self._embedding_function = None
         self._embedding_model: str = "all-MiniLM-L6-v2"

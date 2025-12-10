@@ -20,11 +20,13 @@ class RAGSubprocessExecutor:
     Executes Python code in the RAG virtual environment.
     
     This enables the Flask app to use FAISS/ChromaDB packages that are
-    installed in ~/.beep-rag/venv without polluting the main environment.
+    installed in the app's rag_data/venv without polluting the main environment.
     """
     
     def __init__(self):
-        self.rag_venv = Path.home() / '.beep-rag' / 'venv'
+        # Use app's own folder
+        from app.config_manager import get_app_directory
+        self.rag_venv = get_app_directory() / 'rag_data' / 'venv'
         self.is_windows = platform.system() == 'Windows'
         
     @property
