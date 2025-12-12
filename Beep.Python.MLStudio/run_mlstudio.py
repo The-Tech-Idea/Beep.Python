@@ -152,6 +152,173 @@ def install_dependencies(venv_python):
         print_colored("\n   Please check your internet connection and try again.", Colors.YELLOW)
         sys.exit(1)
 
+def download_embedded_python():
+    """Automatically download and install embedded Python if not found"""
+    embedded_path = Path('python-embedded')
+    if platform.system() == 'Windows':
+        python_exe = embedded_path / 'python.exe'
+        zip_file = Path('python-embedded.zip')
+    else:
+        python_exe = embedded_path / 'bin' / 'python3'
+        zip_file = Path('python-embedded.tar.gz')
+    
+    if python_exe.exists():
+        print_colored("✅ Embedded Python already installed", Colors.GREEN)
+        return True
+    
+    print_colored("🐍 Embedded Python not found. Downloading automatically...", Colors.CYAN)
+    print_colored("   This is the base runtime for all virtual environments", Colors.CYAN)
+    print_colored("   This may take a few minutes...", Colors.CYAN)
+    
+    try:
+        # Detect platform and architecture
+        system = platform.system()
+        machine = platform.machine().lower()
+        
+        if system == 'Windows':
+            # Windows: Download from Python.org
+            url = 'https://www.python.org/ftp/python/3.11.7/python-3.11.7-embed-amd64.zip'
+            print_colored(f"   Downloading from: {url}", Colors.CYAN)
+            
+            # Use urllib if requests not available, otherwise use requests
+            if HAS_REQUESTS:
+                response = requests.get(url, stream=True, timeout=30)
+                response.raise_for_status()
+                total_size = int(response.headers.get('content-length', 0))
+                
+                embedded_path.mkdir(exist_ok=True)
+                with open(zip_file, 'wb') as f:
+                    downloaded = 0
+                    for chunk in response.iter_content(chunk_size=8192):
+                        if chunk:
+                            f.write(chunk)
+                            downloaded += len(chunk)
+                            if total_size > 0:
+                                percent = (downloaded / total_size) * 100
+                                print_colored(f"\r   Progress: {percent:.1f}%", Colors.CYAN, end='')
+                print_colored("", Colors.RESET)  # New line
+            else:
+                # Fallback to urllib
+                import urllib.request
+                print_colored("   Downloading (this may take a while)...", Colors.CYAN)
+                embedded_path.mkdir(exist_ok=True)
+                urllib.request.urlretrieve(url, zip_file)
+            
+            # Extract using Python's zipfile
+            print_colored("   Extracting Python...", Colors.CYAN)
+            import zipfile
+            with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+                zip_ref.extractall(embedded_path)
+            
+            # Clean up
+            zip_file.unlink()
+            
+            # Configure embedded Python
+            print_colored("   Configuring embedded Python...", Colors.CYAN)
+            pth_file = embedded_path / 'python311._pth'
+            if pth_file.exists():
+                content = pth_file.read_text(encoding='utf-8')
+                content = content.replace('#import site', 'import site')
+                pth_file.write_text(content, encoding='utf-8')
+            
+            # Install pip
+            print_colored("   Installing pip...", Colors.CYAN)
+            pip_url = 'https://bootstrap.pypa.io/get-pip.py'
+            get_pip = embedded_path / 'get-pip.py'
+            
+            if HAS_REQUESTS:
+                response = requests.get(pip_url, timeout=30)
+                get_pip.write_bytes(response.content)
+            else:
+                import urllib.request
+                urllib.request.urlretrieve(pip_url, get_pip)
+            
+            # Run get-pip.py
+            subprocess.run([str(python_exe), str(get_pip)], check=True, capture_output=True)
+            get_pip.unlink()
+            
+        else:
+            # Linux/macOS: Download from python-build-standalone
+            os_name = 'linux' if system == 'Linux' else 'macos'
+            arch = 'aarch64' if 'arm' in machine or 'aarch' in machine else 'x86_64'
+            
+            if os_name == 'linux':
+                if arch == 'x86_64':
+                    url = 'https://github.com/indygreg/python-build-standalone/releases/download/20231002/cpython-3.11.6+20231002-x86_64-unknown-linux-gnu-install_only.tar.gz'
+                else:
+                    url = 'https://github.com/indygreg/python-build-standalone/releases/download/20231002/cpython-3.11.6+20231002-aarch64-unknown-linux-gnu-install_only.tar.gz'
+            else:  # macOS
+                if arch == 'aarch64':
+                    url = 'https://github.com/indygreg/python-build-standalone/releases/download/20231002/cpython-3.11.6+20231002-aarch64-apple-darwin-install_only.tar.gz'
+                else:
+                    url = 'https://github.com/indygreg/python-build-standalone/releases/download/20231002/cpython-3.11.6+20231002-x86_64-apple-darwin-install_only.tar.gz'
+            
+            print_colored(f"   Downloading from: {url}", Colors.CYAN)
+            
+            # Download
+            if HAS_REQUESTS:
+                response = requests.get(url, stream=True, timeout=60)
+                response.raise_for_status()
+                total_size = int(response.headers.get('content-length', 0))
+                
+                embedded_path.mkdir(exist_ok=True)
+                with open(zip_file, 'wb') as f:
+                    downloaded = 0
+                    for chunk in response.iter_content(chunk_size=8192):
+                        if chunk:
+                            f.write(chunk)
+                            downloaded += len(chunk)
+                            if total_size > 0:
+                                percent = (downloaded / total_size) * 100
+                                print_colored(f"\r   Progress: {percent:.1f}%", Colors.CYAN, end='')
+                print_colored("", Colors.RESET)  # New line
+            else:
+                import urllib.request
+                print_colored("   Downloading (this may take a while)...", Colors.CYAN)
+                embedded_path.mkdir(exist_ok=True)
+                urllib.request.urlretrieve(url, zip_file)
+            
+            # Extract
+            print_colored("   Extracting Python...", Colors.CYAN)
+            import tarfile
+            with tarfile.open(zip_file, 'r:gz') as tar:
+                tar.extractall(embedded_path)
+                # Move contents up one level if needed
+                extracted_dirs = [d for d in embedded_path.iterdir() if d.is_dir()]
+                if extracted_dirs:
+                    import shutil
+                    for item in extracted_dirs[0].iterdir():
+                        shutil.move(str(item), str(embedded_path / item.name))
+                    extracted_dirs[0].rmdir()
+            
+            # Clean up
+            zip_file.unlink()
+            
+            # Install pip
+            print_colored("   Installing pip...", Colors.CYAN)
+            subprocess.run([str(python_exe), '-m', 'ensurepip'], check=True, capture_output=True)
+        
+        # Install requirements
+        print_colored("   Installing application dependencies...", Colors.CYAN)
+        subprocess.run([str(python_exe), '-m', 'pip', 'install', '--upgrade', 'pip', '--no-warn-script-location'], 
+                      check=True, capture_output=True)
+        subprocess.run([str(python_exe), '-m', 'pip', 'install', '-r', 'requirements.txt', '--no-warn-script-location'], 
+                      check=True, capture_output=True)
+        
+        # Verify installation
+        if python_exe.exists():
+            print_colored("✅ Embedded Python installed successfully!", Colors.GREEN)
+            return True
+        else:
+            print_colored("❌ Embedded Python installation failed!", Colors.RED)
+            return False
+            
+    except Exception as e:
+        print_colored(f"❌ Error downloading/installing embedded Python: {e}", Colors.RED)
+        import traceback
+        traceback.print_exc()
+        return False
+
 def setup_embedded_python():
     """Set up embedded Python - REQUIRED for MLStudio"""
     embedded_path = Path('python-embedded')
@@ -164,10 +331,13 @@ def setup_embedded_python():
         print_colored("✅ Embedded Python already installed", Colors.GREEN)
         return True
     
-    print_colored("🐍 Setting up embedded Python (required for MLStudio)...", Colors.CYAN)
-    print_colored("   This is the base runtime for all virtual environments", Colors.CYAN)
+    # Try automatic download first
+    if download_embedded_python():
+        return True
     
-    # Check if setup script exists
+    # Fallback to setup script if automatic download failed
+    print_colored("⚠️  Automatic download failed. Trying setup script...", Colors.YELLOW)
+    
     if platform.system() == 'Windows':
         setup_script = Path('setup_embedded_python.bat')
     else:
@@ -175,32 +345,23 @@ def setup_embedded_python():
     
     if not setup_script.exists():
         print_colored("❌ Setup script not found!", Colors.RED)
-        print_colored(f"   Expected: {setup_script}", Colors.YELLOW)
         print_colored("   Please ensure setup_embedded_python.bat (Windows) or setup_embedded_python.sh (Linux/macOS) exists", Colors.YELLOW)
         return False
     
     print_colored(f"   Running setup script: {setup_script}", Colors.CYAN)
-    print_colored("   This may take a few minutes...", Colors.CYAN)
     
     try:
         if platform.system() == 'Windows':
             result = subprocess.run([str(setup_script)], check=False)
         else:
-            # Make sure script is executable
             os.chmod(setup_script, 0o755)
             result = subprocess.run(['bash', str(setup_script)], check=False)
         
-        # Check if setup was successful
         if python_exe.exists():
             print_colored("✅ Embedded Python installed successfully!", Colors.GREEN)
             return True
         else:
             print_colored("❌ Embedded Python setup failed!", Colors.RED)
-            print_colored("   Please run the setup script manually:", Colors.YELLOW)
-            if platform.system() == 'Windows':
-                print_colored(f"   {setup_script}", Colors.CYAN)
-            else:
-                print_colored(f"   ./{setup_script}", Colors.CYAN)
             return False
     except Exception as e:
         print_colored(f"❌ Error running setup script: {e}", Colors.RED)

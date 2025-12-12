@@ -1,58 +1,32 @@
 #!/bin/bash
+# Beep.Python Host Admin - Linux/macOS Launcher
+# This script automatically sets up and runs Host Admin
 
-# Default Port
-PORT=5000
+# Get script directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
 
-# Beep.Python Host Admin - Linux/macOS Startup Script
-# Checks for Python, creates venv, installs requirements, and runs the app.
+echo ""
+echo "============================================================"
+echo "  Beep AI Server - Linux/macOS Launcher"
+echo "============================================================"
+echo ""
 
-echo "==================================================="
-echo "  Beep.Python Host Admin - Startup"
-echo "==================================================="
-
-# Function to check for command
-command_exists() {
-    command -v "$1" >/dev/null 2>&1
-}
-
-# Find Python executable
-PYTHON_CMD="python3"
-if ! command_exists python3; then
-    if command_exists python; then
-        PYTHON_CMD="python"
-    else
-        echo "[ERROR] Python 3 not found! Please install python3."
-        exit 1
-    fi
-fi
-
-# Check version (optional, but good practice)
-$PYTHON_CMD --version
-
-# Create virtual environment if it doesn't exist
-if [ ! -d ".venv" ]; then
-    echo "[INFO] Virtual environment not found. Creating one..."
-    $PYTHON_CMD -m venv .venv
-    if [ $? -ne 0 ]; then
-        echo "[ERROR] Failed to create virtual environment. You might need to install 'python3-venv'."
-        exit 1
-    fi
-    echo "[INFO] Virtual environment created."
-fi
-
-# Activate environment
-source .venv/bin/activate
-
-# Install dependencies
-echo "[INFO] Checking dependencies..."
-pip install -r requirements.txt
-if [ $? -ne 0 ]; then
-    echo "[ERROR] Failed to install dependencies."
+# Check if Python is available
+if ! command -v python3 &> /dev/null; then
+    echo "[ERROR] Python 3 is not installed or not in PATH"
+    echo "Please install Python 3.8 or higher"
     exit 1
 fi
 
-# Run the application
-echo "[INFO] Starting application..."
-echo "[INFO] Open your browser to http://127.0.0.1:$PORT"
-export PORT=$PORT
-python run.py
+# Make script executable
+chmod +x run_hostadmin.py
+
+# Run the Python launcher
+python3 run_hostadmin.py
+
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "[ERROR] Failed to start Host Admin"
+    exit 1
+fi
