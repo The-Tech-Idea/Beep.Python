@@ -215,6 +215,150 @@ class IndustryProfileManager:
                     ],
                     default_template='clustering',
                     sample_data='customer_segments.csv'
+                ),
+                Scenario(
+                    id='loan_default_prediction',
+                    name='Loan Default Prediction',
+                    description='Predict which loans are likely to default before they happen',
+                    icon='bi-exclamation-circle',
+                    difficulty='intermediate',
+                    estimated_time='20 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Loan Portfolio', 'description': 'Upload CSV with loan details and borrower information'},
+                        {'step': 2, 'title': 'Define Default Criteria', 'description': 'Set what constitutes a default (30/60/90 days past due)'},
+                        {'step': 3, 'title': 'Train Default Model', 'description': 'Build model to predict loan defaults'},
+                        {'step': 4, 'title': 'Assess Portfolio Risk', 'description': 'View default probabilities for each loan'}
+                    ],
+                    default_template='binary_classification',
+                    sample_data='loan_portfolio.csv'
+                ),
+                Scenario(
+                    id='market_volatility',
+                    name='Market Volatility Prediction',
+                    description='Predict market volatility to manage risk and optimize trading strategies',
+                    icon='bi-graph-up-arrow',
+                    difficulty='advanced',
+                    estimated_time='25 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Market Data', 'description': 'Upload historical price data and market indicators'},
+                        {'step': 2, 'title': 'Calculate Volatility', 'description': 'Compute historical volatility metrics'},
+                        {'step': 3, 'title': 'Train Volatility Model', 'description': 'Build model to predict future volatility'},
+                        {'step': 4, 'title': 'View Forecasts', 'description': 'See predicted volatility for risk management'}
+                    ],
+                    default_template='regression',
+                    sample_data='market_volatility.csv'
+                ),
+                Scenario(
+                    id='currency_prediction',
+                    name='Currency Exchange Rate Prediction',
+                    description='Predict foreign exchange rates for trading and hedging',
+                    icon='bi-currency-exchange',
+                    difficulty='advanced',
+                    estimated_time='25 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload FX Data', 'description': 'Upload historical exchange rates and economic indicators'},
+                        {'step': 2, 'title': 'Select Currency Pair', 'description': 'Choose which currency pair to predict'},
+                        {'step': 3, 'title': 'Train FX Model', 'description': 'Build time series model for exchange rates'},
+                        {'step': 4, 'title': 'View Predictions', 'description': 'See forecasted exchange rates'}
+                    ],
+                    default_template='time_series_regression',
+                    sample_data='currency_rates.csv'
+                ),
+                Scenario(
+                    id='insurance_claims',
+                    name='Insurance Claim Prediction',
+                    description='Predict claim likelihood and amounts for underwriting and pricing',
+                    icon='bi-shield-check',
+                    difficulty='intermediate',
+                    estimated_time='20 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Policy Data', 'description': 'Upload policyholder information and policy details'},
+                        {'step': 2, 'title': 'Define Claim Types', 'description': 'Specify claim categories (auto, health, property, etc.)'},
+                        {'step': 3, 'title': 'Train Claim Model', 'description': 'Build model to predict claim probability and amount'},
+                        {'step': 4, 'title': 'Assess Risk', 'description': 'View predicted claim risks for pricing'}
+                    ],
+                    default_template='regression',
+                    sample_data='insurance_claims.csv'
+                ),
+                Scenario(
+                    id='revenue_forecasting',
+                    name='Revenue Forecasting',
+                    description='Forecast company revenue using historical sales and market data',
+                    icon='bi-cash-stack',
+                    difficulty='intermediate',
+                    estimated_time='20 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Sales Data', 'description': 'Upload historical revenue and sales data'},
+                        {'step': 2, 'title': 'Select Forecast Horizon', 'description': 'Choose prediction period (monthly, quarterly, yearly)'},
+                        {'step': 3, 'title': 'Train Forecast Model', 'description': 'Build time series forecasting model'},
+                        {'step': 4, 'title': 'View Forecast', 'description': 'See predicted revenue with confidence intervals'}
+                    ],
+                    default_template='time_series_regression',
+                    sample_data='revenue_data.csv'
+                ),
+                Scenario(
+                    id='customer_lifetime_value',
+                    name='Customer Lifetime Value',
+                    description='Predict total value a customer will bring over their relationship',
+                    icon='bi-person-check',
+                    difficulty='intermediate',
+                    estimated_time='20 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Customer Data', 'description': 'Upload customer transaction and behavior history'},
+                        {'step': 2, 'title': 'Calculate Historical CLV', 'description': 'Compute past customer lifetime values'},
+                        {'step': 3, 'title': 'Train CLV Model', 'description': 'Build model to predict future customer value'},
+                        {'step': 4, 'title': 'View CLV Scores', 'description': 'See predicted lifetime value for each customer'}
+                    ],
+                    default_template='regression',
+                    sample_data='customer_clv.csv'
+                ),
+                Scenario(
+                    id='price_elasticity',
+                    name='Price Elasticity Analysis',
+                    description='Analyze how price changes affect demand to optimize pricing',
+                    icon='bi-tag',
+                    difficulty='advanced',
+                    estimated_time='25 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Sales & Price Data', 'description': 'Upload historical sales volumes and prices'},
+                        {'step': 2, 'title': 'Define Products', 'description': 'Select products or product categories to analyze'},
+                        {'step': 3, 'title': 'Calculate Elasticity', 'description': 'Build model to estimate price elasticity'},
+                        {'step': 4, 'title': 'Optimize Pricing', 'description': 'View recommended prices for maximum revenue'}
+                    ],
+                    default_template='regression',
+                    sample_data='price_elasticity.csv'
+                ),
+                Scenario(
+                    id='bond_yield_prediction',
+                    name='Bond Yield Prediction',
+                    description='Predict bond yields for fixed income portfolio management',
+                    icon='bi-graph-up',
+                    difficulty='advanced',
+                    estimated_time='25 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Bond Data', 'description': 'Upload bond characteristics and market data'},
+                        {'step': 2, 'title': 'Select Bond Features', 'description': 'Choose relevant factors (maturity, credit rating, etc.)'},
+                        {'step': 3, 'title': 'Train Yield Model', 'description': 'Build model to predict bond yields'},
+                        {'step': 4, 'title': 'View Predictions', 'description': 'See predicted yields for portfolio optimization'}
+                    ],
+                    default_template='regression',
+                    sample_data='bond_yields.csv'
+                ),
+                Scenario(
+                    id='trading_signal',
+                    name='Trading Signal Generation',
+                    description='Generate buy/sell signals using technical and fundamental analysis',
+                    icon='bi-arrow-left-right',
+                    difficulty='advanced',
+                    estimated_time='30 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Market Data', 'description': 'Upload price, volume, and technical indicators'},
+                        {'step': 2, 'title': 'Define Signal Rules', 'description': 'Set criteria for buy/sell signals'},
+                        {'step': 3, 'title': 'Train Signal Model', 'description': 'Build model to generate trading signals'},
+                        {'step': 4, 'title': 'View Signals', 'description': 'See recommended buy/sell signals with confidence'}
+                    ],
+                    default_template='multiclass_classification',
+                    sample_data='trading_signals.csv'
                 )
             ],
             terminology={
@@ -343,6 +487,182 @@ class IndustryProfileManager:
                     ],
                     default_template='binary_classification',
                     sample_data='sensor_readings.csv'
+                ),
+                Scenario(
+                    id='pipeline_integrity',
+                    name='Pipeline Integrity Monitoring',
+                    description='Monitor pipeline health and predict potential leaks or failures using pressure, flow, and inspection data',
+                    icon='bi-pipe',
+                    difficulty='intermediate',
+                    estimated_time='25 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Pipeline Data', 'description': 'Upload pressure, flow rate, temperature, and inspection data'},
+                        {'step': 2, 'title': 'Define Integrity Metrics', 'description': 'Set thresholds for normal vs. abnormal conditions'},
+                        {'step': 3, 'title': 'Train Monitoring Model', 'description': 'Build anomaly detection model for pipeline health'},
+                        {'step': 4, 'title': 'Set Up Monitoring Dashboard', 'description': 'Configure real-time alerts and health scores'}
+                    ],
+                    default_template='anomaly_detection',
+                    sample_data='pipeline_data.csv'
+                ),
+                Scenario(
+                    id='facility_maintenance',
+                    name='Facility Maintenance Optimization',
+                    description='Predict maintenance needs and optimize scheduling for production facilities',
+                    icon='bi-building',
+                    difficulty='intermediate',
+                    estimated_time='20 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Facility Data', 'description': 'Upload equipment history, maintenance logs, and performance data'},
+                        {'step': 2, 'title': 'Define Maintenance Events', 'description': 'Identify past maintenance activities and outcomes'},
+                        {'step': 3, 'title': 'Train Maintenance Predictor', 'description': 'Build model to predict optimal maintenance timing'},
+                        {'step': 4, 'title': 'Generate Schedule', 'description': 'View recommended maintenance schedule and priorities'}
+                    ],
+                    default_template='regression',
+                    sample_data='facility_maintenance.csv'
+                ),
+                Scenario(
+                    id='reservoir_properties',
+                    name='Reservoir Property Prediction from Logs',
+                    description='Predict porosity, permeability, and saturation from well log data',
+                    icon='bi-calculator',
+                    difficulty='intermediate',
+                    estimated_time='20 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Well Logs', 'description': 'Upload LAS files or CSV with log curves (GR, RHOB, NPHI, DT, etc.)'},
+                        {'step': 2, 'title': 'Upload Core Data', 'description': 'Upload core measurements for training (porosity, permeability)'},
+                        {'step': 3, 'title': 'Train Property Predictor', 'description': 'Build regression model to predict reservoir properties'},
+                        {'step': 4, 'title': 'Generate Property Logs', 'description': 'View predicted porosity, permeability, and saturation curves'}
+                    ],
+                    default_template='regression',
+                    sample_data='logs_and_core.csv'
+                ),
+                Scenario(
+                    id='water_cut_prediction',
+                    name='Water Cut Prediction',
+                    description='Predict water cut percentage in production streams to optimize separation',
+                    icon='bi-droplet',
+                    difficulty='beginner',
+                    estimated_time='15 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Production Data', 'description': 'Upload well production data with water cut measurements'},
+                        {'step': 2, 'title': 'Select Features', 'description': 'Choose relevant well and reservoir properties'},
+                        {'step': 3, 'title': 'Train Water Cut Model', 'description': 'Build model to predict water cut percentage'},
+                        {'step': 4, 'title': 'View Predictions', 'description': 'See predicted water cut for planning and optimization'}
+                    ],
+                    default_template='regression',
+                    sample_data='production_water_cut.csv'
+                ),
+                Scenario(
+                    id='gas_lift_optimization',
+                    name='Gas Lift Optimization',
+                    description='Optimize gas injection rates to maximize oil production',
+                    icon='bi-wind',
+                    difficulty='advanced',
+                    estimated_time='30 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Well Data', 'description': 'Upload production data with gas injection rates and oil production'},
+                        {'step': 2, 'title': 'Define Optimization Goals', 'description': 'Set constraints (max gas, min production, etc.)'},
+                        {'step': 3, 'title': 'Train Production Model', 'description': 'Build model relating gas injection to oil production'},
+                        {'step': 4, 'title': 'Optimize Injection Rates', 'description': 'Get recommended gas injection rates for each well'}
+                    ],
+                    default_template='regression',
+                    sample_data='gas_lift_data.csv'
+                ),
+                Scenario(
+                    id='drilling_optimization',
+                    name='Drilling Performance Optimization',
+                    description='Optimize drilling parameters (ROP, WOB, RPM) to reduce drilling time and costs',
+                    icon='bi-speedometer2',
+                    difficulty='advanced',
+                    estimated_time='30 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Drilling Data', 'description': 'Upload drilling logs with ROP, WOB, RPM, and formation data'},
+                        {'step': 2, 'title': 'Define Performance Metrics', 'description': 'Set targets for drilling rate and cost'},
+                        {'step': 3, 'title': 'Train Performance Model', 'description': 'Build model to predict drilling rate from parameters'},
+                        {'step': 4, 'title': 'Optimize Parameters', 'description': 'Get recommended drilling parameters for each formation'}
+                    ],
+                    default_template='regression',
+                    sample_data='drilling_logs.csv'
+                ),
+                Scenario(
+                    id='corrosion_prediction',
+                    name='Corrosion Rate Prediction',
+                    description='Predict corrosion rates in pipelines and equipment to plan maintenance',
+                    icon='bi-shield-exclamation',
+                    difficulty='intermediate',
+                    estimated_time='20 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Corrosion Data', 'description': 'Upload inspection data with corrosion measurements and environmental conditions'},
+                        {'step': 2, 'title': 'Select Factors', 'description': 'Choose relevant factors (temperature, pressure, fluid composition, etc.)'},
+                        {'step': 3, 'title': 'Train Corrosion Model', 'description': 'Build model to predict corrosion rates'},
+                        {'step': 4, 'title': 'Plan Maintenance', 'description': 'View predicted corrosion rates and maintenance schedules'}
+                    ],
+                    default_template='regression',
+                    sample_data='corrosion_data.csv'
+                ),
+                Scenario(
+                    id='flow_assurance',
+                    name='Flow Assurance Analysis',
+                    description='Predict hydrate, wax, and asphaltene formation risks in pipelines',
+                    icon='bi-snow',
+                    difficulty='advanced',
+                    estimated_time='25 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Flow Data', 'description': 'Upload pressure, temperature, and fluid composition data'},
+                        {'step': 2, 'title': 'Define Risk Criteria', 'description': 'Set thresholds for hydrate/wax/asphaltene formation'},
+                        {'step': 3, 'title': 'Train Risk Model', 'description': 'Build model to predict flow assurance issues'},
+                        {'step': 4, 'title': 'View Risk Assessment', 'description': 'See predicted risks and recommended mitigation strategies'}
+                    ],
+                    default_template='multiclass_classification',
+                    sample_data='flow_assurance.csv'
+                ),
+                Scenario(
+                    id='pvt_analysis',
+                    name='PVT Property Prediction',
+                    description='Predict pressure-volume-temperature properties for reservoir fluids',
+                    icon='bi-thermometer-half',
+                    difficulty='advanced',
+                    estimated_time='25 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload PVT Data', 'description': 'Upload laboratory PVT measurements and fluid compositions'},
+                        {'step': 2, 'title': 'Select Properties', 'description': 'Choose properties to predict (bubble point, viscosity, etc.)'},
+                        {'step': 3, 'title': 'Train PVT Model', 'description': 'Build model to predict PVT properties'},
+                        {'step': 4, 'title': 'Generate PVT Tables', 'description': 'View predicted properties for reservoir simulation'}
+                    ],
+                    default_template='regression',
+                    sample_data='pvt_data.csv'
+                ),
+                Scenario(
+                    id='artificial_lift_selection',
+                    name='Artificial Lift Selection',
+                    description='Recommend optimal artificial lift method (ESP, gas lift, rod pump) for wells',
+                    icon='bi-arrow-up-circle',
+                    difficulty='intermediate',
+                    estimated_time='20 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Well Data', 'description': 'Upload well characteristics, production history, and reservoir properties'},
+                        {'step': 2, 'title': 'Define Selection Criteria', 'description': 'Set goals (cost, production, reliability)'},
+                        {'step': 3, 'title': 'Train Selection Model', 'description': 'Build model to recommend lift method'},
+                        {'step': 4, 'title': 'View Recommendations', 'description': 'See recommended lift method for each well'}
+                    ],
+                    default_template='multiclass_classification',
+                    sample_data='well_lift_data.csv'
+                ),
+                Scenario(
+                    id='production_allocation',
+                    name='Production Allocation',
+                    description='Allocate production from commingled wells to individual zones',
+                    icon='bi-diagram-3',
+                    difficulty='advanced',
+                    estimated_time='30 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Production Data', 'description': 'Upload commingled production and well test data'},
+                        {'step': 2, 'title': 'Define Zones', 'description': 'Specify contributing zones and their properties'},
+                        {'step': 3, 'title': 'Train Allocation Model', 'description': 'Build model to allocate production to zones'},
+                        {'step': 4, 'title': 'View Allocation', 'description': 'See allocated production for each zone over time'}
+                    ],
+                    default_template='regression',
+                    sample_data='commingled_production.csv'
                 )
             ],
             terminology={
@@ -424,6 +744,150 @@ class IndustryProfileManager:
                     ],
                     default_template='clustering',
                     sample_data='patient_profiles.csv'
+                ),
+                Scenario(
+                    id='treatment_outcome',
+                    name='Treatment Outcome Prediction',
+                    description='Predict patient response to specific treatments or medications',
+                    icon='bi-heart-pulse-fill',
+                    difficulty='intermediate',
+                    estimated_time='20 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Treatment Data', 'description': 'Upload patient data with treatment history and outcomes'},
+                        {'step': 2, 'title': 'Define Outcome Metrics', 'description': 'Specify success criteria (recovery, improvement, etc.)'},
+                        {'step': 3, 'title': 'Train Outcome Model', 'description': 'Build model to predict treatment effectiveness'},
+                        {'step': 4, 'title': 'View Predictions', 'description': 'See predicted outcomes for treatment planning'}
+                    ],
+                    default_template='multiclass_classification',
+                    sample_data='treatment_outcomes.csv'
+                ),
+                Scenario(
+                    id='length_of_stay',
+                    name='Hospital Length of Stay Prediction',
+                    description='Predict how long patients will stay in hospital for resource planning',
+                    icon='bi-calendar-range',
+                    difficulty='intermediate',
+                    estimated_time='20 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Admission Data', 'description': 'Upload patient admission records and diagnoses'},
+                        {'step': 2, 'title': 'Select Features', 'description': 'Choose relevant factors (age, diagnosis, procedures, etc.)'},
+                        {'step': 3, 'title': 'Train LOS Model', 'description': 'Build model to predict length of stay'},
+                        {'step': 4, 'title': 'View Predictions', 'description': 'See predicted stay duration for capacity planning'}
+                    ],
+                    default_template='regression',
+                    sample_data='length_of_stay.csv'
+                ),
+                Scenario(
+                    id='medication_adherence',
+                    name='Medication Adherence Prediction',
+                    description='Predict which patients are likely to miss medications',
+                    icon='bi-capsule',
+                    difficulty='intermediate',
+                    estimated_time='20 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Medication Data', 'description': 'Upload prescription and adherence history'},
+                        {'step': 2, 'title': 'Define Adherence Criteria', 'description': 'Set thresholds for good vs. poor adherence'},
+                        {'step': 3, 'title': 'Train Adherence Model', 'description': 'Build model to predict medication compliance'},
+                        {'step': 4, 'title': 'Identify At-Risk Patients', 'description': 'View patients likely to miss medications'}
+                    ],
+                    default_template='binary_classification',
+                    sample_data='medication_adherence.csv'
+                ),
+                Scenario(
+                    id='disease_progression',
+                    name='Disease Progression Prediction',
+                    description='Predict how diseases will progress over time',
+                    icon='bi-activity',
+                    difficulty='advanced',
+                    estimated_time='25 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Patient History', 'description': 'Upload longitudinal patient data and test results'},
+                        {'step': 2, 'title': 'Define Progression Stages', 'description': 'Specify disease stages or severity levels'},
+                        {'step': 3, 'title': 'Train Progression Model', 'description': 'Build model to predict disease progression'},
+                        {'step': 4, 'title': 'View Forecasts', 'description': 'See predicted progression timeline'}
+                    ],
+                    default_template='multiclass_classification',
+                    sample_data='disease_progression.csv'
+                ),
+                Scenario(
+                    id='lab_result_interpretation',
+                    name='Lab Result Interpretation',
+                    description='Classify lab results as normal, abnormal, or critical',
+                    icon='bi-clipboard-data',
+                    difficulty='beginner',
+                    estimated_time='15 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Lab Data', 'description': 'Upload lab test results and reference ranges'},
+                        {'step': 2, 'title': 'Define Categories', 'description': 'Set normal, abnormal, and critical thresholds'},
+                        {'step': 3, 'title': 'Train Classifier', 'description': 'Build model to classify lab results'},
+                        {'step': 4, 'title': 'View Classifications', 'description': 'See categorized lab results'}
+                    ],
+                    default_template='multiclass_classification',
+                    sample_data='lab_results.csv'
+                ),
+                Scenario(
+                    id='drug_effectiveness',
+                    name='Drug Effectiveness Prediction',
+                    description='Predict how effective a drug will be for specific patients',
+                    icon='bi-prescription2',
+                    difficulty='advanced',
+                    estimated_time='25 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Drug Trial Data', 'description': 'Upload patient data with drug responses'},
+                        {'step': 2, 'title': 'Define Effectiveness Metrics', 'description': 'Specify success criteria (symptom reduction, etc.)'},
+                        {'step': 3, 'title': 'Train Effectiveness Model', 'description': 'Build model to predict drug response'},
+                        {'step': 4, 'title': 'View Predictions', 'description': 'See predicted drug effectiveness for patients'}
+                    ],
+                    default_template='regression',
+                    sample_data='drug_effectiveness.csv'
+                ),
+                Scenario(
+                    id='patient_mortality',
+                    name='Patient Mortality Risk',
+                    description='Assess patient mortality risk for critical care planning',
+                    icon='bi-heartbreak',
+                    difficulty='advanced',
+                    estimated_time='25 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload ICU Data', 'description': 'Upload critical care patient data and vitals'},
+                        {'step': 2, 'title': 'Define Risk Levels', 'description': 'Set low, medium, high risk categories'},
+                        {'step': 3, 'title': 'Train Risk Model', 'description': 'Build model to predict mortality risk'},
+                        {'step': 4, 'title': 'View Risk Scores', 'description': 'See mortality risk assessments for care planning'}
+                    ],
+                    default_template='binary_classification',
+                    sample_data='mortality_risk.csv'
+                ),
+                Scenario(
+                    id='surgical_outcome',
+                    name='Surgical Outcome Prediction',
+                    description='Predict surgical success rates and complications',
+                    icon='bi-hospital',
+                    difficulty='advanced',
+                    estimated_time='25 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Surgical Data', 'description': 'Upload patient data and surgical procedure details'},
+                        {'step': 2, 'title': 'Define Outcomes', 'description': 'Specify success, complication, or failure criteria'},
+                        {'step': 3, 'title': 'Train Outcome Model', 'description': 'Build model to predict surgical results'},
+                        {'step': 4, 'title': 'View Predictions', 'description': 'See predicted outcomes for surgical planning'}
+                    ],
+                    default_template='multiclass_classification',
+                    sample_data='surgical_outcomes.csv'
+                ),
+                Scenario(
+                    id='epidemic_prediction',
+                    name='Epidemic Outbreak Prediction',
+                    description='Predict disease outbreaks using epidemiological data',
+                    icon='bi-virus',
+                    difficulty='advanced',
+                    estimated_time='30 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Epidemiological Data', 'description': 'Upload case counts, demographics, and location data'},
+                        {'step': 2, 'title': 'Select Indicators', 'description': 'Choose relevant factors (population density, travel, etc.)'},
+                        {'step': 3, 'title': 'Train Outbreak Model', 'description': 'Build model to predict outbreak likelihood'},
+                        {'step': 4, 'title': 'View Risk Map', 'description': 'See predicted outbreak risks by location'}
+                    ],
+                    default_template='regression',
+                    sample_data='epidemic_data.csv'
                 )
             ],
             terminology={
@@ -504,6 +968,166 @@ class IndustryProfileManager:
                     ],
                     default_template='regression',
                     sample_data='process_history.csv'
+                ),
+                Scenario(
+                    id='defect_classification',
+                    name='Defect Classification',
+                    description='Classify product defects by type and severity',
+                    icon='bi-x-circle',
+                    difficulty='beginner',
+                    estimated_time='15 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Defect Data', 'description': 'Upload defect records with images or measurements'},
+                        {'step': 2, 'title': 'Define Defect Types', 'description': 'Specify defect categories (crack, scratch, dent, etc.)'},
+                        {'step': 3, 'title': 'Train Classifier', 'description': 'Build model to classify defects'},
+                        {'step': 4, 'title': 'View Classifications', 'description': 'See defect types and root cause analysis'}
+                    ],
+                    default_template='multiclass_classification',
+                    sample_data='defect_data.csv'
+                ),
+                Scenario(
+                    id='supply_chain_optimization',
+                    name='Supply Chain Optimization',
+                    description='Optimize inventory levels and supplier selection',
+                    icon='bi-box-seam',
+                    difficulty='advanced',
+                    estimated_time='30 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Supply Chain Data', 'description': 'Upload inventory, demand, and supplier data'},
+                        {'step': 2, 'title': 'Define Objectives', 'description': 'Set goals (minimize cost, maximize service level)'},
+                        {'step': 3, 'title': 'Train Optimization Model', 'description': 'Build model to optimize supply chain'},
+                        {'step': 4, 'title': 'View Recommendations', 'description': 'See optimal inventory levels and supplier choices'}
+                    ],
+                    default_template='regression',
+                    sample_data='supply_chain.csv'
+                ),
+                Scenario(
+                    id='energy_consumption',
+                    name='Energy Consumption Prediction',
+                    description='Predict energy usage to optimize costs and reduce waste',
+                    icon='bi-lightning-charge',
+                    difficulty='intermediate',
+                    estimated_time='20 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Energy Data', 'description': 'Upload historical energy consumption and production data'},
+                        {'step': 2, 'title': 'Select Factors', 'description': 'Choose relevant variables (production volume, weather, etc.)'},
+                        {'step': 3, 'title': 'Train Consumption Model', 'description': 'Build model to predict energy usage'},
+                        {'step': 4, 'title': 'View Forecasts', 'description': 'See predicted consumption for planning'}
+                    ],
+                    default_template='regression',
+                    sample_data='energy_consumption.csv'
+                ),
+                Scenario(
+                    id='production_scheduling',
+                    name='Production Scheduling Optimization',
+                    description='Optimize production schedules to minimize downtime and maximize throughput',
+                    icon='bi-calendar-event',
+                    difficulty='advanced',
+                    estimated_time='30 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Production Data', 'description': 'Upload machine availability, orders, and setup times'},
+                        {'step': 2, 'title': 'Define Constraints', 'description': 'Set production constraints and priorities'},
+                        {'step': 3, 'title': 'Train Scheduler', 'description': 'Build model to optimize production schedule'},
+                        {'step': 4, 'title': 'View Schedule', 'description': 'See optimized production schedule'}
+                    ],
+                    default_template='regression',
+                    sample_data='production_schedule.csv'
+                ),
+                Scenario(
+                    id='inventory_optimization',
+                    name='Inventory Optimization',
+                    description='Optimize stock levels to balance cost and service level',
+                    icon='bi-boxes',
+                    difficulty='intermediate',
+                    estimated_time='20 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Inventory Data', 'description': 'Upload demand history, lead times, and costs'},
+                        {'step': 2, 'title': 'Set Service Level', 'description': 'Define target service level (stockout probability)'},
+                        {'step': 3, 'title': 'Train Inventory Model', 'description': 'Build model to calculate optimal stock levels'},
+                        {'step': 4, 'title': 'View Recommendations', 'description': 'See recommended reorder points and quantities'}
+                    ],
+                    default_template='regression',
+                    sample_data='inventory_data.csv'
+                ),
+                Scenario(
+                    id='supplier_quality',
+                    name='Supplier Quality Assessment',
+                    description='Evaluate and predict supplier quality performance',
+                    icon='bi-award',
+                    difficulty='intermediate',
+                    estimated_time='20 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Supplier Data', 'description': 'Upload supplier performance history and quality metrics'},
+                        {'step': 2, 'title': 'Define Quality Criteria', 'description': 'Set quality standards and scoring'},
+                        {'step': 3, 'title': 'Train Quality Model', 'description': 'Build model to predict supplier quality'},
+                        {'step': 4, 'title': 'View Ratings', 'description': 'See supplier quality scores and rankings'}
+                    ],
+                    default_template='regression',
+                    sample_data='supplier_quality.csv'
+                ),
+                Scenario(
+                    id='waste_reduction',
+                    name='Waste Reduction Analysis',
+                    description='Identify sources of waste and predict waste generation',
+                    icon='bi-recycle',
+                    difficulty='intermediate',
+                    estimated_time='20 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Waste Data', 'description': 'Upload waste generation records and process data'},
+                        {'step': 2, 'title': 'Define Waste Types', 'description': 'Categorize waste (material, time, energy, etc.)'},
+                        {'step': 3, 'title': 'Train Waste Model', 'description': 'Build model to predict waste generation'},
+                        {'step': 4, 'title': 'View Analysis', 'description': 'See waste predictions and reduction opportunities'}
+                    ],
+                    default_template='regression',
+                    sample_data='waste_data.csv'
+                ),
+                Scenario(
+                    id='equipment_efficiency',
+                    name='Equipment Efficiency Analysis',
+                    description='Analyze and predict equipment efficiency to optimize operations',
+                    icon='bi-speedometer',
+                    difficulty='intermediate',
+                    estimated_time='20 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Equipment Data', 'description': 'Upload performance metrics and operating conditions'},
+                        {'step': 2, 'title': 'Calculate Efficiency', 'description': 'Define efficiency metrics (OEE, utilization, etc.)'},
+                        {'step': 3, 'title': 'Train Efficiency Model', 'description': 'Build model to predict equipment efficiency'},
+                        {'step': 4, 'title': 'View Predictions', 'description': 'See efficiency forecasts and improvement opportunities'}
+                    ],
+                    default_template='regression',
+                    sample_data='equipment_efficiency.csv'
+                ),
+                Scenario(
+                    id='quality_control',
+                    name='Statistical Process Control',
+                    description='Monitor process quality using control charts and anomaly detection',
+                    icon='bi-graph-up',
+                    difficulty='advanced',
+                    estimated_time='25 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Process Data', 'description': 'Upload quality measurements over time'},
+                        {'step': 2, 'title': 'Set Control Limits', 'description': 'Define upper and lower control limits'},
+                        {'step': 3, 'title': 'Train Control Model', 'description': 'Build model to detect out-of-control conditions'},
+                        {'step': 4, 'title': 'View Control Charts', 'description': 'See process control charts and alerts'}
+                    ],
+                    default_template='anomaly_detection',
+                    sample_data='quality_control.csv'
+                ),
+                Scenario(
+                    id='demand_forecasting',
+                    name='Demand Forecasting',
+                    description='Forecast product demand for production and inventory planning',
+                    icon='bi-cart',
+                    difficulty='intermediate',
+                    estimated_time='20 mins',
+                    steps=[
+                        {'step': 1, 'title': 'Upload Sales Data', 'description': 'Upload historical sales and demand data'},
+                        {'step': 2, 'title': 'Select Forecast Horizon', 'description': 'Choose prediction period (daily, weekly, monthly)'},
+                        {'step': 3, 'title': 'Train Forecast Model', 'description': 'Build time series model for demand'},
+                        {'step': 4, 'title': 'View Forecasts', 'description': 'See predicted demand with confidence intervals'}
+                    ],
+                    default_template='time_series_regression',
+                    sample_data='demand_forecast.csv'
                 )
             ],
             terminology={

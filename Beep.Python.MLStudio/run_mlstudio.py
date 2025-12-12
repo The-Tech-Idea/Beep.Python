@@ -391,7 +391,7 @@ def create_directories():
     for dir_name in dirs:
         Path(dir_name).mkdir(exist_ok=True)
 
-def run_mlstudio(venv_python):
+def run_mlstudio(venv_python, extra_args=None):
     """Run MLStudio application"""
     print_colored("", Colors.RESET)
     print_colored("=" * 60, Colors.CYAN)
@@ -409,11 +409,23 @@ def run_mlstudio(venv_python):
         print_colored("⚠️  Warning: Database file not found, but continuing anyway...", Colors.YELLOW)
         print_colored("   The database will be created automatically when the app starts.", Colors.CYAN)
     
+    # Build command with any extra arguments (like --industry=pet)
+    cmd = [str(venv_python), 'run.py']
+    if extra_args:
+        cmd.extend(extra_args)
+    
+    # Show industry mode if specified
+    industry_arg = next((arg for arg in (extra_args or []) if arg.startswith('--industry=')), None)
+    if industry_arg:
+        industry = industry_arg.split('=')[1] if '=' in industry_arg else None
+        if industry:
+            print_colored(f"   Industry Mode: {industry.title()}", Colors.CYAN)
+    
     # Run the application
     try:
         # Use subprocess.Popen to run in background and capture output
         process = subprocess.Popen(
-            [str(venv_python), 'run.py'],
+            cmd,
             cwd=str(script_dir),
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -439,6 +451,34 @@ def run_mlstudio(venv_python):
 
 def main():
     """Main launcher function"""
+    # Parse command-line arguments
+    import argparse
+    parser = argparse.ArgumentParser(description='Beep ML Studio - Setup & Launcher')
+    parser.add_argument('--industry', type=str, help='Force industry mode (pet, health, oilandgas, etc.)')
+    parser.add_argument('--port', type=int, help='Port number')
+    parser.add_argument('--host', type=str, help='Host address')
+    parser.add_argument('--debug', action='store_true', help='Enable debug mode')
+    parser.add_argument('--no-browser', action='store_true', help='Do not open browser automatically')
+    
+    # Parse known args (ignore unknown for now, pass them to run.py)
+    args, unknown_args = parser.parse_known_args()
+    
+    # Build extra args list for run.py
+    extra_args = []
+    if args.industry:
+        extra_args.append(f'--industry={args.industry}')
+    if args.port:
+        extra_args.append(f'--port={args.port}')
+    if args.host:
+        extra_args.append(f'--host={args.host}')
+    if args.debug:
+        extra_args.append('--debug')
+    if args.no_browser:
+        extra_args.append('--no-browser')
+    
+    # Add any unknown args (for future compatibility)
+    extra_args.extend(unknown_args)
+    
     print_colored("", Colors.RESET)
     print_colored("=" * 60, Colors.BLUE)
     print_colored("  Beep.Python.MLStudio - Setup & Launcher", Colors.BOLD)
@@ -530,7 +570,7 @@ def main():
     print_colored("✅ All Requirements Met - Starting MLStudio", Colors.BOLD + Colors.GREEN)
     print_colored("=" * 60, Colors.GREEN)
     print_colored("", Colors.RESET)
-    run_mlstudio(venv_python)
+    run_mlstudio(venv_python, extra_args)
 
 if __name__ == '__main__':
     try:

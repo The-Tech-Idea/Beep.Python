@@ -14,7 +14,11 @@
     }
     
     .settings-category-header {
+        {% if current_profile and current_profile.id != 'advanced' %}
+        background: {{ current_profile.gradient }};
+        {% else %}
         background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-dark) 100%);
+        {% endif %}
         color: white;
         padding: 1rem 1.5rem;
         border-radius: var(--radius-lg) var(--radius-lg) 0 0;

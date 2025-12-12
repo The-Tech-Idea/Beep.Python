@@ -18,6 +18,17 @@ industry_bp = Blueprint('industry', __name__)
 @industry_bp.route('/mode')
 def select_mode():
     """Display mode selection page"""
+    from flask import current_app
+    
+    # If forced industry mode is set, redirect to that industry dashboard
+    forced_industry = current_app.config.get('FORCED_INDUSTRY_MODE')
+    if forced_industry:
+        profile = profile_manager.get(forced_industry)
+        if profile:
+            session['industry_mode'] = forced_industry
+            session['forced_industry'] = True
+            return redirect(url_for('industry.dashboard', profile_id=forced_industry))
+    
     profiles = profile_manager.list_all()
     current_mode = session.get('industry_mode', 'advanced')
     return render_template('industry/select_mode.html', 
@@ -28,6 +39,15 @@ def select_mode():
 @industry_bp.route('/mode/<profile_id>', methods=['POST'])
 def set_mode(profile_id):
     """Set the current industry mode"""
+    from flask import current_app
+    
+    # If forced industry mode is set, prevent switching
+    forced_industry = current_app.config.get('FORCED_INDUSTRY_MODE')
+    if forced_industry:
+        if profile_id != forced_industry:
+            flash(f'Industry mode is locked to {forced_industry.title()}. Cannot switch.', 'warning')
+            return redirect(url_for('industry.dashboard', profile_id=forced_industry))
+    
     profile = profile_manager.get(profile_id)
     if not profile:
         flash('Invalid industry profile', 'error')
@@ -46,27 +66,90 @@ def set_mode(profile_id):
 @industry_bp.route('/dashboard/<profile_id>')
 def dashboard(profile_id):
     """Display industry-specific dashboard"""
-    profile = profile_manager.get(profile_id)
+    from flask import current_app
+    
+    # Map aliases to actual profile IDs
+    industry_aliases = {
+        'pet': 'petroleum',
+        'oilandgas': 'petroleum',
+        'oil': 'petroleum',
+        'health': 'healthcare',
+        'medical': 'healthcare',
+        'finance': 'finance',
+        'fin': 'finance',
+        'manufacturing': 'manufacturing',
+        'mfg': 'manufacturing'
+    }
+    
+    # Resolve alias if needed
+    resolved_id = industry_aliases.get(profile_id.lower(), profile_id.lower())
+    
+    profile = profile_manager.get(resolved_id)
     if not profile:
         flash('Invalid industry profile', 'error')
         return redirect(url_for('industry.select_mode'))
     
-    # Store current mode in session
-    session['industry_mode'] = profile_id
+    # Check if forced industry mode is set
+    forced_industry = current_app.config.get('FORCED_INDUSTRY_MODE')
     
-    # Get projects for this user (all projects for now)
-    projects = Project.query.order_by(Project.created_at.desc()).all()
+    # If forced mode is set, resolve it and check
+    if forced_industry:
+        forced_resolved = industry_aliases.get(forced_industry.lower(), forced_industry.lower())
+        if forced_resolved != resolved_id:
+            forced_profile = profile_manager.get(forced_resolved)
+            if forced_profile:
+                session['industry_mode'] = forced_resolved
+                session['forced_industry'] = True
+                return redirect(url_for('industry.dashboard', profile_id=forced_resolved))
+    
+    # Store current mode in session (use resolved_id)
+    session['industry_mode'] = resolved_id
+    if forced_industry:
+        session['forced_industry'] = True
+    
+    # Get projects filtered by industry profile
+    # Show projects that match this industry, or projects with no industry assigned (advanced mode)
+    if resolved_id == 'advanced':
+        # Advanced mode shows all projects
+        projects = Project.query.filter_by(status='active').order_by(Project.created_at.desc()).all()
+    else:
+        # Industry mode shows only projects for this industry
+        projects = Project.query.filter(
+            Project.status == 'active',
+            Project.industry_profile == resolved_id
+        ).order_by(Project.created_at.desc()).all()
+    
+    # Get all profiles for display (will be filtered in template if forced)
+    all_profiles = profile_manager.list_all()
     
     return render_template('industry/dashboard.html',
                          profile=profile,
                          projects=projects,
-                         scenarios=profile.scenarios)
+                         scenarios=profile.scenarios,
+                         all_profiles=all_profiles,
+                         forced_industry=forced_industry)
 
 
 @industry_bp.route('/scenario/<profile_id>/<scenario_id>')
 def scenario_wizard(profile_id, scenario_id):
     """Display scenario wizard for a specific use case"""
-    profile = profile_manager.get(profile_id)
+    # Map aliases to actual profile IDs
+    industry_aliases = {
+        'pet': 'petroleum',
+        'oilandgas': 'petroleum',
+        'oil': 'petroleum',
+        'health': 'healthcare',
+        'medical': 'healthcare',
+        'finance': 'finance',
+        'fin': 'finance',
+        'manufacturing': 'manufacturing',
+        'mfg': 'manufacturing'
+    }
+    
+    # Resolve alias if needed
+    resolved_id = industry_aliases.get(profile_id.lower(), profile_id.lower())
+    
+    profile = profile_manager.get(resolved_id)
     if not profile:
         flash('Invalid industry profile', 'error')
         return redirect(url_for('industry.select_mode'))
@@ -80,7 +163,7 @@ def scenario_wizard(profile_id, scenario_id):
     
     if not scenario:
         flash('Scenario not found', 'error')
-        return redirect(url_for('industry.dashboard', profile_id=profile_id))
+        return redirect(url_for('industry.dashboard', profile_id=resolved_id))
     
     return render_template('industry/scenario_wizard.html',
                          profile=profile,
@@ -90,7 +173,23 @@ def scenario_wizard(profile_id, scenario_id):
 @industry_bp.route('/scenario/<profile_id>/<scenario_id>/start', methods=['POST'])
 def start_scenario(profile_id, scenario_id):
     """Start a new project based on a scenario"""
-    profile = profile_manager.get(profile_id)
+    # Map aliases to actual profile IDs
+    industry_aliases = {
+        'pet': 'petroleum',
+        'oilandgas': 'petroleum',
+        'oil': 'petroleum',
+        'health': 'healthcare',
+        'medical': 'healthcare',
+        'finance': 'finance',
+        'fin': 'finance',
+        'manufacturing': 'manufacturing',
+        'mfg': 'manufacturing'
+    }
+    
+    # Resolve alias if needed
+    resolved_id = industry_aliases.get(profile_id.lower(), profile_id.lower())
+    
+    profile = profile_manager.get(resolved_id)
     if not profile:
         return jsonify({'success': False, 'error': 'Invalid industry profile'})
     
@@ -127,7 +226,7 @@ def start_scenario(profile_id, scenario_id):
         description=f"Created from {profile.name} scenario: {scenario.name}",
         framework='scikit-learn',
         environment_name=env_name,
-        industry_profile=profile_id,
+        industry_profile=resolved_id,  # Use resolved_id to ensure correct industry
         scenario_id=scenario_id,
         industry_config=industry_config
     )
@@ -152,7 +251,7 @@ def start_scenario(profile_id, scenario_id):
     if 'project_industry_config' not in session:
         session['project_industry_config'] = {}
     session['project_industry_config'][str(project.id)] = {
-        'industry_profile': profile_id,
+        'industry_profile': resolved_id,  # Use resolved_id
         'scenario': scenario_id,
         'terminology': profile.terminology
     }
@@ -289,4 +388,27 @@ def api_list_scenarios(profile_id):
         'success': True,
         'scenarios': [s.to_dict() for s in scenarios]
     })
+
+
+@industry_bp.route('/sample-data/<filename>')
+def download_sample_data(filename: str):
+    """Download sample data file for a scenario"""
+    from flask import send_from_directory, abort
+    from pathlib import Path
+    
+    # Security: Only allow CSV files from samples directory
+    if not filename.endswith('.csv'):
+        abort(400, 'Only CSV files are allowed')
+    
+    # Prevent directory traversal
+    if '..' in filename or '/' in filename or '\\' in filename:
+        abort(400, 'Invalid filename')
+    
+    samples_dir = Path(__file__).parent.parent.parent / 'static' / 'data' / 'samples'
+    file_path = samples_dir / filename
+    
+    if not file_path.exists() or not file_path.is_file():
+        abort(404, 'Sample data file not found')
+    
+    return send_from_directory(str(samples_dir), filename, as_attachment=True)
 

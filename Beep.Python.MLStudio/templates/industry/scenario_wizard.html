@@ -216,6 +216,21 @@
             </div>
             
             <div class="start-section">
+                {% if scenario.sample_data %}
+                <div class="mb-4">
+                    <div class="alert alert-info d-flex align-items-center">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <div class="flex-grow-1">
+                            <strong>Need sample data?</strong> Download the sample dataset to get started quickly.
+                        </div>
+                        <a href="{{ url_for('industry.download_sample_data', filename=scenario.sample_data) }}" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-download me-1"></i>Download Sample Data
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+                
                 <button class="btn btn-start" onclick="startScenario()">
                     <i class="bi bi-play-fill"></i>
                     Let's Get Started

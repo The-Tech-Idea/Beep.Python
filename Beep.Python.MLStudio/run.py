@@ -5,6 +5,11 @@ User-friendly ML Model Development Environment
 
 Run with: python run_mlstudio.py (recommended - handles setup automatically)
 Or: python run.py (if already set up)
+
+Industry-specific mode:
+  python run.py --industry=pet
+  python run.py --industry=health
+  python run.py --industry=oilandgas
 """
 import os
 import sys
@@ -14,6 +19,7 @@ import webbrowser
 import threading
 import time
 import platform
+import argparse
 from pathlib import Path
 
 # Check if setup is needed - ALL REQUIREMENTS MUST BE MET
@@ -108,13 +114,26 @@ os.chdir(script_dir)
 
 from app import create_app, socketio
 
+# Parse command-line arguments
+parser = argparse.ArgumentParser(description='Beep ML Studio - ML Model Development Environment')
+parser.add_argument('--industry', type=str, help='Force industry mode (pet, health, oilandgas, etc.)')
+parser.add_argument('--host', type=str, default=None, help='Host address (default: 127.0.0.1)')
+parser.add_argument('--port', type=int, default=None, help='Port number (default: 5001)')
+parser.add_argument('--debug', action='store_true', help='Enable debug mode')
+parser.add_argument('--no-browser', action='store_true', help='Do not open browser automatically')
+args = parser.parse_args()
+
+# Store forced industry mode in environment variable
+if args.industry:
+    os.environ['MLSTUDIO_FORCED_INDUSTRY'] = args.industry.lower()
+
 app = create_app()
 
 if __name__ == '__main__':
-    host = os.environ.get('HOST', '127.0.0.1')
-    port = int(os.environ.get('PORT', 5001))
-    debug = os.environ.get('DEBUG', 'true').lower() == 'true'
-    open_browser = os.environ.get('OPEN_BROWSER', 'true').lower() == 'true'
+    host = args.host or os.environ.get('HOST', '127.0.0.1')
+    port = args.port or int(os.environ.get('PORT', 5001))
+    debug = args.debug or os.environ.get('DEBUG', 'true').lower() == 'true'
+    open_browser = not args.no_browser and os.environ.get('OPEN_BROWSER', 'true').lower() == 'true'
     
     mode = 'Development' if debug else 'Production'
     print(f"""

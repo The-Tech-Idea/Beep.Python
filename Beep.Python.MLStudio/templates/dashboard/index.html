@@ -168,7 +168,11 @@
 
     /* Welcome Banner */
     .welcome-banner {
+        {% if current_profile and current_profile.id != 'advanced' %}
+        background: {{ current_profile.gradient }};
+        {% else %}
         background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-dark) 100%);
+        {% endif %}
         color: var(--text-light);
         padding: 2rem 2rem;
         border-radius: var(--radius-lg);
@@ -311,15 +315,29 @@
     <!-- Industry Mode Selector -->
     <div class="industry-selector">
         <div class="industry-selector-header">
-            <h5><i class="bi bi-grid-3x3-gap me-2"></i>Choose Your Industry Mode</h5>
-            <small class="text-muted">Get tailored workflows and domain-specific terminology</small>
+            <h5><i class="bi bi-grid-3x3-gap me-2"></i>
+                {% if forced_industry %}
+                Current Industry Mode
+                {% else %}
+                Choose Your Industry Mode
+                {% endif %}
+            </h5>
+            <small class="text-muted">
+                {% if forced_industry %}
+                Industry mode is locked to {{ current_profile.name if current_profile else forced_industry|title }}
+                {% else %}
+                Get tailored workflows and domain-specific terminology
+                {% endif %}
+            </small>
         </div>
         <div class="industry-cards-scroll">
             {% for profile in profiles %}
+            {% if not forced_industry or profile.id == current_mode %}
             <form action="{{ url_for('industry.set_mode', profile_id=profile.id) }}" method="POST" style="display: contents;">
-                <div class="industry-card {% if current_mode == profile.id %}active{% endif %}" 
+                <div class="industry-card {% if current_mode == profile.id %}active{% endif %} {% if forced_industry and profile.id != current_mode %}d-none{% endif %}" 
                      data-mode="{{ profile.id }}"
-                     onclick="this.closest('form').submit()">
+                     {% if not forced_industry %}onclick="this.closest('form').submit()"{% endif %}
+                     style="{% if forced_industry and profile.id != current_mode %}display: none;{% endif %}">
                     
                     {% if current_mode == profile.id %}
                     <span class="current-badge">Current</span>
@@ -354,6 +372,7 @@
                     {% endif %}
                 </div>
             </form>
+            {% endif %}
             {% endfor %}
         </div>
     </div>

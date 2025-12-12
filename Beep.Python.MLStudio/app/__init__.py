@@ -45,6 +45,9 @@ def create_app(config_name=None):
     # Configuration - use environment variables first, then settings
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
     
+    # Forced industry mode - set via command-line argument
+    app.config['FORCED_INDUSTRY_MODE'] = os.environ.get('MLSTUDIO_FORCED_INDUSTRY', None)
+    
     # Database URI - use absolute path to project root (not instance folder)
     db_uri = os.environ.get('DATABASE_URL', None)
     if not db_uri:
@@ -97,6 +100,35 @@ def create_app(config_name=None):
     app.register_blueprint(api_bp, url_prefix='/api/v1')
     app.register_blueprint(settings_bp)
     app.register_blueprint(industry_bp, url_prefix='/industry')
+    
+    # Context processor to make forced_industry and current profile available in all templates
+    @app.context_processor
+    def inject_forced_industry():
+        from flask import session
+        from app.industry_profiles import profile_manager
+        
+        forced_industry = app.config.get('FORCED_INDUSTRY_MODE')
+        current_mode = session.get('industry_mode', 'advanced')
+        
+        # Get current profile for theme
+        current_profile = None
+        if forced_industry:
+            # Map aliases
+            industry_aliases = {
+                'pet': 'petroleum', 'oilandgas': 'petroleum', 'oil': 'petroleum',
+                'health': 'healthcare', 'medical': 'healthcare',
+                'fin': 'finance', 'mfg': 'manufacturing'
+            }
+            profile_id = industry_aliases.get(forced_industry.lower(), forced_industry.lower())
+            current_profile = profile_manager.get(profile_id)
+        elif current_mode and current_mode != 'advanced':
+            current_profile = profile_manager.get(current_mode)
+        
+        return {
+            'forced_industry': forced_industry,
+            'current_profile': current_profile,
+            'current_industry_mode': current_mode
+        }
     
     # Create database tables and run migrations
     with app.app_context():

@@ -382,9 +382,15 @@
             <p>{{ profile.description }}</p>
             
             <div class="hero-actions">
+                {% if not forced_industry %}
                 <a href="{{ url_for('industry.select_mode') }}" class="btn btn-hero-secondary">
                     <i class="bi bi-arrow-left-right me-2"></i>Switch Mode
                 </a>
+                {% else %}
+                <span class="btn btn-hero-secondary" style="opacity: 0.6; cursor: not-allowed;" title="Industry mode is locked">
+                    <i class="bi bi-lock-fill me-2"></i>Mode Locked
+                </span>
+                {% endif %}
                 <a href="{{ url_for('projects.create') }}" class="btn btn-hero-primary">
                     <i class="bi bi-plus-circle me-2"></i>Create Custom Project
                 </a>
@@ -430,9 +436,19 @@
                     </span>
                 </div>
                 
-                <button class="scenario-start-btn">
-                    Start <i class="bi bi-arrow-right"></i>
-                </button>
+                <div class="d-flex gap-2">
+                    {% if scenario.sample_data %}
+                    <a href="{{ url_for('industry.download_sample_data', filename=scenario.sample_data) }}" 
+                       class="btn btn-sm btn-outline-light" 
+                       onclick="event.stopPropagation();"
+                       title="Download sample data">
+                        <i class="bi bi-download"></i>
+                    </a>
+                    {% endif %}
+                    <button class="scenario-start-btn flex-grow-1">
+                        Start <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
             </div>
             {% endfor %}
         </div>
@@ -479,13 +495,21 @@
     </div>
 </div>
 
-<!-- Mode Switcher (Fixed) -->
+<!-- Mode Switcher (Fixed) - Shows current mode, disabled when forced -->
 <div class="mode-switcher">
+    {% if forced_industry %}
+    <span class="mode-switcher-btn text-decoration-none" style="opacity: 0.8; cursor: default;" title="Industry mode is locked">
+        <i class="{{ profile.icon }}"></i>
+        <span class="text-muted">{{ profile.name }}</span>
+        <i class="bi bi-lock-fill text-muted"></i>
+    </span>
+    {% else %}
     <a href="{{ url_for('industry.select_mode') }}" class="mode-switcher-btn text-decoration-none">
         <i class="{{ profile.icon }}"></i>
         <span class="text-muted">{{ profile.name }}</span>
         <i class="bi bi-chevron-up text-muted"></i>
     </a>
+    {% endif %}
 </div>
 {% endblock %}
 

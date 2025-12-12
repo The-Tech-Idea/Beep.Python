@@ -1,6 +1,12 @@
 @echo off
 REM Beep.Python.MLStudio - Windows Launcher
 REM This script automatically sets up and runs MLStudio
+REM
+REM Usage:
+REM   run.bat                    - Normal mode
+REM   run.bat --industry=pet    - Launch in Pet Industry mode
+REM   run.bat --industry=health - Launch in Healthcare mode
+REM   run.bat --industry=oilandgas - Launch in Oil & Gas mode
 
 cd /d "%~dp0"
 
@@ -19,8 +25,8 @@ if errorlevel 1 (
     exit /b 1
 )
 
-REM Run the Python launcher
-python run_mlstudio.py
+REM Pass all arguments to the Python launcher
+python run_mlstudio.py %*
 
 if errorlevel 1 (
     echo.
