@@ -1,0 +1,527 @@
+{% extends "base.html" %}
+
+{% block title %}{{ experiment.name }} - Beep ML Studio{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="bi bi-flask"></i> {{ experiment.name }}</h1>
+            <p class="text-muted">{{ experiment.description or 'No description' }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            {% if experiment.status == 'running' %}
+            <button class="btn btn-danger" onclick="cancelExperiment({{ experiment.id }})">
+                <i class="bi bi-x-circle"></i> Cancel
+            </button>
+            {% endif %}
+            <a href="{{ url_for('projects.detail', project_id=project.id) }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Project
+            </a>
+        </div>
+    </div>
+    
+    <!-- Status Banner -->
+    {% if experiment.status == 'running' %}
+    {% if running_minutes > 60 %}
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i> <strong>Warning:</strong> This experiment has been running for over {{ running_minutes | round(0) | int }} minutes. 
+        It may have crashed or encountered an error. Please click "Cancel" to mark it as failed, or check the execution logs.
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> <strong>Running:</strong> Your workflow is currently executing in the background. 
+        <span id="runningDuration">Running...</span>
+        This page will automatically refresh when it completes. You can cancel it using the button above.
+    </div>
+    {% endif %}
+    {% endif %}
+    
+    {% if experiment.status == 'completed' and experiment.metrics %}
+    <!-- Metrics Dashboard -->
+    <div class="row mb-4">
+        {% set metrics = experiment.get_metrics() %}
+        
+        <!-- Classification Metrics -->
+        {% if metrics.get('accuracy') is not none or metrics.get('precision') is not none or metrics.get('recall') is not none or metrics.get('f1_score') is not none %}
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-primary"><i class="bi bi-speedometer2"></i> Accuracy</h5>
+                    {% if metrics.get('accuracy') is not none %}
+                    <h2 class="text-primary">{{ "%.4f"|format(metrics.accuracy) }}</h2>
+                    <div class="progress mt-2" style="height: 20px;">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ (metrics.accuracy * 100)|int }}%">
+                            {{ "%.1f"|format(metrics.accuracy * 100) }}%
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">N/A</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-success"><i class="bi bi-check-circle"></i> Precision</h5>
+                    {% if metrics.get('precision') is not none %}
+                    <h2 class="text-success">{{ "%.4f"|format(metrics.precision) }}</h2>
+                    <div class="progress mt-2" style="height: 20px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ (metrics.precision * 100)|int }}%">
+                            {{ "%.1f"|format(metrics.precision * 100) }}%
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">N/A</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-info"><i class="bi bi-arrow-repeat"></i> Recall</h5>
+                    {% if metrics.get('recall') is not none %}
+                    <h2 class="text-info">{{ "%.4f"|format(metrics.recall) }}</h2>
+                    <div class="progress mt-2" style="height: 20px;">
+                        <div class="progress-bar bg-info" role="progressbar" style="width: {{ (metrics.recall * 100)|int }}%">
+                            {{ "%.1f"|format(metrics.recall * 100) }}%
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">N/A</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-warning"><i class="bi bi-graph-up"></i> F1 Score</h5>
+                    {% if metrics.get('f1_score') is not none %}
+                    <h2 class="text-warning">{{ "%.4f"|format(metrics.f1_score) }}</h2>
+                    <div class="progress mt-2" style="height: 20px;">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ (metrics.f1_score * 100)|int }}%">
+                            {{ "%.1f"|format(metrics.f1_score * 100) }}%
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">N/A</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Regression Metrics -->
+        {% if metrics.get('mse') is not none or metrics.get('rmse') is not none or metrics.get('mae') is not none or metrics.get('r2_score') is not none %}
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-danger"><i class="bi bi-graph-down"></i> MSE</h5>
+                    {% if metrics.get('mse') is not none %}
+                    <h2 class="text-danger">{{ "%.4f"|format(metrics.mse) }}</h2>
+                    {% else %}
+                    <p class="text-muted">N/A</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-danger"><i class="bi bi-graph-down"></i> RMSE</h5>
+                    {% if metrics.get('rmse') is not none %}
+                    <h2 class="text-danger">{{ "%.4f"|format(metrics.rmse) }}</h2>
+                    {% else %}
+                    <p class="text-muted">N/A</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-warning"><i class="bi bi-graph-down"></i> MAE</h5>
+                    {% if metrics.get('mae') is not none %}
+                    <h2 class="text-warning">{{ "%.4f"|format(metrics.mae) }}</h2>
+                    {% else %}
+                    <p class="text-muted">N/A</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-success"><i class="bi bi-graph-up"></i> R² Score</h5>
+                    {% if metrics.get('r2_score') is not none %}
+                    <h2 class="text-success">{{ "%.4f"|format(metrics.r2_score) }}</h2>
+                    <div class="progress mt-2" style="height: 20px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ ((metrics.r2_score + 1) * 50)|int }}%">
+                            {{ "%.1f"|format(metrics.r2_score * 100) }}%
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">N/A</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Confusion Matrix -->
+    {% if metrics.get('confusion_matrix') %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-grid-3x3"></i> Confusion Matrix</h5>
+                </div>
+                <div class="card-body">
+                    <div id="confusionMatrix" class="text-center"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Metrics Chart -->
+    {% if metrics.get('accuracy') is not none or metrics.get('precision') is not none or metrics.get('recall') is not none or metrics.get('f1_score') is not none %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-bar-chart"></i> Classification Metrics</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="metricsChart" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+    
+    <!-- Experiment Details -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab">
+                                <i class="bi bi-info-circle"></i> Details
+                            </button>
+                        </li>
+                        {% if experiment.status == 'completed' %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="output-tab" data-bs-toggle="tab" data-bs-target="#output" type="button" role="tab">
+                                <i class="bi bi-terminal"></i> Output
+                            </button>
+                        </li>
+                        {% endif %}
+                        {% if experiment.error_message %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="errors-tab" data-bs-toggle="tab" data-bs-target="#errors" type="button" role="tab">
+                                <i class="bi bi-exclamation-triangle"></i> Errors
+                            </button>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="details" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Status:</strong> 
+                                        <span class="badge bg-{{ 'success' if experiment.status == 'completed' else 'warning' if experiment.status == 'running' else 'danger' }}">
+                                            {{ experiment.status }}
+                                        </span>
+                                    </p>
+                                    <p><strong>Model Type:</strong> {{ experiment.model_type or 'N/A' }}</p>
+                                    <p><strong>Created:</strong> {{ experiment.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    {% if experiment.started_at %}
+                                    <p><strong>Started:</strong> {{ experiment.started_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                                    {% endif %}
+                                    {% if experiment.completed_at %}
+                                    <p><strong>Completed:</strong> {{ experiment.completed_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                                    {% if experiment.started_at and experiment.completed_at %}
+                                    <p><strong>Duration:</strong> {{ ((experiment.completed_at - experiment.started_at).total_seconds() / 60) | round(2) }} minutes</p>
+                                    {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if experiment.model_config %}
+                            <div class="mt-3">
+                                <h6>Model Configuration</h6>
+                                <pre class="bg-light p-3 rounded"><code>{{ experiment.get_model_config() | tojson(indent=2) }}</code></pre>
+                            </div>
+                            {% endif %}
+                            
+                            {% if experiment.metrics %}
+                            <div class="mt-3">
+                                <h6>All Metrics</h6>
+                                <pre class="bg-light p-3 rounded"><code>{{ experiment.get_metrics() | tojson(indent=2) }}</code></pre>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if experiment.status == 'completed' %}
+                        <div class="tab-pane fade" id="output" role="tabpanel">
+                            <h6>Standard Output</h6>
+                            <pre class="bg-dark text-light p-3 rounded" style="max-height: 500px; overflow-y: auto;"><code id="stdoutContent">{{ experiment.stdout or 'No output available' }}</code></pre>
+                            
+                            {% if experiment.stderr %}
+                            <h6 class="mt-3">Standard Error</h6>
+                            <pre class="bg-dark text-light p-3 rounded" style="max-height: 500px; overflow-y: auto;"><code id="stderrContent">{{ experiment.stderr }}</code></pre>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        {% if experiment.error_message %}
+                        <div class="tab-pane fade" id="errors" role="tabpanel">
+                            <div class="alert alert-danger">
+                                <h6><i class="bi bi-exclamation-triangle"></i> Error Message</h6>
+                                <pre>{{ experiment.error_message }}</pre>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const experimentStatus = '{{ experiment.status }}';
+const startedAt = '{{ experiment.started_at.isoformat() if experiment.started_at else "" }}';
+const metrics = {{ experiment.get_metrics() | tojson if experiment.metrics else '{}' }};
+
+// Confusion Matrix Visualization
+{% if metrics.get('confusion_matrix') %}
+const confusionMatrix = {{ metrics.confusion_matrix | tojson }};
+function renderConfusionMatrix() {
+    const container = document.getElementById('confusionMatrix');
+    if (!container || !confusionMatrix) return;
+    
+    const table = document.createElement('table');
+    table.className = 'table table-bordered text-center';
+    table.style.width = 'auto';
+    table.style.margin = '0 auto';
+    
+    // Create header row
+    const headerRow = document.createElement('tr');
+    headerRow.appendChild(document.createElement('th')); // Empty corner
+    for (let i = 0; i < confusionMatrix[0].length; i++) {
+        const th = document.createElement('th');
+        th.textContent = `Predicted ${i}`;
+        th.className = 'bg-light';
+        headerRow.appendChild(th);
+    }
+    table.appendChild(headerRow);
+    
+    // Create data rows
+    for (let i = 0; i < confusionMatrix.length; i++) {
+        const row = document.createElement('tr');
+        const labelTh = document.createElement('th');
+        labelTh.textContent = `Actual ${i}`;
+        labelTh.className = 'bg-light';
+        row.appendChild(labelTh);
+        
+        for (let j = 0; j < confusionMatrix[i].length; j++) {
+            const cell = document.createElement('td');
+            cell.textContent = confusionMatrix[i][j];
+            // Color code: darker = higher value
+            const value = confusionMatrix[i][j];
+            const maxVal = Math.max(...confusionMatrix.flat());
+            const intensity = Math.floor((value / maxVal) * 100);
+            cell.style.backgroundColor = `rgba(0, 123, 255, ${intensity / 100})`;
+            cell.style.color = intensity > 50 ? 'white' : 'black';
+            cell.style.fontWeight = 'bold';
+            cell.style.padding = '15px';
+            row.appendChild(cell);
+        }
+        table.appendChild(row);
+    }
+    
+    container.innerHTML = '';
+    container.appendChild(table);
+}
+
+renderConfusionMatrix();
+{% endif %}
+
+// Metrics Chart
+{% if metrics.get('accuracy') is not none or metrics.get('precision') is not none or metrics.get('recall') is not none or metrics.get('f1_score') is not none %}
+const ctx = document.getElementById('metricsChart');
+if (ctx) {
+    const chartData = {
+        labels: [],
+        datasets: [{
+            label: 'Score',
+            data: [],
+            backgroundColor: [
+                'rgba(0, 123, 255, 0.5)',
+                'rgba(40, 167, 69, 0.5)',
+                'rgba(23, 162, 184, 0.5)',
+                'rgba(255, 193, 7, 0.5)'
+            ],
+            borderColor: [
+                'rgba(0, 123, 255, 1)',
+                'rgba(40, 167, 69, 1)',
+                'rgba(23, 162, 184, 1)',
+                'rgba(255, 193, 7, 1)'
+            ],
+            borderWidth: 2
+        }]
+    };
+    
+    if (metrics.accuracy !== undefined) {
+        chartData.labels.push('Accuracy');
+        chartData.datasets[0].data.push(metrics.accuracy);
+    }
+    if (metrics.precision !== undefined) {
+        chartData.labels.push('Precision');
+        chartData.datasets[0].data.push(metrics.precision);
+    }
+    if (metrics.recall !== undefined) {
+        chartData.labels.push('Recall');
+        chartData.datasets[0].data.push(metrics.recall);
+    }
+    if (metrics.f1_score !== undefined) {
+        chartData.labels.push('F1 Score');
+        chartData.datasets[0].data.push(metrics.f1_score);
+    }
+    
+    if (chartData.labels.length > 0) {
+        new Chart(ctx, {
+            type: 'bar',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 1.0
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + (context.parsed.y * 100).toFixed(2) + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+{% endif %}
+
+function cancelExperiment(experimentId) {
+    if (!confirm('Are you sure you want to cancel this experiment? This will mark it as failed.')) {
+        return;
+    }
+    
+    const cancelBtn = event.target.closest('button');
+    if (cancelBtn) {
+        cancelBtn.disabled = true;
+        cancelBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Cancelling...';
+    }
+    
+    fetch(`/api/v1/experiments/${experimentId}/cancel`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Experiment cancelled successfully');
+            location.reload();
+        } else {
+            alert('Error: ' + (data.error || 'Failed to cancel experiment'));
+            if (cancelBtn) {
+                cancelBtn.disabled = false;
+                cancelBtn.innerHTML = '<i class="bi bi-x-circle"></i> Cancel';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error cancelling experiment:', error);
+        alert('Error cancelling experiment: ' + error.message);
+        if (cancelBtn) {
+            cancelBtn.disabled = false;
+            cancelBtn.innerHTML = '<i class="bi bi-x-circle"></i> Cancel';
+        }
+    });
+}
+
+// Auto-refresh for running experiments
+if (experimentStatus === 'running') {
+    if (startedAt) {
+        function updateDuration() {
+            const startTime = new Date(startedAt);
+            const now = new Date();
+            const diffMs = now - startTime;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffSecs = Math.floor((diffMs % 60000) / 1000);
+            
+            const durationEl = document.getElementById('runningDuration');
+            if (durationEl) {
+                if (diffMins > 0) {
+                    durationEl.textContent = `Running for: ${diffMins}m ${diffSecs}s`;
+                } else {
+                    durationEl.textContent = `Running for: ${diffSecs}s`;
+                }
+            }
+        }
+        
+        updateDuration();
+        setInterval(updateDuration, 1000);
+    }
+    
+    // Auto-refresh page every 5 seconds
+    let refreshCount = 0;
+    const maxRefreshes = 120;
+    
+    const refreshInterval = setInterval(() => {
+        refreshCount++;
+        if (refreshCount >= maxRefreshes) {
+            clearInterval(refreshInterval);
+            return;
+        }
+        
+        fetch(`/api/v1/experiments/{{ experiment.id }}/status`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status !== 'running') {
+                    clearInterval(refreshInterval);
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error checking status:', error);
+            });
+    }, 5000);
+}
+</script>
+{% endblock %}

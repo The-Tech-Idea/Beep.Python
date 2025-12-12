@@ -1,0 +1,13 @@
+{
+  "directories": [
+    {
+      "id": "default",
+      "name": "Default ML Models",
+      "path": "C:\\Users\\f_ald\\source\\repos\\The-Tech-Idea\\Beep.Python\\Beep.Python.Host.Admin\\ml_models",
+      "enabled": true,
+      "max_size_gb": null,
+      "description": "Default ML model storage directory",
+      "priority": 0
+    }
+  ]
+}

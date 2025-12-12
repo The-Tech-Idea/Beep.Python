@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Beep ML Studio - TheTechIdea{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/branding/favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/branding/thetechidea-logo-32.png') }}">
+    <link rel="icon" type="image/png" sizes="48x48" href="{{ url_for('static', filename='images/branding/thetechidea-logo-48.png') }}">
+    <link rel="apple-touch-icon" sizes="128x128" href="{{ url_for('static', filename='images/branding/thetechidea-logo-128.png') }}">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- MLStudio Theme System -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/themes.css') }}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('dashboard.index') }}">
+                <img src="{{ url_for('static', filename='images/branding/thetechidea-logo-32.png') }}" 
+                     alt="TheTechIdea" 
+                     height="28" 
+                     class="me-2"
+                     style="filter: brightness(0) invert(1);">
+                <span>Beep ML Studio</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('dashboard.index') }}">
+                            <i class="bi bi-house"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('projects.index') }}">
+                            <i class="bi bi-folder"></i> Projects
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('settings.index') }}">
+                            <i class="bi bi-gear"></i> Settings
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item me-3">
+                        <a class="nav-link" href="{{ url_for('industry.select_mode') }}" title="Switch Industry Mode">
+                            <i class="bi bi-grid-3x3-gap"></i> 
+                            <span class="d-none d-lg-inline">
+                                {% if session.get('industry_mode') and session.get('industry_mode') != 'advanced' %}
+                                    {{ session.get('industry_mode')|title }} Mode
+                                {% else %}
+                                    Industry Modes
+                                {% endif %}
+                            </span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <div id="theme-switcher-container"></div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    <!-- Main Content -->
+    <main class="container-fluid mt-4">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer class="mt-auto">
+        <div class="container text-center">
+            <p class="mb-0 d-flex align-items-center justify-content-center gap-2">
+                <img src="{{ url_for('static', filename='images/branding/thetechidea-logo-32.png') }}" 
+                     alt="TheTechIdea" 
+                     height="20">
+                <span>&copy; 2024 <strong>TheTechIdea</strong> | Beep ML Studio - Machine Learning Made Simple</span>
+            </p>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Socket.IO -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <!-- Theme Manager -->
+    <script src="{{ url_for('static', filename='js/theme-manager.js') }}"></script>
+    <script>
+        // Initialize theme switcher in navbar
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('theme-switcher-container');
+            if (container && window.themeManager) {
+                container.innerHTML = window.themeManager.createThemeSwitcherHTML();
+            }
+            
+            // Ensure all navbar links work - add explicit click handlers
+            const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    if (href && href !== '#' && href !== 'javascript:void(0)') {
+                        console.log('Navigating to:', href);
+                        window.location.href = href;
+                    }
+                });
+            });
+            
+            // Ensure navbar brand link works
+            const brandLink = document.querySelector('.navbar-brand');
+            if (brandLink) {
+                brandLink.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    if (href && href !== '#' && href !== 'javascript:void(0)') {
+                        console.log('Navigating to:', href);
+                        window.location.href = href;
+                    }
+                });
+            }
+            
+            console.log('Navbar navigation handlers initialized. Found', navLinks.length, 'nav links');
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+

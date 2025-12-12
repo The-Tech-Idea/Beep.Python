@@ -1,0 +1,526 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile.name }} - Beep ML Studio{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --profile-color: {{ profile.color }};
+    }
+    
+    .industry-dashboard {
+        padding: 0;
+    }
+    
+    /* Hero Banner */
+    .hero-banner {
+        background: {{ profile.gradient }};
+        color: white;
+        padding: 3rem 2rem;
+        margin: -1.5rem -0.75rem 2rem -0.75rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-banner::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 40%;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='80' cy='20' r='30' fill='rgba(255,255,255,0.1)'/%3E%3Ccircle cx='90' cy='70' r='40' fill='rgba(255,255,255,0.05)'/%3E%3C/svg%3E") no-repeat center;
+        background-size: cover;
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 1;
+        max-width: 800px;
+    }
+    
+    .hero-icon {
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+        opacity: 0.9;
+    }
+    
+    .hero-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .hero-tagline {
+        font-size: 1.25rem;
+        opacity: 0.9;
+        margin-bottom: 1rem;
+    }
+    
+    .hero-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+    
+    .hero-actions .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+    
+    .btn-hero-primary {
+        background: white;
+        color: {{ profile.color }};
+        border: none;
+    }
+    
+    .btn-hero-primary:hover {
+        background: rgba(255,255,255,0.9);
+        color: {{ profile.color }};
+    }
+    
+    .btn-hero-secondary {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+    
+    .btn-hero-secondary:hover {
+        background: rgba(255,255,255,0.3);
+        color: white;
+    }
+    
+    /* Section Headers */
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .section-title i {
+        color: {{ profile.color }};
+    }
+    
+    /* Scenario Cards */
+    .scenarios-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+    
+    .scenario-card {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .scenario-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        border-color: {{ profile.color }};
+    }
+    
+    .scenario-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: {{ profile.gradient }};
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .scenario-card:hover::before {
+        opacity: 1;
+    }
+    
+    .scenario-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .scenario-icon {
+        width: 50px;
+        height: 50px;
+        background: {{ profile.gradient }};
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+    
+    .scenario-info {
+        flex: 1;
+    }
+    
+    .scenario-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+    }
+    
+    .scenario-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+    
+    .scenario-meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .scenario-description {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 1rem;
+    }
+    
+    .scenario-steps-preview {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .step-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: {{ profile.color }};
+        opacity: 0.3;
+    }
+    
+    .step-dot:first-child {
+        opacity: 1;
+    }
+    
+    .scenario-start-btn {
+        position: absolute;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        background: {{ profile.gradient }};
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        opacity: 0;
+        transform: translateX(10px);
+        transition: all 0.3s ease;
+    }
+    
+    .scenario-card:hover .scenario-start-btn {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    
+    /* Difficulty Badges */
+    .difficulty-badge {
+        padding: 0.2rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .difficulty-beginner {
+        background: #d1fae5;
+        color: #065f46;
+    }
+    
+    .difficulty-intermediate {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    
+    .difficulty-advanced {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    
+    /* Recent Projects */
+    .projects-section {
+        margin-top: 2rem;
+    }
+    
+    .project-card-mini {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .project-card-mini:hover {
+        border-color: {{ profile.color }};
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    
+    .project-icon-mini {
+        width: 40px;
+        height: 40px;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: {{ profile.color }};
+    }
+    
+    .project-info-mini {
+        flex: 1;
+    }
+    
+    .project-name-mini {
+        font-weight: 500;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+    }
+    
+    .project-date-mini {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: var(--bg-secondary);
+        border-radius: 16px;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state h3 {
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-state p {
+        color: var(--text-secondary);
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Mode Switcher */
+    .mode-switcher {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        z-index: 1000;
+    }
+    
+    .mode-switcher-btn {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .mode-switcher-btn:hover {
+        border-color: {{ profile.color }};
+    }
+    
+    .mode-switcher-btn i {
+        color: {{ profile.color }};
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="industry-dashboard">
+    <!-- Hero Banner -->
+    <div class="hero-banner">
+        <div class="hero-content">
+            <div class="hero-icon">
+                <i class="{{ profile.icon }}"></i>
+            </div>
+            <h1 class="hero-title">{{ profile.name }}</h1>
+            <p class="hero-tagline">{{ profile.tagline }}</p>
+            <p>{{ profile.description }}</p>
+            
+            <div class="hero-actions">
+                <a href="{{ url_for('industry.select_mode') }}" class="btn btn-hero-secondary">
+                    <i class="bi bi-arrow-left-right me-2"></i>Switch Mode
+                </a>
+                <a href="{{ url_for('projects.create') }}" class="btn btn-hero-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Create Custom Project
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scenarios Section -->
+    <div class="container-fluid">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="bi bi-lightning-charge-fill"></i>
+                What would you like to do?
+            </h2>
+        </div>
+        
+        <div class="scenarios-grid">
+            {% for scenario in scenarios %}
+            <div class="scenario-card" onclick="startScenario('{{ profile.id }}', '{{ scenario.id }}')">
+                <div class="scenario-header">
+                    <div class="scenario-icon">
+                        <i class="{{ scenario.icon }}"></i>
+                    </div>
+                    <div class="scenario-info">
+                        <div class="scenario-name">{{ scenario.name }}</div>
+                        <div class="scenario-meta">
+                            <span class="difficulty-badge difficulty-{{ scenario.difficulty }}">
+                                {{ scenario.difficulty }}
+                            </span>
+                            <span><i class="bi bi-clock"></i> {{ scenario.estimated_time }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="scenario-description">{{ scenario.description }}</p>
+                
+                <div class="scenario-steps-preview">
+                    {% for step in scenario.steps %}
+                    <div class="step-dot" title="Step {{ loop.index }}: {{ step.title }}"></div>
+                    {% endfor %}
+                    <span style="font-size: 0.75rem; color: var(--text-muted); margin-left: 0.5rem;">
+                        {{ scenario.steps|length }} steps
+                    </span>
+                </div>
+                
+                <button class="scenario-start-btn">
+                    Start <i class="bi bi-arrow-right"></i>
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Recent Projects -->
+        <div class="projects-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="bi bi-folder-fill"></i>
+                    Your Recent Projects
+                </h2>
+                <a href="{{ url_for('projects.index') }}" class="btn btn-outline-secondary btn-sm">
+                    View All <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+            
+            {% if projects %}
+            <div class="row">
+                {% for project in projects[:4] %}
+                <div class="col-md-6 col-lg-3 mb-3">
+                    <div class="project-card-mini" onclick="window.location='{{ url_for('projects.detail', project_id=project.id) }}'">
+                        <div class="project-icon-mini">
+                            <i class="bi bi-folder-fill"></i>
+                        </div>
+                        <div class="project-info-mini">
+                            <div class="project-name-mini">{{ project.name }}</div>
+                            <div class="project-date-mini">
+                                {{ project.created_at.strftime('%b %d, %Y') }}
+                            </div>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted"></i>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="bi bi-folder-x"></i>
+                <h3>No Projects Yet</h3>
+                <p>Start with a scenario above or create a custom project</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Mode Switcher (Fixed) -->
+<div class="mode-switcher">
+    <a href="{{ url_for('industry.select_mode') }}" class="mode-switcher-btn text-decoration-none">
+        <i class="{{ profile.icon }}"></i>
+        <span class="text-muted">{{ profile.name }}</span>
+        <i class="bi bi-chevron-up text-muted"></i>
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function startScenario(profileId, scenarioId) {
+    // Show loading state
+    const card = event.currentTarget;
+    const btn = card.querySelector('.scenario-start-btn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Starting...';
+    btn.style.opacity = '1';
+    
+    // Create project and start wizard
+    fetch(`/industry/scenario/${profileId}/${scenarioId}/start`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = data.redirect_url;
+        } else {
+            alert('Error: ' + data.error);
+            btn.innerHTML = originalText;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to start scenario. Please try again.');
+        btn.innerHTML = originalText;
+    });
+}
+</script>
+{% endblock %}
+

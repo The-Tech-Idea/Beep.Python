@@ -1,0 +1,865 @@
+{% extends "base.html" %}
+
+{% block title %}Step {{ step }} - {{ scenario.name }} - Beep ML Studio{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --profile-color: {{ profile.color }};
+    }
+    
+    .wizard-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .wizard-progress {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 3rem;
+        position: relative;
+    }
+    
+    .wizard-progress::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--border-color);
+        transform: translateY(-50%);
+        z-index: 0;
+    }
+    
+    .progress-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .progress-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        background: var(--bg-primary);
+        border: 2px solid var(--border-color);
+        color: var(--text-muted);
+        transition: all 0.3s ease;
+    }
+    
+    .progress-step.completed .progress-circle {
+        background: {{ profile.color }};
+        border-color: {{ profile.color }};
+        color: white;
+    }
+    
+    .progress-step.active .progress-circle {
+        background: white;
+        border-color: {{ profile.color }};
+        color: {{ profile.color }};
+        box-shadow: 0 0 0 4px rgba(var(--profile-color-rgb, 13, 110, 253), 0.2);
+    }
+    
+    .progress-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 0.5rem;
+        max-width: 80px;
+        text-align: center;
+    }
+    
+    .progress-step.completed .progress-label,
+    .progress-step.active .progress-label {
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+    
+    /* Step Content */
+    .step-card {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .step-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .step-icon {
+        width: 60px;
+        height: 60px;
+        background: {{ profile.gradient }};
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+    
+    .step-info h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+    }
+    
+    .step-info p {
+        color: var(--text-secondary);
+        margin: 0;
+    }
+    
+    /* Form Styles */
+    .step-form {
+        margin-top: 1.5rem;
+    }
+    
+    .form-section {
+        margin-bottom: 2rem;
+    }
+    
+    .form-section-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-section-title i {
+        color: {{ profile.color }};
+    }
+    
+    /* File Upload Zone */
+    .upload-zone {
+        border: 2px dashed var(--border-color);
+        border-radius: 12px;
+        padding: 3rem 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: var(--bg-secondary);
+    }
+    
+    .upload-zone:hover {
+        border-color: {{ profile.color }};
+        background: rgba(var(--profile-color-rgb, 13, 110, 253), 0.05);
+    }
+    
+    .upload-zone.dragover {
+        border-color: {{ profile.color }};
+        background: rgba(var(--profile-color-rgb, 13, 110, 253), 0.1);
+    }
+    
+    .upload-zone i {
+        font-size: 3rem;
+        color: {{ profile.color }};
+        margin-bottom: 1rem;
+    }
+    
+    .upload-zone h4 {
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .upload-zone p {
+        color: var(--text-muted);
+        margin: 0;
+    }
+    
+    .upload-zone input[type="file"] {
+        display: none;
+    }
+    
+    .file-selected {
+        background: var(--bg-primary);
+        border: 1px solid var(--success-color, #198754);
+        border-radius: 12px;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .file-selected i {
+        font-size: 2rem;
+        color: var(--success-color, #198754);
+    }
+    
+    /* Column Selector */
+    .column-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 0.75rem;
+        max-height: 300px;
+        overflow-y: auto;
+        padding: 0.5rem;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+    }
+    
+    .column-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .column-item:hover {
+        border-color: {{ profile.color }};
+        background: rgba(var(--profile-color-rgb, 13, 110, 253), 0.05);
+    }
+    
+    .column-item.selected {
+        border-color: {{ profile.color }};
+        background: rgba(var(--profile-color-rgb, 13, 110, 253), 0.1);
+    }
+    
+    .column-item input[type="checkbox"] {
+        accent-color: {{ profile.color }};
+    }
+    
+    .column-name {
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+    
+    .column-type {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-left: auto;
+    }
+    
+    /* Target Selector */
+    .target-selector {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    
+    .target-option {
+        padding: 0.75rem 1.25rem;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .target-option:hover {
+        border-color: {{ profile.color }};
+    }
+    
+    .target-option.selected {
+        border-color: {{ profile.color }};
+        background: {{ profile.gradient }};
+        color: white;
+    }
+    
+    /* Navigation */
+    .step-navigation {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 2rem;
+    }
+    
+    .btn-step {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-back {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+    }
+    
+    .btn-back:hover {
+        background: var(--bg-primary);
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+    
+    .btn-next {
+        background: {{ profile.gradient }};
+        color: white;
+        border: none;
+    }
+    
+    .btn-next:hover {
+        opacity: 0.9;
+        color: white;
+    }
+    
+    .btn-next:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    /* Loading State */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+    
+    .loading-overlay.show {
+        display: flex;
+    }
+    
+    .loading-content {
+        background: white;
+        padding: 2rem 3rem;
+        border-radius: 16px;
+        text-align: center;
+    }
+    
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid {{ profile.color }};
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wizard-container">
+    <!-- Progress Bar -->
+    <div class="wizard-progress">
+        {% for s in scenario.steps %}
+        <div class="progress-step {% if loop.index < step %}completed{% elif loop.index == step %}active{% endif %}">
+            <div class="progress-circle">
+                {% if loop.index < step %}
+                <i class="bi bi-check"></i>
+                {% else %}
+                {{ loop.index }}
+                {% endif %}
+            </div>
+            <div class="progress-label">{{ s.title }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Step Content -->
+    <div class="step-card">
+        <div class="step-header">
+            <div class="step-icon">
+                <i class="{{ scenario.icon }}"></i>
+            </div>
+            <div class="step-info">
+                <h2>Step {{ step }}: {{ current_step.title }}</h2>
+                <p>{{ current_step.description }}</p>
+            </div>
+        </div>
+        
+        <form id="stepForm" class="step-form">
+            <!-- Dynamic content based on step -->
+            {% if step == 1 %}
+            <!-- Step 1: Upload Data -->
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="bi bi-upload"></i>
+                    Upload Your Data
+                </div>
+                
+                <div class="upload-zone" id="uploadZone">
+                    <i class="bi bi-cloud-arrow-up"></i>
+                    <h4>Drag & Drop your file here</h4>
+                    <p>or click to browse (CSV, Excel, JSON)</p>
+                    <input type="file" id="dataFile" name="dataFile" accept=".csv,.xlsx,.xls,.json">
+                </div>
+                
+                <div id="fileInfo" class="file-selected mt-3" style="display: none;">
+                    <i class="bi bi-file-earmark-check"></i>
+                    <div>
+                        <strong id="fileName"></strong>
+                        <div class="text-muted" id="fileSize"></div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger ms-auto" onclick="removeFile()">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+            </div>
+            
+            {% elif step == 2 %}
+            <!-- Step 2: Select Target/Features -->
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="bi bi-bullseye"></i>
+                    Select Target Variable
+                </div>
+                <p class="text-muted mb-3">What do you want to predict?</p>
+                <div id="targetSelector" class="target-selector">
+                    <!-- Populated dynamically -->
+                    <div class="text-muted">Loading columns...</div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="bi bi-list-check"></i>
+                    Select Features (Input Variables)
+                </div>
+                <p class="text-muted mb-3">Which columns should be used for prediction?</p>
+                <div id="featureSelector" class="column-grid">
+                    <!-- Populated dynamically -->
+                    <div class="text-muted">Loading columns...</div>
+                </div>
+            </div>
+            
+            {% elif step == 3 %}
+            <!-- Step 3: Configure Model -->
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="bi bi-gear"></i>
+                    Model Configuration
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Algorithm</label>
+                        <select class="form-select" id="algorithm">
+                            <option value="auto" selected>Auto-select best model</option>
+                            <option value="random_forest">Random Forest</option>
+                            <option value="gradient_boosting">Gradient Boosting</option>
+                            <option value="logistic_regression">Logistic Regression</option>
+                            <option value="svm">Support Vector Machine</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Train/Test Split</label>
+                        <select class="form-select" id="splitRatio">
+                            <option value="0.2" selected>80% Train / 20% Test</option>
+                            <option value="0.3">70% Train / 30% Test</option>
+                            <option value="0.25">75% Train / 25% Test</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" id="autoPreprocess" checked>
+                    <label class="form-check-label" for="autoPreprocess">
+                        Automatically preprocess data (handle missing values, encode categoricals)
+                    </label>
+                </div>
+            </div>
+            
+            {% elif step == 4 %}
+            <!-- Step 4: Train & Evaluate -->
+            <div class="form-section">
+                <div class="form-section-title">
+                    <i class="bi bi-play-circle"></i>
+                    Ready to Train
+                </div>
+                
+                <div class="alert alert-info">
+                    <h5><i class="bi bi-info-circle me-2"></i>Training Summary</h5>
+                    <ul class="mb-0">
+                        <li>Data file: <strong id="summaryFile">-</strong></li>
+                        <li>Target variable: <strong id="summaryTarget">-</strong></li>
+                        <li>Features: <strong id="summaryFeatures">-</strong></li>
+                        <li>Algorithm: <strong id="summaryAlgorithm">Auto-select</strong></li>
+                    </ul>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <button type="button" class="btn btn-lg btn-next" onclick="startTraining()">
+                        <i class="bi bi-lightning-charge me-2"></i>
+                        Start Training
+                    </button>
+                </div>
+                
+                <div id="trainingProgress" style="display: none;" class="mt-4">
+                    <div class="progress mb-2">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%"></div>
+                    </div>
+                    <p class="text-center text-muted" id="trainingStatus">Initializing...</p>
+                </div>
+                
+                <div id="trainingResults" style="display: none;" class="mt-4">
+                    <h5><i class="bi bi-trophy me-2 text-success"></i>Training Complete!</h5>
+                    <div class="row mt-3" id="metricsDisplay">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </form>
+        
+        <!-- Navigation -->
+        <div class="step-navigation">
+            {% if step > 1 %}
+            <a href="{{ url_for('industry.scenario_step', project_id=project.id, step=step-1) }}" class="btn btn-step btn-back">
+                <i class="bi bi-arrow-left"></i>
+                Previous
+            </a>
+            {% else %}
+            <a href="{{ url_for('industry.dashboard', profile_id=profile.id) }}" class="btn btn-step btn-back">
+                <i class="bi bi-x"></i>
+                Cancel
+            </a>
+            {% endif %}
+            
+            {% if step < total_steps %}
+            <button type="button" class="btn btn-step btn-next" id="nextBtn" onclick="nextStep()">
+                Next
+                <i class="bi bi-arrow-right"></i>
+            </button>
+            {% else %}
+            <a href="{{ url_for('projects.detail', project_id=project.id) }}" class="btn btn-step btn-next" id="finishBtn">
+                View Project
+                <i class="bi bi-arrow-right"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <p id="loadingText">Processing...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const projectId = {{ project.id }};
+const currentStep = {{ step }};
+const totalSteps = {{ total_steps }};
+
+// Store wizard state in localStorage
+const wizardState = JSON.parse(localStorage.getItem(`wizard_${projectId}`) || '{}');
+
+// File upload handling
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('dataFile');
+
+if (uploadZone) {
+    uploadZone.addEventListener('click', () => fileInput.click());
+    
+    uploadZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadZone.classList.add('dragover');
+    });
+    
+    uploadZone.addEventListener('dragleave', () => {
+        uploadZone.classList.remove('dragover');
+    });
+    
+    uploadZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadZone.classList.remove('dragover');
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            handleFileSelect(e.dataTransfer.files[0]);
+        }
+    });
+    
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) {
+            handleFileSelect(e.target.files[0]);
+        }
+    });
+}
+
+function handleFileSelect(file) {
+    document.getElementById('fileName').textContent = file.name;
+    document.getElementById('fileSize').textContent = formatFileSize(file.size);
+    document.getElementById('uploadZone').style.display = 'none';
+    document.getElementById('fileInfo').style.display = 'flex';
+    
+    // Save to state
+    wizardState.fileName = file.name;
+    wizardState.file = file;
+    saveState();
+    
+    // Upload file
+    uploadFile(file);
+}
+
+function removeFile() {
+    document.getElementById('uploadZone').style.display = 'block';
+    document.getElementById('fileInfo').style.display = 'none';
+    fileInput.value = '';
+    delete wizardState.fileName;
+    delete wizardState.filePath;
+    saveState();
+}
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+async function uploadFile(file) {
+    showLoading('Uploading file...');
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('destination', 'data');
+    
+    try {
+        const response = await fetch(`/api/v1/projects/${projectId}/upload`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            wizardState.filePath = data.path;
+            saveState();
+            hideLoading();
+        } else {
+            alert('Upload failed: ' + data.error);
+            removeFile();
+            hideLoading();
+        }
+    } catch (error) {
+        console.error('Upload error:', error);
+        alert('Upload failed. Please try again.');
+        removeFile();
+        hideLoading();
+    }
+}
+
+function saveState() {
+    // Don't save the actual file object
+    const stateToSave = { ...wizardState };
+    delete stateToSave.file;
+    localStorage.setItem(`wizard_${projectId}`, JSON.stringify(stateToSave));
+}
+
+function showLoading(text) {
+    document.getElementById('loadingText').textContent = text;
+    document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+async function nextStep() {
+    // Validate current step
+    if (currentStep === 1 && !wizardState.filePath) {
+        alert('Please upload a data file first.');
+        return;
+    }
+    
+    if (currentStep === 2 && !wizardState.targetColumn) {
+        alert('Please select a target variable.');
+        return;
+    }
+    
+    // Navigate to next step
+    window.location.href = `/industry/project/${projectId}/step/${currentStep + 1}`;
+}
+
+// Load columns for step 2
+if (currentStep === 2 && wizardState.filePath) {
+    loadColumns();
+}
+
+async function loadColumns() {
+    try {
+        const response = await fetch(`/api/v1/projects/${projectId}/data-columns?file_path=${encodeURIComponent(wizardState.filePath)}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            renderTargetSelector(data.data.columns);
+            renderFeatureSelector(data.data.columns);
+        }
+    } catch (error) {
+        console.error('Error loading columns:', error);
+    }
+}
+
+function renderTargetSelector(columns) {
+    const container = document.getElementById('targetSelector');
+    if (!container) return;
+    
+    container.innerHTML = columns.map(col => `
+        <div class="target-option ${wizardState.targetColumn === col.name ? 'selected' : ''}" 
+             onclick="selectTarget('${col.name}')">
+            ${col.name}
+        </div>
+    `).join('');
+}
+
+function selectTarget(colName) {
+    wizardState.targetColumn = colName;
+    saveState();
+    
+    // Update UI
+    document.querySelectorAll('.target-option').forEach(el => {
+        el.classList.toggle('selected', el.textContent.trim() === colName);
+    });
+    
+    // Remove from features if selected
+    if (wizardState.featureColumns) {
+        wizardState.featureColumns = wizardState.featureColumns.filter(c => c !== colName);
+        saveState();
+        renderFeatureSelector(wizardState.columns);
+    }
+}
+
+function renderFeatureSelector(columns) {
+    const container = document.getElementById('featureSelector');
+    if (!container) return;
+    
+    wizardState.columns = columns;
+    const selectedFeatures = wizardState.featureColumns || [];
+    
+    container.innerHTML = columns
+        .filter(col => col.name !== wizardState.targetColumn)
+        .map(col => `
+            <div class="column-item ${selectedFeatures.includes(col.name) ? 'selected' : ''}"
+                 onclick="toggleFeature('${col.name}')">
+                <input type="checkbox" ${selectedFeatures.includes(col.name) ? 'checked' : ''}>
+                <span class="column-name">${col.name}</span>
+                <span class="column-type">${col.dtype}</span>
+            </div>
+        `).join('');
+}
+
+function toggleFeature(colName) {
+    if (!wizardState.featureColumns) {
+        wizardState.featureColumns = [];
+    }
+    
+    const index = wizardState.featureColumns.indexOf(colName);
+    if (index > -1) {
+        wizardState.featureColumns.splice(index, 1);
+    } else {
+        wizardState.featureColumns.push(colName);
+    }
+    saveState();
+    
+    // Update UI
+    const item = event.currentTarget;
+    item.classList.toggle('selected');
+    item.querySelector('input').checked = !item.querySelector('input').checked;
+}
+
+// Step 4: Training
+if (currentStep === 4) {
+    // Show summary
+    document.getElementById('summaryFile').textContent = wizardState.fileName || '-';
+    document.getElementById('summaryTarget').textContent = wizardState.targetColumn || '-';
+    document.getElementById('summaryFeatures').textContent = 
+        wizardState.featureColumns ? wizardState.featureColumns.length + ' columns' : '-';
+}
+
+async function startTraining() {
+    document.getElementById('trainingProgress').style.display = 'block';
+    
+    const progressBar = document.querySelector('.progress-bar');
+    const statusText = document.getElementById('trainingStatus');
+    
+    // Simulate progress
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += Math.random() * 10;
+        if (progress > 90) progress = 90;
+        progressBar.style.width = progress + '%';
+    }, 500);
+    
+    try {
+        // Create and execute workflow
+        statusText.textContent = 'Building workflow...';
+        
+        // TODO: Call API to create workflow from wizard settings
+        
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        clearInterval(interval);
+        progressBar.style.width = '100%';
+        statusText.textContent = 'Training complete!';
+        
+        // Show results
+        document.getElementById('trainingResults').style.display = 'block';
+        document.getElementById('metricsDisplay').innerHTML = `
+            <div class="col-md-4">
+                <div class="card text-center p-3">
+                    <h3 class="text-success">85%</h3>
+                    <small class="text-muted">Accuracy</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center p-3">
+                    <h3 class="text-primary">0.82</h3>
+                    <small class="text-muted">F1 Score</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center p-3">
+                    <h3 class="text-info">0.88</h3>
+                    <small class="text-muted">AUC</small>
+                </div>
+            </div>
+        `;
+        
+    } catch (error) {
+        console.error('Training error:', error);
+        clearInterval(interval);
+        statusText.textContent = 'Training failed: ' + error.message;
+    }
+}
+
+// Restore state on page load
+document.addEventListener('DOMContentLoaded', () => {
+    if (currentStep === 1 && wizardState.fileName) {
+        document.getElementById('fileName').textContent = wizardState.fileName;
+        document.getElementById('fileSize').textContent = '';
+        document.getElementById('uploadZone').style.display = 'none';
+        document.getElementById('fileInfo').style.display = 'flex';
+    }
+});
+</script>
+{% endblock %}
+

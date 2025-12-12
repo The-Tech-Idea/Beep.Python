@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Upload ML Model - Beep AI Server{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1><i class="bi bi-upload me-3"></i>Upload ML Model</h1>
+            <p class="text-muted mb-0">Upload and register your Machine Learning model</p>
+        </div>
+        <a href="{{ url_for('ml_models.index') }}" class="btn btn-outline-light">
+            <i class="bi bi-arrow-left me-2"></i>Back to Models
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card animate-fade-in">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-cloud-upload me-2"></i>Model Upload Form</h5>
+            </div>
+            <div class="card-body">
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="modelFile" class="form-label">Model File <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control" id="modelFile" name="file" required accept=".pkl,.joblib,.h5,.pb,.pt,.pth,.onnx,.json">
+                        <small class="form-text text-muted">
+                            Supported formats: .pkl, .joblib (scikit-learn), .h5, .pb (TensorFlow), .pt, .pth (PyTorch), .onnx, .json (XGBoost)
+                        </small>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="modelName" class="form-label">Model Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="modelName" name="name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="modelType" class="form-label">Model Type <span class="text-danger">*</span></label>
+                            <select class="form-select" id="modelType" name="model_type" required>
+                                <option value="sklearn">Scikit-learn</option>
+                                <option value="tensorflow">TensorFlow</option>
+                                <option value="pytorch">PyTorch</option>
+                                <option value="xgboost">XGBoost</option>
+                                <option value="onnx">ONNX</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="framework" class="form-label">Framework</label>
+                            <input type="text" class="form-control" id="framework" name="framework" placeholder="e.g., scikit-learn, tensorflow">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="category" class="form-label">Category</label>
+                            <select class="form-select" id="category" name="category">
+                                <option value="">Select category</option>
+                                <option value="classification">Classification</option>
+                                <option value="regression">Regression</option>
+                                <option value="nlp">Natural Language Processing</option>
+                                <option value="cv">Computer Vision</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="tags" class="form-label">Tags</label>
+                        <input type="text" class="form-control" id="tags" name="tags" placeholder="tag1, tag2, tag3">
+                        <small class="form-text text-muted">Comma-separated tags</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="requirements" class="form-label">Requirements (requirements.txt)</label>
+                        <textarea class="form-control" id="requirements" name="requirements" rows="4" placeholder="scikit-learn==1.3.0&#10;pandas==2.0.0&#10;numpy==1.24.0"></textarea>
+                        <small class="form-text text-muted">List Python package dependencies</small>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="pythonVersion" class="form-label">Python Version</label>
+                            <select class="form-select" id="pythonVersion" name="python_version">
+                                <option value="">Auto-detect</option>
+                                <option value="3.8">Python 3.8</option>
+                                <option value="3.9">Python 3.9</option>
+                                <option value="3.10">Python 3.10</option>
+                                <option value="3.11">Python 3.11</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input" type="checkbox" id="isPublic" name="is_public" value="true">
+                                <label class="form-check-label" for="isPublic">
+                                    Make this model public
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Note:</strong> After upload, your model will be automatically validated. 
+                        You'll be notified when validation is complete.
+                    </div>
+                    
+                    <div id="errorAlert" class="alert alert-danger d-none" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <span id="errorMessage"></span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('ml_models.index') }}" class="btn btn-outline-light">Cancel</a>
+                        <button type="submit" class="btn btn-success" id="uploadBtn">
+                            <i class="bi bi-upload me-2"></i>Upload Model
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="uploadProgressModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark">
+            <div class="modal-header">
+                <h5 class="modal-title">Uploading Model</h5>
+            </div>
+            <div class="modal-body">
+                <div class="progress mb-3">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                </div>
+                <p class="text-center mb-0" id="uploadStatus">Preparing upload...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const uploadBtn = document.getElementById('uploadBtn');
+    const uploadModal = new bootstrap.Modal(document.getElementById('uploadProgressModal'));
+    
+    uploadBtn.disabled = true;
+    uploadModal.show();
+    
+    try {
+        const response = await fetch('{{ url_for("ml_models.upload_model") }}', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            document.getElementById('uploadStatus').textContent = 'Upload successful! Redirecting...';
+            setTimeout(() => {
+                window.location.href = `/ml-models/${result.model_id}`;
+            }, 1500);
+        } else {
+            const errorMsg = result.error || 'Upload failed. Please try again.';
+            document.getElementById('uploadStatus').textContent = `Error: ${errorMsg}`;
+            document.getElementById('errorMessage').textContent = errorMsg;
+            document.getElementById('errorAlert').classList.remove('d-none');
+            uploadBtn.disabled = false;
+            uploadModal.hide();
+        }
+    } catch (error) {
+        const errorMsg = error.message || 'Network error. Please check your connection and try again.';
+        document.getElementById('uploadStatus').textContent = `Error: ${errorMsg}`;
+        document.getElementById('errorMessage').textContent = errorMsg;
+        document.getElementById('errorAlert').classList.remove('d-none');
+        uploadBtn.disabled = false;
+        uploadModal.hide();
+    }
+});
+</script>
+{% endblock %}
+

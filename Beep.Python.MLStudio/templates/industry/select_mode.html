@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}Select Your Industry - Beep ML Studio{% endblock %}
+
+{% block extra_css %}
+<style>
+    .mode-selection-page {
+        min-height: calc(100vh - 200px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+    }
+    
+    .mode-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+    
+    .mode-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+    }
+    
+    .mode-header p {
+        font-size: 1.2rem;
+        color: var(--text-secondary);
+        max-width: 600px;
+    }
+    
+    .mode-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        max-width: 1200px;
+        width: 100%;
+    }
+    
+    .mode-card {
+        background: var(--bg-primary);
+        border: 2px solid var(--border-color);
+        border-radius: 16px;
+        padding: 2rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .mode-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    }
+    
+    .mode-card.active {
+        border-color: var(--theme-primary);
+        box-shadow: 0 0 0 3px rgba(var(--theme-primary-rgb), 0.2);
+    }
+    
+    .mode-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+    }
+    
+    .mode-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: white;
+        margin-bottom: 1.5rem;
+    }
+    
+    .mode-card h3 {
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+    
+    .mode-tagline {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: 1rem;
+        font-weight: 500;
+    }
+    
+    .mode-card p {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+    
+    .mode-features {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .mode-feature {
+        background: var(--bg-secondary);
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+    
+    .current-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: var(--theme-primary);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .scenario-count {
+        position: absolute;
+        bottom: 1rem;
+        right: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+    }
+    
+    /* Mode-specific colors */
+    .mode-card[data-mode="advanced"]::before { background: #6c757d; }
+    .mode-card[data-mode="advanced"] .mode-icon { background: linear-gradient(135deg, #6c757d 0%, #495057 100%); }
+    
+    .mode-card[data-mode="finance"]::before { background: #0d6efd; }
+    .mode-card[data-mode="finance"] .mode-icon { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); }
+    
+    .mode-card[data-mode="petroleum"]::before { background: #fd7e14; }
+    .mode-card[data-mode="petroleum"] .mode-icon { background: linear-gradient(135deg, #fd7e14 0%, #dc3545 100%); }
+    
+    .mode-card[data-mode="healthcare"]::before { background: #dc3545; }
+    .mode-card[data-mode="healthcare"] .mode-icon { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); }
+    
+    .mode-card[data-mode="manufacturing"]::before { background: #198754; }
+    .mode-card[data-mode="manufacturing"] .mode-icon { background: linear-gradient(135deg, #198754 0%, #157347 100%); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mode-selection-page">
+    <div class="mode-header">
+        <h1><i class="bi bi-cpu me-2"></i>Welcome to Beep ML Studio</h1>
+        <p>Choose your industry to get a personalized experience with tailored scenarios, simplified workflows, and domain-specific terminology.</p>
+    </div>
+    
+    <div class="mode-grid">
+        {% for profile in profiles %}
+        <form action="{{ url_for('industry.set_mode', profile_id=profile.id) }}" method="POST" style="display: contents;">
+            <div class="mode-card {% if current_mode == profile.id %}active{% endif %}" 
+                 data-mode="{{ profile.id }}"
+                 onclick="this.closest('form').submit()">
+                
+                {% if current_mode == profile.id %}
+                <span class="current-badge">Current</span>
+                {% endif %}
+                
+                <div class="mode-icon">
+                    <i class="{{ profile.icon }}"></i>
+                </div>
+                
+                <h3>{{ profile.name }}</h3>
+                <div class="mode-tagline">{{ profile.tagline }}</div>
+                <p>{{ profile.description }}</p>
+                
+                {% if profile.scenarios %}
+                <div class="mode-features">
+                    {% for scenario in profile.scenarios[:3] %}
+                    <span class="mode-feature">{{ scenario.name }}</span>
+                    {% endfor %}
+                    {% if profile.scenarios|length > 3 %}
+                    <span class="mode-feature">+{{ profile.scenarios|length - 3 }} more</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                {% if profile.scenarios %}
+                <div class="scenario-count">
+                    <i class="bi bi-lightning-charge"></i>
+                    {{ profile.scenarios|length }} ready-to-use scenarios
+                </div>
+                {% endif %}
+            </div>
+        </form>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+

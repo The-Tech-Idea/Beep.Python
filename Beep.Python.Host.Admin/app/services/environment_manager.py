@@ -232,11 +232,23 @@ class EnvironmentManager:
         if not python_exe.exists():
             raise ValueError(f"Environment '{name}' not found")
         
+        # First upgrade pip, setuptools, and wheel to avoid installation issues
+        try:
+            subprocess.run(
+                [str(python_exe), "-m", "pip", "install", "--upgrade", "pip", "setuptools", "wheel"],
+                capture_output=True,
+                text=True,
+                timeout=120
+            )
+        except Exception as e:
+            # Pip upgrade failed but continue with package installation
+            logger.warning(f"Failed to upgrade pip: {e}")
+        
         result = subprocess.run(
             [str(python_exe), "-m", "pip", "install"] + packages,
             capture_output=True,
             text=True,
-            timeout=300
+            timeout=1800  # 30 minutes timeout for very large packages like TensorFlow
         )
         
         return {

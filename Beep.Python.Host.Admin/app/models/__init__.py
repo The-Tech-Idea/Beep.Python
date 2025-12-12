@@ -29,6 +29,18 @@ from .rag_metadata import (
     SyncJobRun
 )
 
+from .ml_models import (
+    ModelType,
+    ModelStatus,
+    ValidationStatus,
+    MLModel,
+    MLModelVersion,
+    MLModelAPI,
+    MLModelUsageLog,
+    MLModelValidation,
+    MLModelPermission
+)
+
 __all__ = [
     # Core models
     'User',
@@ -51,5 +63,15 @@ __all__ = [
     'DataSource',
     'SyncJobStatus',
     'SyncJob',
-    'SyncJobRun'
+    'SyncJobRun',
+    # ML Model models
+    'ModelType',
+    'ModelStatus',
+    'ValidationStatus',
+    'MLModel',
+    'MLModelVersion',
+    'MLModelAPI',
+    'MLModelUsageLog',
+    'MLModelValidation',
+    'MLModelPermission'
 ]

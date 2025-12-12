@@ -1,0 +1,357 @@
+{% extends "base.html" %}
+
+{% block title %}ML Model Settings - Beep AI Server{% endblock %}
+
+{% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                <i class="bi bi-{{ 'exclamation-triangle' if category == 'error' or category == 'danger' else 'info-circle' if category == 'info' else 'check-circle' }} me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('ml_models.index') }}">ML Models</a></li>
+                    <li class="breadcrumb-item active">Settings</li>
+                </ol>
+            </nav>
+            <h1><i class="bi bi-gear me-3"></i>ML Model Settings</h1>
+            <p class="text-muted mb-0">Manage storage directories and cache settings</p>
+        </div>
+        <a href="{{ url_for('ml_models.index') }}" class="btn btn-outline-light">
+            <i class="bi bi-arrow-left me-2"></i>Back
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Storage Directories -->
+    <div class="col-lg-8">
+        <div class="card animate-fade-in">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-folder me-2"></i>Storage Directories</h5>
+                <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addDirectoryModal">
+                    <i class="bi bi-plus-circle me-1"></i>Add Directory
+                </button>
+            </div>
+            <div class="card-body">
+                {% if directories %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Path</th>
+                                <th>Status</th>
+                                <th>Space</th>
+                                <th>Priority</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for dir in directories %}
+                            <tr>
+                                <td>
+                                    <strong>{{ dir.name }}</strong>
+                                    {% if dir.id == 'default' %}
+                                    <span class="badge bg-primary ms-2">Default</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <code class="text-muted">{{ dir.path }}</code>
+                                </td>
+                                <td>
+                                    {% if dir.enabled %}
+                                    <span class="badge bg-success">Enabled</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Disabled</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        Used: {{ "%.2f"|format(dir.get_used_space_gb()) }} GB
+                                        {% if dir.max_size_gb %}
+                                        / {{ dir.max_size_gb }} GB
+                                        {% else %}
+                                        ({{ "%.2f"|format(dir.get_available_space_gb()) }} GB free)
+                                        {% endif %}
+                                    </small>
+                                </td>
+                                <td>{{ dir.priority }}</td>
+                                <td>
+                                    {% if dir.id != 'default' %}
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteDirectory('{{ dir.id }}')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-3">No directories configured</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- ML Environment -->
+    <div class="col-lg-4">
+        <div class="card animate-fade-in mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-box-seam me-2"></i>ML Environment</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Status:</strong>
+                    <div class="mt-2">
+                        {% if env_status.status == 'ready' %}
+                        <span class="badge bg-success">Ready</span>
+                        {% elif env_status.status == 'created' %}
+                        <span class="badge bg-warning">Created (needs packages)</span>
+                        {% elif env_status.status == 'creating' %}
+                        <span class="badge bg-info">Creating...</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Not Created</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if env_status.exists %}
+                <div class="mb-3">
+                    <small class="text-muted">
+                        <strong>Path:</strong><br>
+                        <code class="small">{{ env_status.python_path or 'N/A' }}</code>
+                    </small>
+                </div>
+                
+                {% if env_status.installed_packages %}
+                <div class="mb-3">
+                    <strong>Installed Packages:</strong>
+                    <div class="mt-2">
+                        <small class="text-muted">{{ env_status.installed_packages|length }} packages</small>
+                        <div class="mt-1">
+                            {% for pkg in env_status.installed_packages[:5] %}
+                            <span class="badge bg-secondary me-1 mb-1">{{ pkg.split('>=')[0].split('==')[0] }}</span>
+                            {% endfor %}
+                            {% if env_status.installed_packages|length > 5 %}
+                            <small class="text-muted">+{{ env_status.installed_packages|length - 5 }} more</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if env_status.status != 'ready' %}
+                <button class="btn btn-primary w-100 mb-2" onclick="setupEnvironment()">
+                    <i class="bi bi-gear me-2"></i>Setup Environment
+                </button>
+                {% endif %}
+                {% else %}
+                <p class="text-muted small mb-3">ML environment not created yet. Setup required for isolated model execution.</p>
+                <a href="{{ url_for('ml_models.environment_page') }}" class="btn btn-success w-100">
+                    <i class="bi bi-plus-circle me-2"></i>Create Environment
+                </a>
+                {% endif %}
+                
+                {% if env_status.error %}
+                <div class="alert alert-danger mt-3">
+                    <small><strong>Error:</strong> {{ env_status.error }}</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Cache Settings -->
+        <div class="card animate-fade-in">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-speedometer2 me-2"></i>Model Cache</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Cache Status:</strong>
+                    <div class="mt-2">
+                        <small class="text-muted">Cached Models: {{ cache_stats.size or 0 }} / {{ cache_stats.max_size or 10 }}</small>
+                    </div>
+                </div>
+                
+                {% if cache_stats.entries %}
+                <div class="mb-3">
+                    <strong>Active Entries:</strong>
+                    <div class="list-group list-group-flush mt-2">
+                        {% for entry in cache_stats.entries[:5] %}
+                        <div class="list-group-item bg-transparent border-0 px-0 py-1">
+                            <small>
+                                {{ entry.model_id[:8] }}...
+                                <span class="text-muted ms-2">({{ entry.use_count }} uses)</span>
+                            </small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <button class="btn btn-warning w-100" onclick="clearCache()">
+                    <i class="bi bi-trash me-2"></i>Clear Cache
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Directory Modal -->
+<div class="modal fade" id="addDirectoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Storage Directory</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addDirectoryForm">
+                    <div class="mb-3">
+                        <label class="form-label">Directory ID</label>
+                        <input type="text" class="form-control" name="id" required>
+                        <small class="form-text text-muted">Unique identifier (e.g., 'secondary', 'backup')</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Path</label>
+                        <input type="text" class="form-control" name="path" required>
+                        <small class="form-text text-muted">Absolute or relative path to storage directory</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Max Size (GB)</label>
+                        <input type="number" class="form-control" name="max_size_gb" step="0.1">
+                        <small class="form-text text-muted">Optional size limit</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Priority</label>
+                        <input type="number" class="form-control" name="priority" value="1">
+                        <small class="form-text text-muted">Lower number = higher priority</small>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="enabled" checked>
+                            <label class="form-check-label">Enabled</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitAddDirectory()">Add Directory</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function clearCache() {
+    if (!confirm('Clear all cached models? This will require reloading models on next use.')) return;
+    
+    fetch('/api/v1/ml-models/settings/cache/clear', {
+        method: 'POST'
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            alert('Cache cleared successfully');
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    });
+}
+
+function setupEnvironment() {
+    if (!confirm('Setup ML environment? This will create a virtual environment and install required packages. This may take several minutes.')) return;
+    
+    const useGpu = confirm('Install GPU-accelerated packages (TensorFlow-GPU, PyTorch with CUDA)?');
+    const installOptional = confirm('Install optional packages (TensorFlow, PyTorch, XGBoost, ONNX Runtime)?');
+    
+    const btn = event.target;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Setting up...';
+    
+    fetch('/api/v1/ml-models/settings/environment/setup', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            install_optional: installOptional,
+            use_gpu: useGpu
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            alert('Environment setup complete!');
+            location.reload();
+        } else {
+            alert('Error: ' + (data.error || 'Setup failed'));
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-gear me-2"></i>Setup Environment';
+        }
+    })
+    .catch(error => {
+        alert('Error: ' + error.message);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-gear me-2"></i>Setup Environment';
+    });
+}
+
+function submitAddDirectory() {
+    const form = document.getElementById('addDirectoryForm');
+    const formData = new FormData(form);
+    const data = {};
+    formData.forEach((value, key) => {
+        if (key === 'enabled') {
+            data[key] = form.querySelector(`[name="${key}"]`).checked;
+        } else if (key === 'max_size_gb' || key === 'priority') {
+            data[key] = value ? parseFloat(value) : null;
+        } else {
+            data[key] = value;
+        }
+    });
+    
+    fetch('/api/v1/ml-models/settings/directories', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    });
+}
+
+function deleteDirectory(dirId) {
+    if (!confirm('Remove this directory from configuration? (Files will not be deleted)')) return;
+    // Implementation needed
+    alert('Directory deletion not yet implemented');
+}
+</script>
+{% endblock %}
+

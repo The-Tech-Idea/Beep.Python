@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}ML Model Hosting - Beep AI Server{% endblock %}
+
+{% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                <i class="bi bi-{{ 'exclamation-triangle' if category == 'error' or category == 'danger' else 'info-circle' if category == 'info' else 'check-circle' }} me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<!-- Environment Status Banner -->
+{% if not env_ready %}
+<div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+    <div class="d-flex align-items-center">
+        <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+        <div class="flex-grow-1">
+            <strong>ML Environment Not Ready</strong>
+            <p class="mb-0 small">The ML virtual environment has not been created yet. Please set up the environment before uploading or using models.</p>
+        </div>
+        <a href="{{ url_for('ml_models.environment_page') }}" class="btn btn-warning ms-3">
+            <i class="bi bi-gear me-2"></i>Setup Environment
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1><i class="bi bi-diagram-3 me-3"></i>ML Model Hosting</h1>
+            <p class="text-muted mb-0">Upload, validate, and host your Machine Learning models as APIs</p>
+        </div>
+        <div>
+            <a href="{{ url_for('ml_models.upload_page') }}" class="btn btn-success {% if not env_ready %}disabled{% endif %}">
+                <i class="bi bi-upload me-2"></i>Upload Model
+            </a>
+            <a href="{{ url_for('ml_models.marketplace') }}" class="btn btn-primary ms-2">
+                <i class="bi bi-shop me-2"></i>Marketplace
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3 animate-fade-in">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted mb-2">Total Models</h6>
+                        <h2 class="mb-0">{{ stats.total_models or 0 }}</h2>
+                    </div>
+                    <div class="stat-icon bg-primary bg-opacity-20 text-primary">
+                        <i class="bi bi-box"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 animate-fade-in" style="animation-delay: 0.1s;">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted mb-2">My Models</h6>
+                        <h2 class="mb-0">{{ stats.my_models or 0 }}</h2>
+                    </div>
+                    <div class="stat-icon bg-success bg-opacity-20 text-success">
+                        <i class="bi bi-person-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 animate-fade-in" style="animation-delay: 0.2s;">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted mb-2">Active Models</h6>
+                        <h2 class="mb-0">{{ stats.active_models or 0 }}</h2>
+                    </div>
+                    <div class="stat-icon bg-info bg-opacity-20 text-info">
+                        <i class="bi bi-play-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 animate-fade-in" style="animation-delay: 0.3s;">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="text-muted mb-2">Validated</h6>
+                        <h2 class="mb-0">{{ stats.validated_models or 0 }}</h2>
+                    </div>
+                    <div class="stat-icon bg-warning bg-opacity-20 text-warning">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- My Models -->
+    <div class="col-lg-8">
+        <div class="card animate-fade-in">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-collection me-2"></i>My Models</h5>
+                <a href="{{ url_for('ml_models.upload_page') }}" class="btn btn-sm btn-success">
+                    <i class="bi bi-plus-circle me-1"></i>Upload
+                </a>
+            </div>
+            <div class="card-body">
+                {% if user_models %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Version</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for model in user_models %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('ml_models.model_detail', model_id=model.id) }}" class="text-decoration-none">
+                                        <strong>{{ model.name }}</strong>
+                                    </a>
+                                    {% if model.is_public %}
+                                    <span class="badge bg-info ms-2">Public</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ model.model_type }}</span>
+                                    {% if model.framework %}
+                                    <small class="text-muted ms-1">{{ model.framework }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if model.validation_status == 'passed' %}
+                                    <span class="badge bg-success">Validated</span>
+                                    {% elif model.validation_status == 'failed' %}
+                                    <span class="badge bg-danger">Failed</span>
+                                    {% elif model.validation_status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ model.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ model.version }}</td>
+                                <td>
+                                    <small class="text-muted">{{ model.created_at[:10] if model.created_at else 'N/A' }}</small>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('ml_models.model_detail', model_id=model.id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox" style="font-size: 3rem; color: rgba(255,255,255,0.3);"></i>
+                    <p class="text-muted mt-3">No models uploaded yet</p>
+                    <a href="{{ url_for('ml_models.upload_page') }}" class="btn btn-primary">
+                        <i class="bi bi-upload me-2"></i>Upload Your First Model
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Public Models -->
+    <div class="col-lg-4">
+        <div class="card animate-fade-in">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-globe me-2"></i>Public Models</h5>
+            </div>
+            <div class="card-body">
+                {% if public_models %}
+                <div class="list-group list-group-flush">
+                    {% for model in public_models[:10] %}
+                    <a href="{{ url_for('ml_models.model_detail', model_id=model.id) }}" class="list-group-item list-group-item-action bg-transparent border-0">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">{{ model.name }}</h6>
+                                <small class="text-muted">{{ model.model_type }} • {{ model.category or 'General' }}</small>
+                            </div>
+                            {% if model.validation_status == 'passed' %}
+                            <span class="badge bg-success">✓</span>
+                            {% endif %}
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-3">No public models available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

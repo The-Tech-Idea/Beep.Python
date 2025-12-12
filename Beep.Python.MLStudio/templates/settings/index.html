@@ -1,0 +1,581 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Beep ML Studio{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/themes.css') }}">
+<style>
+    .settings-container {
+        max-width: 1200px;
+    }
+    
+    .settings-category {
+        margin-bottom: 2rem;
+    }
+    
+    .settings-category-header {
+        background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-dark) 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        margin-bottom: 0;
+    }
+    
+    .settings-table {
+        background: var(--bg-primary);
+        border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+    }
+    
+    .settings-table table {
+        margin-bottom: 0;
+    }
+    
+    .settings-table td {
+        vertical-align: middle;
+        padding: 1rem;
+    }
+    
+    .settings-table tr:not(:last-child) td {
+        border-bottom: 1px solid var(--border-color-light);
+    }
+    
+    .setting-key {
+        font-weight: 600;
+        color: var(--text-primary);
+        min-width: 200px;
+    }
+    
+    .setting-description {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+    
+    .setting-value {
+        min-width: 300px;
+    }
+    
+    .theme-preview {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .theme-option {
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius);
+        padding: 1rem;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        text-align: center;
+    }
+    
+    .theme-option:hover {
+        border-color: var(--theme-primary);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .theme-option.active {
+        border-color: var(--theme-primary);
+        background-color: var(--bg-secondary);
+        box-shadow: var(--shadow);
+    }
+    
+    .theme-preview-box {
+        width: 100%;
+        height: 60px;
+        border-radius: var(--radius-sm);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+    }
+    
+    .theme-preview-box.light { background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); color: #212529; }
+    .theme-preview-box.dark { background: linear-gradient(135deg, #1a1d20 0%, #212529 100%); }
+    .theme-preview-box.blue { background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); }
+    .theme-preview-box.green { background: linear-gradient(135deg, #28a745 0%, #218838 100%); }
+    .theme-preview-box.purple { background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%); }
+    .theme-preview-box.orange { background: linear-gradient(135deg, #fd7e14 0%, #e66a00 100%); }
+    
+    #environments-tbody td {
+        vertical-align: middle;
+    }
+    
+    #environments-tbody .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .alert {
+        margin-top: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container settings-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="bi bi-gear-fill" style="color: var(--theme-primary);"></i> Settings</h1>
+            <p class="text-muted">Manage application configuration and preferences</p>
+        </div>
+        <div>
+            <button class="btn btn-outline-secondary" onclick="resetAllSettings()">
+                <i class="bi bi-arrow-counterclockwise"></i> Reset to Defaults
+            </button>
+        </div>
+    </div>
+    
+    <!-- Theme Settings Section -->
+    <div class="settings-category">
+        <div class="settings-category-header">
+            <h5 class="mb-0">
+                <i class="bi bi-palette"></i> Theme & Appearance
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <label class="form-label fw-bold">Select Theme</label>
+                <p class="text-muted small">Choose a theme that suits your preference. Changes are applied immediately.</p>
+                <div class="theme-preview" id="theme-preview">
+                    <!-- Theme options will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Virtual Environments Section -->
+    <div class="settings-category">
+        <div class="settings-category-header">
+            <h5 class="mb-0">
+                <i class="bi bi-box"></i> Virtual Environments
+            </h5>
+        </div>
+        <div class="settings-table">
+            <div class="p-3">
+                <p class="text-muted small mb-3">Manage Python virtual environments. Deleting an environment will also delete any linked projects if selected.</p>
+                <div id="environments-loading" class="text-center py-3">
+                    <div class="spinner-border spinner-border-sm" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <span class="ms-2">Loading environments...</span>
+                </div>
+                <div id="environments-list" class="d-none">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Environment Name</th>
+                                <th>Python Version</th>
+                                <th>Packages</th>
+                                <th>Size</th>
+                                <th>Linked Project</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="environments-tbody">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="environments-empty" class="d-none text-center py-4 text-muted">
+                    <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                    <p class="mt-2">No virtual environments found</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Settings Form -->
+    <form method="POST" action="{{ url_for('settings.save') }}" id="settingsForm">
+        {% for category in categories %}
+        <div class="settings-category">
+            <div class="settings-category-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-{{ 'folder' if category == 'paths' else 'cpu' if category == 'environment' else 'diagram-3' if category == 'ml' else 'palette' if category == 'ui' else 'sliders' }}"></i>
+                    {{ category|title }} Settings
+                </h5>
+            </div>
+            <div class="settings-table">
+                <table class="table table-hover mb-0">
+                    <tbody>
+                        {% for setting in settings_by_category[category] %}
+                        <tr>
+                            <td class="setting-key">
+                                <div>{{ setting.key }}</div>
+                                <small class="setting-description">{{ setting.description or 'No description' }}</small>
+                            </td>
+                            <td class="setting-value">
+                                {% if setting.value_type == 'boolean' %}
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" 
+                                               type="checkbox" 
+                                               id="setting_{{ setting.key }}" 
+                                               name="setting_{{ setting.key }}"
+                                               value="true"
+                                               {{ 'checked' if setting.get_value() else '' }}>
+                                        <label class="form-check-label" for="setting_{{ setting.key }}">
+                                            {{ 'Enabled' if setting.get_value() else 'Disabled' }}
+                                        </label>
+                                    </div>
+                                {% elif setting.value_type == 'number' %}
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="setting_{{ setting.key }}" 
+                                           name="setting_{{ setting.key }}"
+                                           value="{{ setting.get_value() }}"
+                                           step="{{ '0.01' if '.' in setting.value else '1' }}">
+                                {% elif setting.value_type == 'path' %}
+                                    <div class="input-group">
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="setting_{{ setting.key }}" 
+                                               name="setting_{{ setting.key }}"
+                                               value="{{ setting.get_value() }}">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="browsePath('{{ setting.key }}')">
+                                            <i class="bi bi-folder"></i>
+                                        </button>
+                                    </div>
+                                {% elif setting.key == 'theme' %}
+                                    <select class="form-select" id="setting_{{ setting.key }}" name="setting_{{ setting.key }}">
+                                        <option value="light" {{ 'selected' if setting.get_value() == 'light' else '' }}>Light</option>
+                                        <option value="dark" {{ 'selected' if setting.get_value() == 'dark' else '' }}>Dark</option>
+                                    </select>
+                                {% elif setting.key == 'log_level' %}
+                                    <select class="form-select" id="setting_{{ setting.key }}" name="setting_{{ setting.key }}">
+                                        <option value="DEBUG" {{ 'selected' if setting.get_value() == 'DEBUG' else '' }}>DEBUG</option>
+                                        <option value="INFO" {{ 'selected' if setting.get_value() == 'INFO' else '' }}>INFO</option>
+                                        <option value="WARNING" {{ 'selected' if setting.get_value() == 'WARNING' else '' }}>WARNING</option>
+                                        <option value="ERROR" {{ 'selected' if setting.get_value() == 'ERROR' else '' }}>ERROR</option>
+                                    </select>
+                                {% elif setting.key == 'default_framework' %}
+                                    <select class="form-select" id="setting_{{ setting.key }}" name="setting_{{ setting.key }}">
+                                        <option value="scikit-learn" {{ 'selected' if setting.get_value() == 'scikit-learn' else '' }}>Scikit-learn</option>
+                                        <option value="tensorflow" {{ 'selected' if setting.get_value() == 'tensorflow' else '' }}>TensorFlow</option>
+                                        <option value="pytorch" {{ 'selected' if setting.get_value() == 'pytorch' else '' }}>PyTorch</option>
+                                        <option value="xgboost" {{ 'selected' if setting.get_value() == 'xgboost' else '' }}>XGBoost</option>
+                                        <option value="lightgbm" {{ 'selected' if setting.get_value() == 'lightgbm' else '' }}>LightGBM</option>
+                                    </select>
+                                {% elif setting.key == 'environment_manager_type' %}
+                                    <select class="form-select" id="setting_{{ setting.key }}" name="setting_{{ setting.key }}">
+                                        <option value="local" {{ 'selected' if setting.get_value() == 'local' else '' }}>Local</option>
+                                        <option value="host_admin" {{ 'selected' if setting.get_value() == 'host_admin' else '' }}>Host Admin</option>
+                                    </select>
+                                {% else %}
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="setting_{{ setting.key }}" 
+                                           name="setting_{{ setting.key }}"
+                                           value="{{ setting.get_value() }}"
+                                           {{ 'readonly' if setting.is_encrypted else '' }}
+                                           placeholder="{{ setting.description or 'Enter value' }}">
+                                    {% if setting.is_encrypted %}
+                                    <small class="text-muted">Encrypted - value hidden for security</small>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary badge-category">{{ setting.value_type }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <div class="d-flex justify-content-end gap-2 mb-4">
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-secondary">
+                <i class="bi bi-x-circle"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> Save All Settings
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Reset Confirmation Modal -->
+<div class="modal fade" id="resetModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reset Settings</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to reset all settings to their default values? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="confirmReset()">Reset to Defaults</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Environment Confirmation Modal -->
+<div class="modal fade" id="deleteEnvModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Virtual Environment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="deleteEnvModalBody">
+                <!-- Populated by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteEnvBtn" onclick="confirmDeleteEnvironment()">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize theme preview
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.themeManager) {
+            const previewContainer = document.getElementById('theme-preview');
+            const themes = window.themeManager.getAvailableThemes();
+            const currentTheme = window.themeManager.getCurrentTheme();
+            
+            themes.forEach(theme => {
+                const option = document.createElement('div');
+                option.className = `theme-option ${theme === currentTheme ? 'active' : ''}`;
+                option.setAttribute('data-theme', theme);
+                option.innerHTML = `
+                    <div class="theme-preview-box ${theme}">${theme.charAt(0).toUpperCase() + theme.slice(1)}</div>
+                    <small class="text-muted">${theme.charAt(0).toUpperCase() + theme.slice(1)} Theme</small>
+                `;
+                option.addEventListener('click', () => {
+                    window.themeManager.applyTheme(theme);
+                    // Update active state
+                    document.querySelectorAll('.theme-option').forEach(opt => opt.classList.remove('active'));
+                    option.classList.add('active');
+                });
+                previewContainer.appendChild(option);
+            });
+        }
+    });
+    
+    function resetAllSettings() {
+        const modal = new bootstrap.Modal(document.getElementById('resetModal'));
+        modal.show();
+    }
+    
+    function confirmReset() {
+        fetch('/api/v1/settings/reset', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error resetting settings');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error resetting settings');
+        });
+    }
+    
+    function browsePath(settingKey) {
+        // For path selection, we'll use a simple prompt
+        // In a real implementation, you might use a file browser dialog
+        const currentValue = document.getElementById(`setting_${settingKey}`).value;
+        const newPath = prompt('Enter path:', currentValue);
+        if (newPath !== null) {
+            document.getElementById(`setting_${settingKey}`).value = newPath;
+        }
+    }
+    
+    // Update checkbox labels
+    document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const label = this.nextElementSibling;
+            label.textContent = this.checked ? 'Enabled' : 'Disabled';
+        });
+    });
+    
+    // Load and display environments
+    let currentDeleteEnvName = null;
+    let currentDeleteProject = false;
+    
+    function loadEnvironments() {
+        fetch('/settings/environments')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('environments-loading').classList.add('d-none');
+                
+                if (data.success && data.data && data.data.length > 0) {
+                    document.getElementById('environments-list').classList.remove('d-none');
+                    renderEnvironments(data.data);
+                } else {
+                    document.getElementById('environments-empty').classList.remove('d-none');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading environments:', error);
+                document.getElementById('environments-loading').innerHTML = 
+                    '<div class="alert alert-danger">Error loading environments</div>';
+            });
+    }
+    
+    function renderEnvironments(environments) {
+        const tbody = document.getElementById('environments-tbody');
+        tbody.innerHTML = '';
+        
+        environments.forEach(env => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <strong>${env.name}</strong>
+                    <br><small class="text-muted">${env.path}</small>
+                </td>
+                <td>${env.python_version || 'N/A'}</td>
+                <td>${env.packages_count || 0} packages</td>
+                <td>${env.size_mb ? env.size_mb.toFixed(2) + ' MB' : 'N/A'}</td>
+                <td>
+                    ${env.linked_project 
+                        ? `<a href="/projects/${env.linked_project.id}" class="text-decoration-none">
+                             <i class="bi bi-folder"></i> ${env.linked_project.name}
+                           </a>`
+                        : '<span class="text-muted">None</span>'}
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-danger" onclick="deleteEnvironment('${env.name}', ${env.linked_project ? JSON.stringify(env.linked_project).replace(/"/g, '&quot;') : 'null'})">
+                        <i class="bi bi-trash"></i> Delete
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+    
+    function deleteEnvironment(envName, linkedProject) {
+        currentDeleteEnvName = envName;
+        currentDeleteProject = false;
+        
+        const modalBody = document.getElementById('deleteEnvModalBody');
+        const confirmBtn = document.getElementById('confirmDeleteEnvBtn');
+        
+        // Reset button state when opening modal
+        confirmBtn.disabled = false;
+        
+        if (linkedProject) {
+            modalBody.innerHTML = `
+                <p><strong>Warning:</strong> This environment is linked to project "<strong>${linkedProject.name}</strong>".</p>
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" id="deleteProjectCheck">
+                    <label class="form-check-label" for="deleteProjectCheck">
+                        Also delete linked project "${linkedProject.name}"
+                    </label>
+                </div>
+                <p class="text-danger mt-3"><small>This action cannot be undone!</small></p>
+            `;
+            confirmBtn.textContent = 'Delete Environment';
+            
+            // Add event listener to checkbox after it's created
+            setTimeout(() => {
+                const checkbox = document.getElementById('deleteProjectCheck');
+                if (checkbox) {
+                    checkbox.addEventListener('change', function() {
+                        currentDeleteProject = this.checked;
+                        console.log('Delete project checkbox changed:', currentDeleteProject);
+                    });
+                }
+            }, 100);
+        } else {
+            modalBody.innerHTML = `
+                <p>Are you sure you want to delete environment "<strong>${envName}</strong>"?</p>
+                <p class="text-danger"><small>This action cannot be undone!</small></p>
+            `;
+            confirmBtn.textContent = 'Delete';
+        }
+        
+        const modal = new bootstrap.Modal(document.getElementById('deleteEnvModal'));
+        modal.show();
+    }
+    
+    function confirmDeleteEnvironment() {
+        if (!currentDeleteEnvName) return;
+        
+        // Get checkbox state directly in case the variable wasn't updated
+        const checkbox = document.getElementById('deleteProjectCheck');
+        if (checkbox) {
+            currentDeleteProject = checkbox.checked;
+        }
+        
+        console.log('Deleting environment:', currentDeleteEnvName);
+        console.log('Delete project:', currentDeleteProject);
+        
+        const confirmBtn = document.getElementById('confirmDeleteEnvBtn');
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
+        
+        fetch(`/settings/environments/${currentDeleteEnvName}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                delete_project: currentDeleteProject
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Always reset button state
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = 'Delete';
+            
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('deleteEnvModal')).hide();
+                // Reset state variables
+                currentDeleteEnvName = null;
+                currentDeleteProject = false;
+                
+                // Reload environments list
+                document.getElementById('environments-list').classList.add('d-none');
+                document.getElementById('environments-loading').classList.remove('d-none');
+                document.getElementById('environments-loading').innerHTML = 
+                    '<div class="spinner-border spinner-border-sm" role="status"></div> <span class="ms-2">Loading environments...</span>';
+                loadEnvironments();
+                
+                // Show success message
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                alertDiv.innerHTML = data.message + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+                document.querySelector('.settings-container').insertBefore(alertDiv, document.querySelector('.settings-container').firstChild);
+            } else {
+                alert('Error: ' + (data.error || 'Failed to delete environment'));
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting environment:', error);
+            alert('Error deleting environment: ' + error.message);
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = 'Delete';
+        });
+    }
+    
+    // Load environments on page load
+    loadEnvironments();
+</script>
+{% endblock %}
+

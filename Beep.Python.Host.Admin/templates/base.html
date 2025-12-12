@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Beep.Python Admin{% endblock %}</title>
+    <title>{% block title %}Beep AI Server{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='logo-16.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='logo-32.png') }}">
     
     <!-- Bootstrap 5.3 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -283,8 +288,11 @@
     <!-- Sidebar -->
     <nav class="sidebar">
         <div class="sidebar-brand">
-            <h4><i class="bi bi-cpu me-2"></i>Beep.Python</h4>
-            <small class="text-muted">Environment Manager</small>
+            <div class="d-flex align-items-center mb-2">
+                <img src="{{ url_for('static', filename='logo-32.png') }}" alt="TheTechIdea" class="me-2" style="width: 32px; height: 32px;">
+                <h4 class="mb-0"><i class="bi bi-cpu me-2"></i>Beep AI Server</h4>
+            </div>
+            <small class="text-muted">TheTechIdea | AI & ML Platform</small>
         </div>
         
         <div class="sidebar-nav">
@@ -346,6 +354,24 @@
             <a href="{{ url_for('llm.settings') }}" class="nav-link {% if request.endpoint == 'llm.settings' %}active{% endif %}">
                 <i class="bi bi-gear-wide-connected"></i>
                 LLM Settings
+            </a>
+            
+            <div class="nav-section">ML Models</div>
+            <a href="{{ url_for('ml_models.index') }}" class="nav-link {% if request.endpoint == 'ml_models.index' %}active{% endif %}">
+                <i class="bi bi-diagram-3"></i>
+                ML Model Hosting
+            </a>
+            <a href="{{ url_for('ml_models.environment_page') }}" class="nav-link {% if request.endpoint == 'ml_models.environment_page' %}active{% endif %}">
+                <i class="bi bi-box-seam"></i>
+                ML Environment
+            </a>
+            <a href="{{ url_for('ml_models.marketplace') }}" class="nav-link {% if request.endpoint == 'ml_models.marketplace' %}active{% endif %}">
+                <i class="bi bi-shop"></i>
+                Model Marketplace
+            </a>
+            <a href="{{ url_for('ml_models.settings') }}" class="nav-link {% if request.endpoint == 'ml_models.settings' %}active{% endif %}">
+                <i class="bi bi-gear"></i>
+                ML Settings
             </a>
             
             <div class="nav-section">System</div>

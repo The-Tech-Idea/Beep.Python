@@ -1,0 +1,12 @@
+{
+  "env_name": "ml_models_env",
+  "status": "ready",
+  "installed_packages": [
+    "numpy>=1.20.0",
+    "scipy>=1.7.0",
+    "pandas>=1.3.0",
+    "scikit-learn>=1.0.0",
+    "joblib>=1.0.0"
+  ],
+  "updated_at": "2025-12-12T14:37:53.949123"
+}

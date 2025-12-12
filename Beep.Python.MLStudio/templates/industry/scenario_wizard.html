@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+
+{% block title %}{{ scenario.name }} - {{ profile.name }} - Beep ML Studio{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --profile-color: {{ profile.color }};
+    }
+    
+    .wizard-page {
+        min-height: calc(100vh - 150px);
+        padding: 2rem;
+    }
+    
+    .wizard-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+    
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        margin-bottom: 1.5rem;
+    }
+    
+    .back-link:hover {
+        color: {{ profile.color }};
+    }
+    
+    .scenario-icon-large {
+        width: 80px;
+        height: 80px;
+        background: {{ profile.gradient }};
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2.5rem;
+        margin: 0 auto 1.5rem;
+    }
+    
+    .wizard-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .wizard-description {
+        font-size: 1.1rem;
+        color: var(--text-secondary);
+        max-width: 600px;
+        margin: 0 auto 1.5rem;
+    }
+    
+    .wizard-meta {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-muted);
+    }
+    
+    .meta-item i {
+        color: {{ profile.color }};
+    }
+    
+    /* Steps Preview */
+    .steps-overview {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .steps-timeline {
+        position: relative;
+        padding-left: 40px;
+    }
+    
+    .steps-timeline::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--border-color);
+    }
+    
+    .step-item {
+        position: relative;
+        padding: 1.5rem;
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        margin-bottom: 1rem;
+    }
+    
+    .step-item::before {
+        content: '';
+        position: absolute;
+        left: -33px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 16px;
+        height: 16px;
+        background: white;
+        border: 3px solid {{ profile.color }};
+        border-radius: 50%;
+    }
+    
+    .step-number {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: {{ profile.color }};
+        text-transform: uppercase;
+        margin-bottom: 0.25rem;
+    }
+    
+    .step-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .step-description {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+    
+    /* Start Button */
+    .start-section {
+        text-align: center;
+        margin-top: 2rem;
+    }
+    
+    .btn-start {
+        background: {{ profile.gradient }};
+        color: white;
+        border: none;
+        padding: 1rem 3rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-start:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        color: white;
+    }
+    
+    .btn-start i {
+        font-size: 1.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wizard-page">
+    <div class="container">
+        <a href="{{ url_for('industry.dashboard', profile_id=profile.id) }}" class="back-link">
+            <i class="bi bi-arrow-left"></i>
+            Back to {{ profile.name }}
+        </a>
+        
+        <div class="wizard-header">
+            <div class="scenario-icon-large">
+                <i class="{{ scenario.icon }}"></i>
+            </div>
+            <h1 class="wizard-title">{{ scenario.name }}</h1>
+            <p class="wizard-description">{{ scenario.description }}</p>
+            
+            <div class="wizard-meta">
+                <div class="meta-item">
+                    <i class="bi bi-speedometer2"></i>
+                    <span class="difficulty-badge difficulty-{{ scenario.difficulty }}">{{ scenario.difficulty }}</span>
+                </div>
+                <div class="meta-item">
+                    <i class="bi bi-clock"></i>
+                    <span>{{ scenario.estimated_time }}</span>
+                </div>
+                <div class="meta-item">
+                    <i class="bi bi-list-check"></i>
+                    <span>{{ scenario.steps|length }} steps</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="steps-overview">
+            <h5 class="text-muted mb-4 text-center">What you'll do:</h5>
+            
+            <div class="steps-timeline">
+                {% for step in scenario.steps %}
+                <div class="step-item">
+                    <div class="step-number">Step {{ step.step }}</div>
+                    <div class="step-title">{{ step.title }}</div>
+                    <div class="step-description">{{ step.description }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="start-section">
+                <button class="btn btn-start" onclick="startScenario()">
+                    <i class="bi bi-play-fill"></i>
+                    Let's Get Started
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function startScenario() {
+    const btn = document.querySelector('.btn-start');
+    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Creating project...';
+    btn.disabled = true;
+    
+    fetch('/industry/scenario/{{ profile.id }}/{{ scenario.id }}/start', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = data.redirect_url;
+        } else {
+            alert('Error: ' + data.error);
+            btn.innerHTML = '<i class="bi bi-play-fill"></i> Let\'s Get Started';
+            btn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to create project. Please try again.');
+        btn.innerHTML = '<i class="bi bi-play-fill"></i> Let\'s Get Started';
+        btn.disabled = false;
+    });
+}
+</script>
+{% endblock %}
+
