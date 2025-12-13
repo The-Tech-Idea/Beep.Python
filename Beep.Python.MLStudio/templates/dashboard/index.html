@@ -3,15 +3,16 @@
 {% block title %}Dashboard - Beep ML Studio{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/themes.css') }}">
 <style>
-    /* Industry Mode Selector */
+    /* Industry Mode Selector - Terminal Style */
     .industry-selector {
-        background: var(--bg-primary);
+        background: var(--bg-surface);
         border-radius: var(--radius-lg);
         padding: 1.5rem;
         margin-bottom: 2rem;
         border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-md);
+        font-family: var(--font-mono);
     }
     
     .industry-selector-header {
@@ -51,23 +52,26 @@
     
     .industry-card {
         flex: 0 0 260px;
-        background: var(--bg-primary);
+        background: var(--bg-surface);
         border: 2px solid var(--border-color);
-        border-radius: 12px;
+        border-radius: var(--radius-lg);
         padding: 1.25rem;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all var(--transition-duration) var(--transition-easing);
         position: relative;
+        font-family: var(--font-mono);
     }
     
     .industry-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        box-shadow: 0 0 15px var(--theme-primary-transparent);
+        border-color: var(--theme-primary);
     }
     
     .industry-card.active {
         border-color: var(--theme-primary);
-        background: linear-gradient(135deg, rgba(var(--theme-primary-rgb), 0.05) 0%, rgba(var(--theme-primary-rgb), 0.02) 100%);
+        background: var(--bg-surface-elevated);
+        box-shadow: 0 0 20px var(--theme-primary-transparent);
     }
     
     .industry-card-header {
@@ -98,11 +102,13 @@
         font-weight: 600;
         font-size: 1rem;
         color: var(--text-primary);
+        font-family: var(--font-heading);
     }
     
     .industry-card-title small {
         color: var(--text-secondary);
         font-size: 0.8rem;
+        font-family: var(--font-mono);
     }
     
     .industry-card p {
@@ -114,6 +120,7 @@
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
+        font-family: var(--font-mono);
     }
     
     .industry-scenarios {
@@ -123,11 +130,13 @@
     }
     
     .scenario-tag {
-        background: var(--bg-secondary);
+        background: var(--bg-surface-elevated);
+        border: 1px solid var(--border-color);
         padding: 0.2rem 0.5rem;
-        border-radius: 12px;
+        border-radius: var(--radius-sm);
         font-size: 0.7rem;
         color: var(--text-secondary);
+        font-family: var(--font-mono);
     }
     
     .current-badge {
@@ -135,11 +144,13 @@
         top: 0.75rem;
         right: 0.75rem;
         background: var(--theme-primary);
-        color: white;
+        color: var(--text-on-primary);
         padding: 0.15rem 0.5rem;
-        border-radius: 12px;
+        border-radius: var(--radius-sm);
         font-size: 0.65rem;
         font-weight: 600;
+        font-family: var(--font-mono);
+        box-shadow: 0 0 10px var(--theme-primary-transparent);
     }
     
     .scenario-count-badge {
@@ -149,37 +160,37 @@
         display: flex;
         align-items: center;
         gap: 0.3rem;
-        color: var(--text-muted);
+        color: var(--text-secondary);
         font-size: 0.75rem;
+        font-family: var(--font-mono);
     }
     
-    /* Industry-specific colors */
-    .industry-card[data-mode="advanced"] .industry-icon { background: linear-gradient(135deg, #6c757d 0%, #495057 100%); }
-    .industry-card[data-mode="finance"] .industry-icon { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); }
-    .industry-card[data-mode="petroleum"] .industry-icon { background: linear-gradient(135deg, #fd7e14 0%, #dc3545 100%); }
-    .industry-card[data-mode="healthcare"] .industry-icon { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); }
-    .industry-card[data-mode="manufacturing"] .industry-icon { background: linear-gradient(135deg, #198754 0%, #157347 100%); }
+    /* Industry-specific colors - Use theme variables */
+    .industry-card[data-mode="advanced"] .industry-icon { background: linear-gradient(135deg, var(--text-secondary) 0%, var(--border-color) 100%); }
+    .industry-card[data-mode="finance"] .industry-icon { background: linear-gradient(135deg, var(--theme-info) 0%, var(--theme-secondary) 100%); }
+    .industry-card[data-mode="petroleum"] .industry-icon { background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-success) 100%); }
+    .industry-card[data-mode="healthcare"] .industry-icon { background: linear-gradient(135deg, var(--theme-tertiary) 0%, var(--theme-primary) 100%); }
+    .industry-card[data-mode="manufacturing"] .industry-icon { background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-info) 100%); }
     
-    .industry-card[data-mode="advanced"].active { border-color: #6c757d; }
-    .industry-card[data-mode="finance"].active { border-color: #0d6efd; }
-    .industry-card[data-mode="petroleum"].active { border-color: #fd7e14; }
-    .industry-card[data-mode="healthcare"].active { border-color: #dc3545; }
-    .industry-card[data-mode="manufacturing"].active { border-color: #198754; }
+    .industry-card[data-mode="advanced"].active { border-color: var(--text-secondary); }
+    .industry-card[data-mode="finance"].active { border-color: var(--theme-info); }
+    .industry-card[data-mode="petroleum"].active { border-color: var(--theme-primary); }
+    .industry-card[data-mode="healthcare"].active { border-color: var(--theme-tertiary); }
+    .industry-card[data-mode="manufacturing"].active { border-color: var(--theme-primary); }
 
-    /* Welcome Banner */
+    /* Welcome Banner - Terminal Style */
     .welcome-banner {
-        {% if current_profile and current_profile.id != 'advanced' %}
-        background: {{ current_profile.gradient }};
-        {% else %}
-        background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-dark) 100%);
-        {% endif %}
-        color: var(--text-light);
+        /* Always use terminal theme colors, not industry-specific colors */
+        background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%);
+        color: var(--text-on-primary);
         padding: 2rem 2rem;
         border-radius: var(--radius-lg);
         margin-bottom: 1.5rem;
-        box-shadow: var(--shadow-lg);
+        box-shadow: 0 0 30px var(--theme-primary-transparent), var(--shadow-lg);
         position: relative;
         overflow: hidden;
+        border: 1px solid var(--theme-primary);
+        font-family: var(--font-mono);
     }
     
     .welcome-banner::before {
@@ -189,7 +200,7 @@
         right: -10%;
         width: 300px;
         height: 300px;
-        background: rgba(255,255,255,0.1);
+        background: var(--theme-primary-transparent);
         border-radius: 50%;
     }
     
@@ -200,7 +211,7 @@
         right: 10%;
         width: 200px;
         height: 200px;
-        background: rgba(255,255,255,0.05);
+        background: var(--theme-primary-transparent);
         border-radius: 50%;
     }
     
@@ -213,41 +224,55 @@
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        background: rgba(255,255,255,0.2);
+        background: var(--theme-primary-transparent);
         padding: 0.35rem 0.75rem;
         border-radius: 20px;
         font-size: 0.85rem;
         margin-bottom: 0.75rem;
     }
     
-    /* Stats Cards */
+    /* Stats Cards - Terminal Style */
     .stat-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
         border-left: 4px solid var(--theme-primary);
-        transition: all var(--transition);
+        border-radius: var(--radius-lg);
+        transition: all var(--transition-duration) var(--transition-easing);
+        font-family: var(--font-mono);
+        box-shadow: var(--shadow-sm);
     }
     
     .stat-card:hover {
         transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
+        box-shadow: 0 0 15px var(--theme-primary-transparent);
+        border-color: var(--theme-primary);
     }
     
-    /* Project Cards */
+    /* Project Cards - Terminal Style */
     .project-card {
-        transition: all var(--transition);
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        transition: all var(--transition-duration) var(--transition-easing);
         cursor: pointer;
         height: 100%;
+        font-family: var(--font-mono);
+        box-shadow: var(--shadow-sm);
     }
     
     .project-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        box-shadow: 0 0 20px var(--theme-primary-transparent);
+        border-color: var(--theme-primary);
     }
     
-    /* Quick Actions */
+    /* Quick Actions - Terminal Style */
     .quick-actions {
-        background: var(--bg-secondary);
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
         border-radius: var(--radius-lg);
         padding: 1.5rem;
+        box-shadow: var(--shadow-md);
     }
     
     .quick-action-btn {
@@ -257,10 +282,22 @@
         justify-content: center;
         padding: 1rem;
         border-radius: var(--radius-md);
-        transition: all 0.2s ease;
+        transition: all var(--transition-duration) var(--transition-easing);
         text-decoration: none;
         height: 100%;
         min-height: 80px;
+        background: var(--bg-surface-elevated);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        font-family: var(--font-mono);
+    }
+    
+    .quick-action-btn:hover {
+        background: var(--bg-surface);
+        border-color: var(--theme-primary);
+        color: var(--theme-primary);
+        box-shadow: 0 0 10px var(--theme-primary-transparent);
+        transform: translateY(-2px);
     }
     
     .quick-action-btn i {
@@ -273,45 +310,117 @@
         text-align: center;
     }
     
-    /* Scenarios Section */
+    /* Scenarios Section - Terminal Style */
     .scenarios-section {
-        background: var(--bg-primary);
+        background: var(--bg-surface);
         border: 1px solid var(--border-color);
         border-radius: var(--radius-lg);
         padding: 1.5rem;
         margin-bottom: 2rem;
+        box-shadow: var(--shadow-md);
     }
     
     .scenario-card {
-        background: var(--bg-secondary);
+        background: var(--bg-surface-elevated);
+        border: 1px solid var(--border-color);
         border-radius: var(--radius-md);
         padding: 1rem;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all var(--transition-duration) var(--transition-easing);
         height: 100%;
+        font-family: var(--font-mono);
     }
     
     .scenario-card:hover {
         transform: translateY(-2px);
-        box-shadow: var(--shadow-sm);
-        background: var(--bg-primary);
+        box-shadow: 0 0 15px var(--theme-primary-transparent);
+        border-color: var(--theme-primary);
+        background: var(--bg-surface);
     }
     
     .scenario-card h6 {
         margin-bottom: 0.5rem;
         font-weight: 600;
+        color: var(--text-primary);
+        font-family: var(--font-heading);
     }
     
     .scenario-card p {
         font-size: 0.85rem;
         color: var(--text-secondary);
         margin-bottom: 0;
+        font-family: var(--font-mono);
+    }
+    
+    /* Terminal-style headings in dashboard */
+    .welcome-banner h2 {
+        font-family: var(--font-heading);
+        font-weight: 700;
+        color: var(--text-on-primary);
+        text-shadow: var(--shadow-sm);
+    }
+    
+    .welcome-banner p, .welcome-banner small {
+        font-family: var(--font-mono);
+    }
+    
+    /* Section headers */
+    h5 {
+        font-family: var(--font-heading);
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    /* Terminal-style stats */
+    .stat-card .stat-value {
+        font-family: var(--font-mono);
+        font-weight: 700;
+        color: var(--theme-primary);
+    }
+    
+    .stat-card .stat-label {
+        font-family: var(--font-mono);
+        color: var(--text-secondary);
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid">
+    <!-- Welcome Banner -->
+    <div class="welcome-banner">
+        <div class="welcome-banner-content">
+            <div class="d-flex align-items-center mb-2">
+                <img src="{{ url_for('static', filename='images/branding/beep-mlstudio-logo.png') }}" 
+                     alt="Beep ML Studio" 
+                     height="40" 
+                     width="40"
+                     class="me-3 app-logo"
+                     style="object-fit: contain;">
+                <div>
+                    <div class="current-mode-badge mb-1">
+                        {% if current_profile %}
+                        <i class="{{ current_profile.icon }}"></i>
+                        {{ current_profile.name }} Mode
+                        {% else %}
+                        <i class="bi bi-cpu"></i>
+                        Advanced Mode
+                        {% endif %}
+                    </div>
+                    <h2 class="mb-0">Welcome to Beep ML Studio</h2>
+                </div>
+            </div>
+            <p class="mb-0 opacity-75">
+                {% if current_profile and current_profile.id != 'advanced' %}
+                {{ current_profile.description }}
+                {% else %}
+                Create, train, and manage your Machine Learning models with ease
+                {% endif %}
+            </p>
+            <small class="opacity-50">by TheTechIdea</small>
+        </div>
+    </div>
+    
     <!-- Industry Mode Selector -->
     <div class="industry-selector">
         <div class="industry-selector-header">
@@ -376,39 +485,6 @@
             {% endfor %}
         </div>
     </div>
-
-    <!-- Welcome Banner -->
-    <div class="welcome-banner">
-        <div class="welcome-banner-content">
-            <div class="d-flex align-items-center mb-2">
-                <img src="{{ url_for('static', filename='images/branding/thetechidea-logo-48.png') }}" 
-                     alt="TheTechIdea" 
-                     height="40" 
-                     class="me-3"
-                     style="filter: brightness(0) invert(1);">
-                <div>
-                    <div class="current-mode-badge mb-1">
-                        {% if current_profile %}
-                        <i class="{{ current_profile.icon }}"></i>
-                        {{ current_profile.name }} Mode
-                        {% else %}
-                        <i class="bi bi-cpu"></i>
-                        Advanced Mode
-                        {% endif %}
-                    </div>
-                    <h2 class="mb-0">Welcome to Beep ML Studio</h2>
-                </div>
-            </div>
-            <p class="mb-0 opacity-75">
-                {% if current_profile and current_profile.id != 'advanced' %}
-                {{ current_profile.description }}
-                {% else %}
-                Create, train, and manage your Machine Learning models with ease
-                {% endif %}
-            </p>
-            <small class="opacity-50">by TheTechIdea</small>
-        </div>
-    </div>
     
     <!-- Quick Start Scenarios (if industry mode is selected) -->
     {% if current_profile and current_profile.scenarios and current_profile.id != 'advanced' %}
@@ -450,7 +526,7 @@
             </div>
         </div>
         <div class="col-md-3 col-sm-6 mb-3">
-            <div class="card stat-card h-100" style="border-left-color: #28a745;">
+            <div class="card stat-card h-100" style="border-left-color: var(--theme-success);">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -465,7 +541,7 @@
             </div>
         </div>
         <div class="col-md-3 col-sm-6 mb-3">
-            <div class="card stat-card h-100" style="border-left-color: #ffc107;">
+            <div class="card stat-card h-100" style="border-left-color: var(--theme-warning);">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -483,7 +559,7 @@
             </div>
         </div>
         <div class="col-md-3 col-sm-6 mb-3">
-            <div class="card stat-card h-100" style="border-left-color: #dc3545;">
+            <div class="card stat-card h-100" style="border-left-color: var(--theme-error);">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -584,7 +660,7 @@
     <!-- Empty State -->
     <div class="card">
         <div class="card-body text-center py-5">
-            <i class="bi bi-inbox" style="font-size: 5rem; color: #6c757d;"></i>
+            <i class="bi bi-inbox" style="font-size: 5rem; color: var(--text-secondary);"></i>
             <h3 class="mt-3">No Projects Yet</h3>
             <p class="text-muted mb-4">
                 {% if current_profile and current_profile.id != 'advanced' %}

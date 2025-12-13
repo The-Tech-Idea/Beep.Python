@@ -3,7 +3,6 @@
 {% block title %}Settings - Beep ML Studio{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/themes.css') }}">
 <style>
     .settings-container {
         max-width: 1200px;
@@ -14,19 +13,48 @@
     }
     
     .settings-category-header {
-        {% if current_profile and current_profile.id != 'advanced' %}
-        background: {{ current_profile.gradient }};
-        {% else %}
-        background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-dark) 100%);
-        {% endif %}
-        color: white;
+        /* Match table header style - consistent with theme */
+        background: var(--bg-surface-elevated) !important;
+        color: var(--text-primary) !important;
         padding: 1rem 1.5rem;
         border-radius: var(--radius-lg) var(--radius-lg) 0 0;
         margin-bottom: 0;
+        border-bottom: 2px solid var(--border-color);
+        font-family: var(--font-mono);
+    }
+    
+    .settings-category-header *,
+    .settings-category-header h1,
+    .settings-category-header h2,
+    .settings-category-header h3,
+    .settings-category-header h4,
+    .settings-category-header h5,
+    .settings-category-header h6,
+    .settings-category-header p,
+    .settings-category-header span,
+    .settings-category-header small,
+    .settings-category-header i,
+    .settings-category-header .bi {
+        color: var(--text-primary) !important;
+    }
+    
+    .settings-category-header h5 {
+        color: var(--text-primary) !important;
+        font-weight: 600 !important;
+        font-family: var(--font-mono);
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        margin: 0;
+    }
+    
+    .settings-category-header i,
+    .settings-category-header .bi {
+        color: var(--text-primary) !important;
     }
     
     .settings-table {
-        background: var(--bg-primary);
+        background: var(--bg-surface);
         border-radius: 0 0 var(--radius-lg) var(--radius-lg);
         overflow: hidden;
         border: 1px solid var(--border-color);
@@ -34,78 +62,75 @@
     
     .settings-table table {
         margin-bottom: 0;
+        background: var(--bg-surface);
+        color: var(--text-primary);
     }
     
     .settings-table td {
         vertical-align: middle;
         padding: 1rem;
+        background: var(--bg-surface);
+        color: var(--text-primary);
+    }
+    
+    .settings-table tr {
+        background: var(--bg-surface);
+    }
+    
+    .settings-table tr:hover {
+        background: var(--bg-surface-elevated);
     }
     
     .settings-table tr:not(:last-child) td {
-        border-bottom: 1px solid var(--border-color-light);
+        border-bottom: 1px solid var(--border-color);
     }
     
     .setting-key {
         font-weight: 600;
         color: var(--text-primary);
         min-width: 200px;
+        font-family: var(--font-mono);
     }
     
     .setting-description {
         color: var(--text-secondary);
         font-size: 0.9rem;
+        font-family: var(--font-mono);
     }
     
     .setting-value {
         min-width: 300px;
     }
     
-    .theme-preview {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 1rem;
-        margin-top: 1rem;
+    .settings-table .form-control,
+    .settings-table .form-select {
+        background: var(--bg-surface-elevated);
+        border-color: var(--border-color);
+        color: var(--text-primary);
     }
     
-    .theme-option {
-        border: 2px solid var(--border-color);
-        border-radius: var(--radius);
-        padding: 1rem;
-        cursor: pointer;
-        transition: all var(--transition-fast);
-        text-align: center;
-    }
-    
-    .theme-option:hover {
+    .settings-table .form-control:focus,
+    .settings-table .form-select:focus {
+        background: var(--bg-surface-elevated);
         border-color: var(--theme-primary);
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
+        color: var(--text-primary);
     }
     
-    .theme-option.active {
+    .settings-table .form-check-input {
+        background-color: var(--bg-surface-elevated);
+        border-color: var(--border-color);
+    }
+    
+    .settings-table .form-check-input:checked {
+        background-color: var(--theme-primary);
         border-color: var(--theme-primary);
-        background-color: var(--bg-secondary);
-        box-shadow: var(--shadow);
     }
     
-    .theme-preview-box {
-        width: 100%;
-        height: 60px;
-        border-radius: var(--radius-sm);
-        margin-bottom: 0.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 600;
+    .settings-table .badge {
+        background-color: var(--bg-surface-elevated);
+        color: var(--text-secondary);
+        border: 1px solid var(--border-color);
     }
-    
-    .theme-preview-box.light { background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); color: #212529; }
-    .theme-preview-box.dark { background: linear-gradient(135deg, #1a1d20 0%, #212529 100%); }
-    .theme-preview-box.blue { background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); }
-    .theme-preview-box.green { background: linear-gradient(135deg, #28a745 0%, #218838 100%); }
-    .theme-preview-box.purple { background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%); }
-    .theme-preview-box.orange { background: linear-gradient(135deg, #fd7e14 0%, #e66a00 100%); }
     
     #environments-tbody td {
         vertical-align: middle;
@@ -133,24 +158,6 @@
             <button class="btn btn-outline-secondary" onclick="resetAllSettings()">
                 <i class="bi bi-arrow-counterclockwise"></i> Reset to Defaults
             </button>
-        </div>
-    </div>
-    
-    <!-- Theme Settings Section -->
-    <div class="settings-category">
-        <div class="settings-category-header">
-            <h5 class="mb-0">
-                <i class="bi bi-palette"></i> Theme & Appearance
-            </h5>
-        </div>
-        <div class="card-body">
-            <div class="mb-3">
-                <label class="form-label fw-bold">Select Theme</label>
-                <p class="text-muted small">Choose a theme that suits your preference. Changes are applied immediately.</p>
-                <div class="theme-preview" id="theme-preview">
-                    <!-- Theme options will be populated by JavaScript -->
-                </div>
-            </div>
         </div>
     </div>
     
@@ -245,11 +252,6 @@
                                             <i class="bi bi-folder"></i>
                                         </button>
                                     </div>
-                                {% elif setting.key == 'theme' %}
-                                    <select class="form-select" id="setting_{{ setting.key }}" name="setting_{{ setting.key }}">
-                                        <option value="light" {{ 'selected' if setting.get_value() == 'light' else '' }}>Light</option>
-                                        <option value="dark" {{ 'selected' if setting.get_value() == 'dark' else '' }}>Dark</option>
-                                    </select>
                                 {% elif setting.key == 'log_level' %}
                                     <select class="form-select" id="setting_{{ setting.key }}" name="setting_{{ setting.key }}">
                                         <option value="DEBUG" {{ 'selected' if setting.get_value() == 'DEBUG' else '' }}>DEBUG</option>
@@ -346,32 +348,6 @@
 
 {% block extra_js %}
 <script>
-    // Initialize theme preview
-    document.addEventListener('DOMContentLoaded', () => {
-        if (window.themeManager) {
-            const previewContainer = document.getElementById('theme-preview');
-            const themes = window.themeManager.getAvailableThemes();
-            const currentTheme = window.themeManager.getCurrentTheme();
-            
-            themes.forEach(theme => {
-                const option = document.createElement('div');
-                option.className = `theme-option ${theme === currentTheme ? 'active' : ''}`;
-                option.setAttribute('data-theme', theme);
-                option.innerHTML = `
-                    <div class="theme-preview-box ${theme}">${theme.charAt(0).toUpperCase() + theme.slice(1)}</div>
-                    <small class="text-muted">${theme.charAt(0).toUpperCase() + theme.slice(1)} Theme</small>
-                `;
-                option.addEventListener('click', () => {
-                    window.themeManager.applyTheme(theme);
-                    // Update active state
-                    document.querySelectorAll('.theme-option').forEach(opt => opt.classList.remove('active'));
-                    option.classList.add('active');
-                });
-                previewContainer.appendChild(option);
-            });
-        }
-    });
-    
     function resetAllSettings() {
         const modal = new bootstrap.Modal(document.getElementById('resetModal'));
         modal.show();

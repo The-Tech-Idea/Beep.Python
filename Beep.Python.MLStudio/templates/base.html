@@ -5,18 +5,547 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Beep ML Studio - TheTechIdea{% endblock %}</title>
     
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/branding/favicon.ico') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/branding/thetechidea-logo-32.png') }}">
-    <link rel="icon" type="image/png" sizes="48x48" href="{{ url_for('static', filename='images/branding/thetechidea-logo-48.png') }}">
-    <link rel="apple-touch-icon" sizes="128x128" href="{{ url_for('static', filename='images/branding/thetechidea-logo-128.png') }}">
+    <!-- Favicon - App Logo -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}?v=3">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/icon-16x16.png') }}?v=3">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/icon-32x32.png') }}?v=3">
+    <link rel="icon" type="image/png" sizes="48x48" href="{{ url_for('static', filename='images/icon-48x48.png') }}?v=3">
+    <link rel="icon" type="image/png" sizes="128x128" href="{{ url_for('static', filename='images/icon-128x128.png') }}?v=3">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='images/icon-192x192.png') }}?v=3">
+    <link rel="icon" type="image/png" sizes="256x256" href="{{ url_for('static', filename='images/icon-256x256.png') }}?v=3">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='images/icon-512x512.png') }}?v=3">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='images/apple-touch-icon.png') }}?v=3">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='images/android-chrome-192x192.png') }}?v=3">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='images/android-chrome-512x512.png') }}?v=3">
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <!-- MLStudio Theme System -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/themes.css') }}">
+    
+    <!-- Terminal Theme System (applied globally) -->
+    {% if theme %}
+    <style>
+        :root {
+            /* Theme Colors */
+            --theme-primary: {{ theme.PrimaryColor }};
+            --theme-primary-hover: {{ theme.PrimaryHoverColor }};
+            --theme-primary-transparent: {{ theme.PrimaryTransparentColor }};
+            --theme-secondary: {{ theme.SecondaryColor }};
+            --theme-tertiary: {{ theme.TertiaryColor }};
+            --theme-success: {{ theme.SuccessColor }};
+            --theme-warning: {{ theme.WarningColor }};
+            --theme-error: {{ theme.ErrorColor }};
+            --theme-info: {{ theme.InfoColor }};
+            
+            /* Background Colors */
+            --bg-primary: {{ theme.BackgroundColor }};
+            --bg-dark: {{ theme.BackgroundDarkColor }};
+            --bg-surface: {{ theme.SurfaceColor }};
+            --bg-surface-elevated: {{ theme.SurfaceElevatedColor }};
+            
+            /* Text Colors */
+            --text-primary: {{ theme.TextPrimaryColor }};
+            --text-secondary: {{ theme.TextSecondaryColor }};
+            --text-on-primary: {{ theme.TextOnPrimaryColor }};
+            
+            /* Border Colors */
+            --border-color: {{ theme.BorderColor }};
+            
+            /* Typography */
+            --font-family: {{ theme.FontFamily }};
+            --font-heading: {{ theme.HeadingFontFamily }};
+            --font-mono: {{ theme.FontMonoFamily }};
+            --font-size-base: {{ theme.BaseFontSize }};
+            
+            /* Design System */
+            --radius-sm: {{ theme.BorderRadiusSm }};
+            --radius-md: {{ theme.BorderRadiusMd }};
+            --radius-lg: {{ theme.BorderRadiusLg }};
+            --radius-xl: {{ theme.BorderRadiusXl }};
+            
+            --shadow-sm: {{ theme.ShadowSm }};
+            --shadow-md: {{ theme.ShadowMd }};
+            --shadow-lg: {{ theme.ShadowLg }};
+            --shadow-xl: {{ theme.ShadowXl }};
+            
+            --transition-duration: {{ theme.TransitionDuration }};
+            --transition-easing: {{ theme.TransitionEasing }};
+            
+            /* Legacy compatibility variables */
+            --theme-primary-dark: {{ theme.PrimaryColor }};
+            --theme-primary-light: {{ theme.PrimaryColor }};
+            --bg-secondary: {{ theme.SurfaceColor }};
+            --bg-tertiary: {{ theme.SurfaceElevatedColor }};
+            --text-muted: {{ theme.TextSecondaryColor }};
+            --text-light: {{ theme.TextPrimaryColor }};
+            --text-inverse: {{ theme.TextOnPrimaryColor }};
+            --border-color-light: {{ theme.BorderColor }};
+            --border-color-dark: {{ theme.BorderColor }};
+        }
+        
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            font-size: var(--font-size-base);
+            line-height: 1.6;
+        }
+        
+        /* Terminal-style navbar */
+        .navbar {
+            background-color: var(--bg-surface) !important;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .navbar-brand, .navbar-nav .nav-link {
+            font-family: var(--font-mono);
+            color: var(--text-primary) !important;
+        }
+        
+        /* Logo theming - convert black logo to theme primary color (#00ff88) */
+        .app-logo {
+            /* Convert black to theme primary color using CSS filters */
+            /* For #00ff88 (RGB: 0, 255, 136), we use brightness(0) to make it black, 
+               then apply sepia and hue-rotate to get the green-cyan color */
+            filter: brightness(0) saturate(100%) invert(53%) sepia(100%) saturate(7500%) hue-rotate(120deg) brightness(120%) contrast(100%);
+        }
+        
+        /* Hover effect - slightly brighter */
+        .navbar-brand:hover .app-logo {
+            filter: brightness(0) saturate(100%) invert(53%) sepia(100%) saturate(7500%) hue-rotate(120deg) brightness(140%) contrast(100%);
+        }
+        
+        .navbar-brand:hover, .navbar-nav .nav-link:hover {
+            color: var(--theme-primary) !important;
+        }
+        
+        /* Terminal-style buttons */
+        .btn {
+            font-family: var(--font-mono);
+            font-weight: 500;
+            text-transform: none;
+            border-radius: var(--radius-md);
+            transition: all var(--transition-duration) var(--transition-easing);
+        }
+        
+        .btn-primary {
+            background-color: var(--theme-primary);
+            border-color: var(--theme-primary);
+            color: var(--text-on-primary);
+            box-shadow: 0 0 10px var(--theme-primary-transparent);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--theme-primary-hover);
+            border-color: var(--theme-primary-hover);
+            box-shadow: 0 0 15px var(--theme-primary-transparent);
+            transform: translateY(-1px);
+        }
+        
+        .btn-outline-primary {
+            color: var(--theme-primary);
+            border-color: var(--theme-primary);
+            background-color: transparent;
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--theme-primary);
+            color: var(--text-on-primary);
+            box-shadow: 0 0 10px var(--theme-primary-transparent);
+        }
+        
+        .btn-secondary, .btn-outline-secondary {
+            color: var(--text-secondary);
+            border-color: var(--border-color);
+            background-color: var(--bg-surface);
+        }
+        
+        .btn-secondary:hover, .btn-outline-secondary:hover {
+            background-color: var(--bg-surface-elevated);
+            border-color: var(--theme-primary);
+            color: var(--theme-primary);
+        }
+        
+        /* Terminal-style cards */
+        /* Terminal-style cards - consistent with table styling */
+        .card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-duration) var(--transition-easing);
+        }
+        
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            border-color: var(--border-color);
+            background-color: var(--bg-surface-elevated);
+        }
+        
+        /* Card headers - consistent with table headers */
+        .card-header {
+            background-color: var(--bg-surface-elevated);
+            border-bottom: 2px solid var(--border-color);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .card-header h1,
+        .card-header h2,
+        .card-header h3,
+        .card-header h4,
+        .card-header h5,
+        .card-header h6 {
+            color: var(--text-primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            margin: 0;
+        }
+        
+        .card-header i,
+        .card-header .bi {
+            color: var(--text-primary);
+        }
+        
+        /* Override any gradient/colored backgrounds - use theme colors only */
+        .card-header[style*="gradient"],
+        .card-header[style*="background"],
+        .card-header[class*="gradient"],
+        .card-header.bg-primary,
+        .card-header.bg-gradient,
+        [class*="category-header"] {
+            background-color: var(--bg-surface-elevated) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        .card-header[style*="gradient"] *,
+        .card-header[style*="background"] *,
+        .card-header.bg-primary *,
+        .card-header.bg-gradient *,
+        [class*="category-header"] * {
+            color: var(--text-primary) !important;
+        }
+        
+        .card-body {
+            color: var(--text-primary);
+        }
+        
+        /* Terminal-style forms */
+        .form-control, .form-select {
+            background-color: var(--bg-surface-elevated);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            transition: all var(--transition-duration) var(--transition-easing);
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background-color: var(--bg-surface-elevated);
+            border-color: var(--theme-primary);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 0.25rem var(--theme-primary-transparent), 0 0 10px var(--theme-primary-transparent);
+            outline: none;
+        }
+        
+        .form-control::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+        
+        .form-label {
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-weight: 500;
+        }
+        
+        .form-check-input {
+            background-color: var(--bg-surface-elevated);
+            border-color: var(--border-color);
+        }
+        
+        .form-check-input:checked {
+            background-color: var(--theme-primary);
+            border-color: var(--theme-primary);
+        }
+        
+        .form-check-input:focus {
+            border-color: var(--theme-primary);
+            box-shadow: 0 0 0 0.25rem var(--theme-primary-transparent);
+        }
+        
+        .form-check-label {
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+        }
+        
+        .form-switch .form-check-input {
+            background-color: var(--bg-surface-elevated);
+        }
+        
+        .form-switch .form-check-input:checked {
+            background-color: var(--theme-primary);
+        }
+        
+        /* Terminal-style text utilities */
+        .text-primary {
+            color: var(--theme-primary) !important;
+        }
+        
+        .text-secondary {
+            color: var(--text-secondary) !important;
+        }
+        
+        .text-muted {
+            color: var(--text-secondary) !important;
+        }
+        
+        .bg-primary {
+            background-color: var(--theme-primary) !important;
+            color: var(--text-on-primary) !important;
+        }
+        
+        .bg-secondary {
+            background-color: var(--bg-surface) !important;
+        }
+        
+        .border-primary {
+            border-color: var(--theme-primary) !important;
+        }
+        
+        /* Terminal-style links */
+        a {
+            color: var(--theme-primary);
+            text-decoration: none;
+            transition: all var(--transition-duration) var(--transition-easing);
+        }
+        
+        a:hover {
+            color: var(--theme-primary-hover);
+            text-shadow: 0 0 5px var(--theme-primary-transparent);
+        }
+        
+        /* Terminal-style badges */
+        .badge {
+            font-family: var(--font-mono);
+            font-weight: 500;
+            padding: 0.35rem 0.65rem;
+            border-radius: var(--radius-sm);
+        }
+        
+        .badge.bg-primary {
+            background-color: var(--theme-primary) !important;
+            color: var(--text-on-primary) !important;
+        }
+        
+        .badge.bg-secondary {
+            background-color: var(--bg-surface-elevated) !important;
+            color: var(--text-primary) !important;
+            border: 1px solid var(--border-color);
+        }
+        
+        .badge.bg-info {
+            background-color: var(--theme-info) !important;
+            color: var(--text-on-primary) !important;
+        }
+        
+        .badge.bg-success {
+            background-color: var(--theme-success) !important;
+            color: var(--text-on-primary) !important;
+        }
+        
+        .badge.bg-warning {
+            background-color: var(--theme-warning) !important;
+            color: var(--text-on-primary) !important;
+        }
+        
+        .badge.bg-danger {
+            background-color: var(--theme-error) !important;
+            color: var(--text-on-primary) !important;
+        }
+        
+        /* Terminal-style tables */
+        .table {
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            background-color: var(--bg-surface);
+        }
+        
+        .table thead th {
+            background-color: var(--bg-surface-elevated);
+            border-bottom: 2px solid var(--border-color);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .table tbody tr {
+            background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .table tbody tr:hover {
+            background-color: var(--bg-surface-elevated);
+            color: var(--text-primary);
+        }
+        
+        .table tbody td {
+            background-color: transparent;
+            color: var(--text-primary);
+        }
+        
+        /* Terminal-style alerts */
+        .alert {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-family: var(--font-mono);
+        }
+        
+        .alert-primary {
+            background-color: var(--theme-primary-transparent);
+            border-color: var(--theme-primary);
+            color: var(--theme-primary);
+        }
+        
+        .alert-success {
+            background-color: var(--theme-primary-transparent);
+            border-color: var(--theme-success);
+            color: var(--theme-success);
+        }
+        
+        .alert-warning {
+            background-color: var(--theme-primary-transparent);
+            border-color: var(--theme-warning);
+            color: var(--theme-warning);
+        }
+        
+        .alert-danger {
+            background-color: var(--theme-primary-transparent);
+            border-color: var(--theme-error);
+            color: var(--theme-error);
+        }
+        
+        .alert-info {
+            background-color: var(--theme-primary-transparent);
+            border-color: var(--theme-info);
+            color: var(--theme-info);
+        }
+        
+        /* Terminal-style headings */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-heading);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        
+        h1 { color: var(--theme-primary); }
+        
+        /* Terminal-style modals */
+        .modal-content {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .modal-header {
+            border-bottom: 1px solid var(--border-color);
+            font-family: var(--font-mono);
+        }
+        
+        .modal-footer {
+            border-top: 1px solid var(--border-color);
+        }
+        
+        /* Terminal-style dropdowns */
+        .dropdown-menu {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .dropdown-item {
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+        }
+        
+        .dropdown-item:hover {
+            background-color: var(--theme-primary-transparent);
+            color: var(--theme-primary);
+        }
+        
+        /* Terminal-style list groups */
+        .list-group-item {
+            background-color: var(--bg-surface);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .list-group-item:hover {
+            background-color: var(--bg-surface-elevated);
+        }
+        
+        /* Terminal-style progress bars */
+        .progress {
+            background-color: var(--bg-surface-elevated);
+            border-radius: var(--radius-sm);
+        }
+        
+        .progress-bar {
+            background-color: var(--theme-primary);
+        }
+        
+        /* Terminal-style pagination */
+        .page-link {
+            background-color: var(--bg-surface);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .page-link:hover {
+            background-color: var(--bg-surface-elevated);
+            border-color: var(--theme-primary);
+            color: var(--theme-primary);
+        }
+        
+        .page-item.active .page-link {
+            background-color: var(--theme-primary);
+            border-color: var(--theme-primary);
+            color: var(--text-on-primary);
+        }
+        
+        /* Terminal glow effect for primary elements */
+        .terminal-glow {
+            box-shadow: 0 0 10px var(--theme-primary-transparent);
+        }
+        
+        /* Terminal-style code blocks */
+        code, pre {
+            font-family: var(--font-mono);
+            background-color: var(--bg-surface-elevated);
+            color: var(--theme-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+        }
+        
+        pre {
+            padding: 1rem;
+            overflow-x: auto;
+        }
+    </style>
+    {% endif %}
     
     <!-- Industry Theme (applied globally when in industry mode) -->
     {% if current_profile and current_profile.id != 'advanced' %}
@@ -26,116 +555,54 @@
             --industry-gradient: {{ current_profile.gradient }};
         }
         
-        /* Apply industry theme to primary elements */
+        /* Keep terminal theme - industry colors only for accents */
+        /* Navbar stays with terminal theme */
         .navbar {
-            background: {{ current_profile.gradient }} !important;
+            background-color: var(--bg-surface) !important;
+            border-bottom: 1px solid var(--border-color);
         }
         
+        /* Primary buttons use terminal theme, not industry colors */
         .btn-primary {
-            background-color: {{ current_profile.color }};
-            border-color: {{ current_profile.color }};
+            background-color: var(--theme-primary);
+            border-color: var(--theme-primary);
         }
         
         .btn-primary:hover {
-            background-color: {{ current_profile.color }};
-            border-color: {{ current_profile.color }};
-            opacity: 0.9;
+            background-color: var(--theme-primary-hover);
+            border-color: var(--theme-primary-hover);
         }
         
         .btn-outline-primary {
-            color: {{ current_profile.color }};
-            border-color: {{ current_profile.color }};
+            color: var(--theme-primary);
+            border-color: var(--theme-primary);
         }
         
         .btn-outline-primary:hover {
-            background-color: {{ current_profile.color }};
-            border-color: {{ current_profile.color }};
-            color: white;
+            background-color: var(--theme-primary);
+            border-color: var(--theme-primary);
+            color: var(--text-on-primary);
         }
         
         .nav-link.active,
         .nav-link:hover {
-            color: {{ current_profile.color }} !important;
+            color: var(--theme-primary) !important;
         }
         
         .card-header {
-            border-bottom-color: {{ current_profile.color }};
+            border-bottom-color: var(--border-color);
         }
         
         .text-primary {
-            color: {{ current_profile.color }} !important;
+            color: var(--theme-primary) !important;
         }
         
         .border-primary {
-            border-color: {{ current_profile.color }} !important;
+            border-color: var(--theme-primary) !important;
         }
         
-        .bg-primary {
-            background-color: {{ current_profile.color }} !important;
-        }
-        
-        /* Links */
-        a {
-            color: {{ current_profile.color }};
-        }
-        
-        a:hover {
-            color: {{ current_profile.color }};
-            opacity: 0.8;
-        }
-        
-        /* Active states */
-        .nav-link.active {
-            border-bottom-color: {{ current_profile.color }};
-        }
-        
-        /* Badges */
-        .badge.bg-primary {
-            background-color: {{ current_profile.color }} !important;
-        }
-        
-        /* Progress bars */
-        .progress-bar {
-            background-color: {{ current_profile.color }};
-        }
-        
-        /* Alerts */
-        .alert-primary {
-            border-color: {{ current_profile.color }};
-            color: {{ current_profile.color }};
-        }
-        
-        /* Table highlights */
-        .table-hover tbody tr:hover {
-            background-color: rgba({{ current_profile.color }}, 0.05);
-        }
-        
-        /* Form controls */
-        .form-control:focus,
-        .form-select:focus {
-            border-color: {{ current_profile.color }};
-            box-shadow: 0 0 0 0.25rem rgba({{ current_profile.color }}, 0.25);
-        }
-        
-        /* Checkboxes and radios */
-        .form-check-input:checked {
-            background-color: {{ current_profile.color }};
-            border-color: {{ current_profile.color }};
-        }
-        
-        /* Pagination */
-        .page-link {
-            color: {{ current_profile.color }};
-        }
-        
-        .page-link:hover {
-            color: {{ current_profile.color }};
-        }
-        
-        .page-item.active .page-link {
-            background-color: {{ current_profile.color }};
-            border-color: {{ current_profile.color }};
-        }
+        /* All styling uses theme variables - no industry color overrides */
+        /* Industry colors are available as CSS variables but theme takes precedence */
     </style>
     {% endif %}
     
@@ -146,11 +613,12 @@
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center" href="{{ url_for('dashboard.index') }}">
-                <img src="{{ url_for('static', filename='images/branding/thetechidea-logo-32.png') }}" 
-                     alt="TheTechIdea" 
-                     height="28" 
-                     class="me-2"
-                     style="filter: brightness(0) invert(1);">
+                <img src="{{ url_for('static', filename='images/branding/beep-mlstudio-logo.png') }}" 
+                     alt="Beep ML Studio" 
+                     height="32" 
+                     width="32"
+                     class="me-2 app-logo"
+                     style="object-fit: contain;">
                 <span>Beep ML Studio</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -200,9 +668,6 @@
                         </a>
                         {% endif %}
                     </li>
-                    <li class="nav-item">
-                        <div id="theme-switcher-container"></div>
-                    </li>
                 </ul>
             </div>
         </div>
@@ -231,9 +696,11 @@
     <footer class="mt-auto">
         <div class="container text-center">
             <p class="mb-0 d-flex align-items-center justify-content-center gap-2">
-                <img src="{{ url_for('static', filename='images/branding/thetechidea-logo-32.png') }}" 
-                     alt="TheTechIdea" 
-                     height="20">
+                <img src="{{ url_for('static', filename='images/branding/beep-mlstudio-logo.png') }}" 
+                     alt="Beep ML Studio" 
+                     height="20"
+                     class="app-logo"
+                     style="opacity: 0.8;">
                 <span>&copy; 2024 <strong>TheTechIdea</strong> | Beep ML Studio - Machine Learning Made Simple</span>
             </p>
         </div>
@@ -243,15 +710,10 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Socket.IO -->
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-    <!-- Theme Manager -->
-    <script src="{{ url_for('static', filename='js/theme-manager.js') }}"></script>
     <script>
-        // Initialize theme switcher in navbar
+        // Theme is now managed by the server-side theme provider
+        // No client-side theme switching needed
         document.addEventListener('DOMContentLoaded', () => {
-            const container = document.getElementById('theme-switcher-container');
-            if (container && window.themeManager) {
-                container.innerHTML = window.themeManager.createThemeSwitcherHTML();
-            }
             
             // Ensure all navbar links work - add explicit click handlers
             const navLinks = document.querySelectorAll('.navbar-nav .nav-link');

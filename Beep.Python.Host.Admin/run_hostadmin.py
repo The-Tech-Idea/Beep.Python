@@ -305,7 +305,15 @@ def main():
     print_colored("=" * 60, Colors.CYAN)
     print_colored("🐍 Embedded Python Setup", Colors.BOLD)
     print_colored("=" * 60, Colors.CYAN)
-    setup_embedded_python()
+    if not setup_embedded_python():
+        print_colored("", Colors.RESET)
+        print_colored("=" * 60, Colors.RED)
+        print_colored("❌ Embedded Python setup failed!", Colors.BOLD + Colors.RED)
+        print_colored("=" * 60, Colors.RED)
+        print_colored("   Cannot proceed without embedded Python.", Colors.YELLOW)
+        print_colored("   Please check the error messages above and try again.", Colors.YELLOW)
+        print_colored("", Colors.RESET)
+        sys.exit(1)
     
     print_colored("", Colors.RESET)
     print_colored("=" * 60, Colors.GREEN)

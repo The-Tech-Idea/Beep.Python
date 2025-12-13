@@ -5,21 +5,22 @@
 {% block extra_css %}
 <style>
     :root {
-        --profile-color: {{ profile.color }};
+        --profile-color: var(--theme-primary);
     }
     
     .industry-dashboard {
         padding: 0;
     }
     
-    /* Hero Banner */
+    /* Hero Banner - Use theme colors for proper contrast */
     .hero-banner {
-        background: {{ profile.gradient }};
-        color: white;
+        background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%);
+        color: var(--text-on-primary);
         padding: 3rem 2rem;
         margin: -1.5rem -0.75rem 2rem -0.75rem;
         position: relative;
         overflow: hidden;
+        border-bottom: 2px solid var(--border-color);
     }
     
     .hero-banner::before {
@@ -42,19 +43,31 @@
     .hero-icon {
         font-size: 3.5rem;
         margin-bottom: 1rem;
-        opacity: 0.9;
+        color: var(--text-on-primary);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
     
     .hero-title {
         font-size: 2.5rem;
         font-weight: 700;
         margin-bottom: 0.5rem;
+        color: var(--text-on-primary);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        font-family: var(--font-heading);
     }
     
     .hero-tagline {
         font-size: 1.25rem;
-        opacity: 0.9;
+        color: var(--text-on-primary);
+        opacity: 0.95;
         margin-bottom: 1rem;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+    
+    .hero-banner p {
+        color: var(--text-on-primary);
+        opacity: 0.9;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     }
     
     .hero-actions {
@@ -70,25 +83,31 @@
     }
     
     .btn-hero-primary {
-        background: white;
-        color: {{ profile.color }};
-        border: none;
+        background: var(--bg-dark);
+        color: var(--text-primary);
+        border: 2px solid var(--bg-dark);
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     }
     
     .btn-hero-primary:hover {
-        background: rgba(255,255,255,0.9);
-        color: {{ profile.color }};
+        background: var(--bg-surface-elevated);
+        color: var(--text-primary);
+        border-color: var(--theme-primary);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     }
     
     .btn-hero-secondary {
-        background: rgba(255,255,255,0.2);
-        color: white;
-        border: 1px solid rgba(255,255,255,0.3);
+        background: rgba(0, 0, 0, 0.3);
+        color: var(--text-on-primary);
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        backdrop-filter: blur(10px);
     }
     
     .btn-hero-secondary:hover {
-        background: rgba(255,255,255,0.3);
-        color: white;
+        background: rgba(0, 0, 0, 0.5);
+        color: var(--text-on-primary);
+        border-color: rgba(255, 255, 255, 0.6);
     }
     
     /* Section Headers */
@@ -109,7 +128,7 @@
     }
     
     .section-title i {
-        color: {{ profile.color }};
+        color: var(--theme-primary);
     }
     
     /* Scenario Cards */
@@ -121,20 +140,21 @@
     }
     
     .scenario-card {
-        background: var(--bg-primary);
+        background: var(--bg-surface);
         border: 1px solid var(--border-color);
-        border-radius: 16px;
+        border-radius: var(--radius-lg);
         padding: 1.5rem;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all var(--transition-duration) var(--transition-easing);
         position: relative;
         overflow: hidden;
     }
     
     .scenario-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-        border-color: {{ profile.color }};
+        box-shadow: var(--shadow-lg);
+        border-color: var(--theme-primary);
+        background: var(--bg-surface-elevated);
     }
     
     .scenario-card::before {
@@ -144,9 +164,9 @@
         left: 0;
         right: 0;
         height: 3px;
-        background: {{ profile.gradient }};
+        background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%);
         opacity: 0;
-        transition: opacity 0.3s ease;
+        transition: opacity var(--transition-duration) var(--transition-easing);
     }
     
     .scenario-card:hover::before {
@@ -163,12 +183,12 @@
     .scenario-icon {
         width: 50px;
         height: 50px;
-        background: {{ profile.gradient }};
-        border-radius: 12px;
+        background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%);
+        border-radius: var(--radius-md);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
+        color: var(--text-on-primary);
         font-size: 1.5rem;
         flex-shrink: 0;
     }
@@ -213,7 +233,7 @@
         width: 8px;
         height: 8px;
         border-radius: 50%;
-        background: {{ profile.color }};
+        background: var(--theme-primary);
         opacity: 0.3;
     }
     
@@ -225,16 +245,16 @@
         position: absolute;
         bottom: 1.5rem;
         right: 1.5rem;
-        background: {{ profile.gradient }};
-        color: white;
+        background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%);
+        color: var(--text-on-primary);
         border: none;
         padding: 0.5rem 1rem;
-        border-radius: 8px;
+        border-radius: var(--radius-md);
         font-size: 0.85rem;
-        font-weight: 500;
+        font-weight: 600;
         opacity: 0;
         transform: translateX(10px);
-        transition: all 0.3s ease;
+        transition: all var(--transition-duration) var(--transition-easing);
     }
     
     .scenario-card:hover .scenario-start-btn {
@@ -272,31 +292,32 @@
     }
     
     .project-card-mini {
-        background: var(--bg-primary);
+        background: var(--bg-surface);
         border: 1px solid var(--border-color);
-        border-radius: 12px;
+        border-radius: var(--radius-md);
         padding: 1rem;
         display: flex;
         align-items: center;
         gap: 1rem;
-        transition: all 0.2s ease;
+        transition: all var(--transition-duration) var(--transition-easing);
         cursor: pointer;
     }
     
     .project-card-mini:hover {
-        border-color: {{ profile.color }};
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        border-color: var(--theme-primary);
+        box-shadow: var(--shadow-md);
+        background: var(--bg-surface-elevated);
     }
     
     .project-icon-mini {
         width: 40px;
         height: 40px;
-        background: var(--bg-secondary);
-        border-radius: 8px;
+        background: var(--bg-surface-elevated);
+        border-radius: var(--radius-sm);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: {{ profile.color }};
+        color: var(--theme-primary);
     }
     
     .project-info-mini {
@@ -318,13 +339,14 @@
     .empty-state {
         text-align: center;
         padding: 3rem 2rem;
-        background: var(--bg-secondary);
-        border-radius: 16px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
     }
     
     .empty-state i {
         font-size: 4rem;
-        color: var(--text-muted);
+        color: var(--text-secondary);
         margin-bottom: 1rem;
     }
     
@@ -347,24 +369,26 @@
     }
     
     .mode-switcher-btn {
-        background: var(--bg-primary);
+        background: var(--bg-surface);
         border: 1px solid var(--border-color);
-        border-radius: 12px;
+        border-radius: var(--radius-md);
         padding: 0.75rem 1rem;
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        box-shadow: var(--shadow-md);
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all var(--transition-duration) var(--transition-easing);
+        color: var(--text-primary);
     }
     
     .mode-switcher-btn:hover {
-        border-color: {{ profile.color }};
+        border-color: var(--theme-primary);
+        background: var(--bg-surface-elevated);
     }
     
     .mode-switcher-btn i {
-        color: {{ profile.color }};
+        color: var(--theme-primary);
     }
 </style>
 {% endblock %}

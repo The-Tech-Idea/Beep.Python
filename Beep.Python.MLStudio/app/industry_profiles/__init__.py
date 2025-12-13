@@ -99,8 +99,8 @@ class IndustryProfileManager:
             name='Advanced Mode',
             description='Full access to all ML features and nodes. For ML practitioners and data scientists.',
             icon='bi-cpu',
-            color='#6c757d',
-            gradient='linear-gradient(135deg, #6c757d 0%, #495057 100%)',
+            color='#8b949e',  # Theme: TextSecondaryColor
+            gradient='linear-gradient(135deg, #8b949e 0%, #6e7681 100%)',  # Theme-based gray
             tagline='Complete ML Toolkit',
             scenarios=[],
             terminology={},
@@ -116,8 +116,8 @@ class IndustryProfileManager:
             name='Finance & Economics',
             description='Tailored for financial analysts, traders, and economists. Predict markets, assess risks, and detect fraud.',
             icon='bi-bank2',
-            color='#0d6efd',
-            gradient='linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%)',
+            color='#00d4ff',  # Theme: InfoColor
+            gradient='linear-gradient(135deg, #00d4ff 0%, #00b8e6 100%)',  # Theme-based cyan
             tagline='Smart Financial Analytics',
             scenarios=[
                 Scenario(
@@ -388,8 +388,8 @@ class IndustryProfileManager:
             name='Petroleum Engineering',
             description='Designed for reservoir engineers and production analysts. Analyze well logs, forecast production, and optimize operations.',
             icon='bi-droplet-half',
-            color='#fd7e14',
-            gradient='linear-gradient(135deg, #fd7e14 0%, #dc3545 100%)',
+            color='#00ff88',  # Theme: PrimaryColor
+            gradient='linear-gradient(135deg, #00ff88 0%, #00cc6f 100%)',  # Theme-based green
             tagline='Intelligent Reservoir Analytics',
             scenarios=[
                 Scenario(
@@ -693,8 +693,8 @@ class IndustryProfileManager:
             name='Healthcare & Medical',
             description='For healthcare professionals and researchers. Predict patient outcomes, diagnose conditions, and analyze medical data.',
             icon='bi-heart-pulse',
-            color='#dc3545',
-            gradient='linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
+            color='#bd93f9',  # Theme: TertiaryColor
+            gradient='linear-gradient(135deg, #bd93f9 0%, #9d6ff9 100%)',  # Theme-based purple
             tagline='Intelligent Medical Analytics',
             scenarios=[
                 Scenario(
@@ -917,8 +917,8 @@ class IndustryProfileManager:
             name='Manufacturing & Industry',
             description='For production managers and quality engineers. Predict defects, optimize processes, and reduce downtime.',
             icon='bi-gear-wide-connected',
-            color='#198754',
-            gradient='linear-gradient(135deg, #198754 0%, #157347 100%)',
+            color='#00ff88',  # Theme: PrimaryColor
+            gradient='linear-gradient(135deg, #00ff88 0%, #00d4ff 100%)',  # Theme-based green to cyan
             tagline='Smart Factory Analytics',
             scenarios=[
                 Scenario(

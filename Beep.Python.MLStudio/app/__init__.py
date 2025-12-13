@@ -101,16 +101,25 @@ def create_app(config_name=None):
     app.register_blueprint(settings_bp)
     app.register_blueprint(industry_bp, url_prefix='/industry')
     
-    # Context processor to make forced_industry and current profile available in all templates
+    # Initialize theme provider
+    from app.services.theme_provider import init_theme_provider
+    init_theme_provider(app)
+    
+    # Context processor to make theme, forced_industry and current profile available in all templates
     @app.context_processor
-    def inject_forced_industry():
+    def inject_theme_and_industry():
         from flask import session
         from app.industry_profiles import profile_manager
+        from app.services.theme_provider import get_theme_provider
         
+        # Get theme
+        theme_provider = get_theme_provider()
+        branding = theme_provider.get_branding_for_app("Beep ML Studio")
+        
+        # Get industry profile
         forced_industry = app.config.get('FORCED_INDUSTRY_MODE')
         current_mode = session.get('industry_mode', 'advanced')
         
-        # Get current profile for theme
         current_profile = None
         if forced_industry:
             # Map aliases
@@ -125,6 +134,7 @@ def create_app(config_name=None):
             current_profile = profile_manager.get(current_mode)
         
         return {
+            'theme': branding,
             'forced_industry': forced_industry,
             'current_profile': current_profile,
             'current_industry_mode': current_mode

@@ -76,8 +76,19 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; ^
     $ProgressPreference = 'SilentlyContinue'; ^
     Invoke-WebRequest -Uri 'https://bootstrap.pypa.io/get-pip.py' -OutFile 'python-embedded\get-pip.py'"
+if errorlevel 1 (
+    echo [ERROR] Failed to download get-pip.py!
+    echo Please check your internet connection.
+    pause
+    exit /b 1
+)
 
 python-embedded\python.exe python-embedded\get-pip.py
+if errorlevel 1 (
+    echo [ERROR] Failed to install pip!
+    pause
+    exit /b 1
+)
 del python-embedded\get-pip.py
 
 REM Verify installation
@@ -94,7 +105,19 @@ echo.
 REM Install/upgrade pip and install requirements
 echo [INFO] Installing required packages...
 python-embedded\python.exe -m pip install --upgrade pip --quiet --no-warn-script-location
+if errorlevel 1 (
+    echo [ERROR] Failed to upgrade pip!
+    pause
+    exit /b 1
+)
+
 python-embedded\python.exe -m pip install -r requirements.txt --quiet --no-warn-script-location
+if errorlevel 1 (
+    echo [ERROR] Failed to install required packages!
+    echo Please check your internet connection and requirements.txt file.
+    pause
+    exit /b 1
+)
 
 REM Run the launcher with embedded Python
 python-embedded\python.exe run_mlstudio.py %*

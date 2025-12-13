@@ -105,8 +105,76 @@ else:
 import warnings
 warnings.filterwarnings('ignore', message='.*development server.*')
 warnings.filterwarnings('ignore', message='.*WSGI server.*')
+warnings.filterwarnings('ignore', category=DeprecationWarning, message='.*Eventlet is deprecated.*')
+warnings.filterwarnings('ignore', category=DeprecationWarning, module='.*eventlet.*')
 
+# Suppress harmless connection reset errors from eventlet
 logging.getLogger('werkzeug').setLevel(logging.ERROR)
+logging.getLogger('eventlet').setLevel(logging.CRITICAL)
+logging.getLogger('eventlet.wsgi').setLevel(logging.CRITICAL)
+logging.getLogger('eventlet.hubs').setLevel(logging.CRITICAL)
+logging.getLogger('eventlet.greenthread').setLevel(logging.CRITICAL)
+
+# Suppress ConnectionResetError tracebacks (harmless - client closed connection early)
+# These occur when browsers close connections before the server finishes sending the response
+class QuietConnectionErrorHandler(logging.Filter):
+    """Filter to suppress ConnectionResetError logs"""
+    def filter(self, record):
+        # Suppress ConnectionResetError messages
+        msg = str(record.getMessage())
+        if 'ConnectionResetError' in msg or 'WinError 10054' in msg:
+            return False
+        if 'forcibly closed by the remote host' in msg:
+            return False
+        if 'Removing descriptor' in msg:
+            return False
+        return True
+
+# Apply filter to eventlet loggers
+quiet_filter = QuietConnectionErrorHandler()
+logging.getLogger('eventlet').addFilter(quiet_filter)
+logging.getLogger('eventlet.wsgi').addFilter(quiet_filter)
+logging.getLogger('eventlet.hubs').addFilter(quiet_filter)
+logging.getLogger('eventlet.greenthread').addFilter(quiet_filter)
+
+# Patch eventlet's greenio.shutdown_safe to suppress ConnectionResetError
+try:
+    import eventlet.greenio.base as greenio_base
+    _original_shutdown_safe = greenio_base.shutdown_safe
+    
+    def _quiet_shutdown_safe(sock):
+        """Wrapper to suppress ConnectionResetError during socket shutdown"""
+        try:
+            return _original_shutdown_safe(sock)
+        except (ConnectionResetError, OSError) as e:
+            # Suppress these harmless errors - client closed connection early
+            error_code = getattr(e, 'winerror', None) or getattr(e, 'errno', None)
+            if error_code in (10054, 104):  # Connection reset by peer (Windows/Linux)
+                return
+            raise
+    
+    greenio_base.shutdown_safe = _quiet_shutdown_safe
+except Exception:
+    pass  # If patching fails, continue anyway
+
+# Suppress ConnectionResetError exceptions in eventlet greenlets
+# These are printed directly to stderr, not through logging
+_original_excepthook = sys.excepthook
+
+def _quiet_excepthook(exc_type, exc_value, exc_traceback):
+    """Suppress ConnectionResetError tracebacks from eventlet"""
+    if exc_type == ConnectionResetError:
+        # Check if it's the harmless "connection closed by remote host" error
+        error_msg = str(exc_value)
+        if '10054' in error_msg or 'forcibly closed by the remote host' in error_msg:
+            # Suppress this error - it's harmless
+            return
+    # For all other exceptions, use the original handler
+    _original_excepthook(exc_type, exc_value, exc_traceback)
+
+# Only override excepthook if we're in the main thread
+if threading.current_thread() is threading.main_thread():
+    sys.excepthook = _quiet_excepthook
 
 # Ensure we're in the correct directory
 script_dir = Path(__file__).parent.absolute()
@@ -118,7 +186,7 @@ from app import create_app, socketio
 parser = argparse.ArgumentParser(description='Beep ML Studio - ML Model Development Environment')
 parser.add_argument('--industry', type=str, help='Force industry mode (pet, health, oilandgas, etc.)')
 parser.add_argument('--host', type=str, default=None, help='Host address (default: 127.0.0.1)')
-parser.add_argument('--port', type=int, default=None, help='Port number (default: 5001)')
+parser.add_argument('--port', type=int, default=None, help='Port number (default: 5002)')
 parser.add_argument('--debug', action='store_true', help='Enable debug mode')
 parser.add_argument('--no-browser', action='store_true', help='Do not open browser automatically')
 args = parser.parse_args()
@@ -131,7 +199,7 @@ app = create_app()
 
 if __name__ == '__main__':
     host = args.host or os.environ.get('HOST', '127.0.0.1')
-    port = args.port or int(os.environ.get('PORT', 5001))
+    port = args.port or int(os.environ.get('PORT', 5002))
     debug = args.debug or os.environ.get('DEBUG', 'true').lower() == 'true'
     open_browser = not args.no_browser and os.environ.get('OPEN_BROWSER', 'true').lower() == 'true'
     

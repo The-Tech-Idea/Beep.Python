@@ -104,7 +104,6 @@ class Settings(db.Model):
             {'key': 'auto_save_models', 'category': 'ml', 'value': 'true', 'value_type': 'boolean', 'description': 'Automatically save trained models'},
             
             # UI Settings
-            {'key': 'theme', 'category': 'ui', 'value': 'light', 'value_type': 'string', 'description': 'UI theme (light, dark)'},
             {'key': 'items_per_page', 'category': 'ui', 'value': '20', 'value_type': 'number', 'description': 'Number of items per page in lists'},
             {'key': 'auto_refresh_interval', 'category': 'ui', 'value': '30', 'value_type': 'number', 'description': 'Auto-refresh interval in seconds'},
             {'key': 'show_advanced_options', 'category': 'ui', 'value': 'false', 'value_type': 'boolean', 'description': 'Show advanced options in UI'},

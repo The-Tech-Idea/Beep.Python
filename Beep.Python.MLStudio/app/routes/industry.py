@@ -54,7 +54,6 @@ def set_mode(profile_id):
         return redirect(url_for('industry.select_mode'))
     
     session['industry_mode'] = profile_id
-    flash(f'Switched to {profile.name} mode', 'success')
     
     # Redirect to appropriate dashboard
     if profile_id == 'advanced':

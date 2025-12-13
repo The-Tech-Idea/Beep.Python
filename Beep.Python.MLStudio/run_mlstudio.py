@@ -384,7 +384,7 @@ def setup_environment_file():
 SECRET_KEY=mlstudio-dev-secret-key-change-in-production
 DEBUG=true
 HOST=127.0.0.1
-PORT=5001
+PORT=5002
 
 # Database
 DATABASE_URL=sqlite:///mlstudio.db
@@ -616,7 +616,7 @@ def main():
     import argparse
     parser = argparse.ArgumentParser(description='Beep ML Studio - Setup & Launcher')
     parser.add_argument('--industry', type=str, help='Force industry mode (pet, health, oilandgas, etc.)')
-    parser.add_argument('--port', type=int, help='Port number')
+    parser.add_argument('--port', type=int, default=5002, help='Port number (default: 5002)')
     parser.add_argument('--host', type=str, help='Host address')
     parser.add_argument('--debug', action='store_true', help='Enable debug mode')
     parser.add_argument('--no-browser', action='store_true', help='Do not open browser automatically')
@@ -628,8 +628,8 @@ def main():
     extra_args = []
     if args.industry:
         extra_args.append(f'--industry={args.industry}')
-    if args.port:
-        extra_args.append(f'--port={args.port}')
+    # Always pass port (default is 5002)
+    extra_args.append(f'--port={args.port}')
     if args.host:
         extra_args.append(f'--host={args.host}')
     if args.debug:
