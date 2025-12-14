@@ -1349,9 +1349,11 @@ def api_hardware_detect():
     
     profile = hw_service.detect_hardware(force_refresh=True)
     recommended = hw_service.get_recommended_backend()
+    profile_dict = profile.to_dict()
     
     return jsonify({
-        'profile': profile.to_dict(),
+        'profile': profile_dict,
+        'backends': profile_dict.get('backends', []),  # Include backends at top level for frontend compatibility
         'recommended': recommended,
         'active_backend': hw_service.get_active_backend()
     })
@@ -2267,48 +2269,41 @@ def api_create_model_environment(model_id: str):
         hardware = rec_service.detect_hardware()
         gpu_backend = rec_service.get_recommended_backend(hardware)
     
-    # STRICT VALIDATION: Check if required toolkit is installed before proceeding
+    # NOTE: We use prebuilt DLLs/wheels (LM Studio style) - no toolkit installation required
+    # Skip toolkit validation for backends that use prebuilt binaries
+    # CUDA, Vulkan, and other backends use prebuilt wheels that don't require SDK installation
     if gpu_backend and gpu_backend.lower() != 'cpu':
-        env_mgr = EnvironmentManager()
-        toolkit_status = env_mgr.check_backend_toolkit_availability(gpu_backend)
+        backend_lower = gpu_backend.lower()
+        # Skip validation for backends that use prebuilt DLLs/wheels
+        # These backends download prebuilt binaries and don't need system toolkits
+        uses_prebuilt = backend_lower in ['cuda', 'nvidia', 'cuda12', 'cuda11', 'cuda13', 'vulkan', 'metal', 'rocm', 'amd', 'hip']
         
-        if not toolkit_status.get('available', False):
-            toolkit_name = toolkit_status.get('toolkit_name', 'Toolkit')
-            install_url = toolkit_status.get('install_url', '')
+        if not uses_prebuilt:
+            # Only validate for backends that might need compilation
+            env_mgr = EnvironmentManager()
+            toolkit_status = env_mgr.check_backend_toolkit_availability(gpu_backend)
             
-            # Check if auto-install is available
-            auto_install_available = False
-            try:
-                from app.services.cuda_installer import get_toolkit_installer
-                installer = get_toolkit_installer()
-                if gpu_backend.lower() in ['cuda', 'nvidia', 'cuda12']:
-                    auto_install_available = installer.get_download_url() is not None
-                elif gpu_backend.lower() == 'vulkan':
-                    auto_install_available = installer.get_vulkan_download_url() is not None
-            except:
-                pass
-            
-            error_msg = f"{toolkit_name} is required but not installed.\n\n"
-            error_msg += f"{toolkit_status.get('message', '')}\n\n"
-            
-            if auto_install_available:
-                error_msg += "You can install it automatically via the wizard's 'Install Toolkit' button.\n"
-                error_msg += "Or use the API endpoint: /llm/api/toolkit/install\n\n"
-            
-            if install_url:
-                error_msg += f"Download: {install_url}\n\n"
-            
-            error_msg += "Environment creation cannot proceed without the required toolkit. Please install it first."
-            
-            return jsonify({
-                'success': False,
-                'error': error_msg,
-                'toolkit_required': True,
-                'toolkit_name': toolkit_name,
-                'auto_install_available': auto_install_available,
-                'install_url': install_url,
-                'backend': gpu_backend
-            }), 400
+            if not toolkit_status.get('available', False):
+                toolkit_name = toolkit_status.get('toolkit_name', 'Toolkit')
+                install_url = toolkit_status.get('install_url', '')
+                
+                error_msg = f"{toolkit_name} is required but not installed.\n\n"
+                error_msg += f"{toolkit_status.get('message', '')}\n\n"
+                
+                if install_url:
+                    error_msg += f"Download: {install_url}\n\n"
+                
+                error_msg += "Environment creation cannot proceed without the required toolkit. Please install it first."
+                
+                return jsonify({
+                    'success': False,
+                    'error': error_msg,
+                    'toolkit_required': True,
+                    'toolkit_name': toolkit_name,
+                    'auto_install_available': False,
+                    'install_url': install_url,
+                    'backend': gpu_backend
+                }), 400
     
     # Create task for environment setup
     task_mgr = TaskManager()

@@ -369,6 +369,10 @@ class LLMManager:
         models = []
         all_model_paths = self.repo_mgr.get_all_model_paths()
         
+        # Track models by normalized path and filename+size to prevent duplicates
+        seen_paths = set()
+        seen_by_file = {}  # (filename, size) -> model
+        
         # Load from all directories
         for model_path in all_model_paths:
             models_index = model_path / 'index.json'
@@ -380,11 +384,65 @@ class LLMManager:
                         for model_data in index.get('models', []):
                             # Verify file still exists
                             model_file_path = Path(model_data.get('path', ''))
-                            if model_file_path.exists():
-                                models.append(LocalModel(**model_data))
-                            else:
+                            
+                            if not model_file_path.exists():
                                 model_data['status'] = 'missing'
-                                models.append(LocalModel(**model_data))
+                            
+                            try:
+                                # Normalize path for comparison
+                                normalized_path = str(model_file_path.resolve())
+                                
+                                # Check if we've already seen this exact path
+                                if normalized_path in seen_paths:
+                                    continue
+                                
+                                # Also check by filename and size
+                                filename = model_data.get('filename', model_file_path.name)
+                                size = model_data.get('size', model_file_path.stat().st_size if model_file_path.exists() else 0)
+                                key = (filename, size)
+                                
+                                if key in seen_by_file:
+                                    # Duplicate found - keep the one with more complete metadata
+                                    existing = seen_by_file[key]
+                                    new_model = LocalModel(**model_data)
+                                    
+                                    # Prefer model with 'local' source over 'huggingface'
+                                    # or model with more complete metadata
+                                    if (new_model.source == 'local' and existing.source != 'local') or \
+                                       (new_model.quantization and not existing.quantization) or \
+                                       (len(new_model.metadata or {}) > len(existing.metadata or {})):
+                                        # Replace existing with new one
+                                        models = [m for m in models if m.id != existing.id]
+                                        models.append(new_model)
+                                        seen_by_file[key] = new_model
+                                        # Update seen_paths
+                                        try:
+                                            existing_path = str(Path(existing.path).resolve())
+                                            if existing_path in seen_paths:
+                                                del seen_paths[existing_path]
+                                        except:
+                                            pass
+                                        seen_paths.add(normalized_path)
+                                    # Otherwise keep existing, skip new one
+                                    continue
+                                
+                                # New unique model
+                                model = LocalModel(**model_data)
+                                models.append(model)
+                                seen_paths.add(normalized_path)
+                                seen_by_file[key] = model
+                                
+                            except Exception as e:
+                                # If path resolution fails, still check by filename+size
+                                filename = model_data.get('filename', model_file_path.name)
+                                size = model_data.get('size', 0)
+                                key = (filename, size)
+                                
+                                if key not in seen_by_file and str(model_file_path) not in seen_paths:
+                                    model = LocalModel(**model_data)
+                                    models.append(model)
+                                    seen_paths.add(str(model_file_path))
+                                    seen_by_file[key] = model
                 except Exception as e:
                     print(f"Error loading models index from {model_path}: {e}")
         
@@ -417,21 +475,52 @@ class LLMManager:
             if not model_paths:
                 model_paths = [self.models_path]  # Fallback to legacy path
         
-        existing_paths = {m.path for m in existing_models}
+        # Normalize existing paths for comparison (resolve to absolute paths)
+        existing_paths_normalized = set()
+        existing_by_filename_size = {}  # (filename, size) -> model
+        
+        for m in existing_models:
+            try:
+                # Normalize path - resolve to absolute and normalize separators
+                path_obj = Path(m.path)
+                if path_obj.exists():
+                    normalized = str(path_obj.resolve())
+                    existing_paths_normalized.add(normalized)
+                    # Also index by filename and size to catch duplicates
+                    key = (m.filename, m.size)
+                    if key not in existing_by_filename_size:
+                        existing_by_filename_size[key] = m
+            except Exception:
+                # If path doesn't exist or can't be resolved, use original path
+                existing_paths_normalized.add(str(Path(m.path).resolve()) if Path(m.path).is_absolute() else m.path)
         
         # Look for GGUF files in all directories
         for model_path in model_paths:
             if not model_path.exists():
                 continue
             for model_file in model_path.rglob('*.gguf'):
-                if str(model_file) not in existing_paths:
+                try:
+                    # Normalize the scanned file path
+                    normalized_file_path = str(model_file.resolve())
+                    
+                    # Check if this file is already indexed (by normalized path)
+                    if normalized_file_path in existing_paths_normalized:
+                        continue
+                    
+                    # Also check by filename and size to catch duplicates with different path formats
+                    file_size = model_file.stat().st_size
+                    key = (model_file.name, file_size)
+                    if key in existing_by_filename_size:
+                        # This file is already indexed, skip it
+                        continue
+                    
                     # Add unindexed model
                     model = LocalModel(
                         id=hashlib.md5(str(model_file).encode()).hexdigest()[:12],
                         name=model_file.stem,
                         path=str(model_file),
                         filename=model_file.name,
-                        size=model_file.stat().st_size,
+                        size=file_size,
                         format='gguf',
                         source='local',
                         status='available',
@@ -440,9 +529,19 @@ class LLMManager:
                         ).isoformat()
                     )
                     existing_models.append(model)
+                    # Add to our tracking sets to prevent duplicates in this scan
+                    existing_paths_normalized.add(normalized_file_path)
+                    existing_by_filename_size[key] = model
+                except Exception as e:
+                    # Skip files that can't be accessed
+                    print(f"Error scanning model file {model_file}: {e}")
+                    continue
     
     def _save_models_index(self, models: List[LocalModel]):
-        """Save models index to appropriate directories"""
+        """Save models index to appropriate directories, with deduplication"""
+        # First deduplicate models
+        models = self._deduplicate_models(models)
+        
         # Group models by directory
         from app.services.repository_manager import get_repository_manager
         repo_mgr = get_repository_manager()
@@ -485,11 +584,122 @@ class LLMManager:
                     'models': []
                 }, f, indent=2)
     
+    def _deduplicate_models(self, models: List[LocalModel]) -> List[LocalModel]:
+        """Remove duplicate models, keeping the best version of each"""
+        seen_paths = {}
+        seen_by_file = {}  # (filename, size) -> model
+        deduplicated = []
+        
+        for model in models:
+            model_path = Path(model.path)
+            
+            try:
+                # Normalize path
+                normalized_path = str(model_path.resolve())
+                
+                # Check by normalized path
+                if normalized_path in seen_paths:
+                    # Duplicate by path - keep the better one
+                    existing = seen_paths[normalized_path]
+                    if self._is_better_model(model, existing):
+                        # Replace existing with new one
+                        deduplicated = [m for m in deduplicated if m.id != existing.id]
+                        deduplicated.append(model)
+                        seen_paths[normalized_path] = model
+                        # Update seen_by_file too
+                        key = (model.filename, model.size)
+                        seen_by_file[key] = model
+                    # Otherwise keep existing, skip new one
+                    continue
+                
+                # Check by filename and size
+                key = (model.filename, model.size)
+                if key in seen_by_file:
+                    # Duplicate by filename+size - keep the better one
+                    existing = seen_by_file[key]
+                    if self._is_better_model(model, existing):
+                        # Replace existing with new one
+                        deduplicated = [m for m in deduplicated if m.id != existing.id]
+                        deduplicated.append(model)
+                        seen_by_file[key] = model
+                        # Update seen_paths too
+                        try:
+                            existing_path = str(Path(existing.path).resolve())
+                            if existing_path in seen_paths:
+                                del seen_paths[existing_path]
+                            seen_paths[normalized_path] = model
+                        except:
+                            seen_paths[normalized_path] = model
+                    # Otherwise keep existing, skip new one
+                    continue
+                
+                # New unique model
+                deduplicated.append(model)
+                seen_paths[normalized_path] = model
+                seen_by_file[key] = model
+                
+            except Exception:
+                # If path resolution fails, use original path string
+                if model.path not in seen_paths:
+                    deduplicated.append(model)
+                    seen_paths[model.path] = model
+                    key = (model.filename, model.size)
+                    if key not in seen_by_file:
+                        seen_by_file[key] = model
+        
+        return deduplicated
+    
+    def _is_better_model(self, new: LocalModel, existing: LocalModel) -> bool:
+        """Determine if new model is better than existing (for deduplication)"""
+        # Prefer 'local' source over 'huggingface'
+        if new.source == 'local' and existing.source != 'local':
+            return True
+        if existing.source == 'local' and new.source != 'local':
+            return False
+        
+        # Prefer model with quantization info
+        if new.quantization and not existing.quantization:
+            return True
+        if existing.quantization and not new.quantization:
+            return False
+        
+        # Prefer model with more complete metadata
+        new_meta = new.metadata or {}
+        existing_meta = existing.metadata or {}
+        if len(new_meta) > len(existing_meta):
+            return True
+        if len(existing_meta) > len(new_meta):
+            return False
+        
+        # Prefer model with parameters info
+        if new.parameters and not existing.parameters:
+            return True
+        if existing.parameters and not new.parameters:
+            return False
+        
+        # If all else equal, prefer the one that was added more recently (keep existing)
+        return False
+    
     def add_local_model(self, model: LocalModel):
-        """Add a model to the index"""
+        """Add a model to the index, removing any duplicates"""
         models = self.get_local_models()
+        
         # Remove existing with same ID
         models = [m for m in models if m.id != model.id]
+        
+        # Also remove duplicates by normalized path
+        model_path = Path(model.path)
+        try:
+            normalized_path = str(model_path.resolve())
+            models = [m for m in models if str(Path(m.path).resolve()) != normalized_path]
+        except Exception:
+            # If resolution fails, use original path
+            models = [m for m in models if m.path != model.path]
+        
+        # Also remove duplicates by filename and size
+        key = (model.filename, model.size)
+        models = [m for m in models if (m.filename, m.size) != key or m.id == model.id]
+        
         models.append(model)
         self._save_models_index(models)
     
@@ -517,6 +727,40 @@ class LLMManager:
         """Get a specific local model by ID"""
         models = self.get_local_models()
         return next((m for m in models if m.id == model_id), None)
+    
+    def cleanup_duplicate_models(self) -> Dict[str, Any]:
+        """
+        Clean up duplicate models from index files.
+        This will deduplicate and re-save all model indexes.
+        
+        Returns:
+            Dict with cleanup results
+        """
+        try:
+            # Get all models (this will deduplicate on load)
+            models_before = self.get_local_models()
+            
+            # Deduplicate explicitly
+            models_after = self._deduplicate_models(models_before)
+            
+            # Count duplicates removed
+            duplicates_removed = len(models_before) - len(models_after)
+            
+            if duplicates_removed > 0:
+                # Re-save deduplicated models
+                self._save_models_index(models_after)
+            
+            return {
+                'success': True,
+                'models_before': len(models_before),
+                'models_after': len(models_after),
+                'duplicates_removed': duplicates_removed
+            }
+        except Exception as e:
+            return {
+                'success': False,
+                'error': str(e)
+            }
     
     # =====================
     # Download Management

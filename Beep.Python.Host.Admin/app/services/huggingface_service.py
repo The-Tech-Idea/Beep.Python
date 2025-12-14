@@ -601,14 +601,15 @@ class HuggingFaceService:
             filename=filename,
             size=size,
             format='gguf' if filename.endswith('.gguf') else 'other',
-            source='huggingface',
+            source='local',  # Once downloaded, it's a local file
             quantization=quantization,
             parameters=self._extract_model_size(model_id) or self._extract_model_size(filename),
             status='available',
             downloaded_at=datetime.now().isoformat(),
             metadata={
                 'model_id': model_id,
-                'source_url': f"https://huggingface.co/{model_id}"
+                'source_url': f"https://huggingface.co/{model_id}",
+                'original_source': 'huggingface'  # Track where it came from in metadata
             }
         )
         

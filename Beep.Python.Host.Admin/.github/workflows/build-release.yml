@@ -1,0 +1,201 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Trigger on version tags like v1.0.0
+  workflow_dispatch:  # Allow manual triggering
+    inputs:
+      version:
+        description: 'Version to build (e.g., 1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  build-windows:
+    name: Build Windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            VERSION=${GITHUB_REF#refs/tags/v}
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+      
+      - name: Setup embedded Python
+        env:
+          CI: 1
+        run: |
+          call setup_embedded_python.bat
+        shell: cmd
+      
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyinstaller
+      
+      - name: Build with PyInstaller
+        run: |
+          python scripts/build_windows.py --version ${{ steps.version.outputs.version }}
+        shell: bash
+      
+      - name: Create installer
+        run: |
+          python scripts/create_windows_installer.py --version ${{ steps.version.outputs.version }}
+        shell: bash
+        continue-on-error: true
+      
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: beep-python-windows-${{ steps.version.outputs.version }}
+          path: dist/windows/*.exe
+          retention-days: 30
+
+  build-linux:
+    name: Build Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            VERSION=${GITHUB_REF#refs/tags/v}
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Setup embedded Python
+        run: |
+          chmod +x setup_embedded_python.sh
+          ./setup_embedded_python.sh
+      
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyinstaller
+          sudo apt-get update
+          sudo apt-get install -y fakeroot dpkg-dev rpm
+      
+      - name: Build with PyInstaller
+        run: |
+          python scripts/build_linux.py --version ${{ steps.version.outputs.version }}
+      
+      - name: Create Linux packages
+        run: |
+          python scripts/create_linux_package.py --version ${{ steps.version.outputs.version }}
+      
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: beep-python-linux-${{ steps.version.outputs.version }}
+          path: dist/linux/*
+          retention-days: 30
+
+  build-macos:
+    name: Build macOS
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            VERSION=${GITHUB_REF#refs/tags/v}
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Setup embedded Python
+        run: |
+          chmod +x setup_embedded_python.sh
+          ./setup_embedded_python.sh
+      
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyinstaller
+          brew install create-dmg || true
+      
+      - name: Build with PyInstaller
+        run: |
+          python scripts/build_macos.py --version ${{ steps.version.outputs.version }}
+      
+      - name: Create macOS package
+        run: |
+          python scripts/create_macos_package.py --version ${{ steps.version.outputs.version }}
+      
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: beep-python-macos-${{ steps.version.outputs.version }}
+          path: dist/macos/*
+          retention-days: 30
+
+  create-release:
+    name: Create Release
+    needs: [build-windows, build-linux, build-macos]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Get version
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref }}
+          name: Release ${{ steps.version.outputs.version }}
+          body: |
+            ## Beep.Python Host Admin ${{ steps.version.outputs.version }}
+            
+            ### Downloads
+            - **Windows**: `beep-python-windows-${{ steps.version.outputs.version }}` folder
+            - **Linux**: `beep-python-linux-${{ steps.version.outputs.version }}` folder
+            - **macOS**: `beep-python-macos-${{ steps.version.outputs.version }}` folder
+            
+            ### Installation
+            See the [README](README.md) for installation instructions.
+          files: |
+            beep-python-windows-*/*
+            beep-python-linux-*/*
+            beep-python-macos-*/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

@@ -1,0 +1,5 @@
+# Ignore the models directory
+models/
+
+# Ignore the downloads directory
+downloads/

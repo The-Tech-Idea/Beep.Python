@@ -44,10 +44,10 @@
                     <small class="text-muted" id="env-backend-hint">
                         <span id="detected-hardware"></span>
                     </small>
-                    <div class="alert alert-warning mt-2 small py-2" id="gpu-compile-warning" style="display: none;">
-                        <i class="bi bi-exclamation-triangle me-1"></i>
-                        <strong>Note:</strong> GPU builds compile from source and may take 5-15 minutes.
-                        Ensure you have the required SDK installed (CUDA Toolkit, ROCm, etc.)
+                    <div class="alert alert-info mt-2 small py-2" id="gpu-compile-warning" style="display: none;">
+                        <i class="bi bi-info-circle me-1"></i>
+                        <strong>Note:</strong> GPU backends use pre-built DLLs (LM Studio style).
+                        No SDK installation required - backend DLLs will be downloaded automatically.
                     </div>
                 </div>
 
@@ -68,7 +68,7 @@
                         </div>
                         <div class="setup-step" id="step-install-deps">
                             <i class="bi bi-circle step-icon"></i>
-                            <span class="step-text">Installing llama-cpp-python...</span>
+                            <span class="step-text">Installing backend DLLs and llama-cpp-python...</span>
                         </div>
                         <div class="setup-step" id="step-verify">
                             <i class="bi bi-circle step-icon"></i>

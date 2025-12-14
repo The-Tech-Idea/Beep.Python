@@ -1,0 +1,16 @@
+{
+  "servers": {
+    "bb003a53ac5b": {
+      "model_id": "bb003a53ac5b",
+      "model_path": "C:\\Users\\f_ald\\source\\repos\\The-Tech-Idea\\Beep.Python\\Beep.Python.Host.Admin\\models\\SanctumAI_granite-3b-code-instruct-GGUF\\granite-3b-code-instruct.Q8_0.gguf",
+      "port": 8081,
+      "host": "127.0.0.1",
+      "pid": 6192,
+      "status": "running",
+      "backend": "cuda",
+      "started_at": "2025-12-14T13:03:47.526232",
+      "context_size": 4096,
+      "gpu_layers": 0
+    }
+  }
+}

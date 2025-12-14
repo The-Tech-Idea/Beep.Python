@@ -326,13 +326,22 @@ class HardwareService:
         
         # Method 1: Try nvidia-smi
         try:
+            # Use CREATE_NO_WINDOW on Windows to prevent console popup
+            kwargs = {
+                "capture_output": True,
+                "text": True,
+                "timeout": 10
+            }
+            if platform.system() == "Windows":
+                kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
+            
             result = subprocess.run(
                 ["nvidia-smi", "--query-gpu=index,name,memory.total,memory.free,driver_version,compute_cap", 
                  "--format=csv,noheader,nounits"],
-                capture_output=True, text=True, timeout=10
+                **kwargs
             )
             
-            if result.returncode == 0:
+            if result.returncode == 0 and result.stdout.strip():
                 for line in result.stdout.strip().split('\n'):
                     if line.strip():
                         parts = [p.strip() for p in line.split(',')]
@@ -346,7 +355,11 @@ class HardwareService:
                                 driver_version=parts[4],
                                 compute_capability=parts[5]
                             ))
-        except:
+        except (FileNotFoundError, subprocess.TimeoutExpired, Exception) as e:
+            # Log error for debugging but don't fail
+            import traceback
+            print(f"GPU detection error (nvidia-smi): {e}")
+            traceback.print_exc()
             pass
         
         # Method 2: Try torch.cuda

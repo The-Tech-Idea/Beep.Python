@@ -35,6 +35,11 @@ if [ -d "python-embedded" ] && [ -f "python-embedded/bin/python3" ]; then
     echo "Embedded Python already installed."
     echo "Location: python-embedded/"
     echo ""
+    # Skip prompt in CI/CD environments
+    if [ "${CI}" = "1" ] || [ -n "${CI}" ]; then
+        echo "CI environment detected. Using existing embedded Python."
+        exit 0
+    fi
     read -p "Do you want to re-download and reinstall? (y/N) " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then

@@ -13,6 +13,11 @@ if exist "python-embedded\python.exe" (
     echo Embedded Python already installed.
     echo Location: python-embedded\
     echo.
+    REM Skip prompt in CI/CD environments
+    if defined CI (
+        echo CI environment detected. Using existing embedded Python.
+        goto :end
+    )
     choice /C YN /M "Do you want to re-download and reinstall"
     if errorlevel 2 goto :skip_download
     if errorlevel 1 goto :download
@@ -92,4 +97,7 @@ echo Skipping download. Using existing embedded Python.
 echo.
 
 :end
-pause
+REM Skip pause in CI/CD environments
+if not defined CI (
+    pause
+)

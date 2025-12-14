@@ -286,8 +286,8 @@ class EnvironmentManager:
         """
         Install llama-cpp-python with GPU support.
         
-        For GPU support, llama-cpp-python must be compiled from source with
-        the appropriate CMAKE arguments.
+        Uses pre-built wheels (LM Studio style) - no compilation needed.
+        Pre-built wheels include all necessary GPU libraries.
         
         Args:
             name: Virtual environment name
@@ -300,147 +300,27 @@ class EnvironmentManager:
         
         if platform.system() == "Windows":
             python_exe = venv_path / "Scripts" / "python.exe"
+            pip_exe = venv_path / "Scripts" / "pip.exe"
         else:
             python_exe = venv_path / "bin" / "python"
+            pip_exe = venv_path / "bin" / "pip"
         
         if not python_exe.exists():
             raise ValueError(f"Environment '{name}' not found")
         
-        # Set up environment variables for CMAKE
+        # Set up environment variables (needed for other backends that compile from source)
         env = os.environ.copy()
         
-        # Configure CMAKE args based on backend
-        cmake_args = []
-        
-        # Track CUDA detection for later use
-        nvcc_found = False
+        # Use pre-built wheels (LM Studio style) - no CUDA Toolkit required
+        # Pre-built wheels from: https://github.com/jllllll/llama-cpp-python-cuBLAS-wheels
+        # These wheels include all CUDA runtime libraries - no SDK installation needed
+        install_command = None
         nvidia_gpu_present = False
-        cuda_warning = None  # Warning message for CUDA detection issues
+        cmake_args = []
+        cuda_warning = None  # For compatibility with return value
         
         if gpu_backend == 'cuda' or gpu_backend == 'nvidia' or gpu_backend == 'cuda12':
-            # CUDA support (NVIDIA)
-            # Newer llama.cpp versions use GGML_CUDA, older versions use LLAMA_CUBLAS
-            # We'll try GGML_CUDA first (newer), and if that fails, the error will indicate
-            # which flag to use. For now, use GGML_CUDA as it's the current standard.
-            cmake_args = ["-DGGML_CUDA=on"]
-            env['CMAKE_ARGS'] = ' '.join(cmake_args)
-            env['FORCE_CMAKE'] = '1'
-            
-            # Find and configure CUDA Toolkit paths
-            cuda_path = None
-            cuda_bin = None
-            
-            # Method 1: Check CUDA_PATH environment variable
-            if 'CUDA_PATH' in os.environ:
-                cuda_path = os.environ['CUDA_PATH']
-                cuda_bin = Path(cuda_path) / 'bin'
-                env['CUDA_PATH'] = cuda_path
-                if cuda_bin.exists():
-                    # Add CUDA bin to PATH for CMAKE to find nvcc
-                    current_path = env.get('PATH', '')
-                    env['PATH'] = str(cuda_bin) + os.pathsep + current_path
-            
-            # Method 2: Check common installation paths (Windows)
-            if not cuda_path and platform.system() == 'Windows':
-                common_paths = [
-                    Path('C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA'),
-                    Path('C:/Program Files (x86)/NVIDIA GPU Computing Toolkit/CUDA'),
-                ]
-                for base_path in common_paths:
-                    if base_path.exists():
-                        # Find latest CUDA version
-                        versions = sorted([d for d in base_path.iterdir() if d.is_dir() and d.name.startswith('v')], reverse=True)
-                        if versions:
-                            cuda_path = str(versions[0])
-                            cuda_bin = versions[0] / 'bin'
-                            env['CUDA_PATH'] = cuda_path
-                            if cuda_bin.exists():
-                                current_path = env.get('PATH', '')
-                                env['PATH'] = str(cuda_bin) + os.pathsep + current_path
-                            break
-            
-            # Method 3: Check common Linux installation paths
-            if not cuda_path and platform.system() == 'Linux':
-                common_linux_paths = [
-                    Path('/usr/local/cuda'),
-                    Path('/opt/cuda'),
-                    Path('/usr/local/cuda-12'),
-                    Path('/usr/local/cuda-11'),
-                ]
-                for cuda_install_path in common_linux_paths:
-                    if cuda_install_path.exists():
-                        cuda_path = str(cuda_install_path)
-                        cuda_bin = cuda_install_path / 'bin'
-                        env['CUDA_PATH'] = cuda_path
-                        if cuda_bin.exists():
-                            current_path = env.get('PATH', '')
-                            env['PATH'] = str(cuda_bin) + os.pathsep + current_path
-                        break
-            
-            # Set additional CMAKE variables to help it find CUDA
-            if cuda_path:
-                # CMAKE can use CUDA_PATH to find CUDA
-                env['CUDA_PATH'] = cuda_path
-                # Also set CMAKE_PREFIX_PATH as fallback
-                cuda_lib = Path(cuda_path) / 'lib64'
-                if cuda_lib.exists():
-                    cmake_prefix = env.get('CMAKE_PREFIX_PATH', '')
-                    if cmake_prefix:
-                        env['CMAKE_PREFIX_PATH'] = f"{cuda_path}{os.pathsep}{cmake_prefix}"
-                    else:
-                        env['CMAKE_PREFIX_PATH'] = cuda_path
-            
-            # Verify nvcc is accessible (either in PATH or we found it)
-            nvcc_found = False
-            nvcc_path = None
-            
-            # First, try to find nvcc in the detected CUDA path
-            if cuda_path:
-                nvcc_exe = 'nvcc.exe' if platform.system() == 'Windows' else 'nvcc'
-                potential_nvcc = Path(cuda_path) / 'bin' / nvcc_exe
-                if potential_nvcc.exists():
-                    nvcc_path = str(potential_nvcc)
-                    nvcc_found = True
-            
-            # If not found in path, try running nvcc with updated PATH
-            if not nvcc_found:
-                try:
-                    nvcc_check = subprocess.run(
-                        ['nvcc', '--version'],
-                        capture_output=True,
-                        text=True,
-                        timeout=5,
-                        env=env  # Use env with updated PATH
-                    )
-                    if nvcc_check.returncode == 0:
-                        nvcc_found = True
-                        # Extract nvcc path from output or find it
-                        if platform.system() == 'Windows':
-                            nvcc_path = str(Path(cuda_path) / 'bin' / 'nvcc.exe') if cuda_path else None
-                        else:
-                            nvcc_path = str(Path(cuda_path) / 'bin' / 'nvcc') if cuda_path else None
-                except (FileNotFoundError, subprocess.TimeoutExpired):
-                    pass
-            
-            # Verify CUDA libraries exist (even if nvcc not found, libraries might be there)
-            cuda_libs_found = False
-            if cuda_path:
-                cuda_lib_path = Path(cuda_path) / ('lib' if platform.system() == 'Windows' else 'lib64')
-                # Check for common CUDA libraries
-                cuda_libs = ['cudart', 'cublas', 'curand']
-                for lib_name in cuda_libs:
-                    if platform.system() == 'Windows':
-                        lib_file = cuda_lib_path / f"{lib_name}*.dll"
-                    else:
-                        lib_file = cuda_lib_path / f"lib{lib_name}.so*"
-                    
-                    # Check if any matching files exist
-                    if list(cuda_lib_path.glob(lib_file.name if platform.system() == 'Windows' else f"lib{lib_name}.so*")):
-                        cuda_libs_found = True
-                        break
-            
-            # Also check if nvidia-smi works (indicates GPU/driver present)
-            nvidia_gpu_present = False
+            # Check if NVIDIA GPU is present (optional - will fallback to CPU if not)
             try:
                 nvidia_check = subprocess.run(
                     ['nvidia-smi'],
@@ -453,94 +333,13 @@ class EnvironmentManager:
             except (FileNotFoundError, subprocess.TimeoutExpired):
                 pass
             
-            # Determine if we can proceed with CUDA build
-            can_build_cuda = False
-            if cuda_path and (nvcc_found or cuda_libs_found):
-                # We have CUDA path and either nvcc or libraries - CMAKE should be able to find it
-                can_build_cuda = True
-            elif nvidia_gpu_present and cuda_path:
-                # GPU present and CUDA path found - CMAKE might still find it
-                can_build_cuda = True
-                cuda_warning = (
-                    f"CUDA Toolkit found at {cuda_path}, but nvcc compiler not directly accessible. "
-                    "CMAKE will attempt to auto-detect CUDA. If build fails, ensure CUDA Toolkit is fully installed."
-                )
-            elif nvidia_gpu_present and not cuda_path:
-                # GPU present but no CUDA path found
-                can_build_cuda = False
-                cuda_warning = (
-                    "NVIDIA GPU detected, but CUDA Toolkit not found. "
-                    "Please install CUDA Toolkit from https://developer.nvidia.com/cuda-downloads "
-                    "or set CUDA_PATH environment variable."
-                )
-            
-            if not can_build_cuda:
-                error_details = []
-                if not nvidia_gpu_present:
-                    error_details.append("  - No NVIDIA GPU detected")
-                if not cuda_path:
-                    error_details.append("  - CUDA Toolkit not found")
-                    if platform.system() == 'Windows':
-                        error_details.append("    Expected locations:")
-                        error_details.append("    - C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.x/")
-                        error_details.append("    - Set CUDA_PATH environment variable")
-                    else:
-                        error_details.append("    Expected locations:")
-                        error_details.append("    - /usr/local/cuda/")
-                        error_details.append("    - Set CUDA_PATH environment variable")
-                if not nvcc_found and not cuda_libs_found:
-                    error_details.append("  - CUDA compiler (nvcc) or libraries not found")
-                
-                # Provide automatic installation option (LM Studio style)
-                auto_install_available = True
-                try:
-                    from app.services.cuda_installer import get_toolkit_installer
-                    installer = get_toolkit_installer()
-                    download_url = installer.get_download_url()
-                    auto_install_available = download_url is not None
-                except:
-                    auto_install_available = False
-                
-                error_msg = "CUDA Toolkit not properly configured.\n\n" + \
-                           "System Requirements:\n" + \
-                           "\n".join(error_details)
-                
-                if auto_install_available:
-                    error_msg += "\n\n" + \
-                                "🔄 AUTOMATIC INSTALLATION AVAILABLE (LM Studio style):\n" + \
-                                "  You can install CUDA Toolkit automatically:\n" + \
-                                "  1. Use the 'Install CUDA Toolkit' button in the wizard\n" + \
-                                "  2. Or call /llm/api/cuda/auto-install API endpoint\n" + \
-                                "  3. The installer will download and launch automatically\n" + \
-                                "  4. Follow the installation wizard\n" + \
-                                "  5. Restart the application after installation\n\n" + \
-                                "Manual Installation (Alternative):\n"
-                else:
-                    error_msg += "\n\nInstallation Steps:\n"
-                
-                error_msg += "  1. Download CUDA Toolkit from https://developer.nvidia.com/cuda-downloads\n" + \
-                            "  2. Install CUDA Toolkit (system-level installation)\n" + \
-                            "  3. Set CUDA_PATH environment variable to CUDA installation directory\n" + \
-                            (f"     (e.g., C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.x)\n" if platform.system() == 'Windows' else
-                             f"     (e.g., /usr/local/cuda)\n") + \
-                            "  4. Restart the application\n\n" + \
-                            "Note: Python packages (nvidia-cuda-runtime-cu12, etc.) will be installed automatically in the venv."
-                
-                return {
-                    "success": False,
-                    "stdout": "",
-                    "stderr": error_msg,
-                    "gpu_backend": gpu_backend,
-                    "cmake_args": cmake_args,
-                    "gpu_verified": False,
-                    "warning": cuda_warning or "CUDA Toolkit not found - cannot build with CUDA support",
-                    "required_toolkit": "CUDA Toolkit (system-level)",
-                    "cuda_path_found": cuda_path is not None,
-                    "nvcc_found": nvcc_found,
-                    "cuda_libs_found": cuda_libs_found,
-                    "auto_install_available": auto_install_available,
-                    "auto_install_endpoint": "/llm/api/cuda/auto-install" if auto_install_available else None
-                }
+            # Use pre-built CUDA 12.1 wheel - no compilation needed
+            # Wheel includes all CUDA runtime libraries
+            install_command = [
+                str(pip_exe), "install", "llama-cpp-python",
+                "--prefer-binary",
+                "--extra-index-url=https://jllllll.github.io/llama-cpp-python-cuBLAS-wheels/AVX2/cu121"
+            ]
         elif gpu_backend == 'rocm' or gpu_backend == 'amd':
             # ROCm support (AMD)
             cmake_args = ["-DLLAMA_HIPBLAS=on"]
@@ -720,55 +519,8 @@ class EnvironmentManager:
             env['FORCE_CMAKE'] = '1'
         # else: cpu - no special args needed
         
-        # Install backend-specific Python packages in the venv for runtime support
-        # Note: System-level toolkits (CUDA Toolkit, ROCm SDK, Vulkan SDK) must be installed separately
-        
-        if gpu_backend in ['cuda', 'nvidia', 'cuda12'] and (nvcc_found or nvidia_gpu_present):
-            # CUDA: Install Python packages that provide CUDA runtime libraries
-            # System requirement: CUDA Toolkit must be installed (system-level)
-            try:
-                # Try to detect CUDA version to install matching Python packages
-                cuda_version = None
-                if 'CUDA_PATH' in env:
-                    cuda_path_str = env['CUDA_PATH']
-                    # Extract version from path (e.g., "C:/Program Files/.../CUDA/v12.8")
-                    import re
-                    version_match = re.search(r'v?(\d+)\.(\d+)', cuda_path_str)
-                    if version_match:
-                        major, minor = version_match.groups()
-                        cuda_version = f"{major}.{minor}"
-                
-                # Install CUDA Python packages (these provide runtime libraries)
-                # Use cu12 for CUDA 12.x, cu11 for CUDA 11.x, etc.
-                cuda_pkg_suffix = "cu12"  # Default to CUDA 12
-                if cuda_version:
-                    major_ver = int(cuda_version.split('.')[0])
-                    if major_ver == 11:
-                        cuda_pkg_suffix = "cu11"
-                    elif major_ver == 12:
-                        cuda_pkg_suffix = "cu12"
-                
-                # Install CUDA runtime packages (non-critical, continue if they fail)
-                cuda_packages = [
-                    f"nvidia-cuda-runtime-{cuda_pkg_suffix}",
-                    f"nvidia-cublas-{cuda_pkg_suffix}",
-                ]
-                
-                for pkg in cuda_packages:
-                    try:
-                        subprocess.run(
-                            [str(python_exe), "-m", "pip", "install", pkg, "--quiet"],
-                            capture_output=True,
-                            text=True,
-                            timeout=120,
-                            env=env
-                        )
-                    except (subprocess.TimeoutExpired, Exception):
-                        # Non-critical - continue even if some packages fail
-                        pass
-            except Exception:
-                # Non-critical - continue with installation
-                pass
+        # Pre-built wheels include all necessary runtime libraries
+        # No additional packages needed for CUDA - everything is bundled in the wheel
         
         elif gpu_backend == 'rocm' or gpu_backend == 'amd':
             # ROCm: No Python packages needed - all libraries are system-level
@@ -795,14 +547,18 @@ class EnvironmentManager:
             timeout=60
         )
         
-        # Install with --no-cache-dir to force rebuild
-        cmd = [str(python_exe), "-m", "pip", "install", "--no-cache-dir", "--force-reinstall", "llama-cpp-python"]
+        # Use pre-built wheel command if available, otherwise fallback to standard install
+        if install_command:
+            cmd = install_command
+        else:
+            # Fallback to standard installation (for CPU or other backends)
+            cmd = [str(python_exe), "-m", "pip", "install", "--prefer-binary", "llama-cpp-python"]
         
         result = subprocess.run(
             cmd,
             capture_output=True,
             text=True,
-            timeout=900,  # 15 minutes - compilation can take time
+            timeout=600,  # 10 minutes - pre-built wheels install much faster
             env=env
         )
         
@@ -968,44 +724,12 @@ class EnvironmentManager:
         }
         
         if backend in ['cuda', 'nvidia', 'cuda12']:
-            result["toolkit_name"] = "CUDA Toolkit"
-            result["install_url"] = "https://developer.nvidia.com/cuda-downloads"
-            
-            nvcc_found = False
-            cuda_path = None
-            
-            # Check CUDA_PATH environment variable
-            if 'CUDA_PATH' in os.environ:
-                cuda_path = os.environ['CUDA_PATH']
-                nvcc_path = Path(cuda_path) / 'bin' / ('nvcc.exe' if platform.system() == 'Windows' else 'nvcc')
-                if nvcc_path.exists():
-                    nvcc_found = True
-            
-            # Check common Windows paths
-            if not nvcc_found and platform.system() == 'Windows':
-                common_paths = [
-                    Path('C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA'),
-                    Path('C:/Program Files (x86)/NVIDIA GPU Computing Toolkit/CUDA'),
-                ]
-                for base_path in common_paths:
-                    if base_path.exists():
-                        versions = sorted([d for d in base_path.iterdir() if d.is_dir() and d.name.startswith('v')], reverse=True)
-                        if versions:
-                            nvcc_path = versions[0] / 'bin' / 'nvcc.exe'
-                            if nvcc_path.exists():
-                                nvcc_found = True
-                                cuda_path = str(versions[0])
-                                break
-            
-            # Check nvcc in PATH
-            if not nvcc_found:
-                try:
-                    subprocess.run(['nvcc', '--version'], capture_output=True, timeout=2)
-                    nvcc_found = True
-                except (FileNotFoundError, subprocess.TimeoutExpired):
-                    pass
+            result["toolkit_name"] = "CUDA (Pre-built DLLs)"
+            result["install_url"] = ""
             
             # Check nvidia-smi (indicates GPU present)
+            # NOTE: We use prebuilt DLLs (LM Studio style) - no CUDA Toolkit required
+            # Prebuilt wheels/DLLs are downloaded automatically and include all necessary libraries
             nvidia_gpu_present = False
             try:
                 subprocess.run(['nvidia-smi'], capture_output=True, timeout=2)
@@ -1013,18 +737,16 @@ class EnvironmentManager:
             except (FileNotFoundError, subprocess.TimeoutExpired):
                 pass
             
-            if nvcc_found:
+            # With prebuilt DLLs, we only need GPU presence, not CUDA Toolkit
+            # The prebuilt wheels include all CUDA runtime libraries
+            if nvidia_gpu_present:
                 result["available"] = True
-                result["message"] = f"CUDA Toolkit found" + (f" at {cuda_path}" if cuda_path else "")
-                result["details"] = "CUDA Toolkit is installed and ready to use."
-            elif nvidia_gpu_present:
-                result["available"] = False
-                result["message"] = "NVIDIA GPU detected but CUDA Toolkit not found"
-                result["details"] = "Install CUDA Toolkit from NVIDIA. Python packages will be installed automatically."
+                result["message"] = "NVIDIA GPU detected - ready for CUDA backend"
+                result["details"] = "Pre-built CUDA DLLs will be downloaded automatically. No CUDA Toolkit installation required."
             else:
-                result["available"] = False
-                result["message"] = "CUDA Toolkit not found"
-                result["details"] = "Install CUDA Toolkit from NVIDIA to use CUDA acceleration."
+                result["available"] = True  # Still available, will use CPU fallback
+                result["message"] = "No NVIDIA GPU detected - will use CPU backend"
+                result["details"] = "CUDA backend requires NVIDIA GPU. CPU backend will be used instead."
                 
         elif backend == 'rocm' or backend == 'amd':
             result["toolkit_name"] = "ROCm SDK"
