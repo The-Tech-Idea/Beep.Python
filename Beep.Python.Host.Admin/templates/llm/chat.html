@@ -285,6 +285,35 @@ async function quickLoadModel(modelId, modelName) {
                     <input type="number" class="form-control form-control-sm bg-dark border-secondary text-light" 
                            id="maxTokens" value="2048" min="64" max="4096">
                 </div>
+                
+                <hr class="my-3 border-secondary">
+                
+                <h6 class="small mb-3"><i class="bi bi-magic me-2"></i>AI Services Integration</h6>
+                
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="enableImageGen">
+                    <label class="form-check-label small" for="enableImageGen">
+                        Auto-generate images
+                    </label>
+                    <small class="d-block text-muted ms-4">Generate images when LLM requests them</small>
+                </div>
+                
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="enableTTS">
+                    <label class="form-check-label small" for="enableTTS">
+                        Text-to-Speech
+                    </label>
+                    <small class="d-block text-muted ms-4">Convert responses to speech</small>
+                </div>
+                
+                <div id="ttsOptions" class="ms-4 mb-3" style="display: none;">
+                    <label class="form-label small">Voice</label>
+                    <select class="form-select form-select-sm bg-dark border-secondary text-light" id="ttsVoice">
+                        <option value="default">Default</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
             </div>
         </div>
         
@@ -439,6 +468,11 @@ document.getElementById('tempSlider')?.addEventListener('input', function(e) {
     document.getElementById('tempDisplay').textContent = e.target.value;
 });
 
+// TTS toggle
+document.getElementById('enableTTS')?.addEventListener('change', function() {
+    document.getElementById('ttsOptions').style.display = this.checked ? 'block' : 'none';
+});
+
 // Chat form submission
 document.getElementById('chatForm')?.addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -467,7 +501,7 @@ document.getElementById('chatForm')?.addEventListener('submit', async function(e
     await sendMessage(content);
 });
 
-function addMessage(role, content) {
+function addMessage(role, content, isHtml = false) {
     const container = document.getElementById('messagesContainer');
     const icons = {
         user: 'bi-person-fill',
@@ -477,13 +511,16 @@ function addMessage(role, content) {
     
     const messageEl = document.createElement('div');
     messageEl.className = `message ${role}`;
+    
+    const contentHtml = isHtml ? content : escapeHtml(content);
+    
     messageEl.innerHTML = `
         <div class="message-avatar">
             <i class="bi ${icons[role]}"></i>
         </div>
         <div class="message-content">
             <div class="message-role">${role.charAt(0).toUpperCase() + role.slice(1)}</div>
-            <div class="message-text">${escapeHtml(content)}</div>
+            <div class="message-text">${contentHtml}</div>
         </div>
     `;
     
@@ -491,6 +528,113 @@ function addMessage(role, content) {
     scrollToBottom();
     
     return messageEl;
+}
+
+async function sendEnhancedMessage(content, enableImageGen, enableTTS, ttsVoice) {
+    if (!currentSessionId) return;
+    
+    isStreaming = true;
+    const sendBtn = document.getElementById('sendBtn');
+    sendBtn.disabled = true;
+    
+    // Show typing indicator
+    document.getElementById('typingIndicator').style.display = 'flex';
+    scrollToBottom();
+    
+    try {
+        // Get current conversation history
+        const messages = Array.from(document.querySelectorAll('.message')).map(msgEl => {
+            const role = msgEl.classList.contains('user') ? 'user' : 
+                        msgEl.classList.contains('assistant') ? 'assistant' : 'system';
+            const content = msgEl.querySelector('.message-text').textContent;
+            return { role, content };
+        });
+        
+        // Add current user message
+        messages.push({ role: 'user', content: content });
+        
+        // Get model ID - try multiple selectors
+        const modelSelect = document.getElementById('modelSelect') || 
+                           document.querySelector('[id*="model"]') ||
+                           document.querySelector('select');
+        const modelId = modelSelect ? modelSelect.value : null;
+        
+        // Call enhanced chat API
+        const response = await fetch('/llm/api/chat/enhanced', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                messages: messages,
+                model_id: modelId,
+                options: {
+                    auto_generate_images: enableImageGen,
+                    auto_generate_speech: enableTTS,
+                    voice: ttsVoice,
+                    speed: 1.0
+                }
+            })
+        });
+        
+        const data = await response.json();
+        
+        // Hide typing indicator
+        document.getElementById('typingIndicator').style.display = 'none';
+        
+        if (data.success) {
+            // Add LLM response
+            const messageEl = addMessage('assistant', data.message);
+            
+            // Add images if generated
+            if (data.images && data.images.length > 0) {
+                data.images.forEach((imgData, idx) => {
+                    const imgContainer = document.createElement('div');
+                    imgContainer.className = 'mt-2';
+                    imgContainer.innerHTML = `
+                        <img src="data:image/png;base64,${imgData.image}" 
+                             alt="Generated image ${idx + 1}" 
+                             class="img-fluid rounded" 
+                             style="max-width: 512px; cursor: pointer;"
+                             onclick="window.open(this.src, '_blank')">
+                        <small class="text-muted d-block mt-1">Generated: ${escapeHtml(imgData.prompt)}</small>
+                    `;
+                    messageEl.querySelector('.message-content').appendChild(imgContainer);
+                });
+            }
+            
+            // Add audio player if TTS was generated
+            if (data.audio) {
+                const audioContainer = document.createElement('div');
+                audioContainer.className = 'mt-2';
+                
+                // Convert base64 to blob URL
+                const byteCharacters = atob(data.audio);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                const blob = new Blob([byteArray], { type: 'audio/mpeg' });
+                const audioUrl = URL.createObjectURL(blob);
+                
+                audioContainer.innerHTML = `
+                    <audio controls class="w-100" style="max-width: 400px;">
+                        <source src="${audioUrl}" type="audio/mpeg">
+                    </audio>
+                `;
+                messageEl.querySelector('.message-content').appendChild(audioContainer);
+            }
+            
+            scrollToBottom();
+        } else {
+            addMessage('system', 'Error: ' + (data.error || 'Unknown error'));
+        }
+    } catch (error) {
+        document.getElementById('typingIndicator').style.display = 'none';
+        addMessage('system', 'Error: ' + error.message);
+    } finally {
+        isStreaming = false;
+        sendBtn.disabled = false;
+    }
 }
 
 function escapeHtml(text) {
@@ -505,8 +649,12 @@ function scrollToBottom() {
 }
 
 async function createSession() {
-    const modelId = document.getElementById('modelSelect').value;
-    const systemPrompt = document.getElementById('systemPrompt').value.trim();
+    // Try to find model select - it might be in a different location
+    const modelSelect = document.getElementById('modelSelect') || 
+                       document.querySelector('[id*="model"]') ||
+                       document.querySelector('select');
+    const modelId = modelSelect ? modelSelect.value : null;
+    const systemPrompt = document.getElementById('systemPrompt')?.value.trim() || '';
     
     const response = await fetch('/llm/chat/session', {
         method: 'POST',
@@ -525,6 +673,16 @@ async function createSession() {
 
 async function sendMessage(content) {
     if (!currentSessionId) return;
+    
+    const enableImageGen = document.getElementById('enableImageGen')?.checked || false;
+    const enableTTS = document.getElementById('enableTTS')?.checked || false;
+    const ttsVoice = document.getElementById('ttsVoice')?.value || 'default';
+    
+    // Check if enhanced features are enabled
+    if (enableImageGen || enableTTS) {
+        await sendEnhancedMessage(content, enableImageGen, enableTTS, ttsVoice);
+        return;
+    }
     
     isStreaming = true;
     const sendBtn = document.getElementById('sendBtn');

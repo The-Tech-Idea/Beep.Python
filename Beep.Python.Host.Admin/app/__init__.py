@@ -111,6 +111,12 @@ def create_app(config_name=None):
             # Import all models to ensure they're registered
             from app.models.rag_metadata import Collection, Document, AccessPrivilege, DataSource, SyncJob, SyncJobRun
             from app.models.ml_models import MLModel, MLModelVersion, MLModelAPI, MLModelUsageLog, MLModelValidation, MLModelPermission
+            from app.models.scheduled_jobs import ScheduledJob, JobExecution
+            # Import middleware models (may not exist before migration)
+            try:
+                from app.models.middleware import RoutingRule, AccessPolicy
+            except ImportError:
+                pass  # Models will be created by migration script
             # Create any missing tables
             db.create_all()
         except Exception as e:
@@ -136,6 +142,11 @@ def create_app(config_name=None):
     from app.routes.setup import setup_bp
     from app.routes.backend_extensions import backend_ext_bp
     from app.routes.ml_models import ml_models_bp
+    from app.routes.document_extraction import document_extraction_bp
+    from app.routes.job_scheduler import job_scheduler_bp
+    from app.routes.ai_services import ai_services_bp
+    from app.routes.ai_middleware import ai_middleware_bp
+    from app.routes.llm_integration import llm_integration_bp
     
     app.register_blueprint(setup_bp, url_prefix='/setup')
     app.register_blueprint(dashboard_bp)
@@ -146,14 +157,24 @@ def create_app(config_name=None):
     app.register_blueprint(tasks_bp, url_prefix='/tasks')
     app.register_blueprint(llm_bp, url_prefix='/llm')
     app.register_blueprint(backend_ext_bp, url_prefix='/llm/backend-extensions')
+    app.register_blueprint(llm_integration_bp, url_prefix='/llm')  # LLM integration routes
     app.register_blueprint(openai_bp)  # /v1/... OpenAI-compatible API
     app.register_blueprint(rag_bp)      # /rag/... RAG management
+    app.register_blueprint(document_extraction_bp, url_prefix='/document-extraction')  # Document extraction
+    app.register_blueprint(job_scheduler_bp, url_prefix='/job-scheduler')  # Job/Task Scheduler
+    app.register_blueprint(ai_services_bp, url_prefix='/ai-services')  # AI Services (Text-to-Image, TTS, STT, etc.)
+    app.register_blueprint(ai_middleware_bp, url_prefix='/ai-middleware')  # Unified AI Services Middleware
     app.register_blueprint(ml_models_bp)  # /ml-models (web) and /api/v1/ml-models (API)
     app.register_blueprint(api_bp, url_prefix='/api/v1')
     
     # Initialize RAG Sync Scheduler (cross-platform: Windows, Mac, Linux)
     from app.services.sync_scheduler import init_scheduler
     init_scheduler(app)
+    
+    # Initialize Unified Job Scheduler
+    from app.services.job_scheduler import get_job_scheduler
+    job_scheduler = get_job_scheduler()
+    job_scheduler.init_app(app)
     
     # Pre-detect hardware at startup (cache for fast access)
     # This runs once when app starts, uses cached data if available

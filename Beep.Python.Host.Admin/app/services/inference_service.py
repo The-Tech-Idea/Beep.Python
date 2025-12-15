@@ -265,6 +265,9 @@ class InferenceService:
         2. Start llama-server for the model
         3. Communicate via HTTP API
         
+        IMPORTANT: Only ONE LLM model can be loaded at a time.
+        Loading a new model automatically unloads the current one.
+        
         Args:
             model_id: Local model ID
             config: Optional inference configuration
@@ -272,6 +275,14 @@ class InferenceService:
         # Check if already loaded
         if model_id in self._loaded_models:
             return self._loaded_models[model_id]
+        
+        # IMPORTANT: Unload any currently loaded LLM model (only one at a time)
+        # Get all currently loaded models
+        currently_loaded = list(self._loaded_models.keys())
+        for loaded_model_id in currently_loaded:
+            # Unload the previous model
+            print(f"[InferenceService] Unloading previous model {loaded_model_id} to load {model_id}")
+            self.unload_model(loaded_model_id)
         
         # Get model info
         model = self.llm_manager.get_model_by_id(model_id)
@@ -401,6 +412,8 @@ class InferenceService:
                     max_tokens=params['max_tokens'],
                     temperature=params['temperature'],
                     top_p=params['top_p'],
+                    top_k=params.get('top_k'),
+                    repeat_penalty=params.get('repeat_penalty'),
                     stop=params.get('stop'),
                     stream=False
                 )
@@ -506,6 +519,9 @@ class InferenceService:
                     max_tokens=params['max_tokens'],
                     temperature=params['temperature'],
                     top_p=params['top_p'],
+                    top_k=params.get('top_k'),
+                    repeat_penalty=params.get('repeat_penalty'),
+                    stop=params.get('stop'),
                     stream=False
                 )
                 
@@ -545,27 +561,53 @@ class InferenceService:
         """Stream chat completion tokens"""
         # === HTTP Server Mode (LM Studio style) ===
         if loaded.is_server:
-            # For now, use non-streaming and yield the full response
-            # TODO: Implement proper SSE streaming from llama-server
-            result = self._server_manager.chat_completion(
-                model_id=loaded.local_model.id,
-                messages=messages,
-                max_tokens=params['max_tokens'],
-                temperature=params['temperature'],
-                top_p=params['top_p'],
-                stream=False
-            )
-            
-            if result.get('success'):
-                api_result = result.get('result', {})
-                if 'choices' in api_result and len(api_result['choices']) > 0:
-                    content = api_result['choices'][0].get('message', {}).get('content', '')
-                    loaded.total_tokens_generated += api_result.get('usage', {}).get('completion_tokens', 0)
-                    # Yield word by word to simulate streaming
-                    for word in content.split(' '):
-                        yield word + ' '
-            else:
-                yield f"Error: {result.get('error', 'Unknown error')}"
+            # Use proper streaming from llama-server
+            try:
+                for chunk in self._server_manager.chat_completion_stream(
+                    model_id=loaded.local_model.id,
+                    messages=messages,
+                    max_tokens=params['max_tokens'],
+                    temperature=params['temperature'],
+                    top_p=params['top_p'],
+                    top_k=params.get('top_k'),
+                    repeat_penalty=params.get('repeat_penalty'),
+                    stop=params.get('stop')
+                ):
+                    if chunk.get('success') and 'chunk' in chunk:
+                        chunk_data = chunk['chunk']
+                        if 'choices' in chunk_data and len(chunk_data['choices']) > 0:
+                            delta = chunk_data['choices'][0].get('delta', {})
+                            content = delta.get('content', '')
+                            if content:
+                                loaded.total_tokens_generated += 1
+                                yield content
+                    elif not chunk.get('success'):
+                        yield f"Error: {chunk.get('error', 'Unknown error')}"
+                        break
+            except Exception as e:
+                # Fallback to non-streaming if streaming fails
+                result = self._server_manager.chat_completion(
+                    model_id=loaded.local_model.id,
+                    messages=messages,
+                    max_tokens=params['max_tokens'],
+                    temperature=params['temperature'],
+                    top_p=params['top_p'],
+                    top_k=params.get('top_k'),
+                    repeat_penalty=params.get('repeat_penalty'),
+                    stop=params.get('stop'),
+                    stream=False
+                )
+                
+                if result.get('success'):
+                    api_result = result.get('result', {})
+                    if 'choices' in api_result and len(api_result['choices']) > 0:
+                        content = api_result['choices'][0].get('message', {}).get('content', '')
+                        loaded.total_tokens_generated += api_result.get('usage', {}).get('completion_tokens', 0)
+                        # Yield word by word to simulate streaming
+                        for word in content.split(' '):
+                            yield word + ' '
+                else:
+                    yield f"Error: {result.get('error', 'Unknown error')}"
         
         # === Legacy subprocess mode ===
         elif loaded.is_subprocess:

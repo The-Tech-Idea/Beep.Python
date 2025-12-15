@@ -30,7 +30,9 @@ def get_rag_venv_python() -> Path:
     """Get the Python executable from the RAG venv"""
     # Use app's own folder
     from app.config_manager import get_app_directory
-    rag_venv = get_app_directory() / 'rag_data' / 'venv'
+    # Use providers directory via EnvironmentManager
+    providers_path = get_app_directory() / 'providers'
+    rag_venv = providers_path / 'rag'
     if platform.system() == 'Windows':
         return rag_venv / 'Scripts' / 'python.exe'
     else:

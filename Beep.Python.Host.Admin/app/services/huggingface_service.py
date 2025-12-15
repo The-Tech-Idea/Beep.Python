@@ -140,7 +140,8 @@ class HuggingFaceService:
                       query: str, 
                       filter_gguf: bool = True,
                       limit: int = 20,
-                      sort: str = "downloads") -> List[Dict[str, Any]]:
+                      sort: str = "downloads",
+                      pipeline_tag: Optional[str] = None) -> List[Dict[str, Any]]:
         """
         Search for models on HuggingFace
         
@@ -149,14 +150,25 @@ class HuggingFaceService:
             filter_gguf: Only show models with GGUF files
             limit: Maximum results
             sort: Sort by (downloads, likes, modified)
+            pipeline_tag: Filter by pipeline tag (e.g., 'text-to-speech', 'text-to-image')
         """
         params = {
-            'search': query,
             'limit': limit,
             'sort': sort,
             'direction': '-1',
             'full': 'true'
         }
+        
+        # Build search query - if pipeline_tag is provided, use it as the primary filter
+        if pipeline_tag:
+            # Use pipeline tag as the main filter (like HuggingFace's "Tasks" filter)
+            params['pipeline_tag'] = pipeline_tag
+            # Add search query if provided
+            if query:
+                params['search'] = query
+        else:
+            # For LLM models, use search query
+            params['search'] = query
         
         if filter_gguf:
             # Search specifically in GGUF-related models
@@ -174,11 +186,18 @@ class HuggingFaceService:
             
             results = []
             for model in models:
+                # For pipeline_tag filtered searches (AI services), show all models regardless of downloads
+                # This matches HuggingFace's behavior where they show all models in a task category
+                downloads = model.get('downloads', 0)
+                if not pipeline_tag and downloads < 10:
+                    # Only filter low-download models for non-pipeline-tag searches (LLM search)
+                    continue
+                
                 result = {
                     'id': model.get('id', ''),
                     'modelId': model.get('modelId', model.get('id', '')),
                     'author': model.get('author', model.get('id', '').split('/')[0] if '/' in model.get('id', '') else ''),
-                    'downloads': model.get('downloads', 0),
+                    'downloads': downloads,
                     'likes': model.get('likes', 0),
                     'tags': model.get('tags', []),
                     'pipeline_tag': model.get('pipeline_tag'),
@@ -639,6 +658,13 @@ class HuggingFaceService:
                 'query': 'chat gguf',
                 'icon': 'bi-chat-dots',
                 'description': 'Models optimized for conversational AI'
+            },
+            {
+                'id': 'embedding',
+                'name': 'Embeddings',
+                'query': 'embedding',
+                'icon': 'bi-diagram-3',
+                'description': 'Text embedding models for semantic search and similarity'
             },
             {
                 'id': 'coding',

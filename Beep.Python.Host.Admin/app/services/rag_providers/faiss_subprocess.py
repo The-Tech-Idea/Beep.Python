@@ -32,7 +32,9 @@ class SubprocessFAISSProvider(RAGProvider):
         from app.config_manager import get_app_directory
         app_dir = get_app_directory()
         self._data_path: Path = app_dir / 'rag_data' / 'data' / 'faiss'
-        self._rag_venv = app_dir / 'rag_data' / 'venv'
+        # Use providers directory via EnvironmentManager
+        providers_path = app_dir / 'providers'
+        self._rag_venv = providers_path / 'rag'
         self._embedding_model: str = "all-MiniLM-L6-v2"
         self._embedding_dim: int = 384
         self._initialized = False

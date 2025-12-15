@@ -285,6 +285,10 @@
             const data = await response.json();
 
             if (data.success) {
+                // Add to global task panel
+                if (window.addGlobalTask) {
+                    window.addGlobalTask(data.task_id, `Setup Environment: ${envName}`, 'environment_setup');
+                }
                 // Poll for progress
                 pollEnvironmentProgress(data.task_id);
             } else {
@@ -305,7 +309,17 @@
 
                 if (task.error && !task.steps) {
                     showError(task.error);
+                    // Update global task panel
+                    if (window.updateGlobalTask) {
+                        window.updateGlobalTask(taskId, 'failed', 0, task.error);
+                    }
                     return;
+                }
+
+                // Update global task panel
+                if (window.updateGlobalTask) {
+                    const currentStep = task.steps?.find(s => s.status === 'running')?.message || task.message || '';
+                    window.updateGlobalTask(taskId, task.status, task.progress || 0, currentStep);
                 }
 
                 // Update progress bar
@@ -339,9 +353,17 @@
 
                 // Check if complete
                 if (task.status === 'completed') {
+                    // Update global task panel
+                    if (window.updateGlobalTask) {
+                        window.updateGlobalTask(taskId, 'completed', 100, 'Environment setup completed');
+                    }
                     showSuccess();
                     return; // Stop polling
                 } else if (task.status === 'failed') {
+                    // Update global task panel
+                    if (window.updateGlobalTask) {
+                        window.updateGlobalTask(taskId, 'failed', task.progress || 0, task.error || 'Environment creation failed');
+                    }
                     showError(task.error || 'Environment creation failed');
                     return; // Stop polling
                 }

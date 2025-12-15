@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Manage AI Services{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h3 mb-1"><i class="bi bi-gear me-2"></i>Manage AI Services</h1>
+        <p class="text-muted mb-0">Enable or disable AI services in the middleware</p>
+    </div>
+    <div>
+        <a href="{{ url_for('ai_middleware.api_docs') }}" class="btn btn-outline-light me-2">
+            <i class="bi bi-book me-2"></i>API Documentation
+        </a>
+        <a href="{{ url_for('ai_middleware.users_page') }}" class="btn btn-outline-light me-2">
+            <i class="bi bi-people me-2"></i>User Management
+        </a>
+        <a href="{{ url_for('ai_middleware.rules_page') }}" class="btn btn-outline-light me-2">
+            <i class="bi bi-diagram-3 me-2"></i>Routing Rules
+        </a>
+        <a href="{{ url_for('ai_middleware.policies_page') }}" class="btn btn-outline-light">
+            <i class="bi bi-shield-lock me-2"></i>Access Policies
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card bg-dark border-secondary">
+            <div class="card-header border-secondary d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-sliders me-2"></i>Service Status</h5>
+                <button class="btn btn-sm btn-outline-light" onclick="refreshStatus()">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="servicesTable">
+                            <tr>
+                                <td><i class="bi bi-robot me-2"></i>LLM</td>
+                                <td>Large Language Models for text generation</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if service_states.llm else 'secondary' }}" id="status-llm">
+                                        {{ 'Enabled' if service_states.llm else 'Disabled' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" 
+                                               id="toggle-llm" 
+                                               {{ 'checked' if service_states.llm else '' }}
+                                               onchange="toggleService('llm', this.checked)">
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-image me-2"></i>Text to Image</td>
+                                <td>Generate images from text prompts</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if service_states.text_to_image else 'secondary' }}" id="status-text_to_image">
+                                        {{ 'Enabled' if service_states.text_to_image else 'Disabled' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" 
+                                               id="toggle-text_to_image" 
+                                               {{ 'checked' if service_states.text_to_image else '' }}
+                                               onchange="toggleService('text_to_image', this.checked)">
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-volume-up me-2"></i>Text to Speech</td>
+                                <td>Convert text to speech</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if service_states.text_to_speech else 'secondary' }}" id="status-text_to_speech">
+                                        {{ 'Enabled' if service_states.text_to_speech else 'Disabled' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" 
+                                               id="toggle-text_to_speech" 
+                                               {{ 'checked' if service_states.text_to_speech else '' }}
+                                               onchange="toggleService('text_to_speech', this.checked)">
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-mic me-2"></i>Speech to Text</td>
+                                <td>Transcribe audio to text</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if service_states.speech_to_text else 'secondary' }}" id="status-speech_to_text">
+                                        {{ 'Enabled' if service_states.speech_to_text else 'Disabled' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" 
+                                               id="toggle-speech_to_text" 
+                                               {{ 'checked' if service_states.speech_to_text else '' }}
+                                               onchange="toggleService('speech_to_text', this.checked)">
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-file-earmark-text me-2"></i>Document Extraction</td>
+                                <td>Extract text from documents</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if service_states.document_extraction else 'secondary' }}" id="status-document_extraction">
+                                        {{ 'Enabled' if service_states.document_extraction else 'Disabled' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" 
+                                               id="toggle-document_extraction" 
+                                               {{ 'checked' if service_states.document_extraction else '' }}
+                                               onchange="toggleService('document_extraction', this.checked)">
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function toggleService(serviceName, enabled) {
+    try {
+        const response = await fetch(`/ai-middleware/api/services/${serviceName}/enable`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({enabled})
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Update UI
+            const statusBadge = document.getElementById(`status-${serviceName}`);
+            if (statusBadge) {
+                statusBadge.textContent = enabled ? 'Enabled' : 'Disabled';
+                statusBadge.className = `badge bg-${enabled ? 'success' : 'secondary'}`;
+            }
+            
+            // Show notification
+            showNotification(enabled ? `Service ${serviceName} enabled` : `Service ${serviceName} disabled`, 'success');
+        } else {
+            showNotification(`Failed to update service: ${result.error || 'Unknown error'}`, 'danger');
+            // Revert checkbox
+            const checkbox = document.getElementById(`toggle-${serviceName}`);
+            if (checkbox) {
+                checkbox.checked = !enabled;
+            }
+        }
+    } catch (error) {
+        showNotification(`Error: ${error.message}`, 'danger');
+        // Revert checkbox
+        const checkbox = document.getElementById(`toggle-${serviceName}`);
+        if (checkbox) {
+            checkbox.checked = !enabled;
+        }
+    }
+}
+
+async function refreshStatus() {
+    try {
+        const response = await fetch('/ai-middleware/api/services/states');
+        const result = await response.json();
+        
+        if (result.success) {
+            // Update all service states
+            for (const [serviceName, enabled] of Object.entries(result.states)) {
+                const statusBadge = document.getElementById(`status-${serviceName}`);
+                const checkbox = document.getElementById(`toggle-${serviceName}`);
+                
+                if (statusBadge) {
+                    statusBadge.textContent = enabled ? 'Enabled' : 'Disabled';
+                    statusBadge.className = `badge bg-${enabled ? 'success' : 'secondary'}`;
+                }
+                
+                if (checkbox) {
+                    checkbox.checked = enabled;
+                }
+            }
+            
+            showNotification('Status refreshed', 'success');
+        }
+    } catch (error) {
+        showNotification(`Error refreshing status: ${error.message}`, 'danger');
+    }
+}
+
+function showNotification(message, type) {
+    // Create toast notification
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+    toast.style.zIndex = '9999';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+</script>
+{% endblock %}

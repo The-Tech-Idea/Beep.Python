@@ -1,0 +1,360 @@
+{% extends "base.html" %}
+
+{% block title %}Document Extraction Environment{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h3 mb-1"><i class="bi bi-file-earmark-text me-2"></i>Document Extraction Environment</h1>
+        <p class="text-muted mb-0">Setup dedicated environment for extracting text from PDF, DOCX, XLSX, and other documents</p>
+    </div>
+    <div>
+        <a href="{{ url_for('rag.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back to RAG Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Environment Status -->
+    <div class="col-lg-4 mb-4">
+        <div class="card bg-dark border-secondary h-100">
+            <div class="card-header border-secondary">
+                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Environment Status</h5>
+            </div>
+            <div class="card-body">
+                <div id="env-status-content">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Checking environment...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Setup Panel -->
+    <div class="col-lg-8 mb-4">
+        <div class="card bg-dark border-secondary">
+            <div class="card-header border-secondary">
+                <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Environment Setup</h5>
+            </div>
+            <div class="card-body">
+                <div id="setup-content">
+                    <p class="text-muted mb-4">
+                        A dedicated virtual environment isolates document extraction libraries (PyMuPDF, python-docx, openpyxl, etc.) 
+                        from the main application to avoid dependency conflicts.
+                    </p>
+                    
+                    <div id="env-not-created" style="display: none;">
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Environment not created</strong>
+                            <p class="mb-0 mt-2">Create a virtual environment to install document extraction libraries.</p>
+                        </div>
+                        <button class="btn btn-primary" id="btn-create-env">
+                            <i class="bi bi-plus-circle me-2"></i>Create Environment
+                        </button>
+                    </div>
+                    
+                    <div id="env-ready" style="display: none;">
+                        <div class="alert alert-success">
+                            <i class="bi bi-check-circle me-2"></i>
+                            <strong>Environment Ready</strong>
+                            <p class="mb-0 mt-2">Virtual environment is created and ready for package installation.</p>
+                        </div>
+                        
+                        <h6 class="mt-4 mb-3">Install Packages</h6>
+                        <div id="packages-list" class="mb-3">
+                            <!-- Packages will be loaded here -->
+                        </div>
+                        
+                        <button class="btn btn-success" id="btn-install-all">
+                            <i class="bi bi-download me-2"></i>Install All Recommended Packages
+                        </button>
+                        <button class="btn btn-outline-secondary ms-2" id="btn-install-selected">
+                            <i class="bi bi-download me-2"></i>Install Selected Packages
+                        </button>
+                    </div>
+                    
+                    <div id="env-error" style="display: none;">
+                        <div class="alert alert-danger">
+                            <i class="bi bi-x-circle me-2"></i>
+                            <strong>Error</strong>
+                            <p class="mb-0 mt-2" id="error-message"></p>
+                        </div>
+                        <button class="btn btn-warning" id="btn-retry">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Retry
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Package Installation Progress Modal -->
+<div class="modal fade" id="installProgressModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title"><i class="bi bi-download me-2"></i>Installing Packages</h5>
+            </div>
+            <div class="modal-body">
+                <div class="progress mb-3" style="height: 25px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                         id="install-progress-bar" role="progressbar" style="width: 0%">0%</div>
+                </div>
+                <p class="text-muted mb-0" id="install-status">Starting installation...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentTaskId = null;
+let statusCheckInterval = null;
+
+// Load status on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadStatus();
+});
+
+function loadStatus() {
+    fetch('/rag/api/document-extraction/status')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateUI(data.environment, data.extractor);
+            }
+        })
+        .catch(error => {
+            console.error('Failed to load status:', error);
+            document.getElementById('env-status-content').innerHTML = 
+                '<div class="alert alert-danger">Failed to load status</div>';
+        });
+}
+
+function updateUI(envStatus, extractorStatus) {
+    // Update environment status panel
+    const statusContent = document.getElementById('env-status-content');
+    const status = envStatus.status;
+    
+    let statusHTML = '';
+    if (status === 'ready') {
+        statusHTML = `
+            <div class="text-center">
+                <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+                <h5 class="mt-3 text-success">Environment Ready</h5>
+                <p class="text-muted small">Python: ${envStatus.python_path ? envStatus.python_path.split(/[/\\]/).pop() : 'N/A'}</p>
+                <p class="text-muted small">Installed: ${envStatus.installed_packages.length} packages</p>
+            </div>
+        `;
+    } else if (status === 'not_created') {
+        statusHTML = `
+            <div class="text-center">
+                <i class="bi bi-x-circle text-warning" style="font-size: 3rem;"></i>
+                <h5 class="mt-3 text-warning">Not Created</h5>
+                <p class="text-muted small">Environment needs to be created</p>
+            </div>
+        `;
+    } else if (status === 'creating' || status === 'installing') {
+        statusHTML = `
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status"></div>
+                <h5 class="mt-3">${status === 'creating' ? 'Creating...' : 'Installing...'}</h5>
+                <p class="text-muted small">${envStatus.progress?.message || 'In progress'}</p>
+            </div>
+        `;
+    } else if (status === 'error') {
+        statusHTML = `
+            <div class="text-center">
+                <i class="bi bi-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
+                <h5 class="mt-3 text-danger">Error</h5>
+                <p class="text-muted small">${envStatus.error || 'Unknown error'}</p>
+            </div>
+        `;
+    }
+    
+    statusContent.innerHTML = statusHTML;
+    
+    // Update setup panel
+    if (status === 'not_created') {
+        document.getElementById('env-not-created').style.display = 'block';
+        document.getElementById('env-ready').style.display = 'none';
+        document.getElementById('env-error').style.display = 'none';
+    } else if (status === 'ready') {
+        document.getElementById('env-not-created').style.display = 'none';
+        document.getElementById('env-ready').style.display = 'block';
+        document.getElementById('env-error').style.display = 'none';
+        renderPackages(envStatus.packages);
+    } else if (status === 'error') {
+        document.getElementById('env-not-created').style.display = 'none';
+        document.getElementById('env-ready').style.display = 'none';
+        document.getElementById('env-error').style.display = 'block';
+        document.getElementById('error-message').textContent = envStatus.error || 'Unknown error';
+    } else {
+        // Creating or installing - show progress
+        document.getElementById('env-not-created').style.display = 'none';
+        document.getElementById('env-ready').style.display = 'none';
+        document.getElementById('env-error').style.display = 'none';
+    }
+}
+
+function renderPackages(packages) {
+    const packagesList = document.getElementById('packages-list');
+    let html = '<div class="row">';
+    
+    for (const [key, pkg] of Object.entries(packages)) {
+        const installed = pkg.installed;
+        html += `
+            <div class="col-md-6 mb-3">
+                <div class="card bg-secondary border-${installed ? 'success' : 'secondary'}">
+                    <div class="card-body p-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   id="pkg-${key}" 
+                                   ${installed ? 'checked disabled' : ''}
+                                   value="${pkg.pip_name}">
+                            <label class="form-check-label" for="pkg-${key}">
+                                <strong>${pkg.name}</strong>
+                                ${installed ? '<span class="badge bg-success ms-2">Installed</span>' : ''}
+                                ${pkg.required ? '<span class="badge bg-warning ms-1">Required</span>' : ''}
+                                <br>
+                                <small class="text-muted">${pkg.description}</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    html += '</div>';
+    packagesList.innerHTML = html;
+}
+
+document.getElementById('btn-create-env')?.addEventListener('click', function() {
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating...';
+    
+    fetch('/rag/api/document-extraction/create-env', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'}
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            currentTaskId = data.task_id;
+            startStatusPolling();
+            showInstallProgress();
+        } else {
+            alert('Failed to create environment: ' + (data.error || 'Unknown error'));
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-plus-circle me-2"></i>Create Environment';
+        }
+    })
+    .catch(error => {
+        alert('Error: ' + error.message);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-plus-circle me-2"></i>Create Environment';
+    });
+});
+
+document.getElementById('btn-install-all')?.addEventListener('click', function() {
+    installPackages(null); // null = install all
+});
+
+document.getElementById('btn-install-selected')?.addEventListener('click', function() {
+    const selected = Array.from(document.querySelectorAll('#packages-list input[type="checkbox"]:checked:not(:disabled)'))
+        .map(cb => cb.value);
+    
+    if (selected.length === 0) {
+        alert('Please select at least one package to install');
+        return;
+    }
+    
+    installPackages(selected);
+});
+
+function installPackages(packageNames) {
+    showInstallProgress();
+    
+    fetch('/rag/api/document-extraction/install-packages', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({packages: packageNames})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            currentTaskId = data.task_id;
+            startStatusPolling();
+        } else {
+            hideInstallProgress();
+            alert('Failed to start installation: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        hideInstallProgress();
+        alert('Error: ' + error.message);
+    });
+}
+
+function showInstallProgress() {
+    const modal = new bootstrap.Modal(document.getElementById('installProgressModal'));
+    modal.show();
+}
+
+function hideInstallProgress() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('installProgressModal'));
+    if (modal) modal.hide();
+}
+
+function startStatusPolling() {
+    if (statusCheckInterval) clearInterval(statusCheckInterval);
+    
+    statusCheckInterval = setInterval(() => {
+        loadStatus();
+        
+        // Check if task is complete
+        if (currentTaskId) {
+            fetch(`/tasks/api/${currentTaskId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'completed' || data.status === 'failed') {
+                        clearInterval(statusCheckInterval);
+                        currentTaskId = null;
+                        hideInstallProgress();
+                        loadStatus(); // Refresh status
+                    } else if (data.progress !== undefined) {
+                        // Update progress bar
+                        const progressBar = document.getElementById('install-progress-bar');
+                        const progressText = document.getElementById('install-status');
+                        if (progressBar) {
+                            progressBar.style.width = data.progress + '%';
+                            progressBar.textContent = data.progress + '%';
+                        }
+                        if (progressText && data.current_step) {
+                            progressText.textContent = data.current_step;
+                        }
+                    }
+                })
+                .catch(() => {});
+        }
+    }, 2000);
+}
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', function() {
+    if (statusCheckInterval) clearInterval(statusCheckInterval);
+});
+</script>
+{% endblock %}

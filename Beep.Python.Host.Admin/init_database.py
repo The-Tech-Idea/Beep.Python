@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from app.database import db
 from app.models.core import User, Role, Group, Setting, AuditLog, user_groups
 from app.models.rag_metadata import Collection, Document, AccessPrivilege
+from app.models.scheduled_jobs import ScheduledJob, JobExecution
 from app.services.auth_service import AuthService
 from flask import Flask
 from werkzeug.security import generate_password_hash

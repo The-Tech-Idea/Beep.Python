@@ -19,7 +19,7 @@ import json
 import socket
 import signal
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Generator, Iterator
 from dataclasses import dataclass, asdict
 from datetime import datetime
 import urllib.request
@@ -59,7 +59,7 @@ class ServerInstance:
 
 @dataclass  
 class ServerConfig:
-    """Configuration for starting a server"""
+    """Configuration for starting a server - updated with latest llama.cpp server options"""
     model_path: str
     port: int = DEFAULT_PORT
     host: str = DEFAULT_HOST
@@ -69,9 +69,31 @@ class ServerConfig:
     batch_size: int = 512
     embedding: bool = False
     parallel: int = 1  # Number of parallel requests
+    # New options from latest llama.cpp server
+    cont_batching: bool = True  # Continuous batching (default in newer versions)
+    flash_attn: bool = False  # Flash attention support
+    mmproj: Optional[str] = None  # Multimodal projection file for vision models
+    ngl: Optional[int] = None  # Alias for gpu_layers
+    numa: bool = False  # NUMA support
+    rope_freq_base: Optional[float] = None  # RoPE frequency base
+    rope_freq_scale: Optional[float] = None  # RoPE frequency scale
+    yarn_scale: Optional[float] = None  # YaRN scaling factor
+    yarn_alpha: Optional[float] = None  # YaRN alpha parameter
+    low_vram: bool = False  # Low VRAM mode
+    no_kv_offload: bool = False  # Disable KV cache offloading
+    split_mode: Optional[int] = None  # Split mode (1=layer, 2=row)
+    main_gpu: Optional[int] = None  # Main GPU for split mode
+    tensor_split: Optional[str] = None  # Tensor split across GPUs (e.g., "4,4")
+    use_mmap: bool = True  # Use memory mapping
+    use_mlock: bool = False  # Lock memory pages
+    n_batch: Optional[int] = None  # Batch size for prompt processing
+    n_ubatch: Optional[int] = None  # Physical batch size for prompt processing
+    n_keep: Optional[int] = None  # Number of tokens to keep from prompt
+    logits_all: bool = False  # Return logits for all tokens
+    seed: Optional[int] = None  # Random seed
     
     def to_args(self) -> List[str]:
-        """Convert config to command line arguments"""
+        """Convert config to command line arguments - updated for latest llama.cpp server"""
         args = [
             '--model', str(self.model_path),
             '--host', self.host,
@@ -87,6 +109,70 @@ class ServerConfig:
         
         if self.embedding:
             args.append('--embedding')
+        
+        # New options
+        if not self.cont_batching:
+            args.append('--no-cont-batching')
+        
+        if self.flash_attn:
+            args.append('--flash-attn')
+        
+        if self.mmproj:
+            args.extend(['--mmproj', str(self.mmproj)])
+        
+        if self.ngl is not None:
+            args.extend(['--ngl', str(self.ngl)])
+        
+        if self.numa:
+            args.append('--numa')
+        
+        if self.rope_freq_base is not None:
+            args.extend(['--rope-freq-base', str(self.rope_freq_base)])
+        
+        if self.rope_freq_scale is not None:
+            args.extend(['--rope-freq-scale', str(self.rope_freq_scale)])
+        
+        if self.yarn_scale is not None:
+            args.extend(['--yarn-scale', str(self.yarn_scale)])
+        
+        if self.yarn_alpha is not None:
+            args.extend(['--yarn-alpha', str(self.yarn_alpha)])
+        
+        if self.low_vram:
+            args.append('--low-vram')
+        
+        if self.no_kv_offload:
+            args.append('--no-kv-offload')
+        
+        if self.split_mode is not None:
+            args.extend(['--split-mode', str(self.split_mode)])
+        
+        if self.main_gpu is not None:
+            args.extend(['--main-gpu', str(self.main_gpu)])
+        
+        if self.tensor_split:
+            args.extend(['--tensor-split', self.tensor_split])
+        
+        if not self.use_mmap:
+            args.append('--no-mmap')
+        
+        if self.use_mlock:
+            args.append('--mlock')
+        
+        if self.n_batch is not None:
+            args.extend(['--n-batch', str(self.n_batch)])
+        
+        if self.n_ubatch is not None:
+            args.extend(['--n-ubatch', str(self.n_ubatch)])
+        
+        if self.n_keep is not None:
+            args.extend(['--n-keep', str(self.n_keep)])
+        
+        if self.logits_all:
+            args.append('--logits-all')
+        
+        if self.seed is not None:
+            args.extend(['--seed', str(self.seed)])
         
         return args
 
@@ -414,12 +500,21 @@ class LlamaServerManager:
                            max_tokens: int = 256,
                            temperature: float = 0.7,
                            top_p: float = 0.9,
+                           top_k: Optional[int] = None,
+                           repeat_penalty: Optional[float] = None,
+                           frequency_penalty: Optional[float] = None,
+                           presence_penalty: Optional[float] = None,
+                           mirostat: Optional[int] = None,
+                           mirostat_tau: Optional[float] = None,
+                           mirostat_eta: Optional[float] = None,
+                           seed: Optional[int] = None,
                            stop: Optional[List[str]] = None,
                            stream: bool = False) -> Dict[str, Any]:
         """
-        Generate text completion via HTTP API
+        Generate text completion via HTTP API with extended parameters
         
         Uses OpenAI-compatible /v1/completions endpoint
+        Supports latest llama.cpp server parameters
         """
         server = self._servers.get(model_id)
         if not server:
@@ -435,6 +530,23 @@ class LlamaServerManager:
             'stream': stream
         }
         
+        # Add extended parameters if provided
+        if top_k is not None:
+            payload['top_k'] = top_k
+        if repeat_penalty is not None:
+            payload['repeat_penalty'] = repeat_penalty
+        if frequency_penalty is not None:
+            payload['frequency_penalty'] = frequency_penalty
+        if presence_penalty is not None:
+            payload['presence_penalty'] = presence_penalty
+        if mirostat is not None:
+            payload['mirostat'] = mirostat
+        if mirostat_tau is not None:
+            payload['mirostat_tau'] = mirostat_tau
+        if mirostat_eta is not None:
+            payload['mirostat_eta'] = mirostat_eta
+        if seed is not None:
+            payload['seed'] = seed
         if stop:
             payload['stop'] = stop
         
@@ -464,11 +576,21 @@ class LlamaServerManager:
                         max_tokens: int = 256,
                         temperature: float = 0.7,
                         top_p: float = 0.9,
+                        top_k: Optional[int] = None,
+                        repeat_penalty: Optional[float] = None,
+                        frequency_penalty: Optional[float] = None,
+                        presence_penalty: Optional[float] = None,
+                        mirostat: Optional[int] = None,
+                        mirostat_tau: Optional[float] = None,
+                        mirostat_eta: Optional[float] = None,
+                        seed: Optional[int] = None,
+                        stop: Optional[List[str]] = None,
                         stream: bool = False) -> Dict[str, Any]:
         """
-        Generate chat completion via HTTP API
+        Generate chat completion via HTTP API with extended parameters
         
         Uses OpenAI-compatible /v1/chat/completions endpoint
+        Supports latest llama.cpp server parameters
         """
         server = self._servers.get(model_id)
         if not server:
@@ -483,6 +605,26 @@ class LlamaServerManager:
             'top_p': top_p,
             'stream': stream
         }
+        
+        # Add extended parameters if provided
+        if top_k is not None:
+            payload['top_k'] = top_k
+        if repeat_penalty is not None:
+            payload['repeat_penalty'] = repeat_penalty
+        if frequency_penalty is not None:
+            payload['frequency_penalty'] = frequency_penalty
+        if presence_penalty is not None:
+            payload['presence_penalty'] = presence_penalty
+        if mirostat is not None:
+            payload['mirostat'] = mirostat
+        if mirostat_tau is not None:
+            payload['mirostat_tau'] = mirostat_tau
+        if mirostat_eta is not None:
+            payload['mirostat_eta'] = mirostat_eta
+        if seed is not None:
+            payload['seed'] = seed
+        if stop:
+            payload['stop'] = stop
         
         try:
             data = json.dumps(payload).encode('utf-8')
@@ -505,6 +647,74 @@ class LlamaServerManager:
             return {'success': False, 'error': f'HTTP {e.code}: {error_body}'}
         except Exception as e:
             return {'success': False, 'error': str(e)}
+    
+    def chat_completion_stream(self, model_id: str, messages: List[Dict[str, str]],
+                               max_tokens: int = 256,
+                               temperature: float = 0.7,
+                               top_p: float = 0.9,
+                               top_k: Optional[int] = None,
+                               repeat_penalty: Optional[float] = None,
+                               stop: Optional[List[str]] = None) -> Generator[Dict[str, Any], None, None]:
+        """
+        Stream chat completion responses
+        
+        Yields chunks of the response as they're generated
+        """
+        server = self._servers.get(model_id)
+        if not server:
+            yield {'success': False, 'error': 'Server not running'}
+            return
+        
+        url = f"{server.base_url}/v1/chat/completions"
+        
+        payload = {
+            'messages': messages,
+            'max_tokens': max_tokens,
+            'temperature': temperature,
+            'top_p': top_p,
+            'stream': True
+        }
+        
+        if top_k is not None:
+            payload['top_k'] = top_k
+        if repeat_penalty is not None:
+            payload['repeat_penalty'] = repeat_penalty
+        if stop:
+            payload['stop'] = stop
+        
+        try:
+            import urllib.request
+            data = json.dumps(payload).encode('utf-8')
+            req = urllib.request.Request(
+                url,
+                data=data,
+                headers={'Content-Type': 'application/json'},
+                method='POST'
+            )
+            
+            with urllib.request.urlopen(req, timeout=300) as resp:
+                buffer = ""
+                for line in resp:
+                    line = line.decode('utf-8')
+                    buffer += line
+                    
+                    # Process complete lines
+                    while '\n' in buffer:
+                        line, buffer = buffer.split('\n', 1)
+                        line = line.strip()
+                        
+                        if line.startswith('data: '):
+                            data_str = line[6:]  # Remove 'data: ' prefix
+                            if data_str == '[DONE]':
+                                return
+                            try:
+                                chunk = json.loads(data_str)
+                                yield {'success': True, 'chunk': chunk}
+                            except json.JSONDecodeError:
+                                continue
+                                
+        except Exception as e:
+            yield {'success': False, 'error': str(e)}
     
     def get_embeddings(self, model_id: str, input_text: str) -> Dict[str, Any]:
         """
@@ -544,8 +754,109 @@ class LlamaServerManager:
         except Exception as e:
             return {'success': False, 'error': str(e)}
     
+    def list_models(self, model_id: str) -> Dict[str, Any]:
+        """
+        List models available on the server
+        
+        Uses /v1/models endpoint (OpenAI-compatible)
+        """
+        server = self._servers.get(model_id)
+        if not server:
+            return {'success': False, 'error': 'Server not running'}
+        
+        try:
+            url = f"{server.base_url}/v1/models"
+            req = urllib.request.Request(url, method='GET')
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                result = json.loads(resp.read().decode())
+                return {
+                    'success': True,
+                    'models': result.get('data', [])
+                }
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+    
+    def get_server_info(self, model_id: str) -> Dict[str, Any]:
+        """
+        Get detailed server information
+        
+        Uses /info endpoint (llama.cpp specific)
+        """
+        server = self._servers.get(model_id)
+        if not server:
+            return {'success': False, 'error': 'Server not running'}
+        
+        try:
+            url = f"{server.base_url}/info"
+            req = urllib.request.Request(url, method='GET')
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                info = json.loads(resp.read().decode())
+                return {
+                    'success': True,
+                    'info': info
+                }
+        except:
+            # Fall back to health endpoint
+            return self.get_server_health(model_id)
+    
+    def get_server_health(self, model_id: str) -> Dict[str, Any]:
+        """Get server health status with detailed information"""
+        server = self._servers.get(model_id)
+        if not server:
+            return {'success': False, 'error': 'Server not running'}
+        
+        try:
+            url = f"{server.base_url}/health"
+            req = urllib.request.Request(url, method='GET')
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                health = json.loads(resp.read().decode())
+                return {
+                    'success': True,
+                    'health': health,
+                    'server': server.to_dict()
+                }
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+    
+    def count_tokens(self, model_id: str, text: str) -> Dict[str, Any]:
+        """
+        Count tokens in text
+        
+        Uses /tokenize endpoint (if available) or estimates
+        """
+        server = self._servers.get(model_id)
+        if not server:
+            return {'success': False, 'error': 'Server not running'}
+        
+        # Try /tokenize endpoint (if available in newer versions)
+        try:
+            url = f"{server.base_url}/tokenize"
+            payload = {'content': text}
+            data = json.dumps(payload).encode('utf-8')
+            req = urllib.request.Request(
+                url,
+                data=data,
+                headers={'Content-Type': 'application/json'},
+                method='POST'
+            )
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                result = json.loads(resp.read().decode())
+                return {
+                    'success': True,
+                    'tokens': result.get('tokens', []),
+                    'count': len(result.get('tokens', []))
+                }
+        except:
+            # Fallback: estimate tokens (rough approximation: 1 token ≈ 4 characters)
+            estimated = len(text) // 4
+            return {
+                'success': True,
+                'count': estimated,
+                'estimated': True
+            }
+    
     def get_server_metrics(self, model_id: str) -> Dict[str, Any]:
-        """Get server metrics and stats"""
+        """Get server metrics and stats in Prometheus format"""
         server = self._servers.get(model_id)
         if not server:
             return {'success': False, 'error': 'Server not running'}
@@ -566,17 +877,7 @@ class LlamaServerManager:
             pass
         
         # Fall back to /health
-        try:
-            url = f"{server.base_url}/health"
-            req = urllib.request.Request(url, method='GET')
-            with urllib.request.urlopen(req, timeout=5) as resp:
-                health = json.loads(resp.read().decode())
-                return {
-                    'success': True,
-                    'health': health
-                }
-        except Exception as e:
-            return {'success': False, 'error': str(e)}
+        return self.get_server_health(model_id)
     
     def _save_state(self):
         """Save server state to file"""
@@ -588,6 +889,67 @@ class LlamaServerManager:
                 json.dump(state, f, indent=2)
         except:
             pass
+    
+    def anthropic_chat_completion(self, model_id: str, messages: List[Dict[str, str]],
+                                  max_tokens: int = 256,
+                                  temperature: float = 0.7,
+                                  top_p: float = 0.9,
+                                  stream: bool = False) -> Dict[str, Any]:
+        """
+        Anthropic Messages API compatible chat completion
+        
+        Uses /v1/chat/completions with Anthropic-style parameters
+        """
+        # Anthropic API uses similar structure but different parameter names
+        # Map to OpenAI format for llama.cpp server
+        return self.chat_completion(
+            model_id=model_id,
+            messages=messages,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            top_p=top_p,
+            stream=stream
+        )
+    
+    def reload_model(self, model_id: str, model_path: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Reload a model without restarting the server
+        
+        Uses /v1/models/{model}/reload endpoint (if available)
+        """
+        server = self._servers.get(model_id)
+        if not server:
+            return {'success': False, 'error': 'Server not running'}
+        
+        # Try reload endpoint (newer llama.cpp versions)
+        try:
+            url = f"{server.base_url}/v1/models/{model_id}/reload"
+            if model_path:
+                payload = {'model_path': model_path}
+                data = json.dumps(payload).encode('utf-8')
+                req = urllib.request.Request(
+                    url,
+                    data=data,
+                    headers={'Content-Type': 'application/json'},
+                    method='POST'
+                )
+            else:
+                req = urllib.request.Request(url, method='POST')
+            
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                result = json.loads(resp.read().decode())
+                return {
+                    'success': True,
+                    'result': result
+                }
+        except:
+            # Fallback: stop and restart server
+            self.stop_server(model_id)
+            if model_path:
+                config = ServerConfig(model_path=model_path)
+                return self.start_server(model_id, model_path, config)
+            else:
+                return {'success': False, 'error': 'Model path required for reload'}
     
     def cleanup_on_shutdown(self):
         """Clean up all servers on application shutdown"""

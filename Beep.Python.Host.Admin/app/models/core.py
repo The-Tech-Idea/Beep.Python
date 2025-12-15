@@ -79,6 +79,7 @@ class User(db.Model):
                             primaryjoin="User.id == user_groups.c.user_id",
                             secondaryjoin="Group.id == user_groups.c.group_id",
                             backref='members', lazy='dynamic')
+    api_tokens = db.relationship('APIToken', backref='user', lazy=True, cascade='all, delete-orphan')
 
     def to_dict(self):
         return {
@@ -121,6 +122,59 @@ class Group(db.Model):
             'is_active': self.is_active,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'member_count': self.members.count()
+        }
+
+
+class APIToken(db.Model):
+    """API Token for user authentication"""
+    __tablename__ = 'api_tokens'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    token = db.Column(db.String(255), unique=True, nullable=False, index=True)
+    name = db.Column(db.String(200), nullable=True)  # Token name/description
+    expires_at = db.Column(db.DateTime, nullable=True)  # Optional expiration
+    last_used_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_active = db.Column(db.Boolean, default=True)
+    
+    # Permissions/scopes (JSON array)
+    scopes = db.Column(db.Text, default='[]')  # JSON array of allowed scopes
+    
+    def get_scopes(self):
+        """Get scopes as list"""
+        try:
+            return json.loads(self.scopes) if self.scopes else []
+        except:
+            return []
+    
+    def set_scopes(self, scope_list):
+        """Set scopes from list"""
+        self.scopes = json.dumps(scope_list) if scope_list else '[]'
+    
+    def is_expired(self):
+        """Check if token is expired"""
+        if not self.expires_at:
+            return False
+        return datetime.utcnow() > self.expires_at
+    
+    def is_valid(self):
+        """Check if token is valid (active and not expired)"""
+        return self.is_active and not self.is_expired()
+    
+    def to_dict(self, include_token=False):
+        """Convert to dictionary"""
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'token': self.token if include_token else '***' + self.token[-8:] if self.token else None,
+            'name': self.name,
+            'expires_at': self.expires_at.isoformat() if self.expires_at else None,
+            'last_used_at': self.last_used_at.isoformat() if self.last_used_at else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'is_active': self.is_active,
+            'is_expired': self.is_expired(),
+            'scopes': self.get_scopes()
         }
 
 

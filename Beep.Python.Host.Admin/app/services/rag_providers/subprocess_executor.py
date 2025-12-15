@@ -26,7 +26,9 @@ class RAGSubprocessExecutor:
     def __init__(self):
         # Use app's own folder
         from app.config_manager import get_app_directory
-        self.rag_venv = get_app_directory() / 'rag_data' / 'venv'
+        # Use providers directory via EnvironmentManager
+        providers_path = get_app_directory() / 'providers'
+        self.rag_venv = providers_path / 'rag'
         self.is_windows = platform.system() == 'Windows'
         
     @property

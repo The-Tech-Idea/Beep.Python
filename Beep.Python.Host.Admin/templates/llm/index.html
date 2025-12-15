@@ -204,19 +204,21 @@
                         <td>{{ (model.size / 1073741824)|round(2) }} GB</td>
                         <td><span class="badge bg-primary">{{ model.format|upper }}</span></td>
                         <td>
-                            {% if model.id in loaded_models %}
+                            {% if model.id in loaded_model_ids %}
                             <span class="badge bg-success">Loaded</span>
+                            {% elif not model.venv_name %}
+                            <span class="badge bg-warning">Setup Required</span>
                             {% else %}
                             <span class="badge bg-secondary">Ready</span>
                             {% endif %}
                         </td>
                         <td>
                             {% if inference_available %}
-                            {% if model.id in loaded_models %}
+                            {% if model.id in loaded_model_ids %}
                             <a href="{{ url_for('llm.chat') }}" class="btn btn-sm btn-success">
                                 <i class="bi bi-chat-dots"></i>
                             </a>
-                            {% else %}
+                            {% elif model.venv_name %}
                             <button class="btn btn-sm btn-outline-success" onclick="loadModel('{{ model.id }}')">
                                 <i class="bi bi-play"></i>
                             </button>
@@ -268,23 +270,114 @@
     }
 </style>
 
+<!-- Load Model Modal -->
+<div class="modal fade" id="loadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title"><i class="bi bi-gear me-2"></i>Load Model</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Context Length</label>
+                    <select class="form-select bg-dark border-secondary text-light" id="loadCtxLength">
+                        <option value="2048">2048 tokens</option>
+                        <option value="4096" selected>4096 tokens (default)</option>
+                        <option value="8192">8192 tokens</option>
+                        <option value="16384">16384 tokens</option>
+                        <option value="32768">32768 tokens</option>
+                    </select>
+                    <small class="text-muted">Higher context uses more RAM</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">GPU Layers</label>
+                    <input type="number" class="form-control bg-dark border-secondary text-light" id="loadGpuLayers"
+                        value="0" min="0">
+                    <small class="text-muted">0 = CPU only, -1 = all layers on GPU</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Temperature</label>
+                    <input type="range" class="form-range" id="loadTemperature" min="0" max="2" step="0.1" value="0.7">
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted">Precise (0)</small>
+                        <small id="tempValue">0.7</small>
+                        <small class="text-muted">Creative (2)</small>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="confirmLoadBtn">
+                    <i class="bi bi-play me-2"></i>Load Model
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    async function loadModel(modelId) {
+    let currentModelId = null;
+
+    function loadModel(modelId) {
+        currentModelId = modelId;
+        
+        // Load saved config and populate load modal
+        fetch(`/llm/models/${modelId}/config`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.config) {
+                    const config = data.config;
+                    document.getElementById('loadCtxLength').value = config.n_ctx || 4096;
+                    document.getElementById('loadGpuLayers').value = config.n_gpu_layers || 0;
+                    document.getElementById('loadTemperature').value = config.temperature || 0.7;
+                    document.getElementById('tempValue').textContent = config.temperature || 0.7;
+                }
+            })
+            .catch(error => console.error('Failed to load model config:', error));
+        
+        const modal = new bootstrap.Modal(document.getElementById('loadModal'));
+        modal.show();
+    }
+
+    document.getElementById('loadTemperature')?.addEventListener('input', function (e) {
+        document.getElementById('tempValue').textContent = e.target.value;
+    });
+
+    document.getElementById('confirmLoadBtn')?.addEventListener('click', async function () {
+        const btn = this;
+        const loadModal = bootstrap.Modal.getInstance(document.getElementById('loadModal'));
+        
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Loading...';
+        
         try {
-            const response = await fetch(`/llm/models/${modelId}/load`, {
+            const response = await fetch(`/llm/models/${currentModelId}/load`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    n_ctx: parseInt(document.getElementById('loadCtxLength').value),
+                    n_gpu_layers: parseInt(document.getElementById('loadGpuLayers').value),
+                    temperature: parseFloat(document.getElementById('loadTemperature').value)
+                })
             });
+
             const data = await response.json();
+
             if (response.ok) {
+                loadModal.hide();
                 location.reload();
             } else {
                 alert('Error: ' + (data.error || 'Failed to load model'));
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-play me-2"></i>Load Model';
             }
         } catch (error) {
             alert('Error: ' + error.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-play me-2"></i>Load Model';
         }
-    }
+    });
 
     async function deleteModel(modelId, modelName) {
         if (!confirm(`Delete ${modelName}? This cannot be undone.`)) return;
@@ -296,6 +389,8 @@
             const data = await response.json();
             if (data.redirect_url) {
                 window.location.href = data.redirect_url;
+            } else {
+                location.reload();
             }
         } catch (error) {
             alert('Error: ' + error.message);

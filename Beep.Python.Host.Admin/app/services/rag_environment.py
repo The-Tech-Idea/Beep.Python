@@ -237,7 +237,9 @@ class RAGEnvironmentManager:
         # Use app's own folder - no fallback to user home
         from app.config_manager import get_app_directory
         self._base_path = get_app_directory()
-        self._env_path = self._base_path / 'rag_env'
+        # Use providers directory via EnvironmentManager
+        providers_path = self._base_path / 'providers'
+        self._env_path = providers_path / 'rag'
         self._config_file = self._base_path / 'rag_env_config.json'
         self._status = RAGEnvStatus.NOT_CREATED
         self._error_message: Optional[str] = None
@@ -406,16 +408,24 @@ class RAGEnvironmentManager:
                 self._status = RAGEnvStatus.CREATING
                 self._notify_progress('create_venv', 0.1, 'Creating virtual environment...')
                 
-                self._env_path.mkdir(parents=True, exist_ok=True)
+                # Use centralized EnvironmentManager
+                from app.services.environment_manager import EnvironmentManager
+                from app.config_manager import get_app_directory
                 
-                result = subprocess.run(
-                    [sys.executable, '-m', 'venv', str(self._env_path)],
-                    capture_output=True,
-                    text=True
-                )
+                env_mgr = EnvironmentManager(base_path=str(get_app_directory()))
+                env_name = 'rag'
                 
-                if result.returncode != 0:
-                    raise Exception(f"Failed to create venv: {result.stderr}")
+                # Check if environment already exists
+                existing_envs = env_mgr.list_environments()
+                existing = next((e for e in existing_envs if e.name == env_name), None)
+                
+                if existing:
+                    # Environment already exists, use it
+                    self._env_path = Path(existing.path)
+                else:
+                    # Create new environment using EnvironmentManager
+                    virtual_env = env_mgr.create_environment(name=env_name)
+                    self._env_path = Path(virtual_env.path)
                 
                 # Upgrade pip
                 self._notify_progress('upgrade_pip', 0.15, 'Upgrading pip...')
@@ -493,17 +503,24 @@ class RAGEnvironmentManager:
         try:
             self._notify_progress('create_venv', 0.1, 'Creating virtual environment...')
             
-            # Create virtual environment
-            self._env_path.mkdir(parents=True, exist_ok=True)
+            # Use centralized EnvironmentManager
+            from app.services.environment_manager import EnvironmentManager
+            from app.config_manager import get_app_directory
             
-            result = subprocess.run(
-                [sys.executable, '-m', 'venv', str(self._env_path)],
-                capture_output=True,
-                text=True
-            )
+            env_mgr = EnvironmentManager(base_path=str(get_app_directory()))
+            env_name = 'rag'
             
-            if result.returncode != 0:
-                raise Exception(f"Failed to create venv: {result.stderr}")
+            # Check if environment already exists
+            existing_envs = env_mgr.list_environments()
+            existing = next((e for e in existing_envs if e.name == env_name), None)
+            
+            if existing:
+                # Environment already exists, use it
+                self._env_path = Path(existing.path)
+            else:
+                # Create new environment using EnvironmentManager
+                virtual_env = env_mgr.create_environment(name=env_name)
+                self._env_path = Path(virtual_env.path)
             
             self._notify_progress('upgrade_pip', 0.2, 'Upgrading pip...')
             

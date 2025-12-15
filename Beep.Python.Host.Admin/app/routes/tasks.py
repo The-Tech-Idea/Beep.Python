@@ -39,6 +39,26 @@ def status(task_id):
     return jsonify(task.to_dict())
 
 
+@tasks_bp.route('/<task_id>/cancel', methods=['POST'])
+def cancel(task_id):
+    """Cancel a running task"""
+    mgr = TaskManager()
+    task = mgr.get_task(task_id)
+    if not task:
+        return jsonify({'error': 'Task not found'}), 404
+    
+    if task.status not in ('running', 'pending'):
+        return jsonify({'error': f'Task is {task.status} and cannot be cancelled'}), 400
+    
+    # Mark task as cancelled
+    mgr.fail_task(task_id, 'Cancelled by user')
+    
+    return jsonify({
+        'success': True,
+        'message': 'Task cancelled'
+    })
+
+
 @tasks_bp.route('/<task_id>/stream')
 def stream(task_id):
     """Server-Sent Events stream for task progress"""

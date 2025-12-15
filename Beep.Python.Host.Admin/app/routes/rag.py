@@ -25,6 +25,7 @@ from flask import Blueprint, request, jsonify, render_template
 from app.services.rag_service import RAGService, RAGProviderType
 from app.services.rag_environment import get_rag_environment, RAGEnvStatus
 from app.models.rag_metadata import get_rag_metadata_db, asdict
+from app.services.document_extractor import get_document_extractor
 from app.database import db
 
 
@@ -871,37 +872,24 @@ def api_upload_files():
     if not files:
         return jsonify({'error': 'No files uploaded'}), 400
     
-    # Allowed file types
-    ALLOWED_EXTENSIONS = {'txt', 'md', 'pdf', 'json', 'csv', 'html', 'xml', 'py', 'js', 'ts', 'css', 'yaml', 'yml'}
+    # Allowed file types - use extractor's supported formats
+    extractor = get_document_extractor()
+    ALLOWED_EXTENSIONS = set(extractor.SUPPORTED_EXTENSIONS.keys())
     
     def allowed_file(filename):
         return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
     
     def extract_text(file, filename):
-        """Extract text from various file types"""
-        ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
-        
+        """Extract text from various file types using DocumentExtractor"""
         try:
             content = file.read()
+            extractor = get_document_extractor()
+            result = extractor.extract(file_content=content, filename=filename)
             
-            # Try to decode as text
-            if ext in {'txt', 'md', 'py', 'js', 'ts', 'css', 'html', 'xml', 'json', 'yaml', 'yml', 'csv'}:
-                try:
-                    text = content.decode('utf-8')
-                except UnicodeDecodeError:
-                    text = content.decode('latin-1')
-                return text
-            
-            # PDF would need special handling (not implemented yet)
-            if ext == 'pdf':
-                return f"[PDF file: {filename} - Text extraction not yet implemented]"
-            
-            # Default: try as text
-            try:
-                return content.decode('utf-8')
-            except:
-                return f"[Binary file: {filename} - Cannot extract text]"
-                
+            if result.success:
+                return result.text
+            else:
+                return f"[{filename} - {result.error}]"
         except Exception as e:
             return f"[Error reading file: {str(e)}]"
     
@@ -2584,3 +2572,5 @@ def data_sources_page():
 def sync_jobs_page():
     """Sync jobs management page"""
     return render_template('rag/sync_jobs.html')
+
+

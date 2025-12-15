@@ -22,7 +22,9 @@ class RAGEnvironmentManager:
         from app.config_manager import get_app_directory
         app_dir = get_app_directory()
         self.base_path = app_dir / 'rag_data'
-        self.venv_path = self.base_path / 'venv'
+        # Use providers directory via EnvironmentManager
+        providers_path = app_dir / 'providers'
+        self.venv_path = providers_path / 'rag'
         self.databases_path = self.base_path / 'databases'
         self.config_path = self.base_path / 'config'
         self.active_db_file = self.config_path / 'active_database.json'
@@ -79,7 +81,7 @@ class RAGEnvironmentManager:
     
     def create_venv(self, callback: Optional[Callable[[str], None]] = None) -> bool:
         """
-        Create RAG virtual environment
+        Create RAG virtual environment using EnvironmentManager
         
         Args:
             callback: Optional callback for progress updates
@@ -91,15 +93,30 @@ class RAGEnvironmentManager:
             if callback:
                 callback("Creating RAG virtual environment...")
             
-            # Create venv
-            subprocess.run(
-                [sys.executable, '-m', 'venv', str(self.venv_path)],
-                check=True,
-                capture_output=True
-            )
+            # Use centralized EnvironmentManager
+            from app.services.environment_manager import EnvironmentManager
+            from app.config_manager import get_app_directory
             
-            if callback:
-                callback("Virtual environment created successfully")
+            env_mgr = EnvironmentManager(base_path=str(get_app_directory()))
+            env_name = 'rag'
+            
+            # Check if environment already exists
+            existing_envs = env_mgr.list_environments()
+            existing = next((e for e in existing_envs if e.name == env_name), None)
+            
+            if existing:
+                # Environment already exists, use it
+                self.venv_path = Path(existing.path)
+                if callback:
+                    callback("Using existing RAG virtual environment")
+            else:
+                # Create new environment using EnvironmentManager
+                if callback:
+                    callback("Creating virtual environment via EnvironmentManager...")
+                virtual_env = env_mgr.create_environment(name=env_name)
+                self.venv_path = Path(virtual_env.path)
+                if callback:
+                    callback("Virtual environment created successfully")
             
             return True
             

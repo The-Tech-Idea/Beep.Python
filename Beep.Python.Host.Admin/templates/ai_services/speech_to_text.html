@@ -1,0 +1,159 @@
+{% extends "ai_services/base_service.html" %}
+
+{% block service_content %}
+<!-- Speech to Text Service Panel -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card bg-dark border-secondary">
+            <div class="card-header border-secondary">
+                <h5 class="mb-0"><i class="bi bi-mic me-2"></i>Convert Speech to Text</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="audio-file-input" class="form-label">Upload Audio File</label>
+                    <input type="file" class="form-control" id="audio-file-input" accept="audio/*,.wav,.mp3,.m4a,.ogg,.flac">
+                    <small class="text-muted">Supported formats: WAV, MP3, M4A, OGG, FLAC</small>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="language-select" class="form-label">Language</label>
+                        <select class="form-select" id="language-select">
+                            <option value="en">English</option>
+                            <option value="es">Spanish</option>
+                            <option value="fr">French</option>
+                            <option value="de">German</option>
+                            <option value="auto">Auto-detect</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="model-size-select" class="form-label">Model Size</label>
+                        <select class="form-select" id="model-size-select">
+                            <option value="tiny">Tiny (Fastest, ~39MB)</option>
+                            <option value="base" selected>Base (Balanced, ~74MB)</option>
+                            <option value="small">Small (Better quality, ~244MB)</option>
+                            <option value="medium">Medium (High quality, ~769MB)</option>
+                            <option value="large">Large (Best quality, ~1550MB)</option>
+                        </select>
+                        <small class="text-muted">Larger models = better accuracy but slower</small>
+                    </div>
+                </div>
+                
+                <button type="button" class="btn btn-primary" id="btn-transcribe" disabled>
+                    <i class="bi bi-mic-fill me-2"></i>Transcribe Audio
+                </button>
+                
+                <!-- Transcription Result -->
+                <div id="transcription-result" class="mt-4" style="display: none;">
+                    <h6>Transcription:</h6>
+                    <div class="card bg-secondary">
+                        <div class="card-body">
+                            <p id="transcription-text" class="mb-0"></p>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-center">
+                        <button class="btn btn-sm btn-outline-primary" id="btn-copy-text">
+                            <i class="bi bi-clipboard me-1"></i>Copy Text
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary ms-2" id="btn-download-text">
+                            <i class="bi bi-download me-1"></i>Download as TXT
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnTranscribe = document.getElementById('btn-transcribe');
+    const fileInput = document.getElementById('audio-file-input');
+    
+    fileInput.addEventListener('change', function() {
+        btnTranscribe.disabled = !this.files || this.files.length === 0;
+    });
+    
+    btnTranscribe.addEventListener('click', transcribeAudio);
+    document.getElementById('btn-copy-text')?.addEventListener('click', copyText);
+    document.getElementById('btn-download-text')?.addEventListener('click', downloadText);
+});
+
+function transcribeAudio() {
+    const fileInput = document.getElementById('audio-file-input');
+    if (!fileInput.files || fileInput.files.length === 0) {
+        alert('Please select an audio file');
+        return;
+    }
+    
+    const language = document.getElementById('language-select').value;
+    const modelSize = document.getElementById('model-size-select').value;
+    const btnTranscribe = document.getElementById('btn-transcribe');
+    
+    const formData = new FormData();
+    formData.append('audio', fileInput.files[0]);
+    formData.append('language', language);
+    formData.append('model_size', modelSize);
+    
+    btnTranscribe.disabled = true;
+    btnTranscribe.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Transcribing...';
+    
+    fetch('/ai-services/api/speech-to-text/transcribe', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const transcriptionText = document.getElementById('transcription-text');
+            transcriptionText.textContent = data.text;
+            transcriptionText.dataset.text = data.text;
+            document.getElementById('transcription-result').style.display = 'block';
+        } else {
+            alert('Failed to transcribe audio: ' + (data.error || 'Unknown error'));
+        }
+        
+        btnTranscribe.disabled = false;
+        btnTranscribe.innerHTML = '<i class="bi bi-mic-fill me-2"></i>Transcribe Audio';
+    })
+    .catch(error => {
+        alert('Error transcribing audio: ' + error.message);
+        btnTranscribe.disabled = false;
+        btnTranscribe.innerHTML = '<i class="bi bi-mic-fill me-2"></i>Transcribe Audio';
+    });
+}
+
+function copyText() {
+    const textElement = document.getElementById('transcription-text');
+    const text = textElement.dataset.text || textElement.textContent;
+    
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Text copied to clipboard');
+    }).catch(() => {
+        // Fallback for older browsers
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('Text copied to clipboard');
+    });
+}
+
+function downloadText() {
+    const textElement = document.getElementById('transcription-text');
+    const text = textElement.dataset.text || textElement.textContent;
+    
+    const blob = new Blob([text], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.download = 'transcription.txt';
+    link.href = URL.createObjectURL(blob);
+    link.click();
+    URL.revokeObjectURL(link.href);
+}
+</script>
+{% endblock %}

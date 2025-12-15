@@ -364,8 +364,18 @@ class LLMManager:
     # Local Model Management
     # =====================
     
-    def get_local_models(self) -> List[LocalModel]:
-        """Get all locally downloaded models from all enabled directories"""
+    def get_local_models(self, model_type: Optional[str] = None) -> List[LocalModel]:
+        """
+        Get all locally downloaded models from all enabled directories
+        
+        Args:
+            model_type: Optional filter by model type ('llm', 'text_to_image', 'speech_to_text', etc.)
+                      If None, returns only LLM models for backward compatibility
+        """
+        # If model_type is specified and not 'llm', get AI service models
+        if model_type and model_type != 'llm':
+            return self._get_ai_service_models(model_type)
+        
         models = []
         all_model_paths = self.repo_mgr.get_all_model_paths()
         
@@ -840,3 +850,94 @@ class LLMManager:
             'models_path': primary_path,
             'directories_count': len(self.repo_mgr.get_directories(enabled_only=True))
         }
+    
+    def _get_ai_service_models(self, service_type: str) -> List[LocalModel]:
+        """
+        Get AI service models and convert them to LocalModel format for unified display
+        
+        Args:
+            service_type: AI service type (text_to_image, speech_to_text, etc.)
+        """
+        try:
+            from app.services.ai_service_model_manager import get_ai_service_model_manager
+            
+            ai_mgr = get_ai_service_model_manager(service_type)
+            ai_models = ai_mgr.get_local_models()
+            
+            # Convert AIServiceLocalModel to LocalModel format
+            local_models = []
+            for ai_model in ai_models:
+                # Create a LocalModel from AIServiceLocalModel
+                local_model = LocalModel(
+                    id=ai_model.id,
+                    name=ai_model.name,
+                    path=ai_model.path,
+                    filename=ai_model.model_id,  # Use model_id as filename
+                    size=ai_model.size,
+                    format=ai_model.format,
+                    source=ai_model.source,
+                    status=ai_model.status,
+                    downloaded_at=ai_model.downloaded_at,
+                    metadata={
+                        'model_id': ai_model.model_id,
+                        'service_type': ai_model.service_type,
+                        'description': ai_model.description,
+                        **ai_model.metadata
+                    }
+                )
+                local_models.append(local_model)
+            
+            return local_models
+        except Exception as e:
+            print(f"Error getting AI service models for {service_type}: {e}")
+            return []
+    
+    def get_all_models_by_type(self) -> Dict[str, List[LocalModel]]:
+        """
+        Get all models grouped by type (llm, text_to_image, speech_to_text, etc.)
+        
+        Returns:
+            Dict mapping model_type -> List[LocalModel]
+        """
+        result = {
+            'llm': self.get_local_models('llm'),
+            'text_to_image': self._get_ai_service_models('text_to_image'),
+            'speech_to_text': self._get_ai_service_models('speech_to_text'),
+            'text_to_speech': self._get_ai_service_models('text_to_speech'),
+            'voice_to_voice': self._get_ai_service_models('voice_to_voice')
+        }
+        return result
+    
+    def get_storage_stats_by_type(self) -> Dict[str, Dict[str, Any]]:
+        """
+        Get storage statistics grouped by model type
+        
+        Returns:
+            Dict mapping model_type -> storage stats
+        """
+        stats = {}
+        
+        # LLM models
+        llm_models = self.get_local_models('llm')
+        llm_size = sum(m.size for m in llm_models)
+        stats['llm'] = {
+            'model_count': len(llm_models),
+            'total_size_gb': round(llm_size / (1024 ** 3), 2),
+            'total_size_bytes': llm_size
+        }
+        
+        # AI service models
+        for service_type in ['text_to_image', 'speech_to_text', 'text_to_speech', 'voice_to_voice']:
+            try:
+                from app.services.ai_service_model_manager import get_ai_service_model_manager
+                ai_mgr = get_ai_service_model_manager(service_type)
+                service_stats = ai_mgr.get_storage_stats()
+                stats[service_type] = service_stats
+            except Exception as e:
+                stats[service_type] = {
+                    'model_count': 0,
+                    'total_size_gb': 0,
+                    'total_size_bytes': 0
+                }
+        
+        return stats

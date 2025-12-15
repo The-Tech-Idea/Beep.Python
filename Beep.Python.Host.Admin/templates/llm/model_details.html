@@ -7,7 +7,7 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ url_for('llm.index') }}">LLM</a></li>
-            <li class="breadcrumb-item"><a href="{{ url_for('llm.discover') }}">Discover</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('llm.discover', type=model_type) }}">Discover</a></li>
             <li class="breadcrumb-item active">{{ model.modelId }}</li>
         </ol>
     </nav>
@@ -77,8 +77,35 @@
         <!-- Downloadable Files -->
         <div class="card mt-4 animate-fade-in">
             <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-file-earmark-arrow-down me-2"></i>Available Files (GGUF)</h5>
+                <h5 class="mb-0">
+                    <i class="bi bi-file-earmark-arrow-down me-2"></i>
+                    Available Files {% if model_type == 'llm' %}(GGUF){% else %}(Model Files){% endif %}
+                </h5>
             </div>
+            {% if model_type != 'llm' %}
+            <div class="card-body">
+                <div class="alert alert-info mb-3">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>For {{ model_type.replace('_', ' ').title() }} models:</strong> The entire model repository will be downloaded to your local HuggingFace cache. 
+                    This allows offline use. Models are cached and won't re-download unless you clear the cache.
+                    {% if 'chronos-bolt' in model.id.lower() or 'autogluon' in model.id.lower() %}
+                    <br><br>
+                    <strong>Note:</strong> Chronos-Bolt models use AutoGluon and will be downloaded automatically on first use if not pre-downloaded.
+                    {% endif %}
+                </div>
+                <div class="d-grid">
+                    <button class="btn btn-primary btn-lg" onclick="downloadEntireModel('{{ model.id }}', '{{ model.modelId or model.id }}')">
+                        <i class="bi bi-download me-2"></i>Download Entire Model (for Offline Use)
+                    </button>
+                    <small class="text-muted text-center mt-2">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Model will be cached at: <code>~/.cache/huggingface/hub/</code>
+                    </small>
+                </div>
+                <hr>
+                <p class="text-muted small mb-0">Model files that will be downloaded to HuggingFace cache (~/.cache/huggingface/):</p>
+            </div>
+            {% endif %}
             <div class="card-body p-0">
                 {% if files %}
                 <div class="table-responsive">
@@ -125,16 +152,26 @@
                                 </td>
                                 <td>{{ (file.size / 1073741824)|round(2) }} GB</td>
                                 <td>
-                                    {% if file.is_downloaded %}
-                                    <span class="badge bg-success">
-                                        <i class="bi bi-check-circle me-1"></i>Downloaded
-                                    </span>
+                                    {% if model_type == 'llm' %}
+                                        {% if file.is_downloaded %}
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle me-1"></i>Downloaded
+                                        </span>
+                                        {% else %}
+                                        <button class="btn btn-sm btn-primary" 
+                                                onclick="downloadFile('{{ model.id }}', '{{ file.filename }}', {{ file.size }})"
+                                                {% if model.gated and not has_token %}disabled title="Token required for gated models"{% endif %}>
+                                            <i class="bi bi-download me-1"></i>Download
+                                        </button>
+                                        {% endif %}
                                     {% else %}
-                                    <button class="btn btn-sm btn-primary" 
-                                            onclick="downloadFile('{{ model.id }}', '{{ file.filename }}', {{ file.size }})"
-                                            {% if model.gated and not has_token %}disabled title="Token required for gated models"{% endif %}>
-                                        <i class="bi bi-download me-1"></i>Download
-                                    </button>
+                                        {% if file.is_downloaded %}
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle me-1"></i>Downloaded
+                                        </span>
+                                        {% else %}
+                                        <span class="text-muted small">Will be downloaded with model</span>
+                                        {% endif %}
                                     {% endif %}
                                 </td>
                             </tr>
@@ -145,7 +182,13 @@
                 {% else %}
                 <div class="text-center py-5">
                     <i class="bi bi-file-earmark-x display-4 text-muted mb-3"></i>
-                    <p class="text-muted">No GGUF files found in this repository</p>
+                    <p class="text-muted">
+                        {% if model_type == 'llm' %}
+                        No GGUF files found in this repository
+                        {% else %}
+                        No model files found in this repository. This model may need to be downloaded via HuggingFace Hub.
+                        {% endif %}
+                    </p>
                 </div>
                 {% endif %}
             </div>
@@ -300,15 +343,53 @@ async function downloadFile(modelId, filename, size) {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 model_id: modelId,
-                filename: filename
+                filename: filename,
+                model_type: '{{ model_type }}'  // Pass model type to download route
             })
         });
         
         const data = await response.json();
         
         if (response.ok && data.task_id) {
-            // Redirect to task progress page
-            window.location.href = data.redirect_url;
+            // Add to global task panel
+            if (window.addGlobalTask) {
+                window.addGlobalTask(data.task_id, `Download: ${filename}`, 'model_download');
+            }
+            // Don't redirect - let user continue browsing, task will show in global panel
+            alert('Download started! Check the task notification panel (bottom right) for progress.');
+        } else {
+            alert('Error: ' + (data.error || 'Failed to start download'));
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+async function downloadEntireModel(modelId, modelName) {
+    const modelTypeName = '{{ model_type }}'.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+    if (!confirm(`Download entire model: ${modelName}?\n\nThis will download all model files to your HuggingFace cache (~/.cache/huggingface/) for offline use.\n\nOnce downloaded, the model will be cached and won't need to re-download.\n\nThis may take a while depending on your connection and model size.`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/llm/download', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                model_id: modelId,
+                model_type: '{{ model_type }}'  // No filename = download entire model
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.task_id) {
+            // Add to global task panel
+            if (window.addGlobalTask) {
+                window.addGlobalTask(data.task_id, `Download: ${modelName}`, 'model_download');
+            }
+            // Don't redirect - let user continue browsing, task will show in global panel
+            alert('Download started! Check the task notification panel (bottom right) for progress.\n\nThe model will be cached locally for offline use.');
         } else {
             alert('Error: ' + (data.error || 'Failed to start download'));
         }

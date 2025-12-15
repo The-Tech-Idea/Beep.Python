@@ -89,10 +89,15 @@ def index():
             local_models = []
         
         try:
-            loaded_models = inference.get_loaded_models()
+            # Get currently loaded models (only one should be loaded at a time for LLM)
+            all_loaded = inference.get_loaded_models()
+            # Convert to a set of model_ids for easier checking in template
+            loaded_model_ids_set = {m.get('model_id') for m in all_loaded if isinstance(m, dict)}
+            loaded_models = all_loaded
         except Exception as e:
             print(f"[LLM Index] Error getting loaded models: {e}")
             loaded_models = []
+            loaded_model_ids_set = set()
         
         try:
             active_downloads = llm_mgr.get_active_downloads()
@@ -116,6 +121,7 @@ def index():
                                storage_stats=storage_stats,
                                local_models=local_models,
                                loaded_models=loaded_models,
+                               loaded_model_ids=loaded_model_ids_set,
                                active_downloads=active_downloads,
                                categories=categories,
                                inference_available=inference_available)
@@ -135,8 +141,28 @@ def index():
 
 @llm_bp.route('/discover')
 def discover():
-    """Browse and discover models"""
+    """Browse and discover LLM models only. AI Services have their own model management."""
     try:
+        # Only support LLM models on this page
+        model_type = request.args.get('type', 'llm')
+        
+        # Redirect AI service types to their respective pages
+        if model_type not in ['llm', 'embedding']:
+            # For AI services, redirect to their service page
+            # Users should manage models from within each service
+            from flask import redirect, url_for
+            service_route_map = {
+                'text_to_image': 'ai_services.text_to_image',
+                'speech_to_text': 'ai_services.speech_to_text',
+                'text_to_speech': 'ai_services.text_to_speech',
+                'object_detection': 'ai_services.object_detection',
+                'tabular_time_series': 'ai_services.tabular_time_series',
+            }
+            if model_type in service_route_map:
+                return redirect(url_for(service_route_map[model_type]))
+            # Default to LLM if unknown type
+            model_type = 'llm'
+        
         hf_service = HuggingFaceService()
         
         try:
@@ -150,25 +176,121 @@ def discover():
         category = request.args.get('category', '')
         
         models = []
-        if query or category:
-            search_query = query if query else (categories[0]['query'] if categories and category else '')
-            for cat in categories:
-                if cat['id'] == category:
-                    search_query = cat['query']
-                    break
-            
-            if search_query:
-                try:
-                    models = hf_service.search_models(search_query, filter_gguf=True, limit=30)
-                except Exception as e:
-                    print(f"[Discover] Error searching models: {e}")
-                    models = []
+        filter_gguf = (model_type == 'llm')  # Only filter GGUF for LLM models
+        
+        # For AI service models, always show models by default (like HuggingFace's "Tasks" filter)
+        # This matches HuggingFace behavior where selecting "Text-to-Speech" shows all 3,691 models
+        if model_type in ['text_to_image', 'speech_to_text', 'text_to_speech', 'object_detection', 'tabular_time_series']:
+            try:
+                if model_type == 'text_to_image':
+                    models = hf_service.search_models(
+                        query if query else '',  # Optional search query
+                        filter_gguf=False, 
+                        limit=200,  # Show more results to match HuggingFace's large catalog
+                        sort='downloads',  # Sort by downloads (most popular first, like "Trending")
+                        pipeline_tag='text-to-image'
+                    )
+                elif model_type == 'speech_to_text':
+                    models = hf_service.search_models(
+                        query if query else '',
+                        filter_gguf=False, 
+                        limit=200,
+                        sort='downloads',
+                        pipeline_tag='automatic-speech-recognition'
+                    )
+                elif model_type == 'object_detection':
+                    models = hf_service.search_models(
+                        query if query else '',
+                        filter_gguf=False,
+                        limit=200,
+                        sort='downloads',
+                        pipeline_tag='object-detection'
+                    )
+                elif model_type == 'tabular_time_series':
+                    # Search for time series forecasting, tabular classification, and tabular regression
+                    all_models = []
+                    for pipeline_tag in ['time-series-forecasting', 'tabular-classification', 'tabular-regression']:
+                        tag_models = hf_service.search_models(
+                            query if query else '',
+                            filter_gguf=False,
+                            limit=100,
+                            sort='downloads',
+                            pipeline_tag=pipeline_tag
+                        )
+                        all_models.extend(tag_models)
+                    
+                    # Also search for AutoGluon Chronos-Bolt models (they may not have pipeline tags)
+                    if not query or 'chronos' in query.lower() or 'bolt' in query.lower():
+                        try:
+                            # Search for autogluon models
+                            ag_models = hf_service.search_models(
+                                'autogluon chronos-bolt' if not query else query,
+                                filter_gguf=False,
+                                limit=20,
+                                sort='downloads'
+                            )
+                            # Filter to only include chronos-bolt models
+                            for model in ag_models:
+                                model_id = model.get('id', '').lower()
+                                if 'chronos-bolt' in model_id or 'chronos_bolt' in model_id:
+                                    all_models.append(model)
+                        except:
+                            pass  # If search fails, continue without AutoGluon models
+                    
+                    # Remove duplicates and sort by downloads
+                    seen_ids = set()
+                    unique_models = []
+                    for model in all_models:
+                        model_id = model.get('id')
+                        if model_id and model_id not in seen_ids:
+                            seen_ids.add(model_id)
+                            unique_models.append(model)
+                    
+                    # Sort by downloads
+                    unique_models.sort(key=lambda x: x.get('downloads', 0), reverse=True)
+                    models = unique_models[:200]  # Limit to top 200
+                    
+                elif model_type == 'text_to_speech':
+                    # Match HuggingFace's TTS page - show all TTS models by default
+                    models = hf_service.search_models(
+                        query if query else '',  # Optional search query
+                        filter_gguf=False, 
+                        limit=200,  # Show more results (HuggingFace has 3,691 TTS models)
+                        sort='downloads',  # Sort by downloads like HuggingFace "Trending"
+                        pipeline_tag='text-to-speech'
+                    )
+            except Exception as e:
+                print(f"[Discover] Error searching models: {e}")
+                models = []
+        elif query or category:
+            # LLM models - require search query or category
+            # IMPORTANT: Filter by text-generation pipeline_tag to avoid showing other model types
+            if model_type == 'llm':
+                search_query = query if query else (categories[0]['query'] if categories and category else '')
+                for cat in categories:
+                    if cat['id'] == category:
+                        search_query = cat['query']
+                        break
+                
+                if search_query:
+                    try:
+                        # Filter by text-generation pipeline_tag to ensure only LLM models are shown
+                        models = hf_service.search_models(
+                            search_query, 
+                            filter_gguf=filter_gguf, 
+                            limit=30,
+                            pipeline_tag='text-generation'  # Only show text generation models
+                        )
+                    except Exception as e:
+                        print(f"[Discover] Error searching models: {e}")
+                        models = []
         
         return render_template('llm/discover.html',
                                categories=categories,
                                models=models,
                                query=query,
-                               selected_category=category)
+                               selected_category=category,
+                               model_type=model_type)
     except Exception as e:
         import traceback
         error_trace = traceback.format_exc()
@@ -235,8 +357,11 @@ def search():
 
 @llm_bp.route('/model/<path:model_id>')
 def model_details(model_id: str):
-    """View model details and files"""
+    """View model details and files - supports all model types"""
     try:
+        # Get model type from query params
+        model_type = request.args.get('type', 'llm')
+        
         hf_service = HuggingFaceService()
         llm_mgr = LLMManager()
         
@@ -244,13 +369,20 @@ def model_details(model_id: str):
         details = hf_service.get_model_details(model_id)
         if not details:
             flash('Model not found', 'error')
-            return redirect(url_for('llm.discover'))
+            return redirect(url_for('llm.discover', type=model_type))
         
-        # Get downloadable files
-        files = hf_service.get_model_files(model_id, filter_gguf=True)
+        # Get downloadable files - filter GGUF only for LLM models
+        filter_gguf = (model_type == 'llm')
+        files = hf_service.get_model_files(model_id, filter_gguf=filter_gguf)
+        
+        # For AI service models, filter out tiny config files and show only model files
+        if model_type != 'llm':
+            # Filter to show only substantial model files (safetensors, pytorch, onnx, etc.)
+            model_extensions = {'.safetensors', '.bin', '.pt', '.pth', '.onnx', '.ckpt', '.pkl'}
+            files = [f for f in files if any(f['filename'].lower().endswith(ext) for ext in model_extensions) or f['size'] > 1000]
         
         # Check which files are already downloaded
-        local_models = llm_mgr.get_local_models()
+        local_models = llm_mgr.get_local_models(model_type=model_type)
         downloaded_files = set()
         for lm in local_models:
             if lm.metadata.get('model_id') == model_id:
@@ -288,22 +420,191 @@ def model_details(model_id: str):
                                token_source=token_source,
                                needs_token=needs_token,
                                is_gated=is_gated,
-                               is_private=is_private)
+                               is_private=is_private,
+                               model_type=model_type)
     except Exception as e:
         import traceback
         error_trace = traceback.format_exc()
         print(f"[Model Details Error] {e}")
         print(f"[Model Details Traceback]\n{error_trace}")
+        flash('Error loading model details', 'error')
+        model_type = request.args.get('type', 'llm')
+        return redirect(url_for('llm.discover', type=model_type))
+
+
 @llm_bp.route('/download', methods=['POST'])
 def download_model():
-    """Start model download with progress tracking"""
+    """Start model download with progress tracking - supports both LLM and AI service models from multiple sources"""
     try:
         from app.services.repository_manager import get_repository_manager
+        from app.services.model_download_service import get_model_download_service, ModelSource
+        from app.services.huggingface_service import HuggingFaceService
+        from app.services.llm_manager import LLMManager
+        from app.services.task_manager import TaskManager
+        import time
         
         data = request.get_json() or request.form
         model_id = data.get('model_id')
         filename = data.get('filename')
+        model_type = data.get('model_type', 'llm')  # llm, text_to_image, speech_to_text, etc.
+        source = data.get('source')  # huggingface, direct_url, civitai, github_release, modelscope
+        custom_url = data.get('custom_url')  # For direct URLs or custom sources
         
+        # Use custom URL if provided
+        if custom_url:
+            model_id = custom_url
+        
+        # Determine source
+        download_service = get_model_download_service()
+        if source:
+            try:
+                detected_source = ModelSource(source)
+            except ValueError:
+                detected_source = download_service.detect_source(model_id)
+        else:
+            detected_source = download_service.detect_source(model_id)
+        
+        # For AI service models, we download the entire model (no filename needed)
+        if model_type != 'llm':
+            if not model_id:
+                return jsonify({'error': 'model_id is required'}), 400
+            
+            # Use AI service model manager
+            from app.services.ai_service_model_manager import get_ai_service_model_manager
+            ai_mgr = get_ai_service_model_manager(model_type)
+            
+            # Create task for progress tracking
+            task_mgr = TaskManager()
+            task = task_mgr.create_task(
+                name=f"Download {model_type} model: {model_id}",
+                task_type=f"download_{model_type}_model",
+                steps=[
+                    "Preparing download",
+                    "Downloading model",
+                    "Finalizing"
+                ]
+            )
+            
+            def run_download():
+                try:
+                    task_mgr.start_task(task.id)
+                    task_mgr.update_step(task.id, 0, "running", "Initializing download...")
+                    task_mgr.update_progress(task.id, 5, "Preparing...")
+                    
+                    def progress_callback(progress):
+                        # Update task progress
+                        if task_mgr and task.id:
+                            try:
+                                percent = 5 + int(progress.percentage * 0.9)  # 5-95%
+                                task_mgr.update_progress(task.id, percent, f"Downloading: {progress.percentage:.1f}%")
+                            except:
+                                pass
+                    
+                    local_model = ai_mgr.download_model(
+                        model_id=model_id,
+                        progress_callback=progress_callback,
+                        task_manager=task_mgr,
+                        task_id=task.id
+                    )
+                    
+                    if local_model:
+                        task_mgr.update_step(task.id, 2, "completed", "Download complete")
+                        task_mgr.update_progress(task.id, 100, "Complete")
+                        task_mgr.complete_task(task.id, {'model_id': model_id, 'local_model': local_model.to_dict()})
+                    else:
+                        task_mgr.fail_task(task.id, "Download failed or was cancelled")
+                except Exception as e:
+                    import traceback
+                    error_details = traceback.format_exc()
+                    logger.error(f"AI service model download error: {error_details}")
+                    task_mgr.fail_task(task.id, str(e))
+            
+            thread = threading.Thread(target=run_download, daemon=True)
+            thread.start()
+            
+            return jsonify({
+                'success': True,
+                'task_id': task.id,
+                'message': f'Download started for {model_type} model'
+            })
+        
+        # LLM model download (original logic)
+        # Check if this is a custom source (not HuggingFace)
+        download_service = get_model_download_service()
+        detected_source = download_service.detect_source(model_id)
+        
+        # If it's not HuggingFace and no filename specified, use unified download service
+        if detected_source != ModelSource.HUGGINGFACE and not filename:
+            # Use unified download service for non-HuggingFace sources
+            task_mgr = TaskManager()
+            task = task_mgr.create_task(
+                name=f"Download: {model_id}",
+                task_type="download_model",
+                steps=[
+                    "Preparing download",
+                    f"Connecting to {detected_source.value}",
+                    "Downloading model",
+                    "Finalizing"
+                ]
+            )
+            
+            def run_custom_download():
+                try:
+                    task_mgr.start_task(task.id)
+                    task_mgr.update_step(task.id, 0, "running", "Initializing...")
+                    task_mgr.update_progress(task.id, 10, "Preparing download...")
+                    
+                    # Get token if needed
+                    token = None
+                    repo_mgr = get_repository_manager()
+                    if detected_source == ModelSource.HUGGINGFACE:
+                        hf_repo = repo_mgr.get_repository('hf_default')
+                        token = hf_repo.api_key if hf_repo else None
+                    
+                    def progress_callback(progress_data):
+                        if task_mgr and task.id:
+                            percent = progress_data.get('percentage', 0)
+                            task_mgr.update_progress(task.id, 10 + int(percent * 0.8), 
+                                                    f"Downloading: {percent:.1f}%")
+                    
+                    task_mgr.update_step(task.id, 1, "running", f"Connecting to {detected_source.value}...")
+                    task_mgr.update_progress(task.id, 20, f"Connecting to {detected_source.value}...")
+                    
+                    result = download_service.download(
+                        model_id_or_url=model_id,
+                        source=detected_source,
+                        progress_callback=progress_callback,
+                        token=token,
+                        api_key=api_key
+                    )
+                    
+                    if result.success:
+                        task_mgr.update_step(task.id, 2, "completed", "Download complete")
+                        task_mgr.update_progress(task.id, 100, "Complete")
+                        task_mgr.complete_task(task.id, {
+                            'model_id': model_id,
+                            'source': detected_source.value,
+                            'local_path': str(result.local_path)
+                        })
+                    else:
+                        task_mgr.fail_task(task.id, result.error or "Download failed")
+                        
+                except Exception as e:
+                    import traceback
+                    logger.error(f"Custom download error: {traceback.format_exc()}")
+                    task_mgr.fail_task(task.id, str(e))
+            
+            thread = threading.Thread(target=run_custom_download, daemon=True)
+            thread.start()
+            
+            return jsonify({
+                'success': True,
+                'task_id': task.id,
+                'message': f'Download started from {detected_source.value}',
+                'source': detected_source.value
+            })
+        
+        # HuggingFace download (original logic)
         if not model_id or not filename:
             return jsonify({'error': 'model_id and filename are required'}), 400
         
@@ -470,44 +771,78 @@ def downloads():
 
 @llm_bp.route('/models')
 def local_models():
-    """View local models"""
+    """View local models - unified view for all model types"""
     try:
+        # Get model type from query params (llm, text_to_image, speech_to_text, etc.)
+        model_type = request.args.get('type', 'llm')
+        
         llm_mgr = LLMManager()
         inference = InferenceService()
         
         try:
-            models = llm_mgr.get_local_models()
+            models = llm_mgr.get_local_models(model_type=model_type)
         except Exception as e:
             print(f"[Models Page] Error getting local models: {e}")
             models = []
         
-        try:
-            loaded_models = {m['model_id']: m for m in inference.get_loaded_models()}
-        except Exception as e:
-            print(f"[Models Page] Error getting loaded models: {e}")
-            loaded_models = {}
+        # Only check loaded models for LLM type
+        # "Loaded" means currently running - only one model can be loaded at a time
+        loaded_models = {}
+        if model_type == 'llm':
+            try:
+                all_loaded = inference.get_loaded_models()
+                # Convert to dict with model_id as key
+                loaded_models = {m['model_id']: m for m in all_loaded if isinstance(m, dict)}
+            except Exception as e:
+                print(f"[Models Page] Error getting loaded models: {e}")
+                loaded_models = {}
         
         # Add loaded status to models
+        # "Loaded" means currently running, regardless of environment status
         for model in models:
             model.is_loaded = model.id in loaded_models
         
+        # Get storage stats for all types
         try:
-            storage_stats = llm_mgr.get_storage_stats()
+            if model_type == 'llm':
+                storage_stats = llm_mgr.get_storage_stats()
+            else:
+                stats_by_type = llm_mgr.get_storage_stats_by_type()
+                storage_stats = stats_by_type.get(model_type, {
+                    'model_count': 0, 
+                    'total_size_gb': 0, 
+                    'total_size_bytes': 0
+                })
+                # Add disk_free_gb for consistency
+                try:
+                    import shutil
+                    disk_usage = shutil.disk_usage(llm_mgr.models_path)
+                    storage_stats['disk_free_gb'] = round(disk_usage.free / (1024 ** 3), 2)
+                except:
+                    storage_stats['disk_free_gb'] = 0
         except Exception as e:
             print(f"[Models Page] Error getting storage stats: {e}")
             storage_stats = {'model_count': 0, 'total_size_gb': 0, 'disk_free_gb': 0}
         
         try:
-            inference_available = inference.is_available()
+            inference_available = inference.is_available() if model_type == 'llm' else True
         except Exception as e:
             print(f"[Models Page] Error checking inference: {e}")
             inference_available = False
+        
+        # Get stats for all types for the sidebar/tabs
+        try:
+            all_stats = llm_mgr.get_storage_stats_by_type()
+        except Exception as e:
+            all_stats = {}
         
         return render_template('llm/models.html',
                                models=models,
                                loaded_models=loaded_models,
                                storage_stats=storage_stats,
-                               inference_available=inference_available)
+                               inference_available=inference_available,
+                               model_type=model_type,
+                               all_stats=all_stats)
     except Exception as e:
         import traceback
         error_trace = traceback.format_exc()
@@ -718,6 +1053,7 @@ def delete_model(model_id: str):
 def load_model(model_id: str):
     """Load a model for inference"""
     inference = InferenceService()
+    llm_mgr = LLMManager()
     
     # Check if model has dedicated venv (per-model environment)
     llm_env_mgr = get_llm_env_manager()
@@ -731,13 +1067,34 @@ def load_model(model_id: str):
             'needs_environment': True
         }), 400
     
-    data = request.get_json() or {}
+    # Handle both JSON and form data, gracefully handle empty requests
+    # Use silent=True to avoid exceptions on empty/invalid JSON
+    try:
+        if request.is_json and request.content_length and request.content_length > 0:
+            data = request.get_json(silent=True) or {}
+        elif request.form:
+            data = request.form.to_dict()
+        else:
+            data = {}
+    except Exception:
+        # If anything fails, use empty dict
+        data = {}
     
-    # Parse config from request
+    # Get model to check for saved default config
+    model = llm_mgr.get_model_by_id(model_id)
+    default_config = {}
+    if model and model.metadata:
+        default_config = model.metadata.get('default_config', {})
+    
+    # Use provided values or fall back to saved defaults or system defaults
     config = InferenceConfig(
-        n_ctx=int(data.get('n_ctx', 4096)),
-        n_gpu_layers=int(data.get('n_gpu_layers', 0)),
-        temperature=float(data.get('temperature', 0.7))
+        n_ctx=int(data.get('n_ctx', default_config.get('n_ctx', 4096))),
+        n_gpu_layers=int(data.get('n_gpu_layers', default_config.get('n_gpu_layers', 0))),
+        temperature=float(data.get('temperature', default_config.get('temperature', 0.7))),
+        top_p=float(data.get('top_p', default_config.get('top_p', 0.95))),
+        top_k=int(data.get('top_k', default_config.get('top_k', 40))),
+        repeat_penalty=float(data.get('repeat_penalty', default_config.get('repeat_penalty', 1.1))),
+        max_tokens=int(data.get('max_tokens', default_config.get('max_tokens', 2048)))
     )
     
     try:
@@ -748,6 +1105,79 @@ def load_model(model_id: str):
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@llm_bp.route('/models/<model_id>/config', methods=['GET'])
+def get_model_config(model_id: str):
+    """Get default configuration for a model"""
+    llm_mgr = LLMManager()
+    model = llm_mgr.get_model_by_id(model_id)
+    
+    if not model:
+        return jsonify({'error': 'Model not found'}), 404
+    
+    # Get default config from metadata or return defaults
+    default_config = model.metadata.get('default_config', {}) if model.metadata else {}
+    
+    # Merge with system defaults
+    config = {
+        'n_ctx': default_config.get('n_ctx', 4096),
+        'n_gpu_layers': default_config.get('n_gpu_layers', 0),
+        'temperature': default_config.get('temperature', 0.7),
+        'top_p': default_config.get('top_p', 0.95),
+        'top_k': default_config.get('top_k', 40),
+        'repeat_penalty': default_config.get('repeat_penalty', 1.1),
+        'max_tokens': default_config.get('max_tokens', 2048)
+    }
+    
+    return jsonify({
+        'success': True,
+        'config': config,
+        'model_id': model_id,
+        'model_name': model.name
+    })
+
+
+@llm_bp.route('/models/<model_id>/config', methods=['POST'])
+def save_model_config(model_id: str):
+    """Save default configuration for a model"""
+    llm_mgr = LLMManager()
+    model = llm_mgr.get_model_by_id(model_id)
+    
+    if not model:
+        return jsonify({'error': 'Model not found'}), 404
+    
+    data = request.get_json() or {}
+    
+    # Validate and extract config
+    default_config = {
+        'n_ctx': int(data.get('n_ctx', 4096)),
+        'n_gpu_layers': int(data.get('n_gpu_layers', 0)),
+        'temperature': float(data.get('temperature', 0.7)),
+        'top_p': float(data.get('top_p', 0.95)),
+        'top_k': int(data.get('top_k', 40)),
+        'repeat_penalty': float(data.get('repeat_penalty', 1.1)),
+        'max_tokens': int(data.get('max_tokens', 2048))
+    }
+    
+    # Update model metadata
+    if not model.metadata:
+        model.metadata = {}
+    model.metadata['default_config'] = default_config
+    
+    # Save updated model
+    models = llm_mgr.get_local_models()
+    for i, m in enumerate(models):
+        if m.id == model_id:
+            models[i] = model
+            break
+    llm_mgr._save_models_index(models)
+    
+    return jsonify({
+        'success': True,
+        'message': 'Model configuration saved',
+        'config': default_config
+    })
 
 
 @llm_bp.route('/models/<model_id>/unload', methods=['POST'])

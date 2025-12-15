@@ -1,0 +1,1299 @@
+{% extends "base.html" %}
+
+{% block title %}AI Services Middleware API - Developer Documentation{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h3 mb-1"><i class="bi bi-code-slash me-2"></i>AI Services Middleware API</h1>
+        <p class="text-muted mb-0">Complete developer documentation and code samples for all platforms</p>
+    </div>
+    <div>
+        <a href="{{ url_for('ai_middleware.api_manage_services') }}" class="btn btn-primary">
+            <i class="bi bi-gear me-2"></i>Manage Services
+        </a>
+        <a href="{{ url_for('ai_middleware.users_page') }}" class="btn btn-outline-light ms-2">
+            <i class="bi bi-people me-2"></i>Get API Token
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Quick Start -->
+<div class="row">
+    <div class="col-12">
+        <div class="card bg-dark border-secondary">
+            <div class="card-header border-secondary">
+                <h5 class="mb-0"><i class="bi bi-rocket-takeoff me-2"></i>Quick Start</h5>
+            </div>
+            <div class="card-body">
+                <ol>
+                    <li class="mb-2">Get your API token from <a href="{{ url_for('ai_middleware.users_page') }}">User Management</a></li>
+                    <li class="mb-2">Set the base URL: <code>http://localhost:5000/ai-middleware</code></li>
+                    <li class="mb-2">Include token in headers: <code>Authorization: Bearer YOUR_TOKEN</code></li>
+                    <li>Start making API calls!</li>
+                </ol>
+                <div class="alert alert-info mt-3">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Base URL:</strong> <code>http://localhost:5000/ai-middleware</code><br>
+                    <strong>API Version:</strong> v1<br>
+                    <strong>Content-Type:</strong> <code>application/json</code> (except file uploads)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Authentication -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card bg-dark border-secondary">
+            <div class="card-header border-secondary">
+                <h5 class="mb-0"><i class="bi bi-key me-2"></i>Authentication</h5>
+            </div>
+            <div class="card-body">
+                <p>All API requests require authentication using API tokens. Tokens are created per user in the <a href="{{ url_for('ai_middleware.users_page') }}">User Management</a> page.</p>
+                
+                <h6 class="mt-3">Token Format</h6>
+                <p>Include your API token in the request headers using one of these methods:</p>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <strong>Option 1: Bearer Token (Recommended)</strong>
+                        <pre class="bg-secondary p-3 rounded mt-2"><code>Authorization: Bearer YOUR_API_TOKEN</code></pre>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>Option 2: X-API-Token Header</strong>
+                        <pre class="bg-secondary p-3 rounded mt-2"><code>X-API-Token: YOUR_API_TOKEN</code></pre>
+                    </div>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Security:</strong> Never expose your API token in client-side code or public repositories. 
+                    Tokens provide full access to your account and services.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Response Format -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card bg-dark border-secondary">
+            <div class="card-header border-secondary">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-code me-2"></i>Response Format</h5>
+            </div>
+            <div class="card-body">
+                <h6>Success Response</h6>
+                <pre class="bg-secondary p-3 rounded"><code>{
+  "success": true,
+  "data": { ... },
+  "message": "Optional success message"
+}</code></pre>
+                
+                <h6 class="mt-3">Error Response</h6>
+                <pre class="bg-secondary p-3 rounded"><code>{
+  "success": false,
+  "error": "Error message",
+  "error_code": "ERROR_CODE",
+  "details": { ... }
+}</code></pre>
+                
+                <h6 class="mt-3">HTTP Status Codes</h6>
+                <ul>
+                    <li><code>200</code> - Success</li>
+                    <li><code>201</code> - Created</li>
+                    <li><code>400</code> - Bad Request (invalid parameters)</li>
+                    <li><code>401</code> - Unauthorized (invalid/missing token)</li>
+                    <li><code>403</code> - Forbidden (access denied by policy)</li>
+                    <li><code>404</code> - Not Found</li>
+                    <li><code>500</code> - Internal Server Error</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API Endpoints -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card bg-dark border-secondary">
+            <div class="card-header border-secondary">
+                <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>API Endpoints</h5>
+            </div>
+            <div class="card-body">
+                <!-- Service Management -->
+                <div class="mb-4">
+                    <h6 class="text-primary"><i class="bi bi-gear me-2"></i>Service Management</h6>
+                    
+                    <div class="mb-3">
+                        <strong>GET /api/services</strong> - List all available services
+                        <pre class="bg-secondary p-2 rounded mt-1"><code>Response: {
+  "success": true,
+  "services": ["llm", "text_to_image", "text_to_speech", ...],
+  "service_info": { ... }
+}</code></pre>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>GET /api/services/status</strong> - Get status of all services
+                        <pre class="bg-secondary p-2 rounded mt-1"><code>Response: {
+  "success": true,
+  "status": { ... },
+  "service_states": {
+    "llm": true,
+    "text_to_image": true
+  }
+}</code></pre>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>POST /api/services/{service_name}/enable</strong> - Enable/disable a service
+                        <pre class="bg-secondary p-2 rounded mt-1"><code>Body: { "enabled": true }</code></pre>
+                    </div>
+                </div>
+                
+                <!-- High-Level Operations -->
+                <div class="mb-4">
+                    <h6 class="text-success"><i class="bi bi-chat-dots me-2"></i>High-Level Operations</h6>
+                    
+                    <div class="mb-3">
+                        <strong>POST /api/middleware/chat</strong> - Chat with LLM
+                        <pre class="bg-secondary p-2 rounded mt-1"><code>Body: {
+  "messages": [
+    {"role": "user", "content": "Hello!"}
+  ],
+  "model_id": "llama-2-7b",
+  "temperature": 0.7,
+  "max_tokens": 1000
+}</code></pre>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>POST /api/middleware/rag/query</strong> - Query RAG collection
+                        <pre class="bg-secondary p-2 rounded mt-1"><code>Body: {
+  "query": "What is machine learning?",
+  "collection_id": "docs",
+  "max_results": 5
+}</code></pre>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>POST /api/middleware/rag/documents</strong> - Add documents to RAG
+                        <pre class="bg-secondary p-2 rounded mt-1"><code>Body: {
+  "documents": [
+    {"content": "Document text", "source": "file.pdf"}
+  ],
+  "collection_id": "docs"
+}</code></pre>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>DELETE /api/middleware/rag/documents</strong> - Remove documents from RAG
+                        <pre class="bg-secondary p-2 rounded mt-1"><code>Body: {
+  "document_ids": ["doc1", "doc2"],
+  "collection_id": "docs"
+}</code></pre>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>POST /api/middleware/extract</strong> - Extract text from document
+                        <pre class="bg-secondary p-2 rounded mt-1"><code>Form Data:
+  - file: document.pdf (multipart/form-data)</code></pre>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>POST /api/middleware/jobs</strong> - Create scheduled job
+                        <pre class="bg-secondary p-2 rounded mt-1"><code>Body: {
+  "job_name": "Daily Sync",
+  "job_type": "rag",
+  "schedule": "0 0 * * *",
+  "function_name": "sync_collection",
+  "function_args": {"collection_id": "docs"}
+}</code></pre>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>GET /api/middleware/jobs/{job_id}</strong> - Check job status
+                    </div>
+                </div>
+                
+                <!-- Direct Service Calls -->
+                <div class="mb-4">
+                    <h6 class="text-info"><i class="bi bi-arrow-right-circle me-2"></i>Direct Service Calls</h6>
+                    
+                    <div class="mb-3">
+                        <strong>POST /api/services/{service_type}/{method}</strong> - Call service method
+                        <pre class="bg-secondary p-2 rounded mt-1"><code>Examples:
+POST /api/services/text_to_image/generate_image
+POST /api/services/text_to_speech/generate_speech
+POST /api/services/speech_to_text/transcribe_audio</code></pre>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>POST /api/services/chain</strong> - Chain multiple services
+                        <pre class="bg-secondary p-2 rounded mt-1"><code>Body: {
+  "chain": [
+    {
+      "service": "llm",
+      "method": "generate",
+      "args": {"prompt": "Describe a cat"}
+    },
+    {
+      "service": "text_to_image",
+      "method": "generate_image",
+      "args": {
+        "prompt": "{step_0.text}",
+        "width": 512,
+        "height": 512
+      }
+    }
+  ]
+}</code></pre>
+                    </div>
+                </div>
+                
+                <!-- Middleware Management -->
+                <div class="mb-4">
+                    <h6 class="text-warning"><i class="bi bi-shield-check me-2"></i>Middleware Management</h6>
+                    
+                    <div class="mb-3">
+                        <strong>GET /api/middleware/status</strong> - Get middleware status
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>GET /api/middleware/rules</strong> - List routing rules
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>POST /api/middleware/rules</strong> - Create routing rule
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>GET /api/middleware/policies</strong> - List access policies
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>POST /api/middleware/policies</strong> - Create access policy
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>POST /api/middleware/check-access</strong> - Check access permission
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Code Examples -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card bg-dark border-secondary">
+            <div class="card-header border-secondary">
+                <h5 class="mb-0"><i class="bi bi-code me-2"></i>Code Examples</h5>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#python">Python</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#javascript">JavaScript</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#csharp">C# (.NET)</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#go">Go</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#java">Java</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#php">PHP</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#curl">cURL</a>
+                    </li>
+                </ul>
+                
+                <div class="tab-content mt-3">
+                    <!-- Python -->
+                    <div class="tab-pane fade show active" id="python">
+                        <h6>Python SDK Example</h6>
+                        <pre class="bg-secondary p-3 rounded"><code>import requests
+import base64
+from typing import Optional, Dict, Any
+
+class AIMiddlewareClient:
+    def __init__(self, base_url: str, api_token: str):
+        self.base_url = base_url.rstrip('/')
+        self.headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {api_token}'
+        }
+    
+    def chat(self, messages: list, model_id: Optional[str] = None, **kwargs) -> Dict[str, Any]:
+        """Chat with LLM"""
+        payload = {'messages': messages}
+        if model_id:
+            payload['model_id'] = model_id
+        payload.update(kwargs)
+        
+        response = requests.post(
+            f'{self.base_url}/api/middleware/chat',
+            headers=self.headers,
+            json=payload
+        )
+        response.raise_for_status()
+        return response.json()
+    
+    def generate_image(self, prompt: str, width: int = 512, height: int = 512, **kwargs) -> bytes:
+        """Generate image from text"""
+        payload = {
+            'prompt': prompt,
+            'width': width,
+            'height': height,
+            **kwargs
+        }
+        
+        response = requests.post(
+            f'{self.base_url}/api/services/text_to_image/generate_image',
+            headers=self.headers,
+            json=payload
+        )
+        response.raise_for_status()
+        result = response.json()
+        
+        if result.get('success'):
+            return base64.b64decode(result['image'])
+        raise Exception(result.get('error', 'Image generation failed'))
+    
+    def rag_query(self, query: str, collection_id: str, max_results: int = 5) -> Dict[str, Any]:
+        """Query RAG collection"""
+        response = requests.post(
+            f'{self.base_url}/api/middleware/rag/query',
+            headers=self.headers,
+            json={
+                'query': query,
+                'collection_id': collection_id,
+                'max_results': max_results
+            }
+        )
+        response.raise_for_status()
+        return response.json()
+    
+    def extract_document(self, file_path: str) -> Dict[str, Any]:
+        """Extract text from document"""
+        with open(file_path, 'rb') as f:
+            files = {'file': f}
+            response = requests.post(
+                f'{self.base_url}/api/middleware/extract',
+                headers={'Authorization': self.headers['Authorization']},
+                files=files
+            )
+        response.raise_for_status()
+        return response.json()
+
+# Usage
+client = AIMiddlewareClient(
+    base_url='http://localhost:5000/ai-middleware',
+    api_token='YOUR_API_TOKEN'
+)
+
+# Chat example
+response = client.chat(
+    messages=[{'role': 'user', 'content': 'Hello!'}],
+    model_id='llama-2-7b',
+    temperature=0.7
+)
+print(response['data']['text'])
+
+# Generate image
+image_data = client.generate_image('A beautiful sunset', width=1024, height=1024)
+with open('output.png', 'wb') as f:
+    f.write(image_data)
+
+# RAG query
+results = client.rag_query('What is AI?', collection_id='docs')
+print(results['data']['results'])</code></pre>
+                    </div>
+                    
+                    <!-- JavaScript -->
+                    <div class="tab-pane fade" id="javascript">
+                        <h6>JavaScript/Node.js SDK Example</h6>
+                        <pre class="bg-secondary p-3 rounded"><code>class AIMiddlewareClient {
+    constructor(baseUrl, apiToken) {
+        this.baseUrl = baseUrl.replace(/\/$/, '');
+        this.headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiToken}`
+        };
+    }
+    
+    async request(endpoint, options = {}) {
+        const url = `${this.baseUrl}${endpoint}`;
+        const config = {
+            ...options,
+            headers: {
+                ...this.headers,
+                ...options.headers
+            }
+        };
+        
+        const response = await fetch(url, config);
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || `HTTP ${response.status}`);
+        }
+        return await response.json();
+    }
+    
+    async chat(messages, modelId = null, options = {}) {
+        const payload = { messages, ...options };
+        if (modelId) payload.model_id = modelId;
+        return this.request('/api/middleware/chat', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    }
+    
+    async generateImage(prompt, width = 512, height = 512, options = {}) {
+        const result = await this.request('/api/services/text_to_image/generate_image', {
+            method: 'POST',
+            body: JSON.stringify({
+                prompt,
+                width,
+                height,
+                ...options
+            })
+        });
+        
+        if (result.success) {
+            // Convert base64 to blob for browser
+            const byteCharacters = atob(result.image);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            return new Blob([byteArray], { type: 'image/png' });
+        }
+        throw new Error(result.error || 'Image generation failed');
+    }
+    
+    async ragQuery(query, collectionId, maxResults = 5) {
+        return this.request('/api/middleware/rag/query', {
+            method: 'POST',
+            body: JSON.stringify({
+                query,
+                collection_id: collectionId,
+                max_results: maxResults
+            })
+        });
+    }
+    
+    async extractDocument(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        return fetch(`${this.baseUrl}/api/middleware/extract`, {
+            method: 'POST',
+            headers: {
+                'Authorization': this.headers['Authorization']
+            },
+            body: formData
+        }).then(res => res.json());
+    }
+}
+
+// Usage
+const client = new AIMiddlewareClient(
+    'http://localhost:5000/ai-middleware',
+    'YOUR_API_TOKEN'
+);
+
+// Chat example
+client.chat([
+    { role: 'user', content: 'Hello!' }
+], 'llama-2-7b', { temperature: 0.7 })
+    .then(response => console.log(response.data.text))
+    .catch(error => console.error('Error:', error));
+
+// Generate image
+client.generateImage('A beautiful sunset', 1024, 1024)
+    .then(blob => {
+        const url = URL.createObjectURL(blob);
+        const img = document.createElement('img');
+        img.src = url;
+        document.body.appendChild(img);
+    });
+
+// RAG query
+client.ragQuery('What is AI?', 'docs')
+    .then(results => console.log(results.data.results));</code></pre>
+                    </div>
+                    
+                    <!-- C# -->
+                    <div class="tab-pane fade" id="csharp">
+                        <h6>C# (.NET) SDK Example</h6>
+                        <pre class="bg-secondary p-3 rounded"><code>using System;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System.IO;
+
+public class AIMiddlewareClient
+{
+    private readonly HttpClient _httpClient;
+    private readonly string _baseUrl;
+
+    public AIMiddlewareClient(string baseUrl, string apiToken)
+    {
+        _baseUrl = baseUrl.TrimEnd('/');
+        _httpClient = new HttpClient();
+        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiToken}");
+    }
+
+    public async Task&lt;JsonElement&gt; ChatAsync(
+        object[] messages, 
+        string modelId = null, 
+        object options = null)
+    {
+        var payload = new
+        {
+            messages = messages,
+            model_id = modelId,
+            temperature = options?.GetType().GetProperty("Temperature")?.GetValue(options),
+            max_tokens = options?.GetType().GetProperty("MaxTokens")?.GetValue(options)
+        };
+
+        var json = JsonSerializer.Serialize(payload);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var response = await _httpClient.PostAsync(
+            $"{_baseUrl}/api/middleware/chat", content);
+        
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize&lt;JsonElement&gt;(resultJson);
+    }
+
+    public async Task&lt;byte[]&gt; GenerateImageAsync(
+        string prompt, 
+        int width = 512, 
+        int height = 512)
+    {
+        var payload = new
+        {
+            prompt = prompt,
+            width = width,
+            height = height
+        };
+
+        var json = JsonSerializer.Serialize(payload);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var response = await _httpClient.PostAsync(
+            $"{_baseUrl}/api/services/text_to_image/generate_image", 
+            content);
+        
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        var result = JsonSerializer.Deserialize&lt;JsonElement&gt;(resultJson);
+
+        if (result.GetProperty("success").GetBoolean())
+        {
+            var imageBase64 = result.GetProperty("image").GetString();
+            return Convert.FromBase64String(imageBase64);
+        }
+        throw new Exception("Image generation failed");
+    }
+
+    public async Task&lt;JsonElement&gt; RagQueryAsync(
+        string query, 
+        string collectionId, 
+        int maxResults = 5)
+    {
+        var payload = new
+        {
+            query = query,
+            collection_id = collectionId,
+            max_results = maxResults
+        };
+
+        var json = JsonSerializer.Serialize(payload);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var response = await _httpClient.PostAsync(
+            $"{_baseUrl}/api/middleware/rag/query", content);
+        
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize&lt;JsonElement&gt;(resultJson);
+    }
+
+    public async Task&lt;JsonElement&gt; ExtractDocumentAsync(string filePath)
+    {
+        using var form = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent(await File.ReadAllBytesAsync(filePath));
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/pdf");
+        form.Add(fileContent, "file", Path.GetFileName(filePath));
+
+        var response = await _httpClient.PostAsync(
+            $"{_baseUrl}/api/middleware/extract", form);
+        
+        response.EnsureSuccessStatusCode();
+        var resultJson = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize&lt;JsonElement&gt;(resultJson);
+    }
+}
+
+// Usage
+var client = new AIMiddlewareClient(
+    "http://localhost:5000/ai-middleware",
+    "YOUR_API_TOKEN"
+);
+
+// Chat
+var chatResponse = await client.ChatAsync(
+    new[] { new { role = "user", content = "Hello!" } },
+    modelId: "llama-2-7b"
+);
+Console.WriteLine(chatResponse.GetProperty("data").GetProperty("text").GetString());
+
+// Generate image
+var imageData = await client.GenerateImageAsync("A beautiful sunset", 1024, 1024);
+await File.WriteAllBytesAsync("output.png", imageData);
+
+// RAG query
+var ragResponse = await client.RagQueryAsync("What is AI?", "docs");
+Console.WriteLine(ragResponse.GetProperty("data").ToString());</code></pre>
+                    </div>
+                    
+                    <!-- Go -->
+                    <div class="tab-pane fade" id="go">
+                        <h6>Go SDK Example</h6>
+                        <pre class="bg-secondary p-3 rounded"><code>package main
+
+import (
+    "bytes"
+    "encoding/base64"
+    "encoding/json"
+    "fmt"
+    "io"
+    "mime/multipart"
+    "net/http"
+    "os"
+)
+
+type AIMiddlewareClient struct {
+    BaseURL   string
+    APIToken  string
+    HTTPClient *http.Client
+}
+
+func NewAIMiddlewareClient(baseURL, apiToken string) *AIMiddlewareClient {
+    return &AIMiddlewareClient{
+        BaseURL:    baseURL,
+        APIToken:   apiToken,
+        HTTPClient: &http.Client{},
+    }
+}
+
+func (c *AIMiddlewareClient) request(method, endpoint string, body interface{}) (*http.Response, error) {
+    var reqBody io.Reader
+    if body != nil {
+        jsonData, err := json.Marshal(body)
+        if err != nil {
+            return nil, err
+        }
+        reqBody = bytes.NewBuffer(jsonData)
+    }
+
+    req, err := http.NewRequest(method, c.BaseURL+endpoint, reqBody)
+    if err != nil {
+        return nil, err
+    }
+
+    req.Header.Set("Content-Type", "application/json")
+    req.Header.Set("Authorization", "Bearer "+c.APIToken)
+
+    return c.HTTPClient.Do(req)
+}
+
+func (c *AIMiddlewareClient) Chat(messages []map[string]string, modelID string) (map[string]interface{}, error) {
+    payload := map[string]interface{}{
+        "messages": messages,
+    }
+    if modelID != "" {
+        payload["model_id"] = modelID
+    }
+
+    resp, err := c.request("POST", "/api/middleware/chat", payload)
+    if err != nil {
+        return nil, err
+    }
+    defer resp.Body.Close()
+
+    var result map[string]interface{}
+    if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+        return nil, err
+    }
+
+    return result, nil
+}
+
+func (c *AIMiddlewareClient) GenerateImage(prompt string, width, height int) ([]byte, error) {
+    payload := map[string]interface{}{
+        "prompt": prompt,
+        "width":  width,
+        "height": height,
+    }
+
+    resp, err := c.request("POST", "/api/services/text_to_image/generate_image", payload)
+    if err != nil {
+        return nil, err
+    }
+    defer resp.Body.Close()
+
+    var result map[string]interface{}
+    if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+        return nil, err
+    }
+
+    if success, ok := result["success"].(bool); ok && success {
+        if imageBase64, ok := result["image"].(string); ok {
+            return base64.StdEncoding.DecodeString(imageBase64)
+        }
+    }
+
+    return nil, fmt.Errorf("image generation failed")
+}
+
+func (c *AIMiddlewareClient) ExtractDocument(filePath string) (map[string]interface{}, error) {
+    file, err := os.Open(filePath)
+    if err != nil {
+        return nil, err
+    }
+    defer file.Close()
+
+    var body bytes.Buffer
+    writer := multipart.NewWriter(&body)
+    part, err := writer.CreateFormFile("file", filePath)
+    if err != nil {
+        return nil, err
+    }
+
+    io.Copy(part, file)
+    writer.Close()
+
+    req, err := http.NewRequest("POST", c.BaseURL+"/api/middleware/extract", &body)
+    if err != nil {
+        return nil, err
+    }
+
+    req.Header.Set("Content-Type", writer.FormDataContentType())
+    req.Header.Set("Authorization", "Bearer "+c.APIToken)
+
+    resp, err := c.HTTPClient.Do(req)
+    if err != nil {
+        return nil, err
+    }
+    defer resp.Body.Close()
+
+    var result map[string]interface{}
+    if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+        return nil, err
+    }
+
+    return result, nil
+}
+
+// Usage
+func main() {
+    client := NewAIMiddlewareClient(
+        "http://localhost:5000/ai-middleware",
+        "YOUR_API_TOKEN",
+    )
+
+    // Chat
+    messages := []map[string]string{
+        {"role": "user", "content": "Hello!"},
+    }
+    response, err := client.Chat(messages, "llama-2-7b")
+    if err != nil {
+        panic(err)
+    }
+    fmt.Println(response)
+
+    // Generate image
+    imageData, err := client.GenerateImage("A beautiful sunset", 1024, 1024)
+    if err != nil {
+        panic(err)
+    }
+    os.WriteFile("output.png", imageData, 0644)
+}</code></pre>
+                    </div>
+                    
+                    <!-- Java -->
+                    <div class="tab-pane fade" id="java">
+                        <h6>Java SDK Example</h6>
+                        <pre class="bg-secondary p-3 rounded"><code>import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Base64;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonArray;
+
+public class AIMiddlewareClient {
+    private final String baseUrl;
+    private final String apiToken;
+    private final HttpClient httpClient;
+    private final Gson gson;
+
+    public AIMiddlewareClient(String baseUrl, String apiToken) {
+        this.baseUrl = baseUrl.replaceAll("/$", "");
+        this.apiToken = apiToken;
+        this.httpClient = HttpClient.newHttpClient();
+        this.gson = new Gson();
+    }
+
+    public JsonObject chat(JsonArray messages, String modelId) throws Exception {
+        JsonObject payload = new JsonObject();
+        payload.add("messages", messages);
+        if (modelId != null) {
+            payload.addProperty("model_id", modelId);
+        }
+
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(baseUrl + "/api/middleware/chat"))
+            .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer " + apiToken)
+            .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(payload)))
+            .build();
+
+        HttpResponse&lt;String&gt; response = httpClient.send(request, 
+            HttpResponse.BodyHandlers.ofString());
+        
+        return gson.fromJson(response.body(), JsonObject.class);
+    }
+
+    public byte[] generateImage(String prompt, int width, int height) throws Exception {
+        JsonObject payload = new JsonObject();
+        payload.addProperty("prompt", prompt);
+        payload.addProperty("width", width);
+        payload.addProperty("height", height);
+
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(baseUrl + "/api/services/text_to_image/generate_image"))
+            .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer " + apiToken)
+            .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(payload)))
+            .build();
+
+        HttpResponse&lt;String&gt; response = httpClient.send(request, 
+            HttpResponse.BodyHandlers.ofString());
+        
+        JsonObject result = gson.fromJson(response.body(), JsonObject.class);
+        
+        if (result.get("success").getAsBoolean()) {
+            String imageBase64 = result.get("image").getAsString();
+            return Base64.getDecoder().decode(imageBase64);
+        }
+        throw new Exception("Image generation failed");
+    }
+
+    public JsonObject extractDocument(String filePath) throws Exception {
+        byte[] fileBytes = Files.readAllBytes(Paths.get(filePath));
+        String boundary = "----WebKitFormBoundary" + System.currentTimeMillis();
+        
+        StringBuilder body = new StringBuilder();
+        body.append("--").append(boundary).append("\r\n");
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"")
+            .append(Paths.get(filePath).getFileName()).append("\"\r\n");
+        body.append("Content-Type: application/pdf\r\n\r\n");
+
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(baseUrl + "/api/middleware/extract"))
+            .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+            .header("Authorization", "Bearer " + apiToken)
+            .POST(HttpRequest.BodyPublishers.ofByteArray(
+                createMultipartBody(body.toString(), fileBytes, boundary)))
+            .build();
+
+        HttpResponse&lt;String&gt; response = httpClient.send(request, 
+            HttpResponse.BodyHandlers.ofString());
+        
+        return gson.fromJson(response.body(), JsonObject.class);
+    }
+
+    private byte[] createMultipartBody(String header, byte[] fileBytes, String boundary) {
+        String footer = "\r\n--" + boundary + "--\r\n";
+        byte[] headerBytes = header.getBytes();
+        byte[] footerBytes = footer.getBytes();
+        
+        byte[] result = new byte[headerBytes.length + fileBytes.length + footerBytes.length];
+        System.arraycopy(headerBytes, 0, result, 0, headerBytes.length);
+        System.arraycopy(fileBytes, 0, result, headerBytes.length, fileBytes.length);
+        System.arraycopy(footerBytes, 0, result, headerBytes.length + fileBytes.length, 
+            footerBytes.length);
+        
+        return result;
+    }
+}
+
+// Usage
+AIMiddlewareClient client = new AIMiddlewareClient(
+    "http://localhost:5000/ai-middleware",
+    "YOUR_API_TOKEN"
+);
+
+// Chat
+JsonArray messages = new JsonArray();
+JsonObject message = new JsonObject();
+message.addProperty("role", "user");
+message.addProperty("content", "Hello!");
+messages.add(message);
+
+JsonObject response = client.chat(messages, "llama-2-7b");
+System.out.println(response);
+
+// Generate image
+byte[] imageData = client.generateImage("A beautiful sunset", 1024, 1024);
+Files.write(Paths.get("output.png"), imageData);</code></pre>
+                    </div>
+                    
+                    <!-- PHP -->
+                    <div class="tab-pane fade" id="php">
+                        <h6>PHP SDK Example</h6>
+                        <pre class="bg-secondary p-3 rounded"><code>&lt;?php
+
+class AIMiddlewareClient {
+    private $baseUrl;
+    private $apiToken;
+    
+    public function __construct($baseUrl, $apiToken) {
+        $this->baseUrl = rtrim($baseUrl, '/');
+        $this->apiToken = $apiToken;
+    }
+    
+    private function request($method, $endpoint, $data = null) {
+        $url = $this->baseUrl . $endpoint;
+        $ch = curl_init($url);
+        
+        $headers = [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $this->apiToken
+        ];
+        
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+        
+        if ($data !== null) {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        }
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        
+        if ($httpCode >= 400) {
+            throw new Exception("HTTP $httpCode: $response");
+        }
+        
+        return json_decode($response, true);
+    }
+    
+    public function chat($messages, $modelId = null) {
+        $payload = ['messages' => $messages];
+        if ($modelId) {
+            $payload['model_id'] = $modelId;
+        }
+        return $this->request('POST', '/api/middleware/chat', $payload);
+    }
+    
+    public function generateImage($prompt, $width = 512, $height = 512) {
+        $result = $this->request('POST', '/api/services/text_to_image/generate_image', [
+            'prompt' => $prompt,
+            'width' => $width,
+            'height' => $height
+        ]);
+        
+        if ($result['success']) {
+            return base64_decode($result['image']);
+        }
+        throw new Exception('Image generation failed');
+    }
+    
+    public function ragQuery($query, $collectionId, $maxResults = 5) {
+        return $this->request('POST', '/api/middleware/rag/query', [
+            'query' => $query,
+            'collection_id' => $collectionId,
+            'max_results' => $maxResults
+        ]);
+    }
+    
+    public function extractDocument($filePath) {
+        $url = $this->baseUrl . '/api/middleware/extract';
+        $ch = curl_init($url);
+        
+        $cfile = new CURLFile($filePath);
+        $data = ['file' => $cfile];
+        
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Authorization: Bearer ' . $this->apiToken
+        ]);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        
+        $response = curl_exec($ch);
+        curl_close($ch);
+        
+        return json_decode($response, true);
+    }
+}
+
+// Usage
+$client = new AIMiddlewareClient(
+    'http://localhost:5000/ai-middleware',
+    'YOUR_API_TOKEN'
+);
+
+// Chat
+$response = $client->chat([
+    ['role' => 'user', 'content' => 'Hello!']
+], 'llama-2-7b');
+echo $response['data']['text'] . "\n";
+
+// Generate image
+$imageData = $client->generateImage('A beautiful sunset', 1024, 1024);
+file_put_contents('output.png', $imageData);
+
+// RAG query
+$results = $client->ragQuery('What is AI?', 'docs');
+print_r($results['data']['results']);
+
+?&gt;</code></pre>
+                    </div>
+                    
+                    <!-- cURL -->
+                    <div class="tab-pane fade" id="curl">
+                        <h6>cURL Examples</h6>
+                        <pre class="bg-secondary p-3 rounded"><code># Set your API token
+export API_TOKEN="YOUR_API_TOKEN"
+export BASE_URL="http://localhost:5000/ai-middleware"
+
+# Chat with LLM
+curl -X POST "$BASE_URL/api/middleware/chat" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $API_TOKEN" \
+  -d '{
+    "messages": [
+      {"role": "user", "content": "Hello!"}
+    ],
+    "model_id": "llama-2-7b",
+    "temperature": 0.7
+  }'
+
+# Generate image
+curl -X POST "$BASE_URL/api/services/text_to_image/generate_image" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $API_TOKEN" \
+  -d '{
+    "prompt": "A beautiful sunset over mountains",
+    "width": 1024,
+    "height": 1024,
+    "num_inference_steps": 50
+  }' \
+  --output image.png
+
+# Query RAG
+curl -X POST "$BASE_URL/api/middleware/rag/query" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $API_TOKEN" \
+  -d '{
+    "query": "What is machine learning?",
+    "collection_id": "docs",
+    "max_results": 5
+  }'
+
+# Add documents to RAG
+curl -X POST "$BASE_URL/api/middleware/rag/documents" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $API_TOKEN" \
+  -d '{
+    "documents": [
+      {
+        "content": "Machine learning is a subset of AI...",
+        "source": "article.pdf"
+      }
+    ],
+    "collection_id": "docs"
+  }'
+
+# Extract document
+curl -X POST "$BASE_URL/api/middleware/extract" \
+  -H "Authorization: Bearer $API_TOKEN" \
+  -F "file=@document.pdf"
+
+# Chain services
+curl -X POST "$BASE_URL/api/services/chain" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $API_TOKEN" \
+  -d '{
+    "chain": [
+      {
+        "service": "llm",
+        "method": "generate",
+        "args": {"prompt": "Describe a cat"}
+      },
+      {
+        "service": "text_to_image",
+        "method": "generate_image",
+        "args": {
+          "prompt": "{step_0.text}",
+          "width": 512,
+          "height": 512
+        }
+      }
+    ]
+  }'
+
+# Get service status
+curl -X GET "$BASE_URL/api/services/status" \
+  -H "Authorization: Bearer $API_TOKEN"
+
+# List services
+curl -X GET "$BASE_URL/api/services" \
+  -H "Authorization: Bearer $API_TOKEN"</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error Handling -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card bg-dark border-secondary">
+            <div class="card-header border-secondary">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Error Handling</h5>
+            </div>
+            <div class="card-body">
+                <h6>Common Error Codes</h6>
+                <ul>
+                    <li><code>INVALID_TOKEN</code> - API token is invalid or expired</li>
+                    <li><code>ACCESS_DENIED</code> - Access denied by policy</li>
+                    <li><code>SERVICE_UNAVAILABLE</code> - Service is disabled or not available</li>
+                    <li><code>INVALID_PARAMETERS</code> - Request parameters are invalid</li>
+                    <li><code>RATE_LIMIT_EXCEEDED</code> - Too many requests</li>
+                    <li><code>INTERNAL_ERROR</code> - Server error</li>
+                </ul>
+                
+                <h6 class="mt-3">Error Handling Example (Python)</h6>
+                <pre class="bg-secondary p-3 rounded"><code>import requests
+
+def safe_api_call(func):
+    try:
+        response = func()
+        response.raise_for_status()
+        result = response.json()
+        if result.get('success'):
+            return result
+        else:
+            raise Exception(result.get('error', 'Unknown error'))
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 401:
+            raise Exception('Invalid API token')
+        elif e.response.status_code == 403:
+            raise Exception('Access denied')
+        elif e.response.status_code == 429:
+            raise Exception('Rate limit exceeded')
+        else:
+            raise Exception(f'HTTP {e.response.status_code}: {e.response.text}')
+    except requests.exceptions.RequestException as e:
+        raise Exception(f'Request failed: {str(e)}')
+
+# Usage
+try:
+    response = safe_api_call(lambda: requests.post(
+        f'{BASE_URL}/api/middleware/chat',
+        headers={'Authorization': f'Bearer {TOKEN}'},
+        json={'messages': [{'role': 'user', 'content': 'Hello'}]}
+    ))
+    print(response['data']['text'])
+except Exception as e:
+    print(f'Error: {e}')</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Rate Limiting -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card bg-dark border-secondary">
+            <div class="card-header border-secondary">
+                <h5 class="mb-0"><i class="bi bi-speedometer2 me-2"></i>Rate Limiting & Best Practices</h5>
+            </div>
+            <div class="card-body">
+                <h6>Best Practices</h6>
+                <ul>
+                    <li>Always include error handling in your code</li>
+                    <li>Implement exponential backoff for retries</li>
+                    <li>Cache responses when appropriate</li>
+                    <li>Use connection pooling for multiple requests</li>
+                    <li>Monitor your API usage and token expiration</li>
+                    <li>Store tokens securely (environment variables, secret managers)</li>
+                    <li>Use HTTPS in production</li>
+                </ul>
+                
+                <h6 class="mt-3">Retry Logic Example (Python)</h6>
+                <pre class="bg-secondary p-3 rounded"><code>import time
+import requests
+from functools import wraps
+
+def retry_with_backoff(max_retries=3, backoff_factor=1):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            for attempt in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except requests.exceptions.RequestException as e:
+                    if attempt == max_retries - 1:
+                        raise
+                    wait_time = backoff_factor * (2 ** attempt)
+                    time.sleep(wait_time)
+            return None
+        return wrapper
+    return decorator
+
+@retry_with_backoff(max_retries=3)
+def api_call():
+    response = requests.post(
+        f'{BASE_URL}/api/middleware/chat',
+        headers={'Authorization': f'Bearer {TOKEN}'},
+        json={'messages': [{'role': 'user', 'content': 'Hello'}]},
+        timeout=30
+    )
+    response.raise_for_status()
+    return response.json()</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

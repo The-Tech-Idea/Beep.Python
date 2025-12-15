@@ -1,0 +1,1005 @@
+{% extends "base.html" %}
+
+{% block title %}Document Extraction{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h3 mb-1"><i class="bi bi-file-earmark-text me-2"></i>Document Extraction</h1>
+        <p class="text-muted mb-0">Extract text from PDF, DOCX, XLSX, and other document formats</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Environment Status -->
+    <div class="col-lg-4 mb-4">
+        <div class="card bg-dark border-secondary h-100">
+            <div class="card-header border-secondary">
+                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Environment Status</h5>
+            </div>
+            <div class="card-body">
+                <div id="env-status-content">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Checking environment...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Setup Panel -->
+    <div class="col-lg-8 mb-4">
+        <div class="card bg-dark border-secondary">
+            <div class="card-header border-secondary">
+                <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Environment Setup</h5>
+            </div>
+            <div class="card-body">
+                <div id="setup-content">
+                    <p class="text-muted mb-4">
+                        A dedicated virtual environment isolates document extraction libraries (PyMuPDF, python-docx, openpyxl, etc.) 
+                        from the main application to avoid dependency conflicts.
+                    </p>
+                    
+                    <div id="env-not-created" style="display: none;">
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Environment not created</strong>
+                            <p class="mb-0 mt-2">Create a virtual environment to install document extraction libraries.</p>
+                        </div>
+                        <button class="btn btn-primary" id="btn-create-env">
+                            <i class="bi bi-plus-circle me-2"></i>Create Environment
+                        </button>
+                    </div>
+                    
+                    <div id="env-ready" style="display: none;">
+                        <div class="alert alert-success">
+                            <i class="bi bi-check-circle me-2"></i>
+                            <strong>Environment Ready</strong>
+                            <p class="mb-0 mt-2">Virtual environment is created and ready for package installation.</p>
+                        </div>
+                        
+                        <h6 class="mt-4 mb-3">Install Packages</h6>
+                        <div id="packages-list" class="mb-3">
+                            <!-- Packages will be loaded here -->
+                        </div>
+                        
+                        <button class="btn btn-success" id="btn-install-all">
+                            <i class="bi bi-download me-2"></i>Install All Recommended Packages
+                        </button>
+                        <button class="btn btn-outline-secondary ms-2" id="btn-install-selected">
+                            <i class="bi bi-download me-2"></i>Install Selected Packages
+                        </button>
+                    </div>
+                    
+                    <div id="env-error" style="display: none;">
+                        <div class="alert alert-danger">
+                            <i class="bi bi-x-circle me-2"></i>
+                            <strong>Error</strong>
+                            <p class="mb-0 mt-2" id="error-message"></p>
+                        </div>
+                        <button class="btn btn-warning" id="btn-retry">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Retry
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- OCR Engine Selection -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card bg-dark border-secondary">
+            <div class="card-header border-secondary">
+                <h5 class="mb-0"><i class="bi bi-eye me-2"></i>OCR Engine Selection</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">
+                    Select which OCR engine to use for image text extraction. Only one engine can be active at a time.
+                </p>
+                <div id="ocr-engine-selection" class="row">
+                    <!-- OCR engines will be loaded here -->
+                    <div class="col-12 text-center py-3">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <small class="text-muted d-block mt-2">Loading OCR engines...</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Document Extraction Panel -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card bg-dark border-secondary">
+            <div class="card-header border-secondary">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-arrow-up me-2"></i>Extract from Document(s)</h5>
+            </div>
+            <div class="card-body">
+                <!-- Drag and Drop Zone -->
+                <div id="drop-zone" class="border border-dashed border-secondary rounded p-5 text-center mb-3" 
+                     style="background: rgba(255, 255, 255, 0.02); min-height: 200px; transition: all 0.3s;">
+                    <i class="bi bi-cloud-upload display-4 text-muted mb-3"></i>
+                    <h5 class="mb-2">Drag & Drop Files Here</h5>
+                    <p class="text-muted mb-3">or click to browse</p>
+                    <input type="file" class="d-none" id="document-file" multiple accept=".pdf,.docx,.xlsx,.xls,.pptx,.txt,.csv,.json,.html,.xml,.png,.jpg,.jpeg,.gif,.bmp,.tiff,.tif,.webp">
+                    <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('document-file').click()">
+                        <i class="bi bi-folder2-open me-2"></i>Select Files
+                    </button>
+                    <p class="text-muted small mt-3 mb-0">Supported: PDF, DOCX, XLSX, PPTX, TXT, CSV, JSON, HTML, XML</p>
+                    <p class="text-muted small">Images (OCR): PNG, JPG, JPEG, GIF, BMP, TIFF, WEBP</p>
+                    <p class="text-muted small">Multiple files supported - they will be processed sequentially</p>
+                </div>
+                
+                <!-- Selected Files List -->
+                <div id="selected-files" class="mb-3" style="display: none;">
+                    <h6 class="mb-2">Selected Files:</h6>
+                    <div id="files-list" class="list-group"></div>
+                </div>
+                
+                <!-- Extraction Options -->
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="save-extracted">
+                        <label class="form-check-label" for="save-extracted">
+                            Save extracted text to storage folder
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Extract Button -->
+                <button type="button" class="btn btn-primary" id="btn-extract" disabled>
+                    <i class="bi bi-file-earmark-text me-2"></i>Extract Text
+                </button>
+                
+                <!-- Extraction Progress -->
+                <div id="extraction-progress" class="mt-4" style="display: none;">
+                    <h6>Extraction Progress:</h6>
+                    <div class="progress mb-2" style="height: 25px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             id="extraction-progress-bar" role="progressbar" style="width: 0%">0%</div>
+                    </div>
+                    <p class="text-muted small mb-0" id="extraction-status">Preparing...</p>
+                </div>
+                
+                <!-- Extraction Results -->
+                <div id="extraction-results" class="mt-4" style="display: none;">
+                    <h6>Extraction Results:</h6>
+                    <div id="results-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentTaskId = null;
+let statusCheckInterval = null;
+
+// Load status on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadStatus();
+    loadOCREngines();
+});
+
+// Load OCR engines
+function loadOCREngines() {
+    fetch('/document-extraction/api/ocr-engines')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayOCREngines(data.engines, data.active_engine);
+            } else {
+                console.error('Failed to load OCR engines:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading OCR engines:', error);
+        });
+}
+
+function displayOCREngines(engines, activeEngine) {
+    const container = document.getElementById('ocr-engine-selection');
+    if (!container) return;
+    
+    const engineCards = Object.entries(engines).map(([engineType, engineInfo]) => {
+        const isActive = engineType === activeEngine;
+        const isInstalled = engineInfo.installed;
+        
+        // Map engine types to package names
+        const packageMap = {
+            'easyocr': 'easyocr',
+            'tesseract': 'pytesseract',
+            'paddleocr': 'paddleocr'
+        };
+        const packageName = packageMap[engineType] || engineInfo.package_name;
+        
+        return `
+            <div class="col-md-4 mb-3">
+                <div class="card ${isActive ? 'border-primary bg-primary bg-opacity-10' : 'border-secondary bg-dark'} h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="mb-0">${engineInfo.name}</h6>
+                            ${isActive ? '<span class="badge bg-primary"><i class="bi bi-check-circle me-1"></i>Active</span>' : ''}
+                        </div>
+                        <p class="text-muted small mb-3">${engineInfo.description}</p>
+                        <div class="mb-2">
+                            ${isInstalled 
+                                ? '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Installed</span>' 
+                                : '<span class="badge bg-warning"><i class="bi bi-exclamation-triangle me-1"></i>Not Installed</span>'}
+                        </div>
+                        <div class="d-flex gap-2">
+                            ${!isInstalled 
+                                ? `<button class="btn btn-sm btn-success flex-fill" 
+                                          onclick="installOCREngine('${packageName}', '${engineType}')"
+                                          id="install-btn-${engineType}">
+                                    <i class="bi bi-download me-1"></i>Install
+                                  </button>`
+                                : ''}
+                            <button class="btn btn-sm ${isActive ? 'btn-primary' : 'btn-outline-primary'} ${!isInstalled ? 'flex-fill' : ''}" 
+                                    onclick="activateOCREngine('${engineType}')"
+                                    ${!isInstalled ? 'disabled title="Install ' + packageName + ' first"' : ''}
+                                    id="activate-btn-${engineType}">
+                                ${isActive ? '<i class="bi bi-check-circle me-1"></i>Active' : '<i class="bi bi-play-circle me-1"></i>Activate'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    container.innerHTML = engineCards;
+}
+
+function installOCREngine(packageName, engineType) {
+    const installBtn = document.getElementById(`install-btn-${engineType}`);
+    if (installBtn) {
+        installBtn.disabled = true;
+        installBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Installing...';
+    }
+    
+    fetch('/document-extraction/api/install-packages', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            packages: [packageName]
+        })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Add to global task tracking
+                if (data.task_id) {
+                    window.addGlobalTask(data.task_id, `Install ${packageName}`, 'package_installation');
+                }
+                
+                // Poll for status updates
+                const checkInterval = setInterval(() => {
+                    fetch('/document-extraction/api/status')
+                        .then(response => response.json())
+                        .then(statusData => {
+                            if (statusData.success && statusData.extractor) {
+                                const libraries = statusData.extractor.libraries || {};
+                                const isInstalled = libraries[packageName === 'pytesseract' ? 'tesseract' : packageName] || false;
+                                
+                                if (isInstalled) {
+                                    clearInterval(checkInterval);
+                                    // Reload OCR engines to update UI
+                                    loadOCREngines();
+                                    if (installBtn) {
+                                        installBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i>Installed';
+                                        installBtn.classList.remove('btn-success');
+                                        installBtn.classList.add('btn-outline-success');
+                                        installBtn.disabled = true;
+                                    }
+                                }
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error checking installation status:', error);
+                        });
+                }, 2000);
+                
+                // Stop polling after 5 minutes
+                setTimeout(() => clearInterval(checkInterval), 300000);
+            } else {
+                alert('Failed to start installation: ' + (data.error || 'Unknown error'));
+                if (installBtn) {
+                    installBtn.disabled = false;
+                    installBtn.innerHTML = '<i class="bi bi-download me-1"></i>Install';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error installing OCR engine:', error);
+            alert('Error installing OCR engine: ' + error.message);
+            if (installBtn) {
+                installBtn.disabled = false;
+                installBtn.innerHTML = '<i class="bi bi-download me-1"></i>Install';
+            }
+        });
+}
+
+function activateOCREngine(engineType) {
+    fetch(`/document-extraction/api/ocr-engines/${engineType}`, {
+        method: 'POST'
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reload engines to update UI
+                loadOCREngines();
+                // Show success message
+                if (data.previous_engine) {
+                    console.log(`Switched from ${data.previous_engine} to ${engineType}`);
+                }
+            } else {
+                alert('Failed to activate OCR engine: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error activating OCR engine:', error);
+            alert('Error activating OCR engine: ' + error.message);
+        });
+}
+
+function loadStatus() {
+    fetch('/document-extraction/api/status')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateUI(data.environment, data.extractor);
+            }
+        })
+        .catch(error => {
+            console.error('Failed to load status:', error);
+            document.getElementById('env-status-content').innerHTML = 
+                '<div class="alert alert-danger">Failed to load status</div>';
+        });
+}
+
+function updateUI(envStatus, extractorStatus) {
+    // Update environment status panel
+    const statusContent = document.getElementById('env-status-content');
+    const status = envStatus.status;
+    
+    let statusHTML = '';
+    if (status === 'ready') {
+        statusHTML = `
+            <div class="text-center">
+                <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+                <h5 class="mt-3 text-success">Environment Ready</h5>
+                <p class="text-muted small">Python: ${envStatus.python_path ? envStatus.python_path.split(/[/\\]/).pop() : 'N/A'}</p>
+                <p class="text-muted small">Installed: ${envStatus.installed_packages.length} packages</p>
+                <p class="text-muted small mt-2">Storage: ${envStatus.storage_path ? envStatus.storage_path.split(/[/\\]/).pop() : 'N/A'}</p>
+            </div>
+        `;
+    } else if (status === 'not_created') {
+        statusHTML = `
+            <div class="text-center">
+                <i class="bi bi-x-circle text-warning" style="font-size: 3rem;"></i>
+                <h5 class="mt-3 text-warning">Not Created</h5>
+                <p class="text-muted small">Environment needs to be created</p>
+            </div>
+        `;
+    } else if (status === 'creating' || status === 'installing') {
+        statusHTML = `
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status"></div>
+                <h5 class="mt-3">${status === 'creating' ? 'Creating...' : 'Installing...'}</h5>
+                <p class="text-muted small">${envStatus.progress?.message || 'In progress'}</p>
+            </div>
+        `;
+    } else if (status === 'error') {
+        statusHTML = `
+            <div class="text-center">
+                <i class="bi bi-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
+                <h5 class="mt-3 text-danger">Error</h5>
+                <p class="text-muted small">${envStatus.error || 'Unknown error'}</p>
+            </div>
+        `;
+    }
+    
+    statusContent.innerHTML = statusHTML;
+    
+    // Update setup panel
+    if (status === 'not_created') {
+        document.getElementById('env-not-created').style.display = 'block';
+        document.getElementById('env-ready').style.display = 'none';
+        document.getElementById('env-error').style.display = 'none';
+    } else if (status === 'ready') {
+        document.getElementById('env-not-created').style.display = 'none';
+        document.getElementById('env-ready').style.display = 'block';
+        document.getElementById('env-error').style.display = 'none';
+        renderPackages(envStatus.packages);
+    } else if (status === 'error') {
+        document.getElementById('env-not-created').style.display = 'none';
+        document.getElementById('env-ready').style.display = 'none';
+        document.getElementById('env-error').style.display = 'block';
+        document.getElementById('error-message').textContent = envStatus.error || 'Unknown error';
+    } else {
+        // Creating or installing - show progress
+        document.getElementById('env-not-created').style.display = 'none';
+        document.getElementById('env-ready').style.display = 'none';
+        document.getElementById('env-error').style.display = 'none';
+    }
+}
+
+function renderPackages(packages) {
+    const packagesList = document.getElementById('packages-list');
+    let html = '<div class="row">';
+    
+    for (const [key, pkg] of Object.entries(packages)) {
+        const installed = pkg.installed;
+        html += `
+            <div class="col-md-6 mb-3">
+                <div class="card bg-secondary border-${installed ? 'success' : 'secondary'}">
+                    <div class="card-body p-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   id="pkg-${key}" 
+                                   ${installed ? 'checked disabled' : ''}
+                                   value="${pkg.pip_name}">
+                            <label class="form-check-label" for="pkg-${key}">
+                                <strong>${pkg.name}</strong>
+                                ${installed ? '<span class="badge bg-success ms-2">Installed</span>' : ''}
+                                ${pkg.required ? '<span class="badge bg-warning ms-1">Required</span>' : ''}
+                                <br>
+                                <small class="text-muted">${pkg.description}</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    html += '</div>';
+    packagesList.innerHTML = html;
+}
+
+document.getElementById('btn-create-env')?.addEventListener('click', function() {
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating...';
+    
+    fetch('/document-extraction/api/create-env', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'}
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            currentTaskId = data.task_id;
+            // Add to global task panel
+            if (window.addGlobalTask) {
+                window.addGlobalTask(data.task_id, 'Create Document Extraction Environment', 'environment_creation');
+            }
+            startStatusPolling();
+            showInstallProgress();
+        } else {
+            alert('Failed to create environment: ' + (data.error || 'Unknown error'));
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-plus-circle me-2"></i>Create Environment';
+        }
+    })
+    .catch(error => {
+        alert('Error: ' + error.message);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-plus-circle me-2"></i>Create Environment';
+    });
+});
+
+document.getElementById('btn-install-all')?.addEventListener('click', function() {
+    installPackages(null); // null = install all
+});
+
+document.getElementById('btn-install-selected')?.addEventListener('click', function() {
+    const selected = Array.from(document.querySelectorAll('#packages-list input[type="checkbox"]:checked:not(:disabled)'))
+        .map(cb => cb.value);
+    
+    if (selected.length === 0) {
+        alert('Please select at least one package to install');
+        return;
+    }
+    
+    installPackages(selected);
+});
+
+function installPackages(packageNames) {
+    console.log('Starting package installation:', packageNames);
+    
+    // Disable buttons during installation
+    const btnInstallAll = document.getElementById('btn-install-all');
+    const btnInstallSelected = document.getElementById('btn-install-selected');
+    if (btnInstallAll) btnInstallAll.disabled = true;
+    if (btnInstallSelected) btnInstallSelected.disabled = true;
+    
+    // Start status polling to show progress on the page
+    fetch('/document-extraction/api/install-packages', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({packages: packageNames})
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Installation response:', data);
+        if (data.success) {
+            currentTaskId = data.task_id;
+            console.log('Task ID:', currentTaskId);
+            // Add to global task panel
+            if (window.addGlobalTask) {
+                window.addGlobalTask(data.task_id, 'Install Document Extraction Packages', 'package_installation');
+            }
+            startStatusPolling();
+        } else {
+            alert('Failed to start installation: ' + (data.error || 'Unknown error'));
+            if (btnInstallAll) btnInstallAll.disabled = false;
+            if (btnInstallSelected) btnInstallSelected.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Installation error:', error);
+        alert('Error starting installation: ' + error.message);
+        if (btnInstallAll) btnInstallAll.disabled = false;
+        if (btnInstallSelected) btnInstallSelected.disabled = false;
+    });
+}
+
+function startStatusPolling() {
+    if (statusCheckInterval) clearInterval(statusCheckInterval);
+    
+    let pollCount = 0;
+    const maxPolls = 300; // 10 minutes max (300 * 2 seconds)
+    let lastProgress = 0;
+    let stuckCount = 0;
+    
+    statusCheckInterval = setInterval(() => {
+        pollCount++;
+        loadStatus();
+        
+        // Check if task is complete
+        if (currentTaskId) {
+            fetch(`/tasks/${currentTaskId}/status`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Check if task is complete first
+                    if (data.status === 'completed' || data.status === 'failed') {
+                        clearInterval(statusCheckInterval);
+                        statusCheckInterval = null;
+                        currentTaskId = null;
+                        
+                        // Re-enable buttons
+                        const btnInstallAll = document.getElementById('btn-install-all');
+                        const btnInstallSelected = document.getElementById('btn-install-selected');
+                        if (btnInstallAll) btnInstallAll.disabled = false;
+                        if (btnInstallSelected) btnInstallSelected.disabled = false;
+                        
+                        // Show error message if failed
+                        if (data.status === 'failed') {
+                            const errorMsg = data.error || data.message || 'Installation failed';
+                            console.error('Installation failed:', errorMsg);
+                            alert('Installation Failed:\n' + errorMsg);
+                        } else if (data.status === 'completed' && data.result) {
+                            // Show success message with details
+                            const result = data.result;
+                            console.log('Installation completed:', result);
+                            if (result.failed && result.failed.length > 0) {
+                                const failedPkgs = result.failed.map(f => (typeof f === 'string' ? f : f.package || f)).join(', ');
+                                const failedErrors = result.failed.map(f => {
+                                    if (typeof f === 'string') return f;
+                                    return `${f.package || 'unknown'}: ${f.error || 'unknown error'}`;
+                                }).join('\n');
+                                console.error('Failed packages:', failedErrors);
+                                alert(`Installation completed with errors:\n\nFailed packages: ${failedPkgs}\n\nCheck browser console for details.`);
+                            } else {
+                                console.log('All packages installed successfully');
+                            }
+                        }
+                        
+                        // Force refresh status multiple times to ensure it updates
+                        // Sometimes the package detection needs a moment
+                        loadStatus(); // Immediate refresh
+                        setTimeout(() => loadStatus(), 1000); // Refresh after 1 second
+                        setTimeout(() => loadStatus(), 3000); // Refresh after 3 seconds
+                        return;
+                    }
+                    
+                    // Update progress bar
+                    const progressBar = document.getElementById('install-progress-bar');
+                    const progressText = document.getElementById('install-status');
+                    
+                    if (data.progress !== undefined && data.progress !== null) {
+                        if (progressBar) {
+                            progressBar.style.width = data.progress + '%';
+                            progressBar.textContent = Math.round(data.progress) + '%';
+                        }
+                        // Check if progress is stuck
+                        if (data.progress === lastProgress) {
+                            stuckCount++;
+                        } else {
+                            stuckCount = 0;
+                        }
+                        lastProgress = data.progress;
+                    }
+                    
+                    if (progressText) {
+                        if (data.current_step) {
+                            progressText.textContent = data.current_step;
+                        } else if (data.status) {
+                            progressText.textContent = `Status: ${data.status}`;
+                        }
+                    }
+                    
+                    // If stuck for too long (30 seconds), check environment status directly
+                    if (stuckCount > 15) {
+                        // Check environment status to see if packages are actually installed
+                        fetch('/document-extraction/api/status')
+                            .then(response => response.json())
+                            .then(statusData => {
+                                if (statusData.success && statusData.environment) {
+                                    const envStatus = statusData.environment.status;
+                                    // If environment is ready, assume installation completed
+                                    if (envStatus === 'ready') {
+                                        clearInterval(statusCheckInterval);
+                                        statusCheckInterval = null;
+                                        currentTaskId = null;
+                                        loadStatus();
+                                    }
+                                }
+                            })
+                            .catch(() => {});
+                    }
+                })
+                .catch(error => {
+                    console.error('Task polling error:', error);
+                    // If task API fails, check environment status directly after a few attempts
+                    if (pollCount > 10) {
+                        fetch('/document-extraction/api/status')
+                            .then(response => response.json())
+                            .then(statusData => {
+                                if (statusData.success && statusData.environment) {
+                                    const envStatus = statusData.environment.status;
+                                    if (envStatus === 'ready') {
+                                        clearInterval(statusCheckInterval);
+                                        statusCheckInterval = null;
+                                        currentTaskId = null;
+                                        hideInstallProgress();
+                                        loadStatus();
+                                    }
+                                }
+                            })
+                            .catch(() => {});
+                    }
+                });
+        } else {
+            // No task ID, just check environment status
+            fetch('/document-extraction/api/status')
+                .then(response => response.json())
+                            .then(statusData => {
+                                if (statusData.success && statusData.environment) {
+                                    const envStatus = statusData.environment.status;
+                                    if (envStatus === 'ready' || envStatus === 'error') {
+                                        clearInterval(statusCheckInterval);
+                                        statusCheckInterval = null;
+                                    }
+                                }
+                            })
+                .catch(() => {});
+        }
+        
+        // Safety timeout - stop polling after max polls
+        if (pollCount >= maxPolls) {
+            clearInterval(statusCheckInterval);
+            statusCheckInterval = null;
+            currentTaskId = null;
+            alert('Installation monitoring timed out. Please check the environment status manually.');
+        }
+    }, 2000);
+}
+
+// File selection and drag & drop
+let selectedFiles = [];
+
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('document-file');
+const filesList = document.getElementById('files-list');
+const selectedFilesDiv = document.getElementById('selected-files');
+const btnExtract = document.getElementById('btn-extract');
+
+// Drag and drop handlers
+dropZone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    dropZone.style.borderColor = '#667eea';
+    dropZone.style.background = 'rgba(102, 126, 234, 0.1)';
+});
+
+dropZone.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    dropZone.style.borderColor = '';
+    dropZone.style.background = 'rgba(255, 255, 255, 0.02)';
+});
+
+dropZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    dropZone.style.borderColor = '';
+    dropZone.style.background = 'rgba(255, 255, 255, 0.02)';
+    
+    const files = Array.from(e.dataTransfer.files);
+    handleFiles(files);
+});
+
+dropZone.addEventListener('click', function() {
+    fileInput.click();
+});
+
+fileInput.addEventListener('change', function() {
+    const files = Array.from(this.files);
+    handleFiles(files);
+});
+
+function handleFiles(files) {
+    // Filter to only supported file types
+    const supportedExts = ['.pdf', '.docx', '.xlsx', '.xls', '.pptx', '.txt', '.csv', '.json', '.html', '.xml',
+                           '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff', '.tif', '.webp'];
+    const validFiles = files.filter(file => {
+        const ext = '.' + file.name.split('.').pop().toLowerCase();
+        return supportedExts.includes(ext);
+    });
+    
+    if (validFiles.length === 0) {
+        alert('No supported files selected. Supported: PDF, DOCX, XLSX, PPTX, TXT, CSV, JSON, HTML, XML, PNG, JPG, JPEG, GIF, BMP, TIFF, WEBP');
+        return;
+    }
+    
+    // Add to selected files (avoid duplicates)
+    validFiles.forEach(file => {
+        if (!selectedFiles.find(f => f.name === file.name && f.size === file.size)) {
+            selectedFiles.push(file);
+        }
+    });
+    
+    updateFilesList();
+    btnExtract.disabled = selectedFiles.length === 0;
+}
+
+function updateFilesList() {
+    if (selectedFiles.length === 0) {
+        selectedFilesDiv.style.display = 'none';
+        return;
+    }
+    
+    selectedFilesDiv.style.display = 'block';
+    filesList.innerHTML = selectedFiles.map((file, index) => `
+        <div class="list-group-item bg-secondary d-flex justify-content-between align-items-center">
+            <div>
+                <i class="bi bi-file-earmark me-2"></i>
+                <strong>${file.name}</strong>
+                <small class="text-muted ms-2">(${(file.size / 1024).toFixed(2)} KB)</small>
+            </div>
+            <button class="btn btn-sm btn-outline-danger" onclick="removeFile(${index})">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+    `).join('');
+}
+
+function removeFile(index) {
+    selectedFiles.splice(index, 1);
+    updateFilesList();
+    btnExtract.disabled = selectedFiles.length === 0;
+}
+
+// Sequential extraction
+btnExtract.addEventListener('click', async function() {
+    if (selectedFiles.length === 0) {
+        alert('Please select at least one file');
+        return;
+    }
+    
+    const saveCheckbox = document.getElementById('save-extracted');
+    const progressDiv = document.getElementById('extraction-progress');
+    const resultsDiv = document.getElementById('extraction-results');
+    const progressBar = document.getElementById('extraction-progress-bar');
+    const statusText = document.getElementById('extraction-status');
+    const resultsContainer = document.getElementById('results-container');
+    
+    // Reset UI
+    btnExtract.disabled = true;
+    btnExtract.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Extracting...';
+    progressDiv.style.display = 'block';
+    resultsDiv.style.display = 'block';
+    resultsContainer.innerHTML = '';
+    progressBar.style.width = '0%';
+    progressBar.textContent = '0%';
+    
+    const results = [];
+    const total = selectedFiles.length;
+    
+    // Process files sequentially
+    for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        const progress = ((i / total) * 100).toFixed(0);
+        
+        progressBar.style.width = progress + '%';
+        progressBar.textContent = progress + '%';
+        statusText.textContent = `Processing ${i + 1}/${total}: ${file.name}...`;
+        
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('save', saveCheckbox.checked ? 'true' : 'false');
+            
+            console.log(`Extracting from file ${i + 1}/${total}: ${file.name}`);
+            
+            let response;
+            try {
+                response = await fetch('/document-extraction/api/extract', {
+                    method: 'POST',
+                    body: formData,
+                    signal: AbortSignal.timeout(300000) // 5 minute timeout
+                });
+            } catch (fetchError) {
+                if (fetchError.name === 'AbortError') {
+                    throw new Error('Request timed out after 5 minutes. The file may be too large or the server is not responding.');
+                } else if (fetchError.message.includes('Failed to fetch') || fetchError.message.includes('ERR_CONNECTION_REFUSED')) {
+                    throw new Error('Cannot connect to server. Please check if the server is running and try again.');
+                }
+                throw fetchError;
+            }
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                let errorData;
+                try {
+                    errorData = JSON.parse(errorText);
+                } catch {
+                    errorData = { error: errorText || `HTTP ${response.status}: ${response.statusText}` };
+                }
+                throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log(`Extraction result for ${file.name}:`, data);
+            
+            if (!data.hasOwnProperty('success')) {
+                throw new Error('Invalid response format - missing success field');
+            }
+            
+            results.push({
+                filename: file.name,
+                success: data.success,
+                text: data.text || '',
+                metadata: data.metadata || {},
+                error: data.error,
+                saved_path: data.saved_path
+            });
+            
+            // Add result to UI immediately
+            addResultToUI(results[results.length - 1], i + 1);
+            
+        } catch (error) {
+            console.error(`Error extracting from ${file.name}:`, error);
+            results.push({
+                filename: file.name,
+                success: false,
+                text: '',
+                error: error.message || 'Unknown error occurred'
+            });
+            addResultToUI(results[results.length - 1], i + 1);
+        }
+    }
+    
+    // Complete
+    progressBar.style.width = '100%';
+    progressBar.textContent = '100%';
+    progressBar.classList.remove('progress-bar-animated');
+    progressBar.classList.add('bg-success');
+    statusText.textContent = `Completed: ${results.filter(r => r.success).length}/${total} files extracted successfully`;
+    
+    btnExtract.disabled = false;
+    btnExtract.innerHTML = '<i class="bi bi-file-earmark-text me-2"></i>Extract Text';
+});
+
+function addResultToUI(result, index) {
+    // Get results container - ensure it exists
+    const resultsContainer = document.getElementById('results-container');
+    if (!resultsContainer) {
+        console.error('Results container not found!');
+        return;
+    }
+    
+    const resultCard = document.createElement('div');
+    resultCard.className = 'card bg-secondary mb-3';
+    
+    const cardHeader = document.createElement('div');
+    cardHeader.className = 'card-header d-flex justify-content-between align-items-center';
+    cardHeader.innerHTML = `
+        <div>
+            <i class="bi bi-${result.success ? 'check-circle text-success' : 'x-circle text-danger'} me-2"></i>
+            <strong>${result.filename}</strong>
+        </div>
+        <span class="badge bg-${result.success ? 'success' : 'danger'}">${result.success ? 'Success' : 'Failed'}</span>
+    `;
+    
+    const cardBody = document.createElement('div');
+    cardBody.className = 'card-body';
+    
+    if (result.success) {
+        let metadataHTML = '<div class="mb-2"><small class="text-muted">';
+        if (result.metadata) {
+            const meta = result.metadata;
+            if (meta.pages) metadataHTML += `Pages: ${meta.pages} | `;
+            if (meta.paragraphs) metadataHTML += `Paragraphs: ${meta.paragraphs} | `;
+            if (meta.sheets) metadataHTML += `Sheets: ${meta.sheets.join(', ')} | `;
+            if (meta.width && meta.height) metadataHTML += `Image: ${meta.width}x${meta.height} | `;
+            if (meta.ocr_confidence) metadataHTML += `OCR Confidence: ${meta.ocr_confidence}% | `;
+            if (meta.text_regions) metadataHTML += `Text Regions: ${meta.text_regions} | `;
+            metadataHTML += `Type: ${meta.type || meta.filename || 'Unknown'}`;
+        }
+        if (result.saved_path) {
+            metadataHTML += ` | <span class="text-success">Saved: ${result.saved_path}</span>`;
+        }
+        metadataHTML += '</small></div>';
+        
+        cardBody.innerHTML = `
+            ${metadataHTML}
+            <details>
+                <summary class="btn btn-sm btn-outline-info mb-2">Show Extracted Text (${result.text.length} characters)</summary>
+                <pre class="text-light mt-2 p-3 bg-dark rounded" style="white-space: pre-wrap; max-height: 300px; overflow-y: auto; font-size: 0.875rem;">${escapeHtml(result.text || '(No text extracted)')}</pre>
+            </details>
+        `;
+    } else {
+        cardBody.innerHTML = `
+            <div class="alert alert-danger mb-0">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <strong>Error:</strong> ${escapeHtml(result.error || 'Unknown error')}
+            </div>
+        `;
+    }
+    
+    resultCard.appendChild(cardHeader);
+    resultCard.appendChild(cardBody);
+    resultsContainer.appendChild(resultCard);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', function() {
+    if (statusCheckInterval) clearInterval(statusCheckInterval);
+});
+</script>
+{% endblock %}
