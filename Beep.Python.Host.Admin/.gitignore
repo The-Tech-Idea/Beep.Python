@@ -9,6 +9,10 @@ backends/
 
 models/
 
+data/
+
+data/python/
+
 environments/
 
 ai_models/
@@ -41,7 +45,11 @@ python/
 
 python_embedded/
 
-venv/
+.venv/
 
+external_documents/
 
+database/
+downloads/
+python/
 providers/
