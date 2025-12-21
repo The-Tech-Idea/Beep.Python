@@ -11,6 +11,10 @@ from app.services.ml_service import MLService
 from app.services.data_service import DataService
 from flask import current_app
 
+from app.utils.constants import HTTP_BAD_REQUEST, HTTP_INTERNAL_SERVER_ERROR
+from app.utils.request_validators import error_handler, sanitize_string_input
+from app.exceptions.database_exceptions import DatabaseError
+
 logger = logging.getLogger(__name__)
 
 projects_bp = Blueprint('projects', __name__)
@@ -41,7 +45,20 @@ def get_data_service():
 def index():
     """List all projects"""
     projects = MLProject.query.filter_by(status='active').order_by(MLProject.created_at.desc()).all()
-    return render_template('projects/index.html', projects=projects)
+    
+    # Get Community connection status
+    community_config = None
+    try:
+        from app.services.community_connection_service import CommunityConnectionService
+        connection_service = CommunityConnectionService()
+        community_config = {
+            'url': connection_service.get_community_url(),
+            'connected': connection_service.is_connected()
+        }
+    except:
+        pass
+    
+    return render_template('projects/index.html', projects=projects, community_config=community_config)
 
 
 @projects_bp.route('/<int:project_id>')
@@ -60,14 +77,15 @@ def detail(project_id):
 
 
 @projects_bp.route('/create', methods=['GET', 'POST'])
+@error_handler
 def create():
     """Create new project"""
     if request.method == 'POST':
-        name = request.form.get('name')
-        description = request.form.get('description', '')
+        name = request.form.get('name', '').strip()
+        description = request.form.get('description', '').strip()
         template = request.form.get('template', 'custom')
         env_option = request.form.get('env_option', 'new')  # 'new' or 'existing'
-        existing_env_name = request.form.get('existing_env_name', '')
+        existing_env_name = request.form.get('existing_env_name', '').strip()
         framework = request.form.get('framework', 'scikit-learn')
         
         if not name:

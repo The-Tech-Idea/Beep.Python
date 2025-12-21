@@ -3,19 +3,38 @@ Beep ML Studio Application Factory
 By TheTechIdea
 """
 import os
-from flask import Flask
+import logging
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_socketio import SocketIO
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
 from pathlib import Path
+
+from app.utils.constants import (
+    ENV_SECRET_KEY,
+    ENV_DATABASE_URL,
+    DEFAULT_SECRET_KEY,
+    DEFAULT_DATABASE_URL,
+    HTTP_INTERNAL_SERVER_ERROR,
+    HTTP_NOT_FOUND,
+    HTTP_BAD_REQUEST
+)
 
 # Load environment variables
 load_dotenv()
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
 # Initialize extensions
 db = SQLAlchemy()
 socketio = SocketIO(cors_allowed_origins="*")
+jwt = JWTManager()
 
 
 
@@ -43,13 +62,17 @@ def create_app(config_name=None):
     )
     
     # Configuration - use environment variables first, then settings
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+    app.config['SECRET_KEY'] = os.environ.get(ENV_SECRET_KEY, DEFAULT_SECRET_KEY)
+    
+    # JWT Configuration
+    app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', app.config['SECRET_KEY'])
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = int(os.environ.get('JWT_ACCESS_TOKEN_EXPIRES', 3600))
     
     # Forced industry mode - set via command-line argument
     app.config['FORCED_INDUSTRY_MODE'] = os.environ.get('MLSTUDIO_FORCED_INDUSTRY', None)
     
     # Database URI - use absolute path to project root (not instance folder)
-    db_uri = os.environ.get('DATABASE_URL', None)
+    db_uri = os.environ.get(ENV_DATABASE_URL, None)
     if not db_uri:
         # Use absolute path to project root (not instance folder)
         project_root = Path(__file__).parent.parent.absolute()
@@ -83,6 +106,86 @@ def create_app(config_name=None):
     db.init_app(app)
     CORS(app)
     socketio.init_app(app)
+    jwt.init_app(app)
+    
+    # Register error handlers for custom exceptions
+    from app.exceptions import (
+        AuthenticationError,
+        IdentityServerError,
+        TokenValidationError,
+        UserAccessDeniedError,
+        DatabaseError,
+        DatabaseConnectionError,
+        CommunityConnectionError,
+        CommunityAuthError,
+        CommunityAPIError
+    )
+    
+    @app.errorhandler(AuthenticationError)
+    @app.errorhandler(IdentityServerError)
+    @app.errorhandler(TokenValidationError)
+    def handle_auth_error(e):
+        """Handle authentication errors"""
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 401
+    
+    @app.errorhandler(UserAccessDeniedError)
+    def handle_access_denied(e):
+        """Handle access denied errors"""
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 403
+    
+    @app.errorhandler(DatabaseError)
+    @app.errorhandler(DatabaseConnectionError)
+    def handle_database_error(e):
+        """Handle database errors"""
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+    
+    @app.errorhandler(CommunityConnectionError)
+    @app.errorhandler(CommunityAuthError)
+    @app.errorhandler(CommunityAPIError)
+    def handle_community_error(e):
+        """Handle Community connection errors"""
+        status_code = getattr(e, 'status_code', 502)
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), status_code
+    
+    @app.errorhandler(404)
+    def handle_not_found(e):
+        """Handle 404 errors"""
+        return jsonify({
+            'success': False,
+            'error': 'Resource not found'
+        }), HTTP_NOT_FOUND
+    
+    @app.errorhandler(500)
+    def handle_internal_error(e):
+        """Handle 500 errors"""
+        logger = logging.getLogger(__name__)
+        logger.error(f"Internal server error: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': 'Internal server error'
+        }), HTTP_INTERNAL_SERVER_ERROR
+    
+    @app.errorhandler(Exception)
+    def handle_generic_error(e):
+        """Handle all other exceptions"""
+        logger = logging.getLogger(__name__)
+        logger.error(f"Unhandled exception: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': 'An unexpected error occurred'
+        }), HTTP_INTERNAL_SERVER_ERROR
     
     # Register blueprints
     from app.routes.dashboard import dashboard_bp

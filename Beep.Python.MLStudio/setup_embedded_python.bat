@@ -30,7 +30,7 @@ REM Create directory
 if not exist "python-embedded" mkdir python-embedded
 
 REM Download embedded Python using PowerShell
-powershell -Command "& {[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri 'https://www.python.org/ftp/python/3.11.7/python-3.11.7-embed-amd64.zip' -OutFile 'python-embedded.zip'}"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest -Uri 'https://www.python.org/ftp/python/3.11.7/python-3.11.7-embed-amd64.zip' -OutFile 'python-embedded.zip'"
 
 if %errorlevel% neq 0 (
     echo.
@@ -42,7 +42,7 @@ if %errorlevel% neq 0 (
 
 echo.
 echo Extracting Python...
-powershell -Command "Expand-Archive -Path 'python-embedded.zip' -DestinationPath 'python-embedded' -Force"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Expand-Archive -Path 'python-embedded.zip' -DestinationPath 'python-embedded' -Force"
 
 REM Clean up zip file
 del python-embedded.zip
@@ -50,24 +50,50 @@ del python-embedded.zip
 echo.
 echo Configuring embedded Python...
 
-REM Enable site-packages by uncommenting import site in python311._pth
-powershell -Command "(Get-Content 'python-embedded\python311._pth') -replace '#import site', 'import site' | Set-Content 'python-embedded\python311._pth'"
+REM Enable site-packages by uncommenting import site in python311._pth (CRITICAL for venv module)
+powershell -NoProfile -ExecutionPolicy Bypass -Command "(Get-Content 'python-embedded\python311._pth') -replace '#import site', 'import site' | Set-Content 'python-embedded\python311._pth'"
 
 REM Download get-pip.py
 echo Downloading pip installer...
-powershell -Command "Invoke-WebRequest -Uri 'https://bootstrap.pypa.io/get-pip.py' -OutFile 'python-embedded\get-pip.py'"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest -Uri 'https://bootstrap.pypa.io/get-pip.py' -OutFile 'python-embedded\get-pip.py'"
+if errorlevel 1 (
+    echo [ERROR] Failed to download get-pip.py!
+    echo Please check your internet connection.
+    pause
+    exit /b 1
+)
 
 REM Install pip
 echo Installing pip...
 python-embedded\python.exe python-embedded\get-pip.py
+if errorlevel 1 (
+    echo [ERROR] Failed to install pip!
+    pause
+    exit /b 1
+)
 
 REM Clean up get-pip.py
 del python-embedded\get-pip.py
 
 echo.
 echo Installing application dependencies...
-python-embedded\python.exe -m pip install --upgrade pip
-python-embedded\python.exe -m pip install -r requirements.txt
+python-embedded\python.exe -m pip install --upgrade pip --quiet --no-warn-script-location
+if errorlevel 1 (
+    echo [ERROR] Failed to upgrade pip!
+    pause
+    exit /b 1
+)
+
+REM Install virtualenv package by default (for reliable venv creation)
+python-embedded\python.exe -m pip install virtualenv --quiet --no-warn-script-location
+
+python-embedded\python.exe -m pip install -r requirements.txt --quiet --no-warn-script-location
+if errorlevel 1 (
+    echo [ERROR] Failed to install required packages!
+    echo Please check your internet connection and requirements.txt file.
+    pause
+    exit /b 1
+)
 
 REM Create protection marker file
 echo CRITICAL_SYSTEM_COMPONENT > python-embedded\.mlstudio_protected

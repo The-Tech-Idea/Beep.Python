@@ -28,6 +28,9 @@ class MLProject(db.Model):
     scenario_id = db.Column(db.String(100))  # Scenario within the profile
     industry_config = db.Column(db.Text)  # JSON - Industry-specific configuration
     
+    # Competition integration
+    competition_id = db.Column(db.Integer, nullable=True)  # Link to Community competition
+    
     # Relationships
     experiments = db.relationship('Experiment', backref='project', lazy=True, cascade='all, delete-orphan')
     
@@ -90,6 +93,7 @@ class MLProject(db.Model):
             'industry_profile': self.industry_profile,
             'scenario_id': self.scenario_id,
             'industry_config': industry_config_data,
+            'competition_id': self.competition_id,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'experiments_count': len(self.experiments)

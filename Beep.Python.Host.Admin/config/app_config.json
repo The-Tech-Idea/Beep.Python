@@ -1,7 +1,0 @@
-{
-    "SQLALCHEMY_DATABASE_URI": "sqlite:///beep_data.db",
-    "auth_mode": "local",
-    "ENABLE_IDENTITYSERVER_AUTH": false,
-    "is_configured": true,
-    "secret_key": "23f78dc2274006d8bf323eb9cf277feac60674d62be0dac0"
-}

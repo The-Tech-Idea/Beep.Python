@@ -7,6 +7,12 @@ from app.models.settings import Settings
 from app.models.project import MLProject
 from app.services.settings_manager import get_settings_manager
 from app.services.environment_manager import EnvironmentManager
+from app.services.community_connection_service import get_community_connection_service
+from app.utils.request_validators import (
+    validate_json_request,
+    sanitize_string_input,
+    error_handler
+)
 
 settings_bp = Blueprint('settings', __name__, url_prefix='/settings')
 
@@ -22,9 +28,14 @@ def index():
     for category in categories:
         settings_by_category[category] = Settings.query.filter_by(category=category).all()
     
+    # Get Community connection status
+    community_service = get_community_connection_service()
+    community_config = community_service.get_connection_config()
+    
     return render_template('settings/index.html', 
                          categories=categories,
-                         settings_by_category=settings_by_category)
+                         settings_by_category=settings_by_category,
+                         community_config=community_config)
 
 
 @settings_bp.route('/save', methods=['POST'])
@@ -139,6 +150,93 @@ def delete_environment(env_name):
     except Exception as e:
         import logging
         logging.getLogger(__name__).error(f"Error deleting environment {env_name}: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@settings_bp.route('/community/configure', methods=['POST'])
+@error_handler
+@validate_json_request(required_fields=['url'])
+@sanitize_string_input(['url', 'api_key'])
+def configure_community():
+    """Configure Community server connection"""
+    try:
+        data = request.get_json()
+        url = data.get('url')
+        api_key = data.get('api_key', '')
+        
+        community_service = get_community_connection_service()
+        success, error = community_service.configure_connection(url, api_key)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': 'Connected to Community server successfully',
+                'config': community_service.get_connection_config()
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': error or 'Failed to connect to Community server'
+            }), 400
+            
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Error configuring Community connection: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@settings_bp.route('/community/test', methods=['POST'])
+@error_handler
+def test_community_connection():
+    """Test Community server connection"""
+    try:
+        community_service = get_community_connection_service()
+        success, error = community_service.test_connection()
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': 'Connection successful',
+                'config': community_service.get_connection_config()
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': error or 'Connection test failed'
+            }), 400
+            
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Error testing Community connection: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@settings_bp.route('/community/disconnect', methods=['POST'])
+@error_handler
+def disconnect_community():
+    """Disconnect from Community server"""
+    try:
+        community_service = get_community_connection_service()
+        community_service.disconnect()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Disconnected from Community server',
+            'config': community_service.get_connection_config()
+        })
+        
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Error disconnecting from Community: {e}", exc_info=True)
         return jsonify({
             'success': False,
             'error': str(e)

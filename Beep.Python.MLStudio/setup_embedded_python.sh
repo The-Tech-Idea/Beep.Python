@@ -89,11 +89,31 @@ rm python-embedded.tar.gz
 echo ""
 echo "Installing pip..."
 python-embedded/bin/python3 -m ensurepip
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "ERROR: Failed to install pip!"
+    exit 1
+fi
 
 echo ""
 echo "Installing application dependencies..."
-python-embedded/bin/python3 -m pip install --upgrade pip
-python-embedded/bin/python3 -m pip install -r requirements.txt
+python-embedded/bin/python3 -m pip install --upgrade pip --quiet
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "ERROR: Failed to upgrade pip!"
+    exit 1
+fi
+
+# Install virtualenv package by default (for reliable venv creation)
+python-embedded/bin/python3 -m pip install virtualenv --quiet
+
+python-embedded/bin/python3 -m pip install -r requirements.txt --quiet
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "ERROR: Failed to install required packages!"
+    echo "Please check your internet connection and requirements.txt file."
+    exit 1
+fi
 
 # Create protection marker
 cat > python-embedded/.mlstudio_protected << EOF

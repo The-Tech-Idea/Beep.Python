@@ -10,3 +10,9 @@ def init_database():
     db.create_all()
     print("Database initialized successfully!")
 
+def reset_database():
+    """Reset database (drop and recreate all tables) - WARNING: Deletes all data!"""
+    db.drop_all()
+    db.create_all()
+    print("Database reset successfully - all tables dropped and recreated!")
+

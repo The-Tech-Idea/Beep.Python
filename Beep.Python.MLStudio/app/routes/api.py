@@ -16,6 +16,20 @@ from app.services.data_service import DataService
 from flask import current_app
 from datetime import datetime
 
+from app.utils.constants import (
+    HTTP_OK,
+    HTTP_BAD_REQUEST,
+    HTTP_NOT_FOUND,
+    HTTP_INTERNAL_SERVER_ERROR,
+    DIR_PROJECTS
+)
+from app.utils.request_validators import (
+    validate_json_request,
+    error_handler,
+    sanitize_string_input
+)
+from app.exceptions.database_exceptions import DatabaseError
+
 logger = logging.getLogger(__name__)
 
 api_bp = Blueprint('api', __name__)
@@ -42,6 +56,7 @@ def get_data_service():
 
 
 @api_bp.route('/health', methods=['GET'])
+@error_handler
 def health():
     """Health check"""
     from app.services.embedded_python_manager import get_embedded_python_manager
@@ -52,7 +67,7 @@ def health():
         'success': True,
         'status': 'healthy',
         'embedded_python_available': embedded_available
-    })
+    }), HTTP_OK
 
 
 # Database Management API
@@ -68,12 +83,18 @@ def database_status():
             'success': True,
             'data': status
         })
+    except DatabaseError as e:
+        logger.error(f"Database error: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), HTTP_INTERNAL_SERVER_ERROR
     except Exception as e:
         logger.error(f"Error getting database status: {e}")
         return jsonify({
             'success': False,
             'error': str(e)
-        }), 500
+        }), HTTP_INTERNAL_SERVER_ERROR
 
 
 @api_bp.route('/database/migrate', methods=['POST'])
@@ -89,12 +110,18 @@ def run_database_migrations():
             'message': f'Applied {len(applied)} migration(s)' if applied else 'No pending migrations',
             'applied_migrations': applied
         })
+    except DatabaseError as e:
+        logger.error(f"Database error: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), HTTP_INTERNAL_SERVER_ERROR
     except Exception as e:
         logger.error(f"Error running migrations: {e}")
         return jsonify({
             'success': False,
             'error': str(e)
-        }), 500
+        }), HTTP_INTERNAL_SERVER_ERROR
 
 
 # Industry Modules API
@@ -153,17 +180,164 @@ def list_projects():
     })
 
 
+@api_bp.route('/projects/create-from-competition', methods=['POST'])
+@error_handler
+@validate_json_request(required_fields=['competition_id'])
+def create_project_from_competition():
+    """Create a project from a Community competition (joins competition and downloads dataset)"""
+    from app.services.community_client import get_community_client
+    from app.services.auth_service import AuthService
+    from pathlib import Path
+    import shutil
+    
+    try:
+        # Get current user
+        current_user = AuthService.get_current_user()
+        if not current_user:
+            return jsonify({'success': False, 'error': 'Authentication required'}), 401
+        
+        data = request.get_json()
+        competition_id = data.get('competition_id')
+        project_name = data.get('name')  # Optional, will use competition title if not provided
+        project_description = data.get('description')  # Optional, will use competition description if not provided
+        
+        # Get Community client
+        client = get_community_client()
+        
+        # Get competition details
+        competition = client.get_competition_detail(competition_id)
+        if competition.get('error') or competition.get('success') is False:
+            return jsonify({
+                'success': False,
+                'error': competition.get('error', 'Competition not found')
+            }), 404
+        
+        # Check if user is participant (join if not)
+        user_id = current_user.id
+        is_participant = competition.get('is_participant', False)
+        
+        if not is_participant:
+            # Join competition first
+            join_result = client.join_competition(competition_id, user_id)
+            if join_result.get('success') is False or join_result.get('error'):
+                return jsonify({
+                    'success': False,
+                    'error': join_result.get('error', 'Failed to join competition')
+                }), 400
+        
+        # Generate project name if not provided
+        if not project_name:
+            # Use competition title, sanitize for filesystem
+            project_name = competition.get('title', f'Competition_{competition_id}')
+            # Remove invalid characters for project name
+            import re
+            project_name = re.sub(r'[^\w\s-]', '', project_name).strip()
+            project_name = re.sub(r'[-\s]+', '_', project_name)
+            # Ensure uniqueness
+            base_name = project_name
+            counter = 1
+            while MLProject.query.filter_by(name=project_name).first():
+                project_name = f"{base_name}_{counter}"
+                counter += 1
+        
+        # Generate project description if not provided
+        if not project_description:
+            project_description = competition.get('description', f'Project based on competition: {competition.get("title", "")}')
+        
+        # Create project (reuse existing create logic)
+        env_mgr = get_environment_manager()
+        
+        # Verify embedded Python is available
+        embedded_python = env_mgr.get_embedded_python()
+        if not embedded_python:
+            return jsonify({
+                'success': False,
+                'error': 'Embedded Python is required but not found. Please set up embedded Python first.'
+            }), HTTP_BAD_REQUEST
+        
+        # Determine framework from competition task type or default to scikit-learn
+        task_type = competition.get('task_type', 'classification')
+        framework = data.get('framework', 'scikit-learn')  # Can be overridden
+        
+        packages = _get_framework_packages(framework)
+        env_name = f"mlstudio_{project_name.lower().replace(' ', '_').replace('-', '_')}"
+        
+        # Create environment
+        try:
+            env_info = env_mgr.create_environment(env_name, packages=packages)
+        except ValueError as e:
+            # Environment might already exist, check if we can use it
+            existing_env = env_mgr.get_environment(env_name)
+            if not existing_env:
+                return jsonify({
+                    'success': False,
+                    'error': f'Failed to create environment: {str(e)}'
+                }), HTTP_BAD_REQUEST
+        
+        # Create project record
+        project = MLProject(
+            name=project_name,
+            description=project_description,
+            template=data.get('template', 'custom'),
+            environment_name=env_name,
+            framework=framework,
+            competition_id=competition_id
+        )
+        db.session.add(project)
+        db.session.flush()  # Flush to get project ID
+        
+        # Create project structure
+        ml_service = get_ml_service()
+        ml_service.create_project_structure(project.id, project.name)
+        project_path = ml_service.get_project_path(project.id)
+        
+        # Download training dataset
+        training_data_path = competition.get('training_data_path')
+        if training_data_path:
+            # Determine file extension
+            file_ext = Path(training_data_path).suffix or '.csv'
+            dataset_save_path = project_path / 'data' / f'training_data{file_ext}'
+            
+            download_success, download_error = client.download_training_data(competition_id, dataset_save_path)
+            
+            if not download_success:
+                logger.warning(f"Failed to download training data: {download_error}")
+                # Continue anyway - project is created, user can upload data manually
+                # But log the issue
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'data': project.to_dict(),
+            'message': 'Project created from competition successfully'
+        }), 201
+        
+    except DatabaseError as e:
+        db.session.rollback()
+        logger.error(f"Database error creating project from competition: {e}")
+        return jsonify({'success': False, 'error': str(e)}), HTTP_INTERNAL_SERVER_ERROR
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        logger.error(f"Error creating project from competition: {traceback.format_exc()}")
+        return jsonify({'success': False, 'error': str(e)}), HTTP_INTERNAL_SERVER_ERROR
+
+
 @api_bp.route('/projects', methods=['POST'])
+@error_handler
+@validate_json_request(required_fields=['name'])
+@sanitize_string_input(['name', 'description'])
 def create_project():
     """Create new project"""
     data = request.get_json()
     name = data.get('name')
     
     if not name:
-        return jsonify({'success': False, 'error': 'Name is required'}), 400
+        return jsonify({'success': False, 'error': 'Name is required'}), HTTP_BAD_REQUEST
     
     if MLProject.query.filter_by(name=name).first():
-        return jsonify({'success': False, 'error': 'Project name already exists'}), 400
+        return jsonify({'success': False, 'error': 'Project name already exists'}), HTTP_BAD_REQUEST
     
     env_name = f"mlstudio_{name.lower().replace(' ', '_')}"
     
@@ -176,7 +350,7 @@ def create_project():
             return jsonify({
                 'success': False, 
                 'error': 'Embedded Python is required but not found. Please set up embedded Python first.'
-            }), 400
+            }), HTTP_BAD_REQUEST
         
         framework = data.get('framework', 'scikit-learn')
         packages = _get_framework_packages(framework)
@@ -190,24 +364,24 @@ def create_project():
                 return jsonify({
                     'success': False,
                     'error': 'Embedded Python not found. Please set up embedded Python first.'
-                }), 400
+                }), HTTP_BAD_REQUEST
             else:
                 return jsonify({
                     'success': False,
                     'error': f'Failed to create environment: {error_msg}'
-                }), 500
+                }), HTTP_INTERNAL_SERVER_ERROR
         except ValueError as e:
             return jsonify({
                 'success': False,
                 'error': f'Environment already exists: {str(e)}'
-            }), 400
+            }), HTTP_BAD_REQUEST
         except Exception as e:
             import traceback
             logger.error(f"Environment creation error: {traceback.format_exc()}")
             return jsonify({
                 'success': False,
                 'error': f'Failed to create environment: {str(e)}'
-            }), 500
+            }), HTTP_INTERNAL_SERVER_ERROR
         
         project = MLProject(
             name=name,
@@ -236,11 +410,15 @@ def create_project():
             'success': True,
             'data': project.to_dict()
         }), 201
+    except DatabaseError as e:
+        db.session.rollback()
+        logger.error(f"Database error creating project: {e}")
+        return jsonify({'success': False, 'error': str(e)}), HTTP_INTERNAL_SERVER_ERROR
     except Exception as e:
         db.session.rollback()
         import traceback
         logger.error(f"Project creation error: {traceback.format_exc()}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), HTTP_INTERNAL_SERVER_ERROR
 
 
 def _get_framework_packages(framework: str) -> list:
@@ -335,7 +513,7 @@ def list_files(project_id):
     
     # Ensure path is safe (no directory traversal)
     if '..' in sub_path:
-        return jsonify({'success': False, 'error': 'Invalid path'}), 400
+        return jsonify({'success': False, 'error': 'Invalid path'}), HTTP_BAD_REQUEST
     
     # Build full path
     if sub_path:
@@ -395,7 +573,7 @@ def list_files(project_id):
             return jsonify({'success': False, 'error': 'Permission denied'}), 403
         except Exception as e:
             logger.error(f"Error listing files: {e}")
-            return jsonify({'success': False, 'error': str(e)}), 500
+            return jsonify({'success': False, 'error': str(e)}), HTTP_INTERNAL_SERVER_ERROR
     else:
         # Path doesn't exist - might be a new project, return empty list
         pass
@@ -409,6 +587,8 @@ def list_files(project_id):
 
 
 @api_bp.route('/projects/<int:project_id>/files', methods=['POST'])
+@error_handler
+@validate_json_request(required_fields=['path'])
 def create_file(project_id):
     """Create a new Python file"""
     project = MLProject.query.get_or_404(project_id)
@@ -418,11 +598,11 @@ def create_file(project_id):
     content = data.get('content', '')
     
     if not file_path:
-        return jsonify({'success': False, 'error': 'File path is required'}), 400
+        return jsonify({'success': False, 'error': 'File path is required'}), HTTP_BAD_REQUEST
     
     # Ensure path is relative and safe
     if '..' in file_path or file_path.startswith('/'):
-        return jsonify({'success': False, 'error': 'Invalid file path'}), 400
+        return jsonify({'success': False, 'error': 'Invalid file path'}), HTTP_BAD_REQUEST
     
     ml_service = get_ml_service()
     project_path = ml_service.get_project_path(project_id)
@@ -466,7 +646,7 @@ def upload_file(project_id):
     filename = secure_filename(file.filename)
     
     if not filename:
-        return jsonify({'success': False, 'error': 'Invalid filename'}), 400
+        return jsonify({'success': False, 'error': 'Invalid filename'}), HTTP_BAD_REQUEST
     
     ml_service = get_ml_service()
     project_path = ml_service.get_project_path(project_id)
@@ -504,7 +684,7 @@ def upload_file(project_id):
         }), 201
     except Exception as e:
         logger.error(f"Error uploading file: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), HTTP_INTERNAL_SERVER_ERROR
 
 
 @api_bp.route('/projects/<int:project_id>/data-columns', methods=['GET'])
@@ -606,7 +786,7 @@ def get_data_columns(project_id):
         
     except Exception as e:
         logger.error(f"Error reading data columns: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), HTTP_INTERNAL_SERVER_ERROR
 
 
 @api_bp.route('/projects/<int:project_id>/data-preview', methods=['GET'])
@@ -647,7 +827,7 @@ def get_data_preview(project_id):
             df = pd.read_parquet(full_path)
             df = df.head(n_rows)
         else:
-            return jsonify({'success': False, 'error': f'Unsupported file type: {file_ext}'}), 400
+            return jsonify({'success': False, 'error': f'Unsupported file type: {file_ext}'}), HTTP_BAD_REQUEST
         
         return jsonify({
             'success': True,
@@ -656,11 +836,11 @@ def get_data_preview(project_id):
                 'rows': df.values.tolist(),
                 'dtypes': {col: str(dtype) for col, dtype in df.dtypes.items()}
             }
-        })
+        }), HTTP_OK
         
     except Exception as e:
         logger.error(f"Error previewing data: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), HTTP_INTERNAL_SERVER_ERROR
 
 
 @api_bp.route('/projects/<int:project_id>/files/<path:file_path>', methods=['GET'])
@@ -690,10 +870,13 @@ def get_file(project_id, file_path):
             }
         })
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        logger.error(f"Error getting file: {e}")
+        return jsonify({'success': False, 'error': str(e)}), HTTP_INTERNAL_SERVER_ERROR
 
 
 @api_bp.route('/projects/<int:project_id>/files/<path:file_path>', methods=['PUT'])
+@error_handler
+@validate_json_request()
 def update_file(project_id, file_path):
     """Update file content"""
     project = MLProject.query.get_or_404(project_id)
@@ -701,7 +884,7 @@ def update_file(project_id, file_path):
     
     # Ensure path is safe
     if '..' in file_path or file_path.startswith('/'):
-        return jsonify({'success': False, 'error': 'Invalid file path'}), 400
+        return jsonify({'success': False, 'error': 'Invalid file path'}), HTTP_BAD_REQUEST
     
     content = data.get('content', '')
     
@@ -710,9 +893,10 @@ def update_file(project_id, file_path):
     full_path = project_path / file_path
     
     if not full_path.exists():
-        return jsonify({'success': False, 'error': 'File not found'}), 404
+        return jsonify({'success': False, 'error': 'File not found'}), HTTP_NOT_FOUND
     
     try:
+        content = data.get('content', '')
         full_path.write_text(content, encoding='utf-8')
         return jsonify({
             'success': True,
@@ -721,9 +905,10 @@ def update_file(project_id, file_path):
                 'path': file_path,
                 'size': len(content)
             }
-        })
+        }), HTTP_OK
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        logger.error(f"Error updating file: {e}")
+        return jsonify({'success': False, 'error': str(e)}), HTTP_INTERNAL_SERVER_ERROR
 
 
 @api_bp.route('/projects/<int:project_id>/files/<path:file_path>', methods=['DELETE'])
@@ -733,23 +918,24 @@ def delete_file(project_id, file_path):
     
     # Ensure path is safe
     if '..' in file_path or file_path.startswith('/'):
-        return jsonify({'success': False, 'error': 'Invalid file path'}), 400
+        return jsonify({'success': False, 'error': 'Invalid file path'}), HTTP_BAD_REQUEST
     
     ml_service = get_ml_service()
     project_path = ml_service.get_project_path(project_id)
     full_path = project_path / file_path
     
     if not full_path.exists():
-        return jsonify({'success': False, 'error': 'File not found'}), 404
+        return jsonify({'success': False, 'error': 'File not found'}), HTTP_NOT_FOUND
     
     try:
         full_path.unlink()
         return jsonify({
             'success': True,
             'message': f'File {file_path} deleted successfully'
-        })
+        }), HTTP_OK
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        logger.error(f"Error deleting file: {e}")
+        return jsonify({'success': False, 'error': str(e)}), HTTP_INTERNAL_SERVER_ERROR
 
 
 @api_bp.route('/projects/<int:project_id>/templates', methods=['GET'])
@@ -948,6 +1134,8 @@ def list_workflows(project_id):
 
 
 @api_bp.route('/projects/<int:project_id>/workflows', methods=['POST'])
+@error_handler
+@validate_json_request()
 def create_workflow(project_id):
     """Create a new workflow"""
     project = MLProject.query.get_or_404(project_id)
@@ -992,6 +1180,8 @@ def get_workflow(workflow_id):
 
 
 @api_bp.route('/workflows/<int:workflow_id>', methods=['PUT'])
+@error_handler
+@validate_json_request()
 def update_workflow(workflow_id):
     """Update workflow"""
     workflow = Workflow.query.get_or_404(workflow_id)
@@ -1201,7 +1391,7 @@ def execute_workflow(workflow_id):
             return jsonify({
                 'success': False,
                 'error': 'No generated code available. Please generate code first.'
-            }), 400
+            }), HTTP_BAD_REQUEST
         
         # Save generated code to a file and execute it
         from app.services.ml_service import MLService
@@ -1221,7 +1411,7 @@ def execute_workflow(workflow_id):
             return jsonify({
                 'success': False,
                 'error': f'Project "{project.name}" is not linked to a virtual environment. Please recreate the project.'
-            }), 400
+            }), HTTP_BAD_REQUEST
         
         # Check if environment exists
         env_exists, env_message = project.validate_environment_link()
@@ -1229,7 +1419,7 @@ def execute_workflow(workflow_id):
             return jsonify({
                 'success': False,
                 'error': f'Project environment not found: {env_message}. Please recreate the project.'
-            }), 400
+            }), HTTP_BAD_REQUEST
         
         # Extract required packages from workflow code and install them
         workflow_service = WorkflowService(projects_folder=current_app.config['PROJECTS_FOLDER'])
@@ -1558,6 +1748,8 @@ def get_setting(key):
 
 
 @api_bp.route('/settings/<key>', methods=['PUT'])
+@error_handler
+@validate_json_request()
 def update_setting(key):
     """Update a setting"""
     data = request.get_json()
@@ -1585,16 +1777,19 @@ def update_setting(key):
 
 
 @api_bp.route('/settings', methods=['POST'])
+@error_handler
+@validate_json_request(required_fields=['key'])
+@sanitize_string_input(['key', 'description', 'category'])
 def create_setting():
     """Create a new setting"""
     data = request.get_json()
     
     key = data.get('key')
     if not key:
-        return jsonify({'success': False, 'error': 'Key is required'}), 400
+        return jsonify({'success': False, 'error': 'Key is required'}), HTTP_BAD_REQUEST
     
     if Settings.query.filter_by(key=key).first():
-        return jsonify({'success': False, 'error': 'Setting already exists'}), 400
+        return jsonify({'success': False, 'error': 'Setting already exists'}), HTTP_BAD_REQUEST
     
     setting = Settings(
         key=key,
@@ -1747,7 +1942,7 @@ def publish_project_model(project_id):
             return jsonify({
                 'success': False,
                 'error': f'Model file not found. Looked in: {project_path}'
-            }), 404
+            }), HTTP_NOT_FOUND
         
         # Get server connection
         settings = get_settings_manager()
@@ -1806,10 +2001,68 @@ def publish_project_model(project_id):
             return jsonify({
                 'success': False,
                 'error': result.error
-            }), 400
+            }), HTTP_BAD_REQUEST
             
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        logger.error(f"Error publishing model: {e}")
+        return jsonify({'success': False, 'error': str(e)}), HTTP_INTERNAL_SERVER_ERROR
+
+
+@api_bp.route('/community/competitions', methods=['GET'])
+def community_competitions():
+    """Get list of competitions from Community platform"""
+    try:
+        from app.services.community_client import get_community_client
+        
+        active_only = request.args.get('active_only', 'true').lower() == 'true'
+        
+        client = get_community_client()
+        result = client.get_competitions(active_only=active_only)
+        
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"Error getting competitions: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'competitions': []
+        })
+
+
+@api_bp.route('/community/competitions/<int:competition_id>/join', methods=['POST'])
+def join_competition(competition_id):
+    """Join a competition in Community platform"""
+    try:
+        from app.services.community_client import get_community_client
+        from app.services.auth_service import AuthService
+        
+        # Get current user
+        current_user = AuthService.get_current_user()
+        if not current_user:
+            return jsonify({'success': False, 'error': 'Authentication required'}), 401
+        
+        # Use current user ID (assuming same user system)
+        user_id = current_user.id
+        
+        client = get_community_client()
+        result = client.join_competition(competition_id, user_id)
+        
+        if result.get('success') is False or result.get('error'):
+            status_code = 400 if result.get('error') else 500
+            return jsonify(result), status_code
+        
+        return jsonify({
+            'success': True,
+            'message': 'Successfully joined competition',
+            'participant': result.get('participant')
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Error joining competition: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 
 @api_bp.route('/ml-server/predict', methods=['POST'])
@@ -1829,15 +2082,15 @@ def ml_server_predict():
         
         data = request.get_json()
         if not data:
-            return jsonify({'success': False, 'error': 'No data provided'}), 400
+            return jsonify({'success': False, 'error': 'No data provided'}), HTTP_BAD_REQUEST
         
         model_id = data.get('model_id')
         input_data = data.get('data')
         
         if not model_id:
-            return jsonify({'success': False, 'error': 'model_id is required'}), 400
+            return jsonify({'success': False, 'error': 'model_id is required'}), HTTP_BAD_REQUEST
         if not input_data:
-            return jsonify({'success': False, 'error': 'data is required'}), 400
+            return jsonify({'success': False, 'error': 'data is required'}), HTTP_BAD_REQUEST
         
         settings = get_settings_manager()
         server_url = settings.get('host_admin_url', 'http://127.0.0.1:5000')
@@ -1847,4 +2100,5 @@ def ml_server_predict():
         
         return jsonify(result)
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        logger.error(f"Error making prediction: {e}")
+        return jsonify({'success': False, 'error': str(e)}), HTTP_INTERNAL_SERVER_ERROR

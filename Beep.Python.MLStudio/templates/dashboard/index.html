@@ -266,6 +266,22 @@
         border-color: var(--theme-primary);
     }
     
+    /* Competition Available Cards */
+    .competition-available-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        transition: all var(--transition-duration) var(--transition-easing);
+        font-family: var(--font-mono);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .competition-available-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 0 20px var(--theme-primary-transparent);
+        border-color: var(--theme-primary);
+    }
+    
     /* Quick Actions - Terminal Style */
     .quick-actions {
         background: var(--bg-surface);
@@ -578,6 +594,246 @@
         </div>
     </div>
     
+    <!-- Community Connection Status -->
+    {% if community_config %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card {% if community_config.connected %}border-success{% else %}border-warning{% endif %}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1">
+                                <i class="bi bi-{% if community_config.connected %}check-circle-fill text-success{% else %}exclamation-triangle-fill text-warning{% endif %}"></i>
+                                Community Platform
+                            </h5>
+                            <p class="mb-0 text-muted">
+                                {% if community_config.connected %}
+                                Connected to {{ community_config.url }}
+                                {% else %}
+                                Not connected to Community server
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            {% if not community_config.connected %}
+                            <a href="{{ url_for('settings.index') }}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-plug"></i> Connect
+                            </a>
+                            {% else %}
+                            <a href="{{ community_config.url }}" target="_blank" class="btn btn-outline-success btn-sm me-2">
+                                <i class="bi bi-box-arrow-up-right"></i> Open Community
+                            </a>
+                            <a href="{{ url_for('settings.index') }}" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-gear"></i> Settings
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Available Competitions -->
+    {% if community_config.connected %}
+    <div class="row mb-4" id="competitions-section">
+        <div class="col-12">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-trophy"></i> Available Competitions</h5>
+                    <a href="{{ community_config.url }}" target="_blank" class="btn btn-sm btn-light">
+                        <i class="bi bi-box-arrow-up-right"></i> Browse All
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div id="competitions-list" class="row">
+                        <div class="col-12 text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading competitions...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Loading competitions...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Community Participation Data -->
+    {% if community_config.connected and community_data %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-trophy"></i> Competition Participation</h5>
+                    <a href="{{ community_data.community_url if community_data else community_config.url }}" target="_blank" class="btn btn-sm btn-light">
+                        <i class="bi bi-box-arrow-up-right"></i> Open Community
+                    </a>
+                </div>
+                <div class="card-body">
+                    <!-- Quick Stats -->
+                    {% if community_data.stats %}
+                    <div class="row mb-4">
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="text-center">
+                                <h3 class="text-primary mb-0">{{ community_data.stats.total_competitions_joined or 0 }}</h3>
+                                <small class="text-muted">Competitions Joined</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="text-center">
+                                <h3 class="text-success mb-0">{{ community_data.stats.active_competitions or 0 }}</h3>
+                                <small class="text-muted">Active Competitions</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="text-center">
+                                <h3 class="text-warning mb-0">{{ community_data.stats.total_submissions or 0 }}</h3>
+                                <small class="text-muted">Total Submissions</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="text-center">
+                                <h3 class="text-info mb-0">{% if community_data.stats.best_rank %}#{{ community_data.stats.best_rank }}{% else %}N/A{% endif %}</h3>
+                                <small class="text-muted">Best Ranking</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Competition Cards -->
+                    {% if community_data.competitions and community_data.competitions|length > 0 %}
+                    <hr>
+                    <h6 class="mb-3"><i class="bi bi-trophy-fill"></i> Your Competitions</h6>
+                    <div class="row">
+                        {% for comp in community_data.competitions %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100 competition-card {% if comp.is_active %}border-success{% else %}border-secondary{% endif %}">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="card-title mb-0 flex-grow-1">{{ comp.title }}</h6>
+                                        {% if comp.is_active %}
+                                        <span class="badge bg-success ms-2">Active</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary ms-2">Ended</span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <p class="card-text small text-muted mb-3" style="min-height: 40px;">
+                                        {{ comp.description[:80] if comp.description else 'No description' }}{% if comp.description and comp.description|length > 80 %}...{% endif %}
+                                    </p>
+                                    
+                                    <!-- Rank and Score -->
+                                    {% if comp.rank %}
+                                    <div class="mb-2">
+                                        <span class="badge bg-primary" style="font-size: 0.9rem;">
+                                            <i class="bi bi-trophy"></i> Rank #{{ comp.rank }}
+                                            {% if comp.user_ranking and comp.user_ranking.total_participants %}
+                                            of {{ comp.user_ranking.total_participants }}
+                                            {% endif %}
+                                        </span>
+                                        {% if comp.best_score is not none %}
+                                        <span class="badge bg-info ms-1" style="font-size: 0.9rem;">
+                                            Score: {{ "%.4f"|format(comp.best_score) }}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <!-- Submission Info -->
+                                    <div class="mb-2">
+                                        <small class="text-muted">
+                                            <i class="bi bi-upload"></i> {{ comp.submission_count or 0 }} submission{{ 's' if (comp.submission_count or 0) != 1 else '' }}
+                                            {% if comp.max_total_submissions %}
+                                            / {{ comp.max_total_submissions }} max
+                                            {% endif %}
+                                        </small>
+                                        {% if comp.max_total_submissions and comp.submission_count %}
+                                        <div class="progress" style="height: 6px; margin-top: 4px;">
+                                            {% set progress = ((comp.submission_count / comp.max_total_submissions) * 100)|int %}
+                                            <div class="progress-bar {% if progress >= 90 %}bg-warning{% else %}bg-primary{% endif %}" 
+                                                 role="progressbar" style="width: {{ progress }}%"></div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Deadline -->
+                                    {% if comp.end_date %}
+                                    <div class="mb-2">
+                                        <small class="text-muted">
+                                            <i class="bi bi-calendar"></i> 
+                                            {% if comp.is_active %}
+                                            Ends: <span class="competition-deadline" data-end-date="{{ comp.end_date }}">{{ comp.end_date[:10] if comp.end_date else 'N/A' }}</span>
+                                            {% else %}
+                                            Ended: {{ comp.end_date[:10] if comp.end_date else 'N/A' }}
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <!-- Participants -->
+                                    {% if comp.participant_count %}
+                                    <div class="mb-3">
+                                        <small class="text-muted">
+                                            <i class="bi bi-people"></i> {{ comp.participant_count }} participant{{ 's' if comp.participant_count != 1 else '' }}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-outline-primary flex-grow-1" 
+                                                onclick='showCompetitionDetails({{ comp|tojson }})'>
+                                            <i class="bi bi-info-circle"></i> Details
+                                        </button>
+                                        <a href="{{ community_config.url }}/competitions/{{ comp.id }}" 
+                                           target="_blank" 
+                                           class="btn btn-sm btn-primary">
+                                            <i class="bi bi-box-arrow-up-right"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-inbox" style="font-size: 3rem; color: var(--text-secondary);"></i>
+                        <p class="text-muted mt-3">No competitions yet. Join a competition in Community to see your participation status here!</p>
+                        <a href="{{ community_config.url }}/competitions" target="_blank" class="btn btn-primary">
+                            <i class="bi bi-box-arrow-up-right"></i> Browse Competitions
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Competition Details Modal -->
+    <div class="modal fade" id="competitionDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-trophy"></i> Competition Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="competitionDetailsContent">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <a id="competitionDetailsLink" href="#" target="_blank" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-up-right"></i> Open in Community
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+    
     <!-- Quick Actions -->
     <div class="row mb-4">
         <div class="col-12">
@@ -728,8 +984,331 @@
         modal.show();
     }
     
-    // Ensure create project button works
+    // Competition details modal
+    function showCompetitionDetails(comp) {
+        const modal = new bootstrap.Modal(document.getElementById('competitionDetailsModal'));
+        const content = document.getElementById('competitionDetailsContent');
+        const link = document.getElementById('competitionDetailsLink');
+        
+        // Build modal content
+        let html = '<div class="competition-details">';
+        
+        // Title and status
+        html += `<h5>${escapeHtml(comp.title)}</h5>`;
+        html += `<p class="text-muted">${escapeHtml(comp.description || 'No description')}</p>`;
+        
+        // Status badge
+        if (comp.is_active) {
+            html += '<span class="badge bg-success mb-3">Active Competition</span>';
+        } else {
+            html += '<span class="badge bg-secondary mb-3">Ended</span>';
+        }
+        
+        html += '<hr>';
+        
+        // User's performance
+        html += '<h6><i class="bi bi-person-check"></i> Your Performance</h6>';
+        html += '<div class="row mb-3">';
+        
+        if (comp.rank) {
+            html += `<div class="col-md-4">
+                <div class="text-center p-2 bg-light rounded">
+                    <div class="h4 text-primary mb-0">#${comp.rank}</div>
+                    <small class="text-muted">Rank</small>
+                </div>
+            </div>`;
+        }
+        
+        if (comp.best_score !== null && comp.best_score !== undefined) {
+            html += `<div class="col-md-4">
+                <div class="text-center p-2 bg-light rounded">
+                    <div class="h4 text-info mb-0">${parseFloat(comp.best_score).toFixed(4)}</div>
+                    <small class="text-muted">Best Score</small>
+                </div>
+            </div>`;
+        }
+        
+        html += `<div class="col-md-4">
+            <div class="text-center p-2 bg-light rounded">
+                <div class="h4 text-warning mb-0">${comp.submission_count || 0}</div>
+                <small class="text-muted">Submissions</small>
+            </div>
+        </div>`;
+        
+        html += '</div>';
+        
+        // Competition info
+        html += '<hr><h6><i class="bi bi-info-circle"></i> Competition Information</h6>';
+        html += '<dl class="row">';
+        
+        if (comp.evaluation_metric) {
+            html += `<dt class="col-sm-4">Evaluation Metric:</dt><dd class="col-sm-8">${escapeHtml(comp.evaluation_metric)}</dd>`;
+        }
+        
+        if (comp.start_date) {
+            html += `<dt class="col-sm-4">Start Date:</dt><dd class="col-sm-8">${formatDate(comp.start_date)}</dd>`;
+        }
+        
+        if (comp.end_date) {
+            html += `<dt class="col-sm-4">End Date:</dt><dd class="col-sm-8">${formatDate(comp.end_date)}${comp.is_active ? ` <small class="text-muted">(${formatTimeRemaining(comp.end_date)})</small>` : ''}</dd>`;
+        }
+        
+        if (comp.max_submissions_per_day) {
+            html += `<dt class="col-sm-4">Max per Day:</dt><dd class="col-sm-8">${comp.max_submissions_per_day}</dd>`;
+        }
+        
+        if (comp.max_total_submissions) {
+            html += `<dt class="col-sm-4">Max Total:</dt><dd class="col-sm-8">${comp.max_total_submissions}</dd>`;
+        }
+        
+        if (comp.participant_count) {
+            html += `<dt class="col-sm-4">Participants:</dt><dd class="col-sm-8">${comp.participant_count}</dd>`;
+        }
+        
+        html += '</dl>';
+        
+        // Submission history
+        if (comp.submissions && comp.submissions.length > 0) {
+            html += '<hr><h6><i class="bi bi-clock-history"></i> Submission History</h6>';
+            html += '<div class="table-responsive"><table class="table table-sm">';
+            html += '<thead><tr><th>Date</th><th>Score</th><th>Status</th></tr></thead><tbody>';
+            
+            // Sort submissions by date (newest first)
+            const sortedSubs = [...comp.submissions].sort((a, b) => {
+                return new Date(b.submitted_at || 0) - new Date(a.submitted_at || 0);
+            });
+            
+            sortedSubs.forEach(sub => {
+                html += '<tr>';
+                html += `<td>${formatDate(sub.submitted_at)}</td>`;
+                html += `<td>${sub.score !== null && sub.score !== undefined ? parseFloat(sub.score).toFixed(4) : 'Pending'}</td>`;
+                html += `<td><span class="badge ${sub.status === 'evaluated' ? 'bg-success' : 'bg-warning'}">${escapeHtml(sub.status || 'Pending')}</span></td>`;
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table></div>';
+        }
+        
+        html += '</div>';
+        
+        content.innerHTML = html;
+        link.href = `{{ community_data.community_url if community_data else community_config.url }}/competitions/${comp.id}`;
+        modal.show();
+    }
+    
+    function escapeHtml(text) {
+        if (!text) return '';
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return String(text).replace(/[&<>"']/g, m => map[m]);
+    }
+    
+    function formatDate(dateStr) {
+        if (!dateStr) return 'N/A';
+        try {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+        } catch (e) {
+            return dateStr;
+        }
+    }
+    
+    function formatTimeRemaining(endDateStr) {
+        if (!endDateStr) return '';
+        try {
+            const endDate = new Date(endDateStr);
+            const now = new Date();
+            const diff = endDate - now;
+            
+            if (diff < 0) return 'Ended';
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            
+            if (days > 0) return `${days} day${days !== 1 ? 's' : ''} remaining`;
+            if (hours > 0) return `${hours} hour${hours !== 1 ? 's' : ''} remaining`;
+            return `${minutes} minute${minutes !== 1 ? 's' : ''} remaining`;
+        } catch (e) {
+            return '';
+        }
+    }
+    
+    // Load and display available competitions
+    function loadCompetitions() {
+        const competitionsList = document.getElementById('competitions-list');
+        if (!competitionsList) return;
+        
+        fetch('/api/v1/community/competitions?active_only=true')
+            .then(response => response.json())
+            .then(data => {
+                const competitions = data.competitions || [];
+                
+                if (competitions.length === 0) {
+                    competitionsList.innerHTML = `
+                        <div class="col-12 text-center py-4">
+                            <i class="bi bi-inbox" style="font-size: 3rem; color: var(--text-secondary);"></i>
+                            <p class="mt-3 text-muted">No active competitions available</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                competitions.forEach(comp => {
+                    const isParticipant = comp.is_participant || false;
+                    const participantCount = comp.participant_count || 0;
+                    const endDate = comp.end_date ? formatTimeRemaining(comp.end_date) : '';
+                    
+                    html += `
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100 competition-available-card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="card-title mb-0 flex-grow-1">${escapeHtml(comp.title)}</h6>
+                                        <span class="badge bg-success ms-2">Active</span>
+                                    </div>
+                                    
+                                    <p class="card-text small text-muted mb-3" style="min-height: 60px;">
+                                        ${escapeHtml((comp.description || 'No description').substring(0, 100))}${comp.description && comp.description.length > 100 ? '...' : ''}
+                                    </p>
+                                    
+                                    <div class="mb-3">
+                                        <small class="text-muted">
+                                            <i class="bi bi-people"></i> ${participantCount} participants
+                                            ${endDate ? `<br><i class="bi bi-clock"></i> ${endDate}` : ''}
+                                        </small>
+                                    </div>
+                                    
+                                    ${isParticipant 
+                                        ? `<button class="btn btn-primary btn-sm w-100" onclick="createProjectFromCompetition(${comp.id})">
+                                            <i class="bi bi-folder-plus"></i> Create Project
+                                           </button>`
+                                        : `<button class="btn btn-success btn-sm w-100" onclick="joinCompetition(${comp.id})">
+                                            <i class="bi bi-plus-circle"></i> Join Competition
+                                           </button>`
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                competitionsList.innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Error loading competitions:', error);
+                competitionsList.innerHTML = `
+                    <div class="col-12 text-center py-4">
+                        <i class="bi bi-exclamation-triangle text-warning" style="font-size: 2rem;"></i>
+                        <p class="mt-3 text-muted">Failed to load competitions. Please check your Community connection.</p>
+                    </div>
+                `;
+            });
+    }
+    
+    // Join competition and create project
+    async function joinCompetition(competitionId) {
+        const btn = event.target.closest('button');
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Joining...';
+        
+        try {
+            // Join competition
+            const joinResponse = await fetch(`/api/v1/community/competitions/${competitionId}/join`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            
+            const joinResult = await joinResponse.json();
+            
+            if (!joinResult.success) {
+                alert('Failed to join competition: ' + (joinResult.error || 'Unknown error'));
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                return;
+            }
+            
+            // Create project automatically
+            const projectResponse = await fetch('/api/v1/projects/create-from-competition', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ competition_id: competitionId })
+            });
+            
+            const projectResult = await projectResponse.json();
+            
+            if (projectResult.success) {
+                // Redirect to new project
+                window.location.href = `/projects/${projectResult.data.id}`;
+            } else {
+                alert('Failed to create project: ' + (projectResult.error || 'Unknown error'));
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                // Reload competitions to update UI
+                loadCompetitions();
+            }
+        } catch (error) {
+            console.error('Error joining competition:', error);
+            alert('Error joining competition: ' + error.message);
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    }
+    
+    // Create project from competition (if already joined)
+    async function createProjectFromCompetition(competitionId) {
+        const btn = event.target.closest('button');
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating...';
+        
+        try {
+            const projectResponse = await fetch('/api/v1/projects/create-from-competition', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ competition_id: competitionId })
+            });
+            
+            const projectResult = await projectResponse.json();
+            
+            if (projectResult.success) {
+                // Redirect to new project
+                window.location.href = `/projects/${projectResult.data.id}`;
+            } else {
+                alert('Failed to create project: ' + (projectResult.error || 'Unknown error'));
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        } catch (error) {
+            console.error('Error creating project:', error);
+            alert('Error creating project: ' + error.message);
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    }
+    
+    
+    // Update deadline displays with relative time
     document.addEventListener('DOMContentLoaded', function() {
+        const deadlineElements = document.querySelectorAll('.competition-deadline');
+        deadlineElements.forEach(el => {
+            const endDate = el.getAttribute('data-end-date');
+            if (endDate) {
+                const timeRemaining = formatTimeRemaining(endDate);
+                if (timeRemaining) {
+                    el.title = timeRemaining;
+                }
+            }
+        });
+        
+        // Ensure create project button works
         const createProjectBtn = document.getElementById('createProjectBtn');
         if (createProjectBtn) {
             createProjectBtn.addEventListener('click', function(e) {

@@ -8,6 +8,8 @@ from flask import Blueprint, render_template, redirect, url_for, request, sessio
 from app.industry_profiles import profile_manager
 from app.models.project import MLProject as Project
 from app.models.industry_scenario import IndustryScenarioProgress
+from app.services.branding_service import BrandingService
+from app.services.industry_scenarios_service import IndustryScenariosService
 from app import db
 
 logger = logging.getLogger(__name__)
@@ -121,12 +123,21 @@ def dashboard(profile_id):
     # Get all profiles for display (will be filtered in template if forced)
     all_profiles = profile_manager.list_all()
     
+    # Get industry scenarios (use cases, dataset ideas, competition ideas)
+    scenarios_service = IndustryScenariosService()
+    use_cases = scenarios_service.get_use_cases(resolved_id)
+    dataset_ideas = scenarios_service.get_dataset_ideas(resolved_id)
+    competition_ideas = scenarios_service.get_competition_ideas(resolved_id)
+    
     return render_template('industry/dashboard.html',
                          profile=profile,
                          projects=projects,
                          scenarios=profile.scenarios,
                          all_profiles=all_profiles,
-                         forced_industry=forced_industry)
+                         forced_industry=forced_industry,
+                         use_cases=use_cases,
+                         dataset_ideas=dataset_ideas,
+                         competition_ideas=competition_ideas)
 
 
 @industry_bp.route('/scenario/<profile_id>/<scenario_id>')

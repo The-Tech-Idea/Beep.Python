@@ -67,15 +67,50 @@ def setup_virtual_environment():
     else:
         venv_python = venv_path / 'bin' / 'python'
     
+    # Install virtualenv package by default (works even if standard venv module has issues)
+    print_colored("   Ensuring virtualenv package is installed...", Colors.CYAN)
+    virtualenv_check = subprocess.run(
+        [sys.executable, '-m', 'pip', 'show', 'virtualenv'],
+        capture_output=True,
+        text=True
+    )
+    
+    if virtualenv_check.returncode != 0:
+        print_colored("   Installing virtualenv package...", Colors.CYAN)
+        install_result = subprocess.run(
+            [sys.executable, '-m', 'pip', 'install', 'virtualenv', '--quiet', '--no-warn-script-location'],
+            capture_output=True,
+            text=True
+        )
+        if install_result.returncode == 0:
+            print_colored("   ✅ virtualenv package installed", Colors.GREEN)
+        else:
+            print_colored("   ⚠️  Failed to install virtualenv, trying standard venv...", Colors.YELLOW)
+    else:
+        print_colored("   ✅ virtualenv package already installed", Colors.GREEN)
+    
     if not venv_path.exists():
         print_colored("📦 Creating virtual environment...", Colors.CYAN)
+        # Try virtualenv package first (more reliable with embedded Python)
         try:
-            subprocess.run([sys.executable, '-m', 'venv', '.venv'], check=True, capture_output=True)
-            print_colored("✅ Virtual environment created", Colors.GREEN)
+            result = subprocess.run(
+                [sys.executable, '-m', 'virtualenv', '.venv'],
+                capture_output=True,
+                text=True
+            )
+            if result.returncode == 0:
+                print_colored("✅ Virtual environment created (using virtualenv package)", Colors.GREEN)
+            else:
+                # Fallback to standard venv module
+                print_colored("   Trying standard venv module...", Colors.CYAN)
+                subprocess.run([sys.executable, '-m', 'venv', '.venv'], check=True, capture_output=True)
+                print_colored("✅ Virtual environment created (using standard venv module)", Colors.GREEN)
         except subprocess.CalledProcessError as e:
             print_colored(f"❌ Failed to create virtual environment: {e}", Colors.RED)
-            if e.stderr:
-                print_colored(f"   Error: {e.stderr.decode()}", Colors.RED)
+            stderr_text = e.stderr.decode() if isinstance(e.stderr, bytes) else (e.stderr if e.stderr else '')
+            if stderr_text:
+                print_colored(f"   Error: {stderr_text}", Colors.RED)
+            print_colored("   Both virtualenv package and standard venv module failed.", Colors.YELLOW)
             sys.exit(1)
     
     if not venv_python.exists():
@@ -84,7 +119,7 @@ def setup_virtual_environment():
         try:
             subprocess.run([sys.executable, '-m', 'venv', '.venv'], check=True, capture_output=True)
             if not venv_python.exists():
-                print_colored("❌ Still failed. Please check Python installation.", Colors.RED)
+                print_colored("❌ Still failed. Please check embedded Python installation.", Colors.RED)
                 sys.exit(1)
         except Exception as e:
             print_colored(f"❌ Error: {e}", Colors.RED)
@@ -398,50 +433,45 @@ PROJECTS_FOLDER=projects
             print_colored("✅ Default .env file created", Colors.GREEN)
 
 def ensure_embedded_python_packages(embedded_python):
-    """Ensure embedded Python has ALL required packages for admin operations - REQUIRED"""
-    print_colored("   Checking embedded Python packages (REQUIRED)...", Colors.CYAN)
+    """Ensure embedded Python has ALL required packages from requirements.txt for admin operations - REQUIRED"""
+    print_colored("   Installing all required packages into embedded Python (from requirements.txt)...", Colors.CYAN)
     
-    # All packages required for admin operations
-    required_packages = [
-        'flask',
-        'flask-sqlalchemy', 
-        'python-dotenv',
-        'flask-cors',
-        'flask-socketio'
-    ]
-    
-    missing_packages = []
-    
-    for package in required_packages:
-        # Check if package is installed
-        check_result = subprocess.run(
-            [str(embedded_python), '-m', 'pip', 'show', package],
-            capture_output=True,
-            text=True
-        )
-        
-        if check_result.returncode != 0:
-            missing_packages.append(package)
-            print_colored(f"   ❌ {package} not found - installing...", Colors.YELLOW)
-            install_result = subprocess.run(
-                [str(embedded_python), '-m', 'pip', 'install', package],
+    requirements_file = Path('requirements.txt')
+    if not requirements_file.exists():
+        print_colored("   ⚠️  requirements.txt not found, installing minimal packages...", Colors.YELLOW)
+        # Fallback to minimal packages if requirements.txt is missing
+        minimal_packages = [
+            'flask',
+            'flask-sqlalchemy',
+            'flask-jwt-extended',
+            'python-dotenv',
+            'flask-cors',
+            'flask-socketio'
+        ]
+        for package in minimal_packages:
+            subprocess.run(
+                [str(embedded_python), '-m', 'pip', 'install', package, '--quiet', '--no-warn-script-location'],
                 capture_output=True,
                 text=True
             )
-            if install_result.returncode == 0:
-                print_colored(f"   ✅ {package} installed successfully", Colors.GREEN)
-            else:
-                print_colored(f"   ❌ FAILED to install {package}", Colors.RED)
-                if install_result.stderr:
-                    print_colored(f"      Error: {install_result.stderr[:200]}", Colors.RED)
-                return False
-        else:
-            print_colored(f"   ✅ {package} already installed", Colors.GREEN)
+        print_colored("   ✅ Minimal packages installed", Colors.GREEN)
+        return True
     
-    if missing_packages:
-        print_colored(f"   ✅ All {len(required_packages)} required packages installed", Colors.GREEN)
+    # Install all packages from requirements.txt into embedded Python
+    install_result = subprocess.run(
+        [str(embedded_python), '-m', 'pip', 'install', '-r', 'requirements.txt', '--quiet', '--no-warn-script-location'],
+        capture_output=True,
+        text=True
+    )
     
-    return True
+    if install_result.returncode == 0:
+        print_colored("   ✅ All packages from requirements.txt installed into embedded Python", Colors.GREEN)
+        return True
+    else:
+        print_colored("   ❌ FAILED to install packages from requirements.txt", Colors.RED)
+        if install_result.stderr:
+            print_colored(f"      Error: {install_result.stderr[:500]}", Colors.RED)
+        return False
 
 
 def initialize_database():
